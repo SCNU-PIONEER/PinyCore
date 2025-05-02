@@ -1,21 +1,22 @@
 #include "Bsp_pwm.hpp"
 
-void Pwm::init(TIM_HandleTypeDef *_htim, uint32_t _channel)
+void Pwm::start(TIM_HandleTypeDef *_htim, uint32_t _channel)
 {
-    htim_ = _htim;
-    channel_ = _channel;
+    HAL_TIM_PWM_Start(_htim, _channel);
 }
 
-void Pwm::start() { HAL_TIM_PWM_Start(htim_, channel_); }
-
-void Pwm::stop() { HAL_TIM_PWM_Stop(htim_, channel_); }
-
-void Pwm::setDutyCycle(uint32_t _dutyCycle)
+void Pwm::stop(TIM_HandleTypeDef *_htim, uint32_t _channel)
 {
-    __HAL_TIM_SET_COMPARE(htim_, channel_, _dutyCycle);
+    HAL_TIM_PWM_Stop(_htim, _channel);
 }
 
-void Pwm::setFrequency(uint32_t _frequency)
+void Pwm::setDutyCycle(TIM_HandleTypeDef *_htim, uint32_t _channel,
+                       uint32_t _dutyCycle)
 {
-    __HAL_TIM_SET_AUTORELOAD(htim_, _frequency);
+    __HAL_TIM_SET_COMPARE(_htim, _channel, _dutyCycle);
+}
+
+void Pwm::setFrequency(TIM_HandleTypeDef *_htim, uint32_t _frequency)
+{
+    __HAL_TIM_SET_AUTORELOAD(_htim, _frequency);
 }
