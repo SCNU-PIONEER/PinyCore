@@ -37,6 +37,8 @@ target_compile_definitions(syscall PRIVATE
   STM32H723xx
 )
 
+target_compile_options(stm32cubemx PUBLIC -Wno-deprecated-volatile)
+
 # compile
 target_compile_definitions(stm32cubemx PUBLIC
   USE_HAL_DRIVER
