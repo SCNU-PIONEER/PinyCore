@@ -2,6 +2,13 @@ find_program(KCONFIG_CONF kconfig-conf)
 find_program(KCONFIG_MCONF kconfig-mconf)
 find_package(Python REQUIRED COMPONENTS Interpreter)
 
+if(KCONFIG_CONF)
+  message(STATUS "Found kconfig-conf: ${KCONFIG_CONF}")
+else()
+  message(FATAL_ERROR "Could not find kconfig-conf/mconf,\
+                        please install kconfig-frontends")
+endif()
+
 set(PYTHON_SCRIPT "${CMAKE_SOURCE_DIR}/tools/script/Kconfig2h.py")
 
 add_custom_target(menuconfig
