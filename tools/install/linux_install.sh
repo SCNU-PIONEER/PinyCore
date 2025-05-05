@@ -79,6 +79,18 @@ else
   fi
 fi
 
+if kconfig -h &>/dev/null; then
+  echo "kconfig-frontends 已安装"
+  exit 0
+else
+  echo "正在安装kconfig-frontends..."
+  if [ "$PKG_MANAGER" = "apt-get" ]; then
+    sudo apt-get install -y kconfig-frontends
+  elif [ "$PKG_MANAGER" = "pacman" ]; then
+    sudo pacman -S --noconfirm kconfig-frontends
+  fi
+fi
+
 if command -v arm-eabi-gcc &>/dev/null; then
   echo "arm-eabi-gcc 已安装，版本: $(arm-eabi-gcc --version | head -n 1)"
   exit 0
