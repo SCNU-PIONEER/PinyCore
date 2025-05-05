@@ -16,11 +16,16 @@ public:
         return &instance_;
     }
 
+    void task();
+
     // <uint16_t, IMotor *> -> <uid, motor>
     inline std::unordered_map<uint16_t, IMotor *> &motors() { return motorList_; }
 
 private:
     MotorManager() = default;
+
+    const float motorTaskFreq_ = 1000.f;
+
     std::unordered_map<uint16_t, IMotor *> motorList_;
 };
 }
