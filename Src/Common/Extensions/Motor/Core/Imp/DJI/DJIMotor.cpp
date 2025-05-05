@@ -28,8 +28,17 @@ MotorTypeDef_e DJIMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_TORQ:
-        cmd_.torq = _cmdData;
-        break;
+        if(this->workMode_ == WorkMode_e::QUAD_CURR)
+           cmd_.torq = _cmdData;
+        else
+           this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+    break;
+    case MotorCmdType_e::SET_VOLT:
+        if(this->workMode_ == WorkMode_e::QUAD_VOLT)
+           cmd_.volt = _cmdData;
+        else
+           this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+    break;
     default:
         this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
         return 1;
@@ -82,6 +91,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t *txBuf = nullptr;
+    uint16_t currCmd =0;
     // 寻找自己所属的电机组
     QuadMotorGroup_s *group = nullptr;
     for (auto &entry : this->motorMap_) {
@@ -102,27 +112,33 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     }
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
-        uint16_t currCmd = cmd_.torq / stats_.torqConstant /
-                           this->stats_.currMax * this->stats_.currTxCodeSpan;
-        if (txBuf != nullptr) {
-            if (cmd_.SW) {
-                txBuf[2 * this->getPosInGroup() + 1] =
-                        static_cast<uint8_t>(currCmd & 0xFF);
-                txBuf[2 * this->getPosInGroup()] =
-                        static_cast<uint8_t>((currCmd >> 8) & 0xFF);
-            } else {
-                txBuf[2 * this->getPosInGroup() + 1] = 0;
-                txBuf[2 * this->getPosInGroup()] = 0;
-            }
-        }
+        currCmd = cmd_.torq / stats_.torqConstant /
+                  this->stats_.currMax * this->stats_.currTxCodeSpan;
+        break;
+    }
+    case WorkMode_e::QUAD_VOLT: {
+        currCmd = cmd_.volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
         break;
     }
     default: {
+        currCmd =0;
         this->log("ERROR", "", "Motor %s: this mode is not supported",
                   this->name_);
         break;
     }
     }
+    if (txBuf != nullptr) {
+        if (cmd_.SW) {
+            txBuf[2 * this->getPosInGroup() + 1] =
+                    static_cast<uint8_t>(currCmd & 0xFF);
+            txBuf[2 * this->getPosInGroup()] =
+                    static_cast<uint8_t>((currCmd >> 8) & 0xFF);
+        } else {
+            txBuf[2 * this->getPosInGroup() + 1] = 0;
+            txBuf[2 * this->getPosInGroup()] = 0;
+        }
+    }
+
     if (this->checkGroupSend(group)) {
         group->lastSendTick = xTaskGetTickCount();
         rslt |= this->send(txBuf, 8);

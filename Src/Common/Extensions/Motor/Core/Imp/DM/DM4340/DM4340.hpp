@@ -1,0 +1,10 @@
+#pragma once
+#include "../DMMotor.hpp"
+
+namespace PINYMOTOR {
+class DM4340 : public DMMotor<DM4340> {
+private:
+public:
+   DM4340(const char _name[16], InitConfig_s _config);
+};
+} // namespace PINYMOTOR

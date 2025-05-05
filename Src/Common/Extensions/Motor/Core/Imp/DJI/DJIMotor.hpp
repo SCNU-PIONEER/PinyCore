@@ -18,10 +18,12 @@ struct DJIMotorFeedback_s {
 };
 #pragma pack(pop)
 struct DJIMotorStats_s {
+    float voltTxCodeSpan;
     float currTxCodeSpan;
     float currRxCodeSpan;
     float currRated;    // A
     float torqRated;    // Nm
+    float voltMax;      // V
     float currMax;      // A
     float torqMax;      // Nm
     float torqConstant; // Nm/A
@@ -29,10 +31,12 @@ struct DJIMotorStats_s {
     DJIMotorStats_s& operator=(const DJIMotorStats_s& _other) {
         if (this != &_other)
         {
+            voltTxCodeSpan = _other.voltTxCodeSpan;
             currTxCodeSpan = _other.currTxCodeSpan;
             currRxCodeSpan = _other.currRxCodeSpan;
             currRated = _other.currRated;
             torqRated = _other.torqRated;
+            voltMax = _other.voltMax;
             currMax = _other.currMax;
             torqMax = _other.torqMax;
             torqConstant = _other.torqConstant;
@@ -59,6 +63,7 @@ protected:
         bool prevSW;
         struct {
             float torq;
+            float volt;
             // float speed;
             // float pos;
         };

@@ -59,7 +59,7 @@ template <typename T>
 MotorTypeDef_e DMMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            static_cast<canHandle *>(this->pComHandle_), this->canId(), _txBuf,
+            static_cast<canHandle *>(this->pComHandle_), this->canCmdId(), _txBuf,
             _len));
 }
 
@@ -260,24 +260,24 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
 template <typename T> MotorTypeDef_e DMMotor<T>::enable()
 {
     MotorTypeDef_e rslt = 0;
-    cmd_.updateSW(true); // force enable
     // 定义一个8字节的数组enableCmdPack，用于存储使能命令
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC
     };
     rslt |= this->send(enableCmdPack, 8);
+    cmd_.updateSW(true); // force enable
     return rslt;
 }
 
 template <typename T> MotorTypeDef_e DMMotor<T>::disable()
 {
     MotorTypeDef_e rslt = 0;
-    cmd_.updateSW(false); // force disable
     // 定义一个8字节的数组disableCmdPack，用于存储禁用命令
     uint8_t disableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
     };
     rslt |= this->send(disableCmdPack, 8);
+    cmd_.updateSW(false); // force disable
     return rslt;
 }
 
