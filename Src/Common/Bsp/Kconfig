@@ -1,7 +1,7 @@
 menu "Bsp config"
     config BSP_USE_CAN
         bool "can/fdcan"
-        default n
+        default y
 
     config BSP_USE_DMA
         bool "dma"
