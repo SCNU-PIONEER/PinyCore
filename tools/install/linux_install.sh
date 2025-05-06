@@ -79,15 +79,15 @@ else
   fi
 fi
 
-if kconfig -h &>/dev/null; then
-  echo "kconfig-frontends 已安装"
+if menuconfig &>/dev/null; then
+  echo "kconfiglib 已安装"
   exit 0
 else
-  echo "正在安装kconfig-frontends..."
+  echo "正在安装kconfiglib..."
   if [ "$PKG_MANAGER" = "apt-get" ]; then
-    sudo apt-get install -y kconfig-frontends
+    pip3 install kconfiglib
   elif [ "$PKG_MANAGER" = "pacman" ]; then
-    sudo pacman -S --noconfirm kconfig-frontends
+    pipx install kconfiglib
   fi
 fi
 
