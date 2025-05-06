@@ -14,7 +14,7 @@ public:
     void init();
     void task();
 
-    void motorTestTask();
+    auto motorTestTask() -> void;
 
 private:
     TestModule() = default;

@@ -23,7 +23,7 @@ void TestModule::task()
     }
 }
 
-void TestModule::motorTestTask()
+auto TestModule::motorTestTask() -> void
 {
     
 }

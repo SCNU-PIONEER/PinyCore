@@ -59,7 +59,7 @@ template <typename T>
 MotorTypeDef_e DMMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            static_cast<canHandle *>(this->pComHandle_), this->canCmdId(), _txBuf,
+            static_cast<canHandle *>(this->pComHandle_), this->ctrlId_, _txBuf,
             _len));
 }
 
@@ -142,7 +142,6 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
     DMMsg_u DMMsg = { 0 };
     uint8_t txBuf[8] = { 0 };
     uint8_t lenBuf = 0;
-    uint16_t id = 0x0000;
     bool isMIT = false;
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
@@ -190,7 +189,7 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
-        id = canId() + 0x100;
+        this->ctrlId_ = canId() + 0x100;
         DMMsg.msgPDESVDES.exptScale = cmd_.pos;
         DMMsg.msgPDESVDES.exptVel = cmd_.speed;
         memcpy(txBuf, &DMMsg.msgPDESVDES.exptScale, 4);
@@ -199,14 +198,14 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
     }
     case WorkMode_e::VDES: {
         lenBuf = 4;
-        id = canId() + 0x200;
+        this->ctrlId_ = canId() + 0x200;
         DMMsg.msgVDES.exptVel = cmd_.speed;
         memcpy(txBuf, &DMMsg.msgVDES.exptVel, 4);
         break;
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
-        id = canId() + 0x300;
+        this->ctrlId_ = canId() + 0x300;
         DMMsg.msgEMIT.exptScale = cmd_.pos;
         DMMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
                 ((cmd_.speed < 0) ? -cmd_.speed : cmd_.speed) * 100.f);
@@ -229,7 +228,7 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
     }
     if (isMIT) {
         lenBuf = 8;
-        id = canId();
+        this->ctrlId_ = canId();
         txBuf[0] = static_cast<uint8_t>((DMMsg.msgMIT.exptScale & 0xFF00) >> 8);
         txBuf[1] = static_cast<uint8_t>(DMMsg.msgMIT.exptScale & 0x00FF);
         txBuf[2] = static_cast<uint8_t>((DMMsg.msgMIT.exptVel & 0x0FF0) >> 4);

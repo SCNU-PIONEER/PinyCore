@@ -188,6 +188,8 @@ protected:
             }
         }
     } cmd_;
+
+    uint16_t ctrlId_ = 0x00; // 控制ID - 根据工作模式变化
     
 public:
     // 构造函数，接受一个InitConfig_s类型的参数_config，并调用基类的构造函数
@@ -210,34 +212,11 @@ public:
 
     inline bool isEnable() const { return cmd_.SW; }
 
-    inline uint16_t canId() const { return this->model_.txBaseId + this->offsetId_; }
-
-    inline uint16_t canCmdId() const{
-                                        if((cmd_.SW && !cmd_.prevSW) ||
-                                            (cmd_.SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)||
-                                            !cmd_.SW)
-                                            return this->canId();
-                                        else{
-                                            switch (this->workMode_) {
-                                                case WorkMode_e::MIT_TT:
-                                                case WorkMode_e::MIT_VDESPDES: 
-                                                case WorkMode_e::MIT_VDES:
-                                                    return this->canId();
-                                                break;
-                                                case WorkMode_e::PDESVDES:   
-                                                    return this->canId() + 0x100;
-                                                break;
-                                                case WorkMode_e::VDES:
-                                                    return this->canId() + 0x200;
-                                                break;
-                                                case WorkMode_e::EMIT: 
-                                                    return this->canId() + 0x300;
-                                                break;
-                                                default:
-                                                break;
-                                            }
-                                        }
-                                    }
+    inline uint16_t canId() const
+    {
+        return this->model_.txBaseId + this->offsetId_;
+    }
+    
     inline uint16_t masterId() const
     {
         return this->model_.rxBaseId + this->offsetId_;

@@ -50,7 +50,7 @@ template <typename T>
 MotorTypeDef_e DJIMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            static_cast<canHandle *>(this->pComHandle_), this->getGroupId(),
+            static_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
             _txBuf, _len));
 }
 
@@ -112,11 +112,13 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     }
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
+        this->ctrlId_ = this->getGroupId() + 0u; // 0x1FE OR 0x2FE
         currCmd = cmd_.torq / stats_.torqConstant /
                   this->stats_.currMax * this->stats_.currTxCodeSpan;
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
+        this->ctrlId_ = this->getGroupId() + 0u; // 0x1FF OR 0x2FF
         currCmd = cmd_.volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
         break;
     }

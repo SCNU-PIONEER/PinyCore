@@ -82,6 +82,8 @@ protected:
         }
     } cmd_;
 
+    uint16_t ctrlId_ = 0x00; // 控制ID - 根据工作模式变化
+
 public:
     inline DJIMotor(const char _name[16], InitConfig_s _config)
             : Base(_name, _config)
@@ -93,7 +95,7 @@ public:
     MotorTypeDef_e _cmd_(MotorCmdType_e _cmd, float _cmdData);
     MotorTypeDef_e _cmd_(MotorCmdType_e _cmd);
 
-    inline uint16_t canId() { return this->model_.txBaseId + 0u; }
+    inline uint16_t canId() { return this->model_.txBaseId + 0u; } // QuadMotor's canId is fixed
     inline uint16_t masterId()
     {
         return this->model_.rxBaseId + this->offsetId_;
