@@ -7,6 +7,7 @@ using namespace PINYMOTOR;
 DM4340::DM4340(const char _name[16], InitConfig_s _config)
         : DMMotor<DM4340>(_name, _config)
 {
+    strcpy(this->model_.name, "DM-DM4340");
     this->model_.measureMax = 16383;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 1.f;

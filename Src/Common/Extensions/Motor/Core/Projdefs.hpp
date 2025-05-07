@@ -23,7 +23,7 @@ struct InitConfig_s {
 };
 
 struct Model_s {
-    char name[10]; // 电机名称
+    char name[12]; // 电机型号名
     uint16_t measureMin; // 测量最小值
     uint16_t measureMax; // 测量最大值
     float reductionRatio; // 减速比

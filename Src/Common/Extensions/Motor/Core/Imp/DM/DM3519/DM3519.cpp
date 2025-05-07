@@ -7,6 +7,7 @@ using namespace PINYMOTOR;
 DM3519::DM3519(const char _name[16], InitConfig_s _config)
         : DMMotor<DM3519>(_name, _config)
 {
+    strcpy(this->model_.name, "DM-DM3519");
     this->model_.measureMax = 16383;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 1.f;

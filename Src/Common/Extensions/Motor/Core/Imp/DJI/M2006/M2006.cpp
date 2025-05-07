@@ -8,6 +8,7 @@ using namespace PINYMOTOR;
 M2006::M2006(const char _name[16], InitConfig_s _config)
         : DJIMotor<M2006>(_name, _config)
 {
+    strcpy(this->model_.name, "DJI-M2006");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 36.f;
