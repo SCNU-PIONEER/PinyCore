@@ -1,3 +1,4 @@
+set-ExecutionPolicy RemoteSigned
 $env:ChocolateyInstall = 'D:\Chocolatey'
 [Environment]::SetEnvironmentVariable('ChocolateyInstall', $env:ChocolateyInstall, 'Machine')
 Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -6,4 +7,3 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocola
 
 choco install cmake -y
 choco install ninja -y
-choco install gcc-arm-embedded -y

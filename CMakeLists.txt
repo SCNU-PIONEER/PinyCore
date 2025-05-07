@@ -48,7 +48,7 @@ add_compile_options(-Wno-sign-compare)
 add_compile_options(-Wno-missing-braces)
 add_compile_options(-Wno-sequence-point)
 add_compile_options(-Wno-pedantic)
-# add_compile_options(-Wno-deprecated-volatile)
+add_compile_options(-Wno-deprecated-volatile)
 add_compile_options(-Wno-missing-field-initializers)
 # add_compile_options(-O0) add_compile_options(-Ofast)
 
