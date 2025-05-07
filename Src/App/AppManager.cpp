@@ -4,6 +4,8 @@
 
 #include "rc_control.hpp"
 
+#include "testModule.hpp"
+
 void rcTask()
 {
     for (;;) {
@@ -14,6 +16,8 @@ void rcTask()
 
 void AppManager::createApp()
 {
-    xTaskCreate((TaskFunction_t)rcTask, "rc_task", 256, NULL,
-                osPriorityRealtime, NULL);
+    // xTaskCreate((TaskFunction_t)rcTask, "rc_task", 256, NULL,
+    //             osPriorityRealtime, NULL);
+
+    TestModule::instance()->taskCreate();
 }

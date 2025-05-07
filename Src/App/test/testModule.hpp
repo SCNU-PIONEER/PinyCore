@@ -1,4 +1,4 @@
-#include "FSMState.hpp"
+// #include "FSMState.hpp"
 
 #include "DM4310.hpp"
 
@@ -11,14 +11,18 @@ public:
 
     TestModule(const TestModule &) = delete;
 
-    void init();
-    void task();
+    void taskCreate();
 
-    auto motorTestTask() -> void;
+    uint32_t debugCnt = 0;
 
 private:
     TestModule() = default;
 
     /*MOTOR*/
     PINYMOTOR::DM4310 *testMotor_;
+
+    void init();
+    void task();
+
+    auto motorTestTask() -> void;
 };

@@ -6,12 +6,12 @@
 
 using namespace PINYMOTOR;
 
-template <typename T> void DMMotor<T>::registerRecvCallback()
+template <typename Derived> void DMMotor<Derived>::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
-            static_cast<canHandle *>(this->pComHandle_), this->masterId(),
-            [this](uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
+            [this](const uint8_t*_rxBuf) {
                 // basic cb
                 this->_parse_(_rxBuf);
                 // user cb
@@ -22,8 +22,8 @@ template <typename T> void DMMotor<T>::registerRecvCallback()
     this->log("INFO", "", "Motor %s: Receive cb registed", this->name_);
 }
 
-template <typename T>
-MotorTypeDef_e DMMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
+template <typename Derived>
+MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_SPD:
@@ -42,7 +42,7 @@ MotorTypeDef_e DMMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::_cmd_(MotorCmdType_e _cmd)
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
 {
     if (_cmd == MotorCmdType_e::EN) {
         cmd_.updateSW(true);
@@ -55,15 +55,15 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_cmd_(MotorCmdType_e _cmd)
     return 0;
 }
 
-template <typename T>
-MotorTypeDef_e DMMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
+template <typename Derived>
+MotorTypeDef_e DMMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            static_cast<canHandle *>(this->pComHandle_), this->ctrlId_, _txBuf,
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_, _txBuf,
             _len));
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::_parse_(uint8_t *_rxBuf)
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_parse_(const uint8_t *_rxBuf)
 {
     // 先处理非常规数据反馈的帧
     if (_rxBuf[0] == static_cast<uint8_t>(canId()) &&
@@ -130,7 +130,7 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_parse_(uint8_t *_rxBuf)
     return 0;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
 {
     MotorTypeDef_e rslt = 0;
     typedef union {
@@ -256,7 +256,7 @@ template <typename T> MotorTypeDef_e DMMotor<T>::_ctrl_()
     return rslt;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::enable()
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::enable()
 {
     MotorTypeDef_e rslt = 0;
     // 定义一个8字节的数组enableCmdPack，用于存储使能命令
@@ -268,7 +268,7 @@ template <typename T> MotorTypeDef_e DMMotor<T>::enable()
     return rslt;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::disable()
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::disable()
 {
     MotorTypeDef_e rslt = 0;
     // 定义一个8字节的数组disableCmdPack，用于存储禁用命令
@@ -280,8 +280,8 @@ template <typename T> MotorTypeDef_e DMMotor<T>::disable()
     return rslt;
 }
 
-template <typename T>
-MotorTypeDef_e DMMotor<T>::registerReg(DMMotorReg_s *_regObj)
+template <typename Derived>
+MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
 {
     if (_regObj == nullptr) {
         this->log("ERROR", "",
@@ -302,15 +302,15 @@ MotorTypeDef_e DMMotor<T>::registerReg(DMMotorReg_s *_regObj)
     return 0;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::cancelReg(DMMotorRegId_e regId)
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::cancelReg(DMMotorRegId_e regId)
 {
     this->log("INFO", "", "Motor %s: cancelReg success", this->name_);
     regObjList_.erase(regId);
     return 0;
 }
 
-template <typename T>
-MotorTypeDef_e DMMotor<T>::writeReg(DMMotorRegId_e _regId, uint8_t dat[4])
+template <typename Derived>
+MotorTypeDef_e DMMotor<Derived>::writeReg(DMMotorRegId_e _regId, uint8_t dat[4])
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x55, D3 : RID, D4 : dat1,
@@ -329,12 +329,13 @@ MotorTypeDef_e DMMotor<T>::writeReg(DMMotorRegId_e _regId, uint8_t dat[4])
                   dat[2],
                   dat[3] };
         rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                this->pComHandle_, 0x7FF, writeTxBuffer, 8));
+                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                writeTxBuffer, 8));
     }
     return rslt;
 }
 
-template <typename T> MotorTypeDef_e DMMotor<T>::readReg(DMMotorRegId_e _regId)
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x33, D3 : RID, D4 : 0x00,
@@ -352,13 +353,14 @@ template <typename T> MotorTypeDef_e DMMotor<T>::readReg(DMMotorRegId_e _regId)
                                     0x00,
                                     0x00 };
         rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                this->pComHandle_, 0x7FF, readTxBuffer, 8));
+                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                readTxBuffer, 8));
     }
     return rslt;
 }
 
-template <typename T>
-MotorTypeDef_e DMMotor<T>::storageReg(DMMotorRegId_e _regId)
+template <typename Derived>
+MotorTypeDef_e DMMotor<Derived>::storageReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0xAA, D3 : RID, D4 : 0x00,
@@ -376,7 +378,20 @@ MotorTypeDef_e DMMotor<T>::storageReg(DMMotorRegId_e _regId)
                                     0x00,
                                     0x00 };
         rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                this->pComHandle_, 0x7FF, storageTxBuf, 8));
+                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                storageTxBuf, 8));
     }
     return rslt;
 }
+
+/**********************************************************************************/
+// 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
+// 显式模板实例化 DMMotor<Devired>
+#include "DM4310.hpp"
+template class PINYMOTOR::DMMotor<DM4310>;
+
+#include "DM4340.hpp"
+template class PINYMOTOR::DMMotor<DM4340>;
+
+#include "DM3519.hpp"
+template class PINYMOTOR::DMMotor<DM3519>;

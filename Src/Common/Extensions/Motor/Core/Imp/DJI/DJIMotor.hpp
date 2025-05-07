@@ -105,9 +105,25 @@ public:
 
     MotorTypeDef_e _send_(uint8_t *_txBuf, uint8_t _len);
 
-    MotorTypeDef_e _parse_(uint8_t *_rxBuf);
+    MotorTypeDef_e _parse_(const uint8_t *_rxBuf);
 
     MotorTypeDef_e _ctrl_();
+
+    // 获取所在电机组
+    inline QuadMotorGroup_s *findGroup() const
+    {
+        QuadMotorGroup_s *group = nullptr;
+        for (auto &entry : this->motorMap_) {
+            if (entry.first == this->pComHandle_) {
+                auto it = entry.second.find(this->getGroupId()); // it" is a map
+                if (it != entry.second.end()) {
+                    group = it->second;
+                    break;
+                }
+            }
+        }
+        return group;
+    }
     
 };
 }

@@ -17,20 +17,12 @@ static void logCallback(const char *_type, const char *_color,
     logProtoVaList(_type, _color, _format, args);
     va_end(args);
 }
-void canCallback(const uint8_t *canBuf) { STM_LOGI("CAN RX"); }
-
-extern canHandle hfdcan1;
-
 
 void PinyCore::init()
 {
     osKernelInitialize();
 
     SEGGER_SYSVIEW_Conf();
-
-
-    // Can::instance().registerCallback(&hfdcan1, 0x201, canCallback);
-    // Can::instance().init(&hfdcan1, RX_FIFO0);
 
     this->registerLogger(logCallback);
 

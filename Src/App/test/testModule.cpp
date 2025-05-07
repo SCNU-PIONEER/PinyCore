@@ -2,6 +2,9 @@
 
 #include "Can/Bsp_can.hpp"
 
+#include "cmsis_os2.h"
+#include "task.h"
+
 void TestModule::init()
 {
     extern canHandle hcan1;
@@ -23,7 +26,16 @@ void TestModule::task()
     }
 }
 
+void TestModule::taskCreate()
+{
+    this->init();
+    xTaskCreate([](void*param) -> void {
+        TestModule *instance = reinterpret_cast<TestModule *>(param);
+        instance->task();
+    }, "test_task", 256, this, osPriorityNormal, NULL);
+}
+
 auto TestModule::motorTestTask() -> void
 {
-    
+    debugCnt++;
 }

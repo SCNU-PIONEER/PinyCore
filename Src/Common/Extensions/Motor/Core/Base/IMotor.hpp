@@ -20,13 +20,13 @@ protected:
     Model_s model_;
     Data_s data_;
     float txFreq_;
-    const char name_[16] = "NULL";
+    char name_[16] = "NULL";
 
     std::queue<MotorErrorCode_e> errQueue_;
 public:
     virtual ~IMotor() = default;
     virtual MotorTypeDef_e send(uint8_t *_txBuffer, uint8_t _txLen) = 0;
-    virtual MotorTypeDef_e parse(uint8_t *_rxBuffer) = 0;
+    virtual MotorTypeDef_e parse(const uint8_t *_rxBuffer) = 0;
     virtual MotorTypeDef_e ctrl() = 0;
 
     virtual MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) = 0;
@@ -45,6 +45,8 @@ public:
     {
         return static_cast<float>(model_.measureMax - model_.measureMin);
     }
+
+    inline float txFreq() const { return txFreq_; }
 
     /* LOG */
     // 建议使用lambda适配LOG原型

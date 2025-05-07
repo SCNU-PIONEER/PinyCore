@@ -7,6 +7,10 @@
 
 #include <unordered_map>
 
+#include "Bsp_can.hpp"
+
+#include "MotorCommonMacros.hpp"
+
 namespace PINYMOTOR {
 
 enum class DMMotorRegId_e {
@@ -226,8 +230,8 @@ public:
 
     MotorTypeDef_e _send_(uint8_t *_txBuf, uint8_t _len);
 
-    MotorTypeDef_e _parse_(uint8_t *_rxBuf);
-    
+    MotorTypeDef_e _parse_(const uint8_t *_rxBuf);
+
     MotorTypeDef_e _ctrl_();
 
     inline void setMITKp(float _kp) { MITKp_ = _kp; }

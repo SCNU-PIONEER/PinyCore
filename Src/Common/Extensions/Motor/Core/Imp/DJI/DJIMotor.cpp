@@ -11,8 +11,8 @@ template <typename T> void DJIMotor<T>::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
-            static_cast<canHandle *>(this->pComHandle_), this->masterId(),
-            [this](uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
+            [this](const uint8_t *_rxBuf) {
                 // basic cb
                 this->_parse_(_rxBuf);
                 // user cb
@@ -50,11 +50,11 @@ template <typename T>
 MotorTypeDef_e DJIMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            static_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
             _txBuf, _len));
 }
 
-template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(uint8_t *_rxBuf)
+template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(const uint8_t *_rxBuf)
 {
     DJIMotorFeedback_s fb;
     fb.rawScale = ((_rxBuf[0] << 8) | _rxBuf[1]);
@@ -63,7 +63,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(uint8_t *_rxBuf)
     fb.temperature = _rxBuf[6];
 
     this->data_.rawScale = fb.rawScale;
-    this->data_.rawRpm = fb.rawRpm;
+    // this->data_.rawRpm = fb.rawRpm;
     this->data_.curr = fb.current;
     this->data_.tempture = fb.temperature;
 
@@ -93,16 +93,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     uint8_t *txBuf = nullptr;
     uint16_t currCmd =0;
     // 寻找自己所属的电机组
-    QuadMotorGroup_s *group = nullptr;
-    for (auto &entry : this->motorMap_) {
-        if (entry.first == this->pComHandle_) {
-            auto it = entry.second.find(this->getGroupId());
-            if (it != entry.second.end()) {
-                group = it;
-                break;
-            }
-        }
-    }
+    QuadMotorGroup_s *group = this->findGroup();
     if (group != nullptr) {
         txBuf = group->package;
     } else {
@@ -147,3 +138,15 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     }
     return rslt;
 }
+
+/**********************************************************************************/
+// 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
+// 显式模板实例化 DJIMotor<Devired>
+#include "GM6020.hpp"
+template class PINYMOTOR::DJIMotor<GM6020>;
+
+#include "M3508.hpp"
+template class PINYMOTOR::DJIMotor<M3508>;
+
+#include "M2006.hpp"
+template class PINYMOTOR::DJIMotor<M2006>;

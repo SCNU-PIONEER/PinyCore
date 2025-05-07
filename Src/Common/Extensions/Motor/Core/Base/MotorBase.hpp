@@ -26,7 +26,7 @@ protected:
     uint8_t offsetId_;
 
     // 用户自定义回调函数
-    std::function<void(uint8_t *_rxBuffer)> userRecvCallback_;
+    std::function<void(const uint8_t *_rxBuffer)> userRecvCallback_;
 
 
     bool isQuad_ = false; // default is not quad encoder
@@ -35,13 +35,27 @@ protected:
 
 public:
     // 构造函数
-    MotorBase(const char _name[16], InitConfig_s _config);
+    inline MotorBase(const char _name[16], InitConfig_s _config)
+            : pComHandle_(_config.pComHandle)  // 通信句柄
+            , comType_(_config.comType)  // 通信类型
+            , workMode_(_config.workMode)  // 工作模式
+            , globalState_(GlobalState_e::UNREGISTER)  // 需明确初始化
+            , offsetId_(_config.offsetId)
+    {
+        this->registerMotor(); // 实例创建即注册
+
+        this->globalState_ = GlobalState_e::UNREGISTER;
+        
+        this->txFreq_ = _config.txFreq;
+        strcpy(this->name_, _name);
+        // Base class constuctor
+    }
 
     // 发送函数
     inline MotorTypeDef_e send(uint8_t *_txBuffer, uint8_t _txLen) override final { return derived()._send_(_txBuffer, _txLen); }
 
     // 解析接收到的数据
-    inline MotorTypeDef_e parse(uint8_t *_rxBuffer) override final  { return derived()._parse_(_rxBuffer); }
+    inline MotorTypeDef_e parse(const uint8_t *_rxBuffer) override final  { return derived()._parse_(_rxBuffer); }
 
     // 控制电机
     inline MotorTypeDef_e ctrl() override final { return derived()._ctrl_(); }
@@ -58,7 +72,7 @@ public:
 
     // 注册用户自定义接收回调函数
     inline void
-    regUserRecvCallback(std::function<void(uint8_t *_rxBuf)> _callback)
+    regUserRecvCallback(std::function<void(const uint8_t *_rxBuf)> _callback)
     {
         userRecvCallback_ = std::move(_callback);
     }
@@ -76,7 +90,7 @@ public:
     inline bool checkSend() const
     {
         return (xTaskGetTickCount() - lastSendTick) >=
-               pdMS_TO_TICKS(1000.f / this->txFreq_);
+               pdMS_TO_TICKS(1000.f / this->txFreq());
     }
 };
 
@@ -108,10 +122,49 @@ protected:
 
 public:
     // 构造函数，初始化基类，并将isQuad_设置为true
-    QuadMotorBase(const char _name[16], InitConfig_s _config);
+    QuadMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+    {
+        this->isQuad_ = true;
+        // 注册电机到motorMap_中
+        // 先寻找是否存在对应的pComHandle_
+        auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
+                                [_config](const auto &pair) {
+                                    return pair.first == _config.pComHandle;
+                                }); // lamda
+        if (it == motorMap_.end()) {
+            // 如果不存在，则直接在motorMap_尾部增多一个pair对象
+            motorMap_.emplace_back(_config.pComHandle, std::unordered_map<uint16_t, QuadMotorGroup_s *>());
+            it = motorMap_.end() - 1;
+        }
+        // 在找到的pair对象中添加电机
+        auto &map = it->second;
+        // 检查pair中是否已经存在电机组
+        if (map.find(getGroupId()) == map.end()) {
+            // 如果不存在，则创建一个电机组
+            map[getGroupId()] = new QuadMotorGroup_s();
+            map[getGroupId()]->motor[getPosInGroup()] = this;
+        } else {
+            // 如果存在，则检查电机组中是否已经存在该电机
+            if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
+                this->log("ERROR", "", "Motor %s: already exist", this->name_);
+            } else {
+                map[getGroupId()]->motor[getPosInGroup()] = this;
+            }
+        }
+        // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
+        for (size_t i = 0; i < 4; i++) {
+            if (map[getGroupId()]->motor[i] != nullptr) {
+                if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
+                    this->log("WARN", "", "Motor %s: txFreq not match", this->name_);
+                    return;
+                }
+            }
+            map[getGroupId()]->minTxFreq = std::min(map[getGroupId()]->minTxFreq, this->txFreq());
+        }
+    }
     
     // 获取电机的组ID
-    inline uint32_t getGroupId() const { return model_.txBaseId_; }
+    inline uint16_t getGroupId() const { return model_.txBaseId; }
 
     // 获取电机在组中的位置
     inline uint8_t getPosInGroup() const
