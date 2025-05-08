@@ -37,7 +37,7 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     // TODO:
 }
 
-MotorTypeDef_e DM4310::checkBaseConfig()
+MotorTypeDef_e DM4340::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
