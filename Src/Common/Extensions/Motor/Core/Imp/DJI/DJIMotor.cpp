@@ -20,7 +20,7 @@ template <typename T> void DJIMotor<T>::registerRecvCallback()
                     this->userRecvCallback_(_rxBuf);
                 }
             });
-    this->log("INFO", "", "Motor %s: Receive cb registed", this->name_);
+    this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
 template <typename T>
@@ -31,16 +31,16 @@ MotorTypeDef_e DJIMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
         if(this->workMode_ == WorkMode_e::QUAD_CURR)
            cmd_.torq = _cmdData;
         else
-           this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+           this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
     break;
     case MotorCmdType_e::SET_VOLT:
         if(this->workMode_ == WorkMode_e::QUAD_VOLT)
            cmd_.volt = _cmdData;
         else
-           this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+           this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
     break;
     default:
-        this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+        this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
         return 1;
     };
     return 0;
@@ -97,7 +97,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     if (group != nullptr) {
         txBuf = group->package;
     } else {
-        this->log("ERROR", "", "Motor %s: Can't find group %d", this->name_,
+        this->log("ERROR", "red", "Motor %s: Can't find group %d", this->name_,
                   this->getGroupId());
         return 1;
     }
@@ -115,7 +115,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
     }
     default: {
         currCmd =0;
-        this->log("ERROR", "", "Motor %s: this mode is not supported",
+        this->log("ERROR", "red", "Motor %s: this mode is not supported",
                   this->name_);
         break;
     }

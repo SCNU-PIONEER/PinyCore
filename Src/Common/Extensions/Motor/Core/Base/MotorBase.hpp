@@ -44,13 +44,16 @@ public:
     {
         this->registerMotor(); // 实例创建即注册
 
-        this->globalState_ = GlobalState_e::UNREGISTER;
-        
         this->txFreq_ = _config.txFreq;
+
         strcpy(this->name_, _name);
-        // Base class constuctor
+
+        checkConfig();
     }
 
+    // 检查配置是否有效
+    inline MotorTypeDef_e checkConfig() { return derived()._checkConfig_(); }
+    
     // 发送函数
     inline MotorTypeDef_e send(uint8_t *_txBuffer, uint8_t _txLen) override final { return derived()._send_(_txBuffer, _txLen); }
 
@@ -146,7 +149,7 @@ public:
         } else {
             // 如果存在，则检查电机组中是否已经存在该电机
             if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-                this->log("ERROR", "", "Motor %s: already exist", this->name_);
+                this->log("ERROR", "red", "Motor %s: already exist", this->name_);
             } else {
                 map[getGroupId()]->motor[getPosInGroup()] = this;
             }

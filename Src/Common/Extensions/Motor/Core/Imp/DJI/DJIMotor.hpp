@@ -47,6 +47,8 @@ struct DJIMotorStats_s {
 
 template <typename Derived> class DJIMotor : public QuadMotorBase<DJIMotor<Derived>>{
     using Base = QuadMotorBase<DJIMotor<Derived> >;
+    inline Derived &derived() { return static_cast<Derived &>(*this); }
+    inline const Derived &derived() const { return static_cast<const Derived &>(*this); }
 
 private:
     // 注册解析函数
@@ -91,6 +93,15 @@ public:
         cmd_.clear();
         registerRecvCallback(); // 注册解析函数
     }
+
+    // 重写电机属性
+    inline void overrideStats(const DJIMotorStats_s& _newStats)
+    {
+        // 将新的电机属性赋值给stats
+        stats_ = _newStats;
+    }
+
+    inline MotorTypeDef_e _checkConfig_(){ return derived().checkBaseConfig(); }
 
     MotorTypeDef_e _cmd_(MotorCmdType_e _cmd, float _cmdData);
     MotorTypeDef_e _cmd_(MotorCmdType_e _cmd);

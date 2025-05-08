@@ -48,6 +48,40 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
                               
         0.741f // torqConstant
     );
-    this->log("INFO", "",
+    this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }
+
+MotorTypeDef_e GM6020::checkBaseConfig()
+{
+    MotorTypeDef_e rslt = 0;
+
+    if (this->comType_ == ComType_e ::UART ||
+        this->comType_ == ComType_e ::FDCAN) {
+        rslt |= 1;
+        this->log("ERROR", "red",
+                          "GM6020 %s: ComType is not supported", this->name_);
+    }
+
+    if (!(this->workMode_ == WorkMode_e::QUAD_CURR ||
+          this->workMode_ == WorkMode_e::QUAD_VOLT)) {
+        rslt |= 1;
+        this->log("ERROR", "red",
+                          "GM6020 %s: WorkMode is not supported", this->name_);
+    }
+    
+    if (this->offsetId_ > 7) {
+        rslt |= 1;
+        this->log("ERROR", "red",
+                          "GM6020 %s: Max Offset ID is only 7!", this->name_);
+    }
+
+    if (this->txFreq_ > 1000) {
+        rslt |= 1;
+        this->log("ERROR", "red", "GM6020 %s: Max TxFreq is only 1000!",
+                    this->name_);
+    }
+
+    return rslt;
+}
+

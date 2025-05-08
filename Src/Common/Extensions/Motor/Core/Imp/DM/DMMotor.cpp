@@ -19,7 +19,7 @@ template <typename Derived> void DMMotor<Derived>::registerRecvCallback()
                     this->userRecvCallback_(_rxBuf);
                 }
             });
-    this->log("INFO", "", "Motor %s: Receive cb registed", this->name_);
+    this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
 template <typename Derived>
@@ -36,7 +36,7 @@ MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
         cmd_.torq = _cmdData;
         break;
     default:
-        this->log("ERROR", "", "Motor %s: Invalid cmd type", this->name_);
+        this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
         return 1;
     };
     return 0;
@@ -49,7 +49,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_
     } else if (_cmd == MotorCmdType_e::DIS) {
         cmd_.updateSW(false);
     } else {
-        this->log("ERROR", "", "Motor %s: not SW cmd!", this->name_);
+        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
         return 1;
     }
     return 0;
@@ -82,7 +82,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_parse_(const uint8
             // 存储反馈
             (*it).second->isStorage = true;
         } else {
-            this->log("ERROR", "", "Motor %s: Unknown feedback type",
+            this->log("ERROR", "red", "Motor %s: Unknown feedback type",
                       this->name_);
             return 1;
         }
@@ -145,12 +145,12 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
     bool isMIT = false;
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
-        this->log("ERROR", "", "Motor %s: QUAD_CURR mode is not supported",
+        this->log("ERROR", "red", "Motor %s: QUAD_CURR mode is not supported",
                   this->name_);
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
-        this->log("ERROR", "", "Motor %s: QUAD_VOLT mode is not supported",
+        this->log("ERROR", "red", "Motor %s: QUAD_VOLT mode is not supported",
                   this->name_);
         break;
     }
@@ -221,7 +221,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
         break;
     }
     default: {
-        this->log("ERROR", "", "Motor %s: this mode is not supported",
+        this->log("ERROR", "red", "Motor %s: this mode is not supported",
                   this->name_);
         break;
     }
@@ -284,7 +284,7 @@ template <typename Derived>
 MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
 {
     if (_regObj == nullptr) {
-        this->log("ERROR", "",
+        this->log("ERROR", "red",
                   "Motor %s: registerReg failed, _regObj is nullptr",
                   this->name_);
         return 1;
@@ -297,14 +297,14 @@ MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
                 this->name_);
         return 1;
     }
-    this->log("INFO", "", "Motor %s: registerReg success", this->name_);
+    this->log("INFO", "green", "Motor %s: registerReg success", this->name_);
     regObjList_.insert({ _regObj->regId, _regObj });
     return 0;
 }
 
 template <typename Derived> MotorTypeDef_e DMMotor<Derived>::cancelReg(DMMotorRegId_e regId)
 {
-    this->log("INFO", "", "Motor %s: cancelReg success", this->name_);
+    this->log("INFO", "green", "Motor %s: cancelReg success", this->name_);
     regObjList_.erase(regId);
     return 0;
 }
