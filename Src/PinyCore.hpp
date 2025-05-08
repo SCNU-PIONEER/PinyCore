@@ -39,9 +39,9 @@ public:
         }
     }
 
-    // void bspInit();
-    // void osInit();
-    // void coreInit();
+    void bspInit(); // TODO:
+    void osInit(); // TODO:
+    void coreInit(); // TODO:
 
     void init();
 

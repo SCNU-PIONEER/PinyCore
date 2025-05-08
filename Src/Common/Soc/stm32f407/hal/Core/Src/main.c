@@ -148,7 +148,7 @@ int main(void)
   MX_RNG_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-    initPinyCore();
+    
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -179,7 +179,8 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
-    /* add events, ... */
+  /* add events, ... */
+  initPinyCore();
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */

@@ -18,19 +18,30 @@ static void logCallback(const char *_type, const char *_color,
     va_end(args);
 }
 
-void PinyCore::init()
+void PinyCore::bspInit()
 {
-    osKernelInitialize();
+    extern canHandle hcan1;
+    Can::instance().init(&hcan1, RX_FIFO0);
+}
 
+void PinyCore::osInit() { /*DUMMY*/ }
+
+void PinyCore::coreInit()
+{
     SEGGER_SYSVIEW_Conf();
 
     this->registerLogger(logCallback);
 
     AppManager::instance()->createApp();
+}
+
+void PinyCore::init()
+{
+    bspInit();
+    coreInit();
+    osInit();
 
     this->log("INFO", "green", "PinyCore init done.\n");
-
-    osKernelStart();
 }
 
 void initPinyCore() { PinyCore::instance()->init(); }
