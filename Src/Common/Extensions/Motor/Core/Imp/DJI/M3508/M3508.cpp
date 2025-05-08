@@ -13,6 +13,7 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     this->model_.measureMin = 0;
     this->model_.reductionRatio = _config.reductionRatio;
     this->model_.rxBaseId = 0x200;
+    
     if(_config.offsetId > 3)
         this->model_.txBaseId = 0x1FF;
     else

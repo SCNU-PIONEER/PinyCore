@@ -20,6 +20,7 @@ protected:
     Model_s model_;
     Data_s data_;
     float txFreq_;
+    float rxFreq_; // TODO:
     char name_[16] = "NULL";
 
     std::queue<MotorErrorCode_e> errQueue_;

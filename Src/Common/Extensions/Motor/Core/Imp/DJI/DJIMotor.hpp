@@ -45,10 +45,15 @@ struct DJIMotorStats_s {
     }
 };
 
-template <typename Derived> class DJIMotor : public QuadMotorBase<DJIMotor<Derived>>{
+template <typename Derived>
+class DJIMotor : public QuadMotorBase<DJIMotor<Derived> > {
     using Base = QuadMotorBase<DJIMotor<Derived> >;
     inline Derived &derived() { return static_cast<Derived &>(*this); }
-    inline const Derived &derived() const { return static_cast<const Derived &>(*this); }
+    inline const Derived &derived() const
+    {
+        return static_cast<const Derived &>(*this);
+    }
+    
 
 private:
     // 注册解析函数
@@ -56,9 +61,6 @@ private:
 
 protected:
     DJIMotorStats_s stats_;
-
-    // 一拖四电机特有的全局包实例
-    static std::unordered_map<int, DJIMotor *> motorMap;
 
     struct Cmd_s {
         bool SW;

@@ -7,7 +7,7 @@
 
 using namespace PINYMOTOR;
 
-template <typename T> void DJIMotor<T>::registerRecvCallback()
+template <typename Derived> void DJIMotor<Derived>::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
@@ -23,8 +23,8 @@ template <typename T> void DJIMotor<T>::registerRecvCallback()
     this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
-template <typename T>
-MotorTypeDef_e DJIMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
+template <typename Derived>
+MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_TORQ:
@@ -46,15 +46,15 @@ MotorTypeDef_e DJIMotor<T>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
-template <typename T>
-MotorTypeDef_e DJIMotor<T>::_send_(uint8_t *_txBuf, uint8_t _len)
+template <typename Derived>
+MotorTypeDef_e DJIMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
             _txBuf, _len));
 }
 
-template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(const uint8_t *_rxBuf)
+template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_parse_(const uint8_t *_rxBuf)
 {
     DJIMotorFeedback_s fb;
     fb.rawScale = ((_rxBuf[0] << 8) | _rxBuf[1]);
@@ -64,10 +64,11 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(const uint8_t *_rxBuf)
 
     this->data_.rawScale = fb.rawScale;
     // this->data_.rawRpm = fb.rawRpm;
-    this->data_.curr = fb.current;
+    this->data_.curr = static_cast<float>(fb.current) /
+                       this->stats_.currRxCodeSpan * this->stats_.currMax;
     this->data_.tempture = fb.temperature;
 
-    this->data_.torq = fb.current * stats_.torqConstant;
+    this->data_.torq = this->data_.curr * stats_.torqConstant;
     this->data_.spdRpm = fb.rawRpm / this->RR();
     this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
 
@@ -87,7 +88,7 @@ template <typename T> MotorTypeDef_e DJIMotor<T>::_parse_(const uint8_t *_rxBuf)
     return 0;
 }
 
-template <typename T> MotorTypeDef_e DJIMotor<T>::_ctrl_()
+template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t *txBuf = nullptr;

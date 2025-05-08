@@ -55,10 +55,17 @@ public:
     inline MotorTypeDef_e checkConfig() { return derived()._checkConfig_(); }
     
     // 发送函数
-    inline MotorTypeDef_e send(uint8_t *_txBuffer, uint8_t _txLen) override final { return derived()._send_(_txBuffer, _txLen); }
+    inline MotorTypeDef_e send(uint8_t *_txBuffer,
+                               uint8_t _txLen) override final
+    {
+        return derived()._send_(_txBuffer, _txLen);
+    }
 
     // 解析接收到的数据
-    inline MotorTypeDef_e parse(const uint8_t *_rxBuffer) override final  { return derived()._parse_(_rxBuffer); }
+    inline MotorTypeDef_e parse(const uint8_t *_rxBuffer) override final
+    {
+        return derived()._parse_(_rxBuffer);
+    }
 
     // 控制电机
     inline MotorTypeDef_e ctrl() override final { return derived()._ctrl_(); }
@@ -97,6 +104,7 @@ public:
     }
 };
 
+/*******************************************************************/
 struct QuadMotorGroup_s {
     IMotor *motor[4];
     uint8_t package[8];
@@ -124,10 +132,9 @@ protected:
             motorMap_;
 
 public:
-    // 构造函数，初始化基类，并将isQuad_设置为true
+    // 构造函数，初始化基类
     QuadMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
     {
-        this->isQuad_ = true;
         // 注册电机到motorMap_中
         // 先寻找是否存在对应的pComHandle_
         auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
@@ -136,7 +143,9 @@ public:
                                 }); // lamda
         if (it == motorMap_.end()) {
             // 如果不存在，则直接在motorMap_尾部增多一个pair对象
-            motorMap_.emplace_back(_config.pComHandle, std::unordered_map<uint16_t, QuadMotorGroup_s *>());
+            motorMap_.emplace_back(
+                    _config.pComHandle,
+                    std::unordered_map<uint16_t, QuadMotorGroup_s *>());
             it = motorMap_.end() - 1;
         }
         // 在找到的pair对象中添加电机
@@ -149,7 +158,8 @@ public:
         } else {
             // 如果存在，则检查电机组中是否已经存在该电机
             if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-                this->log("ERROR", "red", "Motor %s: already exist", this->name_);
+                this->log("ERROR", "red", "Motor %s: already exist",
+                          this->name_);
             } else {
                 map[getGroupId()]->motor[getPosInGroup()] = this;
             }
@@ -158,11 +168,13 @@ public:
         for (size_t i = 0; i < 4; i++) {
             if (map[getGroupId()]->motor[i] != nullptr) {
                 if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
-                    this->log("WARN", "", "Motor %s: txFreq not match", this->name_);
+                    this->log("WARN", "", "Motor %s: txFreq not match",
+                              this->name_);
                     return;
                 }
             }
-            map[getGroupId()]->minTxFreq = std::min(map[getGroupId()]->minTxFreq, this->txFreq());
+            map[getGroupId()]->minTxFreq =
+                    std::min(map[getGroupId()]->minTxFreq, this->txFreq());
         }
     }
     
@@ -176,6 +188,81 @@ public:
     }
 
     inline bool checkGroupSend(QuadMotorGroup_s *_group) const
+    {
+        return (xTaskGetTickCount() - _group->lastSendTick) >=
+               pdMS_TO_TICKS(1000.f / _group->minTxFreq);
+    }
+};
+
+/*******************************************************************/
+struct TripMotorGroup_s {
+    IMotor *motor[3];
+    uint8_t package[8];
+    uint32_t lastSendTick; // ms
+    float minTxFreq;
+    TripMotorGroup_s()
+    {
+        for (int i = 0; i < 3; i++)
+            motor[i] = nullptr;
+        memset(package, 0, sizeof(package));
+        lastSendTick = 0.f;
+        minTxFreq = 1000.f; // 初始设成最大，以便后续更新减小
+    }
+};
+// 模板类，用于定义一拖三电机的基类
+template <typename Derived> class TripMotorBase : public MotorBase<Derived> {
+protected:
+    using Base = MotorBase<Derived>;
+    using Base::model_;
+
+    // vector < pair(pComHandle_, <canId, 3 motors>) >
+    static std::vector<std::pair<
+            uint32_t *, std::unordered_map<uint16_t, TripMotorGroup_s *> > >
+            motorMap_;
+
+public:
+    TripMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+    {
+        auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
+                                [_config](const auto &pair) {
+                                    return pair.first == _config.pComHandle;
+                                }); // lamda
+        if (it == motorMap_.end()) {
+            motorMap_.emplace_back(
+                    _config.pComHandle,
+                    std::unordered_map<uint16_t, TripMotorGroup_s *>());
+            it = motorMap_.end() - 1;
+        }
+        auto &map = it->second;
+        if (map.find(getGroupId()) == map.end()) {
+            map[getGroupId()] = new QuadMotorGroup_s();
+            map[getGroupId()]->motor[getPosInGroup()] = this;
+        } else {
+            if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
+                this->log("ERROR", "red", "Motor %s: already exist",
+                          this->name_);
+            } else {
+                map[getGroupId()]->motor[getPosInGroup()] = this;
+            }
+        }
+        for (size_t i = 0; i < 3; i++) {
+            if (map[getGroupId()]->motor[i] != nullptr) {
+                if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
+                    this->log("WARN", "", "Motor %s: txFreq not match",
+                              this->name_);
+                    return;
+                }
+            }
+            map[getGroupId()]->minTxFreq =
+                    std::min(map[getGroupId()]->minTxFreq, this->txFreq());
+        }
+    }
+    inline uint16_t getGroupId() const { return model_.txBaseId; }
+    inline uint8_t getPosInGroup() const
+    {
+        return this->offsetId_ % 3; // 0,1,2
+    }
+    inline bool checkGroupSend(TripMotorGroup_s *_group) const
     {
         return (xTaskGetTickCount() - _group->lastSendTick) >=
                pdMS_TO_TICKS(1000.f / _group->minTxFreq);
