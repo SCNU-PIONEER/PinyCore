@@ -235,7 +235,7 @@ public:
         }
         auto &map = it->second;
         if (map.find(getGroupId()) == map.end()) {
-            map[getGroupId()] = new QuadMotorGroup_s();
+            map[getGroupId()] = new TripMotorGroup_s();
             map[getGroupId()]->motor[getPosInGroup()] = this;
         } else {
             if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
