@@ -18,21 +18,24 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
         this->model_.txBaseId = 0x1FF;
     else
         this->model_.txBaseId = 0x200;
-    
-    this->stats_ = DJIMotorStats_s(
-        25000.f, // voltTxCodeSpan
-        16384.f, // currTxCodeSpan
-        8192.f,  // currRxCodeSpan
-                                        
-        10.f, // currRated
-        3.f,  // torqRated
-         
-        25.2f, // voltMax
-        2.5f,  // currMax
-        4.5f, // torqMax
-                              
-        0.3f // torqConstant
+
+    this->stats_ = DJIMotorStats_s(25000.f, // voltTxCodeSpan
+                                   16384.f, // currTxCodeSpan
+                                   8192.f,  // currRxCodeSpan
+
+                                   10.f, // currRated
+                                   3.f,  // torqRated
+
+                                   25.2f, // voltMax
+                                   2.5f,  // currMax
+                                   4.5f,  // torqMax
+
+                                   0.3f // torqConstant
     );
+
+    this->registerMotor();
+    this->updateMotorMap();
+    
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }

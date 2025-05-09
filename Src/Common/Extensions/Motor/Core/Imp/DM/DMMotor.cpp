@@ -44,9 +44,9 @@ MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
 
 template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
 {
-    if (_cmd == MotorCmdType_e::EN) {
+    if (_cmd == MotorCmdType_e::ON) {
         cmd_.updateSW(true);
-    } else if (_cmd == MotorCmdType_e::DIS) {
+    } else if (_cmd == MotorCmdType_e::OFF) {
         cmd_.updateSW(false);
     } else {
         this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);

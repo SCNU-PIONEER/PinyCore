@@ -32,6 +32,9 @@ DM4310::DM4310(const char _name[16], InitConfig_s _config)
 
         0.9333f // torqConstant
     };
+
+    this->registerMotor();
+
     this->log("INFO", "green",
                           "Motor %s: An instance of DM4310 created", this->name_);
     // TODO:

@@ -46,6 +46,19 @@ MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
+template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
+{
+    if (_cmd == MotorCmdType_e::ON) {
+        cmd_.updateSW(true);
+    } else if (_cmd == MotorCmdType_e::OFF) {
+        cmd_.updateSW(false);
+    } else {
+        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
+        return 1;
+    }
+    return 0;
+}
+
 template <typename Derived>
 MotorTypeDef_e DJIMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
 {
@@ -98,7 +111,7 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
     if (group != nullptr) {
         txBuf = group->package;
     } else {
-        this->log("ERROR", "red", "Motor %s: Can't find group %d", this->name_,
+        this->log("ERROR", "red", "Motor %s: Can't find group %hx", this->name_,
                   this->getGroupId());
         return 1;
     }

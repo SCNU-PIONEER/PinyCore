@@ -13,30 +13,41 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 1.f;
     this->model_.rxBaseId = 0x204;
-    
-    if(_config.offsetId > 3)
-        this->model_.txBaseId = 0x2FE;
-    else
-        this->model_.txBaseId = 0x1FE;
 
-    this->log("WARNING", "", "Please check the WorkMode of %s", this->name_);
+    if (this->workMode_ == WorkMode_e::QUAD_CURR) {
+        if (_config.offsetId > 3)
+            this->model_.txBaseId = 0x2FE;
+        else
+            this->model_.txBaseId = 0x1FE;
+    } else if (this->workMode_ == WorkMode_e::QUAD_VOLT)
+    {
+        if (_config.offsetId > 3)
+            this->model_.txBaseId = 0x2FF;
+        else
+            this->model_.txBaseId = 0x1FF;
+    }
 
-    this->stats_ = DJIMotorStats_s(
-        25000.f, // voltTxCodeSpan
-        16384.f, // currTxCodeSpan
-        8192.f,  // currRxCodeSpan
-                                        
-        1.62f, // currRated
-        1.2f,  // torqRated
-         
-        25.2f,  // voltMax
-        0.9f,  // currMax
-        0.86f, // torqMax
-                              
-        0.741f // torqConstant
+    this->stats_ = DJIMotorStats_s(25000.f, // voltTxCodeSpan
+                                   16384.f, // currTxCodeSpan
+                                   8192.f,  // currRxCodeSpan
+
+                                   1.62f, // currRated
+                                   1.2f,  // torqRated
+
+                                   25.2f, // voltMax
+                                   0.9f,  // currMax
+                                   0.86f, // torqMax
+
+                                   0.741f // torqConstant
     );
-    this->log("INFO", "green",
-                          "Motor %s: An instance of DJIMotor created", this->name_);
+
+    this->registerMotor();
+    this->updateMotorMap();
+
+    this->log(
+            "INFO", "green",
+            "Motor %s: An instance of DJIMotor created, rxBaseId:%hx, txBaseId:%hx",
+            this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e GM6020::checkBaseConfig()

@@ -18,22 +18,26 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
         this->model_.txBaseId = 0x1FF;
     else
         this->model_.txBaseId = 0x200;
-    
+
     this->stats_ = DJIMotorStats_s(
-        25000.f, // voltTxCodeSpan
-        16384.f, // currTxCodeSpan
-        8192.f,  // currRxCodeSpan
-                                        
-        3.f, // currRated
-        1.f,  // torqRated
-        
-        25.2f, //voltmax
-        //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
-        3.f,  // currMax 
-        1.f, // torqMax
-                              
-        0.18f // torqConstant
+            25000.f, // voltTxCodeSpan
+            16384.f, // currTxCodeSpan
+            8192.f,  // currRxCodeSpan
+
+            3.f, // currRated
+            1.f, // torqRated
+
+            25.2f, //voltmax
+            //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
+            3.f, // currMax
+            1.f, // torqMax
+
+            0.18f // torqConstant
     );
+
+    this->registerMotor();
+    this->updateMotorMap();
+
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }

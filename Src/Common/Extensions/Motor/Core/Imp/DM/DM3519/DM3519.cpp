@@ -25,13 +25,16 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
         10000.f, // currTxCodeSpan
 
         8.6f, // currRated
-        3.5f,  // torqRated
+        3.5f, // torqRated
 
         15.5f, // currMax
         7.8f,  // torqMax
 
         0.9333f // torqConstant
     };
+
+    this->registerMotor();
+    
     this->log("INFO", "green",
                           "Motor %s: An instance of DM4310 created", this->name_);
     // TODO:

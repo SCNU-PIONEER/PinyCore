@@ -27,11 +27,14 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
         2.5f, // currRated
         9.f,  // torqRated
 
-        8.f, // currMax
-        27.f,  // torqMax
+        8.f,  // currMax
+        27.f, // torqMax
 
         0.9333f // torqConstant
     };
+
+    this->registerMotor();
+    
     this->log("INFO", "green",
                           "Motor %s: An instance of DM4310 created", this->name_);
     // TODO:

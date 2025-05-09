@@ -28,7 +28,7 @@ MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_VOLT:
-        if(this->workMode_ == WorkMode_e::QUAD_VOLT)
+        if(this->workMode_ == WorkMode_e::TRIP_VOLT)
            cmd_.volt = _cmdData;
         else
            this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
@@ -37,6 +37,19 @@ MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
         this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
         return 1;
     };
+    return 0;
+}
+
+template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
+{
+    if (_cmd == MotorCmdType_e::ON) {
+        cmd_.updateSW(true);
+    } else if (_cmd == MotorCmdType_e::OFF) {
+        cmd_.updateSW(false);
+    } else {
+        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
+        return 1;
+    }
     return 0;
 }
 
@@ -101,7 +114,7 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_ctrl_()
         return 1;
     }
     switch (this->workMode_) {
-    case WorkMode_e::QUAD_VOLT: {
+    case WorkMode_e::TRIP_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u; // 0x1FF
         currCmd = cmd_.volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
         break;

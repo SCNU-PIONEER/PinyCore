@@ -6,6 +6,8 @@
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
 
+#include "MotorManager.hpp"
+
 
 // #include "../Lib/TinyMPC/src/tinympc/tiny_api.hpp"
 
@@ -22,9 +24,13 @@ void PinyCore::bspInit()
 {
     extern canHandle hcan1;
     Can::instance().init(&hcan1, RX_FIFO0);
+    // Can::instance().init(&hcan1, RX_FIFO1);
 }
 
-void PinyCore::osInit() { /*DUMMY*/ }
+void PinyCore::osInit()
+{
+    AppManager::instance()->createApp();
+}
 
 void PinyCore::coreInit()
 {
@@ -32,7 +38,7 @@ void PinyCore::coreInit()
 
     this->registerLogger(logCallback);
 
-    AppManager::instance()->createApp();
+    PINYMOTOR::MotorManager::instance()->registerLogger(logCallback);
 }
 
 void PinyCore::init()

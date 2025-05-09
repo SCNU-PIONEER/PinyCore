@@ -16,24 +16,27 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x204;
 
     this->model_.txBaseId = 0x1FF;
-        
-    this->log("WARNING", "", "Please check the WorkMode of %s", this->name_);
 
-    this->stats_ = DJI_ODMotorStats_s(
-        29000.f, // voltTxCodeSpan
-        8192.f,  // torqRxCodeSpan TODO:
-                                        
-        1.3f, // currRated
-        0.14f,  // torqRated
-         
-        24.f,  // voltMax
-        0.6f,  // currMax
-        0.2f, // torqMax
-                              
-        0.16f // torqConstant
+    this->stats_ = DJI_ODMotorStats_s(29000.f, // voltTxCodeSpan
+                                      8192.f,  // torqRxCodeSpan TODO:
+
+                                      1.3f,  // currRated
+                                      0.14f, // torqRated
+
+                                      24.f, // voltMax
+                                      0.6f, // currMax
+                                      0.2f, // torqMax
+
+                                      0.16f // torqConstant
     );
-    this->log("INFO", "green",
-                          "Motor %s: An instance of DJI_ODMotor created", this->name_);
+
+    this->registerMotor();
+    this->updateMotorMap();
+
+    this->log(
+            "INFO", "green",
+            "Motor %s: An instance of DJI_ODMotor created, rxBaseId = 0x%03X, txBaseId = 0x%03X",
+            this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e GM3510::checkBaseConfig()
@@ -47,7 +50,7 @@ MotorTypeDef_e GM3510::checkBaseConfig()
                           "GM3510 %s: ComType is not supported", this->name_);
     }
 
-    if (this->workMode_ != WorkMode_e::QUAD_VOLT) {
+    if (this->workMode_ != WorkMode_e::TRIP_VOLT) {
         rslt |= 1;
         this->log("ERROR", "red",
                           "GM3510 %s: WorkMode is not supported", this->name_);

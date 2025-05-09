@@ -6,16 +6,14 @@
 
 #include <queue>
 
-#include <utility>
+#include <cstdarg>
+
+#include "PinyCore.hpp"
 
 namespace PINYMOTOR {
 class MotorManager;
 // 类型擦除 管理异构CRTP
 class IMotor {
-    using LoggerCallback =
-            void(*)(const char *, const char *, const char *, ...);
-private:
-    inline static LoggerCallback activeLogger_;
 protected:
     Model_s model_;
     Data_s data_;
@@ -49,17 +47,14 @@ public:
 
     inline float txFreq() const { return txFreq_; }
 
-    /* LOG */
-    // 建议使用lambda适配LOG原型
-    inline void registerLogger(LoggerCallback logger) {
-        activeLogger_ = std::move(logger);
-    }
+    inline const char *getName() const { return name_; }
 
-    template<typename... Args>
-    inline void log(const char* type, const char* color, const char* format, Args... args) {
-        if (activeLogger_) {
-            activeLogger_(type, color, format, args...);
-        }
+    void log(const char *type, const char *color, const char *format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        PinyCore::instance()->log(type, color, format, args);
+        va_end(args);
     }
 };
 }

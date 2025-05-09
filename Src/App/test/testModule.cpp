@@ -8,15 +8,35 @@
 void TestModule::init()
 {
     extern canHandle hcan1;
-    static PINYMOTOR::InitConfig_s testConfig = {
+    static PINYMOTOR::InitConfig_s testDM4310Config = {
         (uint32_t *)(&hcan1),
         PINYMOTOR::ComType_e::CAN,
         PINYMOTOR::WorkMode_e::MIT_TT,
         static_cast<uint8_t>(1),
         static_cast<float>(500.0f),
     };
-    static PINYMOTOR::DM4310 testMotor("test", testConfig);
-    this->testMotor_ = &testMotor;
+    static PINYMOTOR::DM4310 testDM4310Motor("testdm4310", testDM4310Config);
+    this->testDM4310Motor_ = &testDM4310Motor;
+
+    // static PINYMOTOR::InitConfig_s testGM3510Config = {
+    //     (uint32_t *)(&hcan1),
+    //     PINYMOTOR::ComType_e::CAN,
+    //     PINYMOTOR::WorkMode_e::TRIP_VOLT,
+    //     static_cast<uint8_t>(3),
+    //     static_cast<float>(500.0f),
+    // };
+    // static PINYMOTOR::GM3510 testGM3510Motor("testgm3510", testGM3510Config);
+    // this->testGM3510Motor_ = &testGM3510Motor;
+
+    // static PINYMOTOR::InitConfig_s testGM6020Config = {
+    //     (uint32_t *)(&hcan1),
+    //     PINYMOTOR::ComType_e::CAN,
+    //     PINYMOTOR::WorkMode_e::QUAD_VOLT,
+    //     static_cast<uint8_t>(3),
+    //     static_cast<float>(500.0f),
+    // };
+    // static PINYMOTOR::GM6020 testGM6020Motor("testgm6020", testGM6020Config);
+    // this->testGM6020Motor_ = &testGM6020Motor;
 }
 
 void TestModule::task()
@@ -36,7 +56,11 @@ void TestModule::taskCreate()
     }, "test_task", 256, this, osPriorityNormal, NULL);
 }
 
+float debugVolt = 0.f;
 auto TestModule::motorTestTask() -> void
 {
-    debugCnt++;
+    // this->testDM4310Motor_->cmd(PINYMOTOR::MotorCmdType_e::OFF);
+
+    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
 }
