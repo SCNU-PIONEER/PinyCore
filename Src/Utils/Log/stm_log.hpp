@@ -3,98 +3,130 @@
 // #ifdef USE_LOG
 #if 1
 #include "SEGGER_RTT.h"
+#include <string_view>
 
-typedef enum {
-    STM_LOG_NONE, /*!< No log output */
-    STM_LOG_ERROR, /*!< Critical errors, software module can not recover on its own */
-    STM_LOG_WARN, /*!< Error conditions from which recovery measures have been taken */
-    STM_LOG_INFO, /*!< Information messages which describe normal flow of events */
-    STM_LOG_DEBUG, /*!< Extra information which is not necessary for normal use (values, pointers, sizes, etc). */
-    STM_LOG_VERBOSE /*!< Bigger chunks of debugging information, or frequent messages which can potentially flood the output. */
-} stm_log_level_t;
+namespace LOG {
 
-typedef int stm_err_t;
 
-/* Definitions for error constants. */
-#define STM_OK                   0 /*!< stm_err_t value indicating success (no error) */
-#define STM_FAIL                 -1 /*!< Generic stm_err_t code indicating failure */
+class Logger {
+public:
+    inline static Logger &instance()
+    {
+        static Logger instance;
+        return instance;
+    }
 
-#define STM_ERR_NO_MEM           0x101 /*!< Out of memory */
-#define STM_ERR_INVALID_ARG      0x102 /*!< Invalid argument */
-#define STM_ERR_INVALID_STATE    0x103 /*!< Invalid state */
-#define STM_ERR_INVALID_SIZE     0x104 /*!< Invalid size */
-#define STM_ERR_NOT_FOUND        0x105 /*!< Requested resource not found */
-#define STM_ERR_NOT_SUPPORTED    0x106 /*!< Operation or feature not supported */
-#define STM_ERR_TIMEOUT          0x107 /*!< Operation timed out */
-#define STM_ERR_INVALID_RSTMONSE 0x108 /*!< Received response was invalid */
-#define STM_ERR_INVALID_CRC      0x109 /*!< CRC or checksum was invalid */
-#define STM_ERR_INVALID_VERSION  0x10A /*!< Version was invalid */
-#define STM_ERR_INVALID_MAC      0x10B /*!< MAC address was invalid */
-#define STM_ERR_NOT_FINISHED     0x10C /*!< Operation has not fully completed */
-#define STM_ERR_NOT_ALLOWED      0x10D /*!< Operation is not allowed */
+    template <typename... Args> void printf(const char *format, Args &&..._args)
+    {
+        SEGGER_RTT_printf(0, format, std::forward<Args>(_args)...);
+        SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");
+    }
 
-#define STM_ERR_WIFI_BASE        0x3000 /*!< Starting number of WiFi error codes */
-#define STM_ERR_MESH_BASE        0x4000 /*!< Starting number of MESH error codes */
-#define STM_ERR_FLASH_BASE       0x6000 /*!< Starting number of flash error codes */
-#define STM_ERR_HW_CRYPTO_BASE \
-    0xc000 /*!< Starting number of HW cryptography module error codes */
-#define STM_ERR_MEMPROT_BASE \
-    0xd000 /*!< Starting number of Memory Protection API error codes */
+    template <typename... Args>
+    void info(std::string_view _type, const char *_format, Args &&..._args)
+    {
+        config.level = Level::Info;
+        log(LogParams{ .type = _type, .format = _format },
+            std::forward<Args>(_args)...);
+    }
 
-void _stm_error_check_failed(stm_err_t rc, const char *file, int line,
-                             const char *function, const char *expression)
-        __attribute__((__noreturn__));
+    template <typename... Args>
+    void warn(std::string_view _type, const char *_format, Args &&..._args)
+    {
+        config.level = Level::Warn;
+        log(LogParams{ .type = _type, .format = _format },
+            std::forward<Args>(_args)...);
+    }
 
-#define STM_ERROR_CHECK(x)                                       \
-    do {                                                         \
-        stm_err_t stm_rc_ = (x);                                 \
-        if (unlikely(stm_rc_ != STM_OK)) {                       \
-            _stm_error_check_failed(stm_rc_, __FILE__, __LINE__, \
-                                    __ASSERT_FUNC, #x);          \
-        }                                                        \
-    } while (0)
+    template <typename... Args>
+    void error(std::string_view _type, const char *_format, Args &&..._args)
+    {
+        config.level = Level::Error;
+        log(LogParams{ .type = _type, .format = _format },
+            std::forward<Args>(_args)...);
+    }
 
-#define LOG_PROTO(type, color, format, ...)                                    \
-    SEGGER_RTT_printf(0, "  %s%s" format "\r\n%s", color, type, ##__VA_ARGS__, \
-                      RTT_CTRL_RESET)
 
-inline void logProtoVaList(const char* type, const char* color, const char* format, va_list args) {
-    SEGGER_RTT_printf(0, "  %s%s", color, type);
-    SEGGER_RTT_vprintf(0, format, &args);
-    SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");
+    /**
+    * @brief 完美转发检验错误,请用宏STM_ERROR_CHECK
+    */
+    // template <typename Func>
+    // void check(Func &&_operation, const char *_file, int _line,
+    //            const char *_expr)
+
+    /**
+    * @brief 清屏
+    */
+    void clear();
+
+    /**
+    * @brief 浮点数转字符串
+    */
+    void Float2Str(char *str, size_t buffer_size, float va);
+
+    void disable() { config.enable = false; }
+
+    void enable() { config.enable = true; }
+
+    void setLevel(Level _level) { config.level = _level; }
+
+    void setColor(bool _enable) { config.showColor = _enable; }
+
+    void setLocation(bool _enable) { config.showlocation = _enable; }
+
+    // void setName(std::string_view _name) { config.name = _name; }
+
+    void setProto(Proto _proto) { config.proto = _proto; }
+
+    void setConfig(const Config &_config) { config = _config; }
+
+
+protected:
+    Logger(const Logger &);
+    Logger &operator=(const Logger &);
+    Logger() = default;
+
+private:
+    /**
+    * @brief 完美转发打印函数,自带换行
+    */
+    template <typename... Args>
+    void log(const LogParams &_params, Args &&..._args)
+    {
+        if (!config.enable)
+            return;
+
+        if (config.level == Level::Raw) {
+            SEGGER_RTT_printf(0, _params.format, std::forward<Args>(_args)...);
+            return;
+        }
+
+        /* 输出日志头（源码位置+颜色+类型) */
+        if (config.showColor) [[likely]] {
+            auto _color = get_level_color(config.level);
+            SEGGER_RTT_Write(0, _color.data(), _color.size());
+        }
+
+        if (config.showlocation) [[likely]] {
+            std::string_view file(_params.loc.file_name());
+            if (auto pos = file.find_last_of("/\\");
+                pos != std::string_view::npos) {
+                file = file.substr(pos + 1);
+            }
+            SEGGER_RTT_printf(0, " [%s:%d]: ", file.data(), _params.loc.line());
+        }
+
+        SEGGER_RTT_Write(0, _params.type.data(), _params.type.size());
+        SEGGER_RTT_WriteString(0, ": ");
+
+        /* 格式化用户内容（通过va_list转发 */
+        SEGGER_RTT_printf(0, _params.format, std::forward<Args>(_args)...);
+
+        /* 重置样式 */
+        SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");
+    }
+
+    Config config;
+};
+
 }
-
-/* 清屏*/
-#define LOG_CLEAR()      SEGGER_RTT_WriteString(0, "  " RTT_CTRL_CLEAR)
-
-/* 无颜色日志输出 */
-#define LOG(format, ...) LOG_PROTO("", "", format, ##__VA_ARGS__)
-
-/* 有颜色格式日志输出 */
-// #define LOGI(format,...) LOG_PROTO("INFO: ", RTT_CTRL_TEXT_BRIGHT_GREEN , format, ##__VA_ARGS__)
-// #define LOGW(format,...) LOG_PROTO("WARN: ", RTT_CTRL_TEXT_BRIGHT_YELLOW, format, ##__VA_ARGS__)
-// #define LOGE(format,...) LOG_PROTO("ERROR: ", RTT_CTRL_TEXT_BRIGHT_RED   , format, ##__VA_ARGS__)
-
-#define STM_LOGI(format, ...) \
-    LOG_PROTO("", RTT_CTRL_TEXT_BRIGHT_GREEN, format, ##__VA_ARGS__)
-#define STM_LOGW(format, ...) \
-    LOG_PROTO("", RTT_CTRL_TEXT_BRIGHT_YELLOW, format, ##__VA_ARGS__)
-#define STM_LOGE(format, ...) \
-    LOG_PROTO("", RTT_CTRL_TEXT_BRIGHT_RED, format, ##__VA_ARGS__)
-
-
-#else
-
-#define LOG_CLEAR()
-#define STM_ERROR_CHECK(x)
-#define LOG
-#define LOGI
-#define LOGW
-#define LOGE
-#define STM_LOGI
-#define STM_LOGW
-#define STM_LOGE
-
-#endif
-
-void Float2Str(char *str, float va);
