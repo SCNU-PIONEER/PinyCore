@@ -41,6 +41,10 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/build.ninja" OR NOT EXISTS "${CMAKE_SOURCE_DI
   # kconfig default config
   execute_process(
     COMMAND ${KCONFIG_DEFCONF} ${CMAKE_SOURCE_DIR}/Kconfig
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  execute_process(
+    # COMMAND ${KCONFIG_DEFCONF} ${CMAKE_SOURCE_DIR}/Kconfig
     COMMAND ${Python_EXECUTABLE} ${PYTHON_SCRIPT} "${CMAKE_SOURCE_DIR}/.config"
     COMMAND -B build --fresh
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
