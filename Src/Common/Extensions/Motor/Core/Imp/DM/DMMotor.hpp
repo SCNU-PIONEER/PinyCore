@@ -244,6 +244,8 @@ public:
     MotorTypeDef_e enable();
 
     MotorTypeDef_e disable();
+    
+    MotorTypeDef_e clearError();
 
     MotorTypeDef_e registerReg(DMMotorReg_s *_regObj);
 

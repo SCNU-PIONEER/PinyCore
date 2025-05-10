@@ -11,7 +11,7 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     strcpy(this->model_.name, "DJI-M3508");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
-    this->model_.reductionRatio = _config.reductionRatio;
+    this->model_.reductionRatio = (3591.f / 187.f);
     this->model_.rxBaseId = 0x200;
     
     if(_config.offsetId > 3)

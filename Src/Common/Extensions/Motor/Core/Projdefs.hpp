@@ -19,7 +19,6 @@ struct InitConfig_s {
     WorkMode_e workMode;
     uint8_t offsetId;
     float txFreq;
-    float reductionRatio;
 };
 
 struct Model_s {

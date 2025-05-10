@@ -246,8 +246,10 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
         this->lastSendTick = xTaskGetTickCount();
         if ((cmd_.SW && !cmd_.prevSW) ||
             (cmd_.SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
+            this->ctrlId_ = canId();
             this->enable();
         } else if (!cmd_.SW) {
+            this->ctrlId_ = canId();
             this->disable();
         } else {
             rslt |= this->send(txBuf, lenBuf);
@@ -277,6 +279,16 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::disable()
     };
     rslt |= this->send(disableCmdPack, 8);
     cmd_.updateSW(false); // force disable
+    return rslt;
+}
+
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::clearError()
+{
+    MotorTypeDef_e rslt = 0;
+    uint8_t enableCmdPack[8] = {
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB
+    };
+    rslt |= this->send(enableCmdPack, 8);
     return rslt;
 }
 
@@ -383,6 +395,7 @@ MotorTypeDef_e DMMotor<Derived>::storageReg(DMMotorRegId_e _regId)
     }
     return rslt;
 }
+
 
 /**********************************************************************************/
 // 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
