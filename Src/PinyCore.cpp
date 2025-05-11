@@ -11,14 +11,6 @@
 
 // #include "../Lib/TinyMPC/src/tinympc/tiny_api.hpp"
 
-static void logCallback(const char *_type, const char *_color,
-                        const char *_format, ...)
-{
-    va_list args;
-    va_start(args, _format);
-    logProtoVaList(_type, _color, _format, args);
-    va_end(args);
-}
 
 void PinyCore::bspInit()
 {
@@ -27,19 +19,9 @@ void PinyCore::bspInit()
     // Can::instance().init(&hcan1, RX_FIFO1);
 }
 
-void PinyCore::osInit()
-{
-    AppManager::instance()->createApp();
-}
+void PinyCore::osInit() { AppManager::instance()->createApp(); }
 
-void PinyCore::coreInit()
-{
-    SEGGER_SYSVIEW_Conf();
-
-    this->registerLogger(logCallback);
-
-    PINYMOTOR::MotorManager::instance()->registerLogger(logCallback);
-}
+void PinyCore::coreInit() { SEGGER_SYSVIEW_Conf(); }
 
 void PinyCore::init()
 {
@@ -47,7 +29,7 @@ void PinyCore::init()
     coreInit();
     osInit();
 
-    this->log("INFO", "green", "PinyCore init done.\n");
+    log.info("Piny", "init.");
 }
 
 void initPinyCore() { PinyCore::instance()->init(); }

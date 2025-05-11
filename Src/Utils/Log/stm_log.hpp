@@ -1,8 +1,8 @@
 #pragma once
 
 // #ifdef USE_LOG
-#if 1
 #include "SEGGER_RTT.h"
+#include "stm_log_msg.hpp"
 #include <string_view>
 
 namespace LOG {

@@ -51,10 +51,6 @@ public:
 
     void log(const char *type, const char *color, const char *format, ...)
     {
-        va_list args;
-        va_start(args, format);
-        PinyCore::instance()->log(type, color, format, args);
-        va_end(args);
     }
 };
 }
