@@ -19,7 +19,12 @@ void PinyCore::bspInit()
     // Can::instance().init(&hcan1, RX_FIFO1);
 }
 
-void PinyCore::osInit() { AppManager::instance()->createApp(); }
+void PinyCore::osInit()
+{
+    osKernelInitialize();
+    AppManager::instance()->createApp();
+    osKernelStart();
+}
 
 void PinyCore::coreInit() { SEGGER_SYSVIEW_Conf(); }
 

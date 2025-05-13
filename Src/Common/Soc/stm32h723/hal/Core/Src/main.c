@@ -157,7 +157,7 @@ int main(void)
     MX_SPI6_Init();
     MX_UART9_Init();
     /* USER CODE BEGIN 2 */
-  initPinyCore();
+    initPinyCore();
     /* USER CODE END 2 */
 
     /* Init scheduler */

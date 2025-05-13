@@ -23,7 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "PinyCore.hpp"
-/* USER CODE END Includes */
+/*USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -148,7 +148,7 @@ int main(void)
   MX_RNG_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-    
+  initPinyCore();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -180,7 +180,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
-  initPinyCore();
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
