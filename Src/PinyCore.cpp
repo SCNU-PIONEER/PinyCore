@@ -29,7 +29,7 @@ void PinyCore::init()
     coreInit();
     osInit();
 
-    log.info("Piny", "init.");
+    log.info(LOCATION, "Piny", "init");
 }
 
 void initPinyCore() { PinyCore::instance()->init(); }

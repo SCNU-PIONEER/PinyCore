@@ -1,12 +1,19 @@
 #pragma once
 
-// #ifdef USE_LOG
 #include "SEGGER_RTT.h"
 #include "stm_log_msg.hpp"
 #include <string_view>
+#include <cstring>
 
 namespace LOG {
 
+#define LOCATION std::source_location::current()
+
+#define LOG_PROTO(type, color, format, ...)                                    \
+    SEGGER_RTT_printf(0, "  %s%s" format "\r\n%s", color, type, ##__VA_ARGS__, \
+                      RTT_CTRL_RESET)
+
+// #define ERROR_CHECK(x) check([&]() { return (x); }, __FILE__, __LINE__, #x)
 
 class Logger {
 public:
@@ -16,33 +23,41 @@ public:
         return instance;
     }
 
-    template <typename... Args> void printf(const char *format, Args &&..._args)
+    template <typename... Args> void raw(const char *_format, Args &&..._args)
     {
-        SEGGER_RTT_printf(0, format, std::forward<Args>(_args)...);
-        SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");
+        SEGGER_RTT_printf(0, _format, std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void info(std::string_view _type, const char *_format, Args &&..._args)
+    void info(std::source_location _loc, std::string_view _type,
+              const char *_format, Args &&..._args)
     {
-        config.level = Level::Info;
-        log(LogParams{ .type = _type, .format = _format },
+        log(LogParams{ .loc = _loc,
+                       .type = _type,
+                       .format = _format,
+                       .level = Level::Info },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void warn(std::string_view _type, const char *_format, Args &&..._args)
+    void warn(std::source_location _loc, std::string_view _type,
+              const char *_format, Args &&..._args)
     {
-        config.level = Level::Warn;
-        log(LogParams{ .type = _type, .format = _format },
+        log(LogParams{ .loc = _loc,
+                       .type = _type,
+                       .format = _format,
+                       .level = Level::Warn },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void error(std::string_view _type, const char *_format, Args &&..._args)
+    void error(std::source_location _loc, std::string_view _type,
+               const char *_format, Args &&..._args)
     {
-        config.level = Level::Error;
-        log(LogParams{ .type = _type, .format = _format },
+        log(LogParams{ .loc = _loc,
+                       .type = _type,
+                       .format = _format,
+                       .level = Level::Error },
             std::forward<Args>(_args)...);
     }
 
@@ -53,6 +68,13 @@ public:
     // template <typename Func>
     // void check(Func &&_operation, const char *_file, int _line,
     //            const char *_expr)
+    // {
+    //     stm_err_t _err = _operation();
+    //     if (unlikely(_err != 0)) {
+    //         printf("ERROR: ", RED, "Check failed at %s:%d\nExpr: %s\nError: %d",
+    //                _file, _line, _expr, _err);
+    //     }
+    // }
 
     /**
     * @brief 清屏
@@ -74,19 +96,12 @@ public:
 
     void setLocation(bool _enable) { config.showlocation = _enable; }
 
-    // void setName(std::string_view _name) { config.name = _name; }
+    void setName(std::string_view _name) { config.name = _name; }
 
     void setProto(Proto _proto) { config.proto = _proto; }
 
     void setConfig(const Config &_config) { config = _config; }
 
-
-protected:
-    Logger(const Logger &);
-    Logger &operator=(const Logger &);
-    Logger() = default;
-
-private:
     /**
     * @brief 完美转发打印函数,自带换行
     */
@@ -96,37 +111,75 @@ private:
         if (!config.enable)
             return;
 
-        if (config.level == Level::Raw) {
-            SEGGER_RTT_printf(0, _params.format, std::forward<Args>(_args)...);
-            return;
-        }
+        constexpr size_t MAX_LOG_LENGTH = 128;
+        char buffer[MAX_LOG_LENGTH];
+        char *ptr = buffer;
+        const char *end = buffer + MAX_LOG_LENGTH;
 
-        /* 输出日志头（源码位置+颜色+类型) */
+        // 写入颜色控制码（如果启用）
         if (config.showColor) [[likely]] {
-            auto _color = get_level_color(config.level);
-            SEGGER_RTT_Write(0, _color.data(), _color.size());
+            auto _color = getLevelColor(_params.level);
+            size_t len =
+                    std::min(_color.size(), static_cast<size_t>(end - ptr));
+            memcpy(ptr, _color.data(), len);
+            ptr += len;
         }
 
+        // 写入位置信息（如果启用）
         if (config.showlocation) [[likely]] {
             std::string_view file(_params.loc.file_name());
             if (auto pos = file.find_last_of("/\\");
                 pos != std::string_view::npos) {
                 file = file.substr(pos + 1);
             }
-            SEGGER_RTT_printf(0, " [%s:%d]: ", file.data(), _params.loc.line());
+            size_t len =
+                    snprintf(ptr, end - ptr,
+                             " [%.*s:%ld]: ", static_cast<int>(file.size()),
+                             file.data(), _params.loc.line());
+            ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
-        SEGGER_RTT_Write(0, _params.type.data(), _params.type.size());
-        SEGGER_RTT_WriteString(0, ": ");
+        // 写入日志类型
+        size_t len =
+                std::min(_params.type.size(), static_cast<size_t>(end - ptr));
+        memcpy(ptr, _params.type.data(), len);
+        ptr += len;
 
-        /* 格式化用户内容（通过va_list转发 */
-        SEGGER_RTT_printf(0, _params.format, std::forward<Args>(_args)...);
+        // 写入分隔符
+        len = std::min(sizeof(": ") - 1, static_cast<size_t>(end - ptr));
+        memcpy(ptr, ": ", len);
+        ptr += len;
 
-        /* 重置样式 */
-        SEGGER_RTT_WriteString(0, RTT_CTRL_RESET "\r\n");
+        if (_params.level == Level::Raw) {
+            len = snprintf(ptr, end - ptr, _params.format,
+                           std::forward<Args>(_args)...);
+            ptr += std::min(len, static_cast<size_t>(end - ptr));
+        } else {
+            len = snprintf(ptr, end - ptr, _params.format,
+                           std::forward<Args>(_args)...);
+            ptr += std::min(len, static_cast<size_t>(end - ptr));
+        }
+
+        len = std::min(sizeof(RTT_CTRL_RESET "\r\n") - 1,
+                       static_cast<size_t>(end - ptr));
+        memcpy(ptr, RTT_CTRL_RESET "\r\n", len);
+        ptr += len;
+
+        size_t total_len = ptr - buffer;
+
+        SEGGER_RTT_Write(0, buffer, total_len);
     }
 
+protected:
+    Logger(const Logger &);
+    Logger &operator=(const Logger &);
+    Logger() = default;
+
+private:
     Config config;
 };
 
+class LogWrapper {
+public:
+};
 }

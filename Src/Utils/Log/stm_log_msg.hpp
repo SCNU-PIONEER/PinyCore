@@ -1,7 +1,10 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
 #include <source_location>
+
+namespace LOG {
 
 /* Definitions for error constants. */
 #define STM_OK                   0 /*!< stm_err_t value indicating success (no error) */
@@ -72,27 +75,42 @@ public:
     bool showColor{ true };     // show full file paths in logs
     bool showlocation{ true };  // show full file paths in logs
     bool enable{ true };        // Enable or disable logging
+    uint8_t bufNum{ 0 };        // Buffer number
 };
 
-struct LogParams {
+class LogParams {
+public:
     std::source_location loc = std::source_location::current();
     std::string_view type;
     const char *format;
+    Level level{ Level::Info };
 };
 
-constexpr std::string_view get_level_color(Level level)
+constexpr std::string_view getLevelColor(Level _level)
 {
-    switch (level) {
+    switch (_level) {
+    case Level::Raw:
+        return "";
     case Level::Info:
         return GREEN;
     case Level::Warn:
         return YELLOW;
     case Level::Error:
         return RED;
+    case Level::Debug:
+        return BLUE;
+    case Level::Verbose:
+        return WHITE;
     default:
         return "";
     }
 }
+
+// constexpr std::string_view getProto(Proto _proto)
+// {
+//     switch (_proto) {
+//     }
+// }
 
 #if !defined(unlikely)
 #if defined(__GNUC__) || defined(__clang__)
@@ -100,4 +118,7 @@ constexpr std::string_view get_level_color(Level level)
 #else
 #define unlikely(x) (x)
 #endif
+
 #endif
+
+}
