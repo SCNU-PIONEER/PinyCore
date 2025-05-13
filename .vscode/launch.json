@@ -34,6 +34,7 @@
       "rttConfig": {
         "enabled": true,
         "address": "auto",
+        "polling_interval": 10,
         "decoders": [
           {
             "type": "console",
