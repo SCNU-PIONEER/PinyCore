@@ -4,5 +4,6 @@ source "Src/Common/Soc/Kconfig"
 
 source "Src/Common/Bsp/Kconfig"
 
+source "Src/Utils/Kconfig"
 
 # orsource "./soc/Kconfig.soc_caps.in"

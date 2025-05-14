@@ -8,14 +8,10 @@ void dwt_init()
     /* DWT CYCCNT寄存器计数清0 */
     DWT_CYCCNT = (uint32_t)0u;
 
-    /* 使能Cortex-M DWT CYCCNT寄存器 */
-    DWT_CR |= (uint32_t)DWT_CR_CYCCNTENA;
+    /* 使能Cortex-M DWT CYCCNT寄存器 */ DWT_CR |= (uint32_t)DWT_CR_CYCCNTENA;
 }
 
-uint32_t dwt_read(void)
-{
-    return ((uint32_t)DWT_CYCCNT);
-}
+uint32_t dwt_read(void) { return ((uint32_t)DWT_CYCCNT); }
 
 void dwt_delay_us(uint32_t us)
 {
@@ -53,15 +49,13 @@ void dwt_delay_us(uint32_t us)
     }
 }
 
-void dwt_delay_ms(uint32_t ms)
-{
-    dwt_delay_us(ms * 1000);
-}
+void dwt_delay_ms(uint32_t ms) { dwt_delay_us(ms * 1000); }
 
 float dwt_get_dt(uint32_t *cnt_last)
 {
     volatile uint32_t cnt_now = DWT->CYCCNT;
-    float dt = ((uint32_t)(cnt_now - *cnt_last)) / ((float)(HAL_RCC_GetSysClockFreq()));
+    float dt = ((uint32_t)(cnt_now - *cnt_last)) /
+               ((float)(HAL_RCC_GetSysClockFreq()));
     *cnt_last = cnt_now;
     return dt;
 }
@@ -69,7 +63,8 @@ float dwt_get_dt(uint32_t *cnt_last)
 float dwt_get_freq(uint32_t *cnt_last)
 {
     volatile uint32_t cnt_now = DWT->CYCCNT;
-    float freq = ((float)(HAL_RCC_GetSysClockFreq())) / (uint32_t)(cnt_now - *cnt_last);
+    float freq = ((float)(HAL_RCC_GetSysClockFreq())) /
+                 (uint32_t)(cnt_now - *cnt_last);
     *cnt_last = cnt_now;
     return freq;
 }

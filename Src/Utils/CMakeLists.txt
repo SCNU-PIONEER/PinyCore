@@ -1,15 +1,28 @@
-include (${CMAKE_SOURCE_DIR}/tools/cmake/FindInclude.cmake)
-
-# Add the sourses
-file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp" "*.s")
-
 # Add the library
-add_library(Utils ${SOURCES})
+add_library(Utils STATIC)
 
-# Include the header directories
-FIND_INCLUDE_DIR(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(Utils PUBLIC ${HEADERS})
+target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Link
+if (USE_DWT)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/dwt.c)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
+endif()
+if (USE_FSM)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/FSM/FSMState.cpp)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/FSM)
+endif()
+if (USE_HARDFAULT)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/hardfault.c)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/hardfault)
+endif()
+if (USE_STM_LOG)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Log/stm_log.cpp)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
+endif()
+if (USE_VOFA)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/vofa.cpp)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
+endif()
+
+# link
 target_link_libraries(Utils PRIVATE stm32cubemx Soc segger)
-

@@ -1,0 +1,17 @@
+menu "utils config"
+    config USE_DWT
+        bool "Dwt timer"
+        default y
+    config USE_FSM
+        bool "Finite State Machine"
+        default y
+    config USE_HARDFAULT 
+        bool "segger hardfault handle"
+        default y
+    config USE_STM_LOG 
+        bool "stm RTT log"
+        default y
+    config USE_VOFA 
+        bool "vofa"
+        default y
+endmenu
