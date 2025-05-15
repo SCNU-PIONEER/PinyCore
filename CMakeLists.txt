@@ -16,7 +16,6 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
-# set(CMSISCORE "${CMAKE_SOURCE_DIR}/cubemx/Drivers/CMSIS")
 
 # Define the build type
 set(CMAKE_BUILD_TYPE "Debug")
@@ -60,6 +59,8 @@ add_compile_options($<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
 add_executable(${CMAKE_PROJECT_NAME} Src/PinyCore.cpp
 )
 
+set(CMSISCORE "${soc_folder}/hal/Drivers/CMSIS")
+
 # Add subdirectory
 
 add_subdirectory(Lib/Segger)
@@ -73,6 +74,7 @@ add_subdirectory(Src/Common/Bsp)
 add_subdirectory(Src/System)
 add_subdirectory(Src/Utils)
 add_subdirectory(Src)
+add_subdirectory(Lib/CMSIS-DSP/Source)
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE Src/PinyCore.hpp)
@@ -97,6 +99,7 @@ target_link_libraries(
   stm32cubemx
   segger
   Eigen3
+  CMSISDSP
   # TinyMPC
   syscall
 )
