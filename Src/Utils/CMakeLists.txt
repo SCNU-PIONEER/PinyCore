@@ -3,6 +3,11 @@ add_library(Utils STATIC)
 
 target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (USE_ALGORITHM)
+  file(GLOB_RECURSE ALGORITHM_SOURCES  CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp")
+  target_sources(Utils PRIVATE ${ALGORITHM_SOURCES})
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm)
+endif()
 if (USE_DWT)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/dwt.c)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
@@ -25,4 +30,4 @@ if (USE_VOFA)
 endif()
 
 # link
-target_link_libraries(Utils PRIVATE stm32cubemx Soc segger)
+target_link_libraries(Utils PRIVATE stm32cubemx Soc segger CMSISDSP)

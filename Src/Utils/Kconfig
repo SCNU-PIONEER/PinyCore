@@ -1,4 +1,7 @@
 menu "utils config"
+    config USE_ALGORITHM
+        bool "algorithm"
+        default y
     config USE_DWT
         bool "Dwt timer"
         default y
