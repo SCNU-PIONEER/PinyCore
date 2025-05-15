@@ -23,7 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "PinyCore.hpp"
-/*USER CODE END Includes */
+/* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -1095,13 +1095,13 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOH, LED_RED_Pin|LED_GREEN_Pin|LED_BLUE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ACC_CS_GPIO_Port, ACC_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port, GYRO_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : LED_RED_Pin LED_GREEN_Pin LED_BLUE_Pin */
   GPIO_InitStruct.Pin = LED_RED_Pin|LED_GREEN_Pin|LED_BLUE_Pin;
@@ -1110,12 +1110,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CS1_ACCEL_Pin */
-  GPIO_InitStruct.Pin = CS1_ACCEL_Pin;
+  /*Configure GPIO pin : ACC_CS_Pin */
+  GPIO_InitStruct.Pin = ACC_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS1_ACCEL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(ACC_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : INT1_ACCEL_Pin INT1_GYRO_Pin */
   GPIO_InitStruct.Pin = INT1_ACCEL_Pin|INT1_GYRO_Pin;
@@ -1130,12 +1130,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI2_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CS1_GYRO_Pin */
-  GPIO_InitStruct.Pin = CS1_GYRO_Pin;
+  /*Configure GPIO pin : GYRO_CS_Pin */
+  GPIO_InitStruct.Pin = GYRO_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS1_GYRO_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GYRO_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

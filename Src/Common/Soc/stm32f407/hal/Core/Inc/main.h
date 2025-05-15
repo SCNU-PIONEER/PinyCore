@@ -86,16 +86,16 @@ void MX_SPI2_Init(void);
 #define LED_GREEN_GPIO_Port GPIOH
 #define LED_BLUE_Pin GPIO_PIN_10
 #define LED_BLUE_GPIO_Port GPIOH
-#define CS1_ACCEL_Pin GPIO_PIN_4
-#define CS1_ACCEL_GPIO_Port GPIOA
+#define ACC_CS_Pin GPIO_PIN_4
+#define ACC_CS_GPIO_Port GPIOA
 #define INT1_ACCEL_Pin GPIO_PIN_4
 #define INT1_ACCEL_GPIO_Port GPIOC
 #define INT1_GYRO_Pin GPIO_PIN_5
 #define INT1_GYRO_GPIO_Port GPIOC
 #define SPI2_CS_Pin GPIO_PIN_12
 #define SPI2_CS_GPIO_Port GPIOB
-#define CS1_GYRO_Pin GPIO_PIN_0
-#define CS1_GYRO_GPIO_Port GPIOB
+#define GYRO_CS_Pin GPIO_PIN_0
+#define GYRO_CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
