@@ -251,10 +251,17 @@ public:
 
     MotorTypeDef_e cancelReg(DMMotorRegId_e regId);
 
-    MotorTypeDef_e writeReg(DMMotorRegId_e _regId, uint8_t dat[4]);
+    MotorTypeDef_e writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4]);
 
-    MotorTypeDef_e readReg(DMMotorRegId_e _regId);
+    MotorTypeDef_e readOneReg(DMMotorRegId_e _regId);
     
-    MotorTypeDef_e storageReg(DMMotorRegId_e _regId);
+    MotorTypeDef_e storageOneReg(DMMotorRegId_e _regId);
+
+    MotorTypeDef_e writeReg();
+    
+    MotorTypeDef_e readReg();
+
+    MotorTypeDef_e storageReg();
+    
 };
 }

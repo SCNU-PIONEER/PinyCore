@@ -3,7 +3,6 @@
 #include "Bsp_can.hpp"
 
 #include "MotorCommonMacros.hpp"
-
 using namespace PINYMOTOR;
 
 template <typename Derived> void DMMotor<Derived>::registerRecvCallback()
@@ -292,6 +291,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::clearError()
     return rslt;
 }
 
+
 template <typename Derived>
 MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
 {
@@ -322,7 +322,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::cancelReg(DMMotorRe
 }
 
 template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::writeReg(DMMotorRegId_e _regId, uint8_t dat[4])
+MotorTypeDef_e DMMotor<Derived>::writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4])
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x55, D3 : RID, D4 : dat1,
@@ -347,7 +347,7 @@ MotorTypeDef_e DMMotor<Derived>::writeReg(DMMotorRegId_e _regId, uint8_t dat[4])
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg(DMMotorRegId_e _regId)
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readOneReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x33, D3 : RID, D4 : 0x00,
@@ -372,7 +372,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg(DMMotorRegI
 }
 
 template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::storageReg(DMMotorRegId_e _regId)
+MotorTypeDef_e DMMotor<Derived>::storageOneReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0xAA, D3 : RID, D4 : 0x00,
@@ -396,6 +396,65 @@ MotorTypeDef_e DMMotor<Derived>::storageReg(DMMotorRegId_e _regId)
     return rslt;
 }
 
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::writeReg()
+{
+    static MotorTypeDef_e writeWaitTime =0;
+    static auto it = regObjList_.begin();
+    if(it != regObjList_.end()){
+        if(writeWaitTime % 10 == 0){
+            writeOneReg((*it).first, (*it).second->dat);
+            (*it).second->isWrite = true;
+            it++;
+        }
+        return 0;
+    }
+    else{
+        writeWaitTime = 0;
+        it = regObjList_.begin();
+        return 0;
+    }
+    writeWaitTime++;
+}
+
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg()
+{
+    static MotorTypeDef_e readWaitTime =0;
+    static auto it = regObjList_.begin();
+    if(it != regObjList_.end()){
+        if(readWaitTime % 10 == 0){
+            readOneReg((*it).first);
+            (*it).second->isRead = true;
+            it++;
+        }
+        return 0;
+    }
+    else{
+        readWaitTime = 0;
+        it = regObjList_.begin();
+        return 0;
+    }
+    readWaitTime++;
+}
+
+template <typename Derived> MotorTypeDef_e DMMotor<Derived>::storageReg()
+{
+    static MotorTypeDef_e storageWaitTime =0;
+    static auto it = regObjList_.begin();
+    if(it != regObjList_.end()){
+        if(storageWaitTime % 10 == 0){
+            storageOneReg((*it).first);
+            (*it).second->isStorage = true;
+            it++;
+        }
+        return 0;
+    }
+    else{
+        storageWaitTime = 0;
+        it = regObjList_.begin();
+        return 0;
+    }
+    storageWaitTime++;
+}
 
 /**********************************************************************************/
 // 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
