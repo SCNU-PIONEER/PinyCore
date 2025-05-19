@@ -179,7 +179,53 @@ private:
     Config config;
 };
 
-class LogWrapper {
-public:
+
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ some preset ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+template <typename... Args> struct info {
+    constexpr info(std::string_view _type, const char *_format, Args &&..._args,
+                   std::source_location _loc = std::source_location::current())
+    {
+        Logger::instance().log(LogParams{ .loc = _loc,
+                                          .type = _type,
+                                          .format = _format,
+                                          .level = Level::Info },
+                               std::forward<Args>(_args)...);
+    }
 };
+template <typename... Args>
+info(std::string_view _type, const char *_format, Args &&...args)
+        -> info<Args...>;
+
+template <typename... Args> struct warn {
+    constexpr warn(std::string_view _type, const char *_format, Args &&..._args,
+                   std::source_location _loc = std::source_location::current())
+    {
+        Logger::instance().log(LogParams{ .loc = _loc,
+                                          .type = _type,
+                                          .format = _format,
+                                          .level = Level::Warn },
+                               std::forward<Args>(_args)...);
+    }
+};
+
+template <typename... Args>
+warn(std::string_view _type, const char *_format, Args &&...args)
+        -> warn<Args...>;
+
+template <typename... Args> struct error {
+    constexpr error(std::string_view _type, const char *_format,
+                    Args &&..._args,
+                    std::source_location _loc = std::source_location::current())
+    {
+        Logger::instance().log(LogParams{ .loc = _loc,
+                                          .type = _type,
+                                          .format = _format,
+                                          .level = Level::Warn },
+                               std::forward<Args>(_args)...);
+    }
+};
+template <typename... Args>
+error(std::string_view _type, const char *_format, Args &&...args)
+        ->error<Args...>;
+
 }
