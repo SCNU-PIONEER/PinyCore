@@ -6,7 +6,6 @@
 
 namespace RC {
 
-Rc *Rc::instance_ = new Rc();
 SemaphoreHandle_t Rc::dataReadySem = nullptr;
 uint8_t dt7_rc_rxlost = RC_RX_LOST_MAX;
 
@@ -54,7 +53,7 @@ void Rc::callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos)
 
 uint8_t Rc::parseData()
 {
-    if (xSemaphoreTake(dataReadySem, portMAX_DELAY) == pdTRUE) {
+    if (xSemaphoreTake(dataReadySem, 100) == pdTRUE) {
         data.rc.ch0 = (int16_t)((int16_t)rc_buffer[0] |
                                 ((int16_t)rc_buffer[1] << 8)) &
                       0x07FF;
