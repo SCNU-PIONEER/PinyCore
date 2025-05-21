@@ -31,6 +31,9 @@
       //     "monitor  halt",
       // ],
       // "postDebugTask": "close-RTT",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
+      ],
       "rttConfig": {
         "enabled": true,
         "address": "auto",
