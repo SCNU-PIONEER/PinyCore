@@ -6,7 +6,10 @@ target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if (USE_ALGORITHM)
   file(GLOB_RECURSE ALGORITHM_SOURCES  CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp")
   target_sources(Utils PRIVATE ${ALGORITHM_SOURCES})
-  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm)
+  target_include_directories(Utils PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/MahonyAHRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/PID
+)
 endif()
 if (USE_DWT)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/dwt.c)
