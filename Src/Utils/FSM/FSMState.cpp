@@ -11,7 +11,13 @@ void FSMState::setMode(FSMMode_e _mode) { mode_ = _mode; };
 
 void FSMState::setStateName(std::string _stateName) { stateName = _stateName; };
 
-void FSMState::setNextStateName(std::string _next) { nextStateName = _next; };
+void FSMState::setNextStateName(std::string _next)
+{
+    if (_next != "")
+        nextStateName = _next;
+    else
+        nextStateName = stateName;
+};
 
 void StateFactory::init(FSMState *state)
 {
