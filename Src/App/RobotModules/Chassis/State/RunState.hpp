@@ -16,7 +16,14 @@ public:
 
         LOG::info("run", " enter");
     }
-    void run() override { LOG::info("run", " run"); }
+
+    void run() override
+    {
+        if (chassis_->msg_.state == State_e::run) {
+            LOG::info("run", " run");
+        }
+    }
+
     void exit() override { LOG::info("run", " exit"); }
 
     std::string checkChange() override { return "stop"; }
