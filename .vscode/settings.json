@@ -11,7 +11,7 @@
         "name": "$(trash)",
         "color": "none",
         "singleInstance": true,
-        "command": "rm -r ${workspaceFolder}/build && exit",
+        "command": "rm -r ${workspaceFolder}/build && rm .config .config.old Src/sdkconfig.cmake Src/sdkconfig.h && exit",
         "tooltip": "Remove build folder"
       },
       {
