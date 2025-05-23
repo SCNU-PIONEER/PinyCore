@@ -9,7 +9,7 @@
 class IObserver {
 public:
     virtual ~IObserver() = default;
-    virtual void update(Msg &_msg) = 0;
+    virtual void getMsg(Msg &_msg) = 0;
 };
 
 
@@ -23,7 +23,7 @@ public:
 
     void task();
 
-    inline void update()
+    inline void getMsg()
     {
         if (rc_.parseData() != RC_VERIFY_ERR) {
             parse();
@@ -39,7 +39,7 @@ protected:
     {
         for (auto *observer : observers) {
             if (observer != nullptr) {
-                observer->update(msg);
+                observer->getMsg(msg);
             }
         }
     }

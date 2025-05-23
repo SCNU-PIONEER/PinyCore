@@ -20,8 +20,8 @@ class Chassis : public IObserver {
 public:
     Chassis(Wheel *_wheel);
 
-    void update(Msg &_msg);
-    void task();
+    void getMsg(Msg &_msg);
+    void update();
 
     StateFactory stateFactory_;
 
