@@ -9,6 +9,7 @@ if (USE_ALGORITHM)
   target_include_directories(Utils PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/MahonyAHRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/PID
+    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Filter
 )
 endif()
 if (USE_DWT)
