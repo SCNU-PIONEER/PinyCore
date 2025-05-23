@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cmd.hpp"
+#include "wheel.hpp"
 #include "FSMState.hpp"
 #include "stm_log.hpp"
 
@@ -17,16 +18,16 @@ const float MOUSE_CAL = 200.0f;
 
 class Chassis : public IObserver {
 public:
-    Chassis();
+    Chassis(Wheel *_wheel);
 
-    void update(Msg& _msg);
+    void update(Msg &_msg);
     void task();
-
 
     StateFactory stateFactory_;
 
     LOG::Logger &log = LOG::Logger::instance();
 
-    Msg msg;
+    Msg msg_;
 
+    Wheel *wheel_;
 };
