@@ -1,15 +1,10 @@
 #include "./middleware.hpp"
-#include "Bsp_spi.hpp"
 #include "dwt.h"
-#include "main.h"
+#include "Bsp_spi.hpp"
 
-#define BMI088_USING_SPI_UNIT hspi1
 
 extern SPI_HandleTypeDef BMI088_USING_SPI_UNIT;
 
-void Middleware::GPIO_init(void) {}
-
-void Middleware::com_init(void) {}
 
 void Middleware::delay_ms(uint16_t ms)
 {
@@ -43,7 +38,7 @@ void Middleware::GYRO_NS_H(void)
 uint8_t Middleware::read_write_byte(uint8_t txdata)
 {
     uint8_t rx_data;
-    Spi::instance().transmitReceive(BMI088_USING_SPI_UNIT, &txdata, &rx_data, 1,
-                                    100);
+    Spi::instance().transmitReceive(*BMI088_USING_SPI_UNIT, &txdata, &rx_data,
+                                    1, 100);
     return rx_data;
 }
