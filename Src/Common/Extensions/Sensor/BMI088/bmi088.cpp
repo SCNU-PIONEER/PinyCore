@@ -163,12 +163,16 @@ static uint8_t write_BMI088_gyro_reg_data_error[BMI088_WRITE_GYRO_REG_NUM][3] = 
 * @details:    	BMI088传感器初始化函数，包括GPIO和SPI初始化，以及加速度和陀螺仪的初始化
 ************************************************************************
 **/
-uint8_t BMI088::init(void)
+uint8_t BMI088::init(SPI_HandleTypeDef *_spi)
 {
     uint8_t error = BMI088_NO_ERROR;
-    // GPIO and SPI  Init .
-    GPIO_init();
-    com_init();
+
+    // Initialize the SPI interface
+    if (_spi != nullptr) {
+        BMI088_USING_SPI_UNIT = _spi;
+    } else {
+        return BMI088_NO_SPI; // No SPI interface provided
+    }
 
     error |= accelInit();
     error |= gyroInit();

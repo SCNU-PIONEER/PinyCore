@@ -78,6 +78,7 @@ enum {
     BMI088_GYRO_CTRL_ERROR = 0x0B,
     BMI088_GYRO_INT3_INT4_IO_CONF_ERROR = 0x0C,
     BMI088_GYRO_INT3_INT4_IO_MAP_ERROR = 0x0D,
+    BMI088_NO_SPI = 0x0E,
 
     BMI088_SELF_TEST_ACCEL_ERROR = 0x80,
     BMI088_SELF_TEST_GYRO_ERROR = 0x40,
@@ -86,7 +87,7 @@ enum {
 
 class BMI088 : public Middleware {
 public:
-    uint8_t init();
+    uint8_t init(SPI_HandleTypeDef *_spi);
     bmi088RawData_s read();
 
 protected:
