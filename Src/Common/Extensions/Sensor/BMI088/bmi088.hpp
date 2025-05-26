@@ -89,6 +89,7 @@ class BMI088 : public Middleware {
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
     bmi088RawData_s read();
+    bmi088_raw_data_t readRaw();
 
 protected:
     uint8_t accelInit(void);
@@ -108,4 +109,5 @@ protected:
 
 private:
     bmi088RawData_s data_;
+    bmi088_raw_data_t rawData_;
 };

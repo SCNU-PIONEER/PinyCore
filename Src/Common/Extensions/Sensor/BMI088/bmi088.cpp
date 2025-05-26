@@ -302,19 +302,25 @@ bmi088RawData_s BMI088::read()
     accel_read_muli_reg(BMI088_ACCEL_XOUT_L, buf, 6);
 
     bmi088_raw_temp = (int16_t)((buf[1]) << 8) | buf[0];
+    rawData_.accel[0] = bmi088_raw_temp;
     data_.accel[0] = bmi088_raw_temp * BMI088_ACCEL_SEN;
     bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
+    rawData_.accel[1] = bmi088_raw_temp;
     data_.accel[1] = bmi088_raw_temp * BMI088_ACCEL_SEN;
     bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
+    rawData_.accel[2] = bmi088_raw_temp;
     data_.accel[2] = bmi088_raw_temp * BMI088_ACCEL_SEN;
 
     gyro_read_muli_reg(BMI088_GYRO_CHIP_ID, buf, 8);
     if (buf[0] == BMI088_GYRO_CHIP_ID_VALUE) {
         bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
+        rawData_.gyro[0] = bmi088_raw_temp;
         data_.gyro[0] = bmi088_raw_temp * BMI088_GYRO_SEN;
         bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
+        rawData_.gyro[1] = bmi088_raw_temp;
         data_.gyro[1] = bmi088_raw_temp * BMI088_GYRO_SEN;
         bmi088_raw_temp = (int16_t)((buf[7]) << 8) | buf[6];
+        rawData_.gyro[2] = bmi088_raw_temp;
         data_.gyro[2] = bmi088_raw_temp * BMI088_GYRO_SEN;
     }
 
@@ -330,6 +336,8 @@ bmi088RawData_s BMI088::read()
 
     return data_;
 }
+
+bmi088_raw_data_t BMI088::readRaw() { return rawData_; }
 
 #if defined(BMI088_USE_SPI)
 /**
