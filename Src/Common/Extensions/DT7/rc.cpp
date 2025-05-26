@@ -53,7 +53,7 @@ void Rc::callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos)
 
 uint8_t Rc::parseData()
 {
-    if (xSemaphoreTake(dataReadySem, 100) == pdTRUE) {
+    if (xSemaphoreTake(dataReadySem, 20) == pdTRUE) {
         data.rc.ch0 = (int16_t)((int16_t)rc_buffer[0] |
                                 ((int16_t)rc_buffer[1] << 8)) &
                       0x07FF;
@@ -104,6 +104,7 @@ uint8_t Rc::parseData()
                      ((int16_t)rc_buffer[17] << 8);
         return RC_NO_ERROR;
     }
+    //TODO: 离线检测
     return RC_VERIFY_ERR;
 }
 
