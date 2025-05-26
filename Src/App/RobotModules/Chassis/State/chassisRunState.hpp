@@ -19,14 +19,26 @@ public:
 
     void run() override
     {
+        chassis_->wheel_->update();
         if (chassis_->msg_.state == State_e::run) {
-            LOG::info("run", " run");
+            ChassisState_s refState{ .v_x = chassis_->msg_.vx,
+                                     .v_y = chassis_->msg_.vy,
+                                     .w_z = chassis_->msg_.wz };
+            chassis_->wheel_->ctrl(refState);
         }
     }
 
     void exit() override { LOG::info("run", " exit"); }
 
-    std::string checkChange() override { return "stop"; }
+    std::string checkChange() override
+    {
+        if (chassis_->msg_.state == State_e::stop)
+            return "stop";
+        else if (chassis_->msg_.state == State_e::run)
+            return "run";
+        else
+            return "";
+    }
 
 private:
     const Chassis *chassis_;

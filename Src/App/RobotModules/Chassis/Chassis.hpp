@@ -27,7 +27,7 @@ public:
 
     LOG::Logger &log = LOG::Logger::instance();
 
-    Msg msg_;
+    chassisMsg msg_;
 
     Wheel *wheel_;
 };

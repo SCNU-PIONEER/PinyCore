@@ -1,6 +1,6 @@
 #include "Chassis.hpp"
-#include "RunState.hpp"
-#include "StopState.hpp"
+#include "chassisRunState.hpp"
+#include "chassisStopState.hpp"
 
 Chassis::Chassis(Wheel *_wheel)
 {
@@ -10,6 +10,7 @@ Chassis::Chassis(Wheel *_wheel)
     stateFactory_.init(stateFactory_.getNextState("stop"));
 }
 
-void Chassis::getMsg(Msg &_msg) { msg_ = _msg; }
+void Chassis::getMsg(Msg &_msg) { msg_ = static_cast<chassisMsg>(_msg); }
+
 
 void Chassis::update() { stateFactory_.update(); }

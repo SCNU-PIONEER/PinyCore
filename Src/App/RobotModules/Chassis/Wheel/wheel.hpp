@@ -9,6 +9,8 @@ struct ChassisState_s {
 class Wheel {
 public:
     virtual void stop() = 0;
+    virtual void update() = 0;
+    virtual void ctrl(ChassisState_s _refState) = 0;
 
     ChassisState_s chassisState;
 };

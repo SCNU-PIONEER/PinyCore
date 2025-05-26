@@ -20,12 +20,12 @@ public:
     Omni(float diameter, float kxyFront, float kxyBack);
 
     void stop() override;
-    void update() ;
+    void update() override;
 
     void forward(WheelsState_s _refState);
     WheelsState_s reverse(ChassisState_s _refState);
     void iir3speed(WheelsState_s _rawSpeed);
-    void ctrl(ChassisState_s _refState);
+    void ctrl(ChassisState_s _refState) override;
 
 private:
     float diameter = 0.1525;
@@ -37,4 +37,6 @@ private:
 
     Pid *wheelPid_[4];
     WheelsState_s currentWheels;
+
+    //TODO: add motor;
 };
