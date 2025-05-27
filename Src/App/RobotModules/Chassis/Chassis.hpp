@@ -4,7 +4,7 @@
 #include "wheel.hpp"
 #include "FSMState.hpp"
 #include "stm_log.hpp"
-
+#include "msgImpl.hpp"
 
 const float S_CURVE_VX_ACC = 1.4f;
 const float S_CURVE_VY_ACC = 2.2f;
@@ -20,7 +20,7 @@ class Chassis : public IObserver {
 public:
     Chassis(Wheel *_wheel);
 
-    void getMsg(Msg &_msg);
+    void getMsg(Msg &_msg) override;
     void update();
 
     StateFactory stateFactory_;

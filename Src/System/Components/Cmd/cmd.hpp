@@ -1,9 +1,10 @@
 #pragma once
 
 #include <vector>
-#include "rc.hpp"
+#include <unordered_map>
 
-#include "./chassisMsg.hpp"
+#include "handler.hpp"
+#include "msgBase.hpp"
 
 
 class IObserver {
@@ -15,40 +16,14 @@ public:
 
 class Cmd {
 public:
-    Cmd() {};
-
-    void init(UART_HandleTypeDef *uart) { rc_.init(uart); };
-
-    void addObserver(IObserver *observer) { observers.push_back(observer); }
-
-    void task();
-
-    inline void getMsg()
-    {
-        if (rc_.parseData() != RC_VERIFY_ERR) {
-            parse();
-            notifyObservers();
-        }
-        //TODO: check if the cmd is unvalid , disable all modules
-    }
+    void addHandler(Handler *handler);
+    void addObserver(Msg *_msg, IObserver *observer);
+    void parseMsg();
 
 protected:
-    void parse();
-
-    inline void notifyObservers()
-    {
-        for (auto *observer : observers) {
-            if (observer != nullptr) {
-                observer->getMsg(msg);
-            }
-        }
-    }
-
+    inline void notifyObservers();
 
 private:
-    RC::Rc &rc_ = RC::Rc::instance();
-
-    std::vector<IObserver *> observers;
-
-    chassisMsg msg;
+    std::vector<Handler *> handlerBus;
+    std::unordered_map<Msg *, std::vector<IObserver *> > msgBus;
 };

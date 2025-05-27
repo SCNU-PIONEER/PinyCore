@@ -13,4 +13,5 @@ class Msg {
 public:
     msgType_e msgType;
     State_e state;
+    virtual ~Msg() = default;
 };

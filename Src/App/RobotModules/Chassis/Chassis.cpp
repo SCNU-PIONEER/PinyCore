@@ -10,7 +10,6 @@ Chassis::Chassis(Wheel *_wheel)
     stateFactory_.init(stateFactory_.getNextState("stop"));
 }
 
-void Chassis::getMsg(Msg &_msg) { msg_ = static_cast<chassisMsg>(_msg); }
-
+void Chassis::getMsg(Msg &_msg) { msg_ = static_cast<chassisMsg &>(_msg); }
 
 void Chassis::update() { stateFactory_.update(); }
