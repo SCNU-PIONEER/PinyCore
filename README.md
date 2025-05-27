@@ -1,8 +1,8 @@
 # need
-cmake >= 3.24
-ninja >= 1.1
-arm-none-eabi-toolchains >= 10.3.1
-kconfig-frontends
+cmake >= 3.24  
+ninja >= 1.1  
+arm-none-eabi-toolchains >= 10.3.1  
+kconfig-frontends  
 
 # build
 ```
