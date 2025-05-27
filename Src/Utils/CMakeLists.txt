@@ -8,8 +8,10 @@ if (USE_ALGORITHM)
   target_sources(Utils PRIVATE ${ALGORITHM_SOURCES})
   target_include_directories(Utils PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/MahonyAHRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Calibrate
     ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/PID
     ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Filter
+    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Smooth
 )
 endif()
 if (USE_DWT)

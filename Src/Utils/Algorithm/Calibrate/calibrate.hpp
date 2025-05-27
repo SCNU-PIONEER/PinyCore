@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef struct {
     float gx;
     float gy;
@@ -10,10 +12,8 @@ typedef struct {
 } imu_data_fp_t;
 
 typedef struct {
-    signed short gx, gy, gz;
-    signed short ax, ay, az;
-    float g_fullscale;
-    float a_fullscale;
+    uint16_t gx, gy, gz;
+    uint16_t ax, ay, az;
     float temperature;
 } imu_data_raw_t;
 
@@ -48,15 +48,22 @@ typedef enum {
 
 class ImuCalibration {
 public:
-    ImuCalibration(const AccCali_s &acc_cali, const GyroCali_s &gyro_cali,
+    ImuCalibration(const float ascale, const float gscale,
+                   const AccCali_s &acc_cali, const GyroCali_s &gyro_cali,
                    const float temp = 0.0f)
-            : acc_cali_(acc_cali), gyro_cali_(gyro_cali)
+            : acc_cali_(acc_cali)
+            , gyro_cali_(gyro_cali)
+            , aFullscale_(ascale)
+            , gFullscale_(gscale)
     {
     }
 
-    imu_data_fp_t Correct(const imu_data_raw_t &imu_data);
+    imu_data_fp_t Correct(uint16_t gx, uint16_t gy, uint16_t gz, uint16_t ax,
+                          uint16_t ay, uint16_t az, float temperature);
 
 private:
     AccCali_s acc_cali_;
     GyroCali_s gyro_cali_;
+    float aFullscale_ = 3.0f;
+    float gFullscale_ = 2000.0f;
 };
