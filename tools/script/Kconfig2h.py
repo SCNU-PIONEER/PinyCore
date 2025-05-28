@@ -35,6 +35,7 @@ def convert_config_to_cmake(_config_file, _cmake_file):
     config_vars = parse_config_file_cmake(_config_file)
     write_cmake_file(config_vars, _cmake_file)
 
+
 def parse_config_file_header(_config_file):
     config_vars = []
     with open(_config_file, "r") as f:
@@ -48,6 +49,11 @@ def parse_config_file_header(_config_file):
             value = value.strip()
             if value == "y":
                 value = "1"
+            # Remove quotes
+            elif (value.startswith('"') and value.endswith('"')) or (
+                value.startswith("'") and value.endswith("'")
+            ):
+                value = value[1:-1]
             # Remove 'CONFIG_' prefix from the key name
             key = key[7:] if key.startswith("CONFIG_") else key
             # Add to list
