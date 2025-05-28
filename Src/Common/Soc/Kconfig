@@ -11,14 +11,5 @@ menu "Soc config"
 
     endchoice
 
-    if TARGET_STM32F407
-        source "Src/Common/Soc/stm32f407/Kconfig"
-    endif
-
-    if TARGET_STM32H723
-        source "Src/Common/Soc/stm32h723/Kconfig"
-    endif
-
-
 endmenu
 

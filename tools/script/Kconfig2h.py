@@ -77,8 +77,39 @@ def convert_config_to_header(_config_file, _header_file):
     write_config_header(config_vars, _header_file)
 
 
+def get_soc_config(config_file):
+    config_mapping = {
+        "CONFIG_TARGET_STM32F407=y": "Src/Common/Soc/stm32f407/defaultConf.hpp.in",
+        "CONFIG_TARGET_STM32H723=y": "Src/Common/Soc/stm32h723/defaultConf.hpp.in",
+        # 可扩展其他型号
+    }
+
+    with open(config_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if line in config_mapping:
+                return config_mapping[line]
+    return None
+
+
+def append_macros_to_header(config_file, header_file):
+    conf_path = get_soc_config(config_file)
+    # read default macros from source file
+    with open(conf_path, "r") as src:  # type: ignore[assignment]
+        content = src.read().strip()
+
+    # 追加到.h文件末尾
+    with open(header_file, "a") as h_file:
+        h_file.write("\n")
+        h_file.write("/* default Soc conf */\n")
+        h_file.write(content)
+
+
 # Convert .config file to kconfig.h file
 convert_config_to_header(config_file, header_file)
 
 # Convert .config file to kconfig.cmake file
 convert_config_to_cmake(config_file, cmake_file)
+
+# add default macros to header file
+append_macros_to_header(config_file, header_file)

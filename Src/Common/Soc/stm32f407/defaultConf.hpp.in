@@ -1,0 +1,18 @@
+#ifdef BSP_USE_CAN
+#define HCAN1 hcan1
+#define HCAN2 hcan2
+#define HCAN3 hcan3
+#endif
+
+#ifdef BSP_USE_UART
+#define RC_UART huart3
+#endif
+
+#ifdef BSP_USE_TIMER
+#define BEEP_TIMER       htim4
+#define BEEP_TIM_CHANNEL TIM_CHANNEL_3
+#endif
+
+#ifdef BSP_USE_SPI
+#define IMU_SPI hspi1
+#endif
