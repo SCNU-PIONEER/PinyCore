@@ -294,7 +294,7 @@ uint8_t BMI088::gyroInit(void)
 * @details:    	读取BMI088传感器数据，包括加速度、陀螺仪和温度
 ************************************************************************
 **/
-bmi088RawData_s BMI088::read()
+bmi088RawIMUData_s BMI088::read()
 {
     uint8_t buf[8] = { 0, 0, 0, 0, 0, 0 };
     int16_t bmi088_raw_temp;

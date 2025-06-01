@@ -57,7 +57,7 @@ typedef struct BMI088_REAL_DATA {
     float time;
 } bmi088_real_data_t;
 
-struct bmi088RawData_s {
+struct bmi088RawIMUData_s {
     float gyro[3];
     float accel[3];
     float temperate;
@@ -88,8 +88,8 @@ enum {
 class BMI088 : public Middleware {
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
-    bmi088RawData_s read();
-    bmi088_raw_data_t readRaw();
+    bmi088RawIMUData_s read();   // read raw data in expected format
+    bmi088_raw_data_t readRaw(); // read raw data in raw format
 
 protected:
     uint8_t accelInit(void);
@@ -108,6 +108,6 @@ protected:
     void read_muli_reg(uint8_t reg, uint8_t *buf, uint8_t len);
 
 private:
-    bmi088RawData_s data_;
+    bmi088RawIMUData_s data_;
     bmi088_raw_data_t rawData_;
 };

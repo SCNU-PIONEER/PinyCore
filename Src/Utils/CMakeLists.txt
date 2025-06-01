@@ -3,34 +3,37 @@ add_library(Utils STATIC)
 
 target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (USE_ALGORITHM)
-  file(GLOB_RECURSE ALGORITHM_SOURCES  CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp")
+if(USE_ALGORITHM)
+  file(GLOB_RECURSE ALGORITHM_SOURCES CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp")
   target_sources(Utils PRIVATE ${ALGORITHM_SOURCES})
   target_include_directories(Utils PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/MahonyAHRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Calibrate
-    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/PID
-    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Filter
-    ${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/Smooth
-)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/PID
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Filter
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Smooth
+  )
 endif()
-if (USE_DWT)
+
+if(USE_DWT)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/dwt.c)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
 endif()
-if (USE_FSM)
+
+if(USE_FSM)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/FSM/FSMState.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/FSM)
 endif()
-if (USE_HARDFAULT)
+
+if(USE_HARDFAULT)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/hardfault.c)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/hardfault)
 endif()
-if (USE_STM_LOG)
+
+if(USE_STM_LOG)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Log/stm_log.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
 endif()
-if (USE_VOFA)
+
+if(USE_VOFA)
   target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/vofa.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
 endif()
