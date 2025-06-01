@@ -6,7 +6,7 @@
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
 
-#include "MotorManager.hpp"
+#include "bmi088.hpp"
 
 
 // #include "../Lib/TinyMPC/src/tinympc/tiny_api.hpp"
@@ -19,20 +19,21 @@ void PinyCore::bspInit()
     // Can::instance().init(&hcan1, RX_FIFO1);
 }
 
-void PinyCore::osInit()
+void PinyCore::coreInit()
 {
     osKernelInitialize();
-    AppManager::instance()->createApp();
+
+    SEGGER_SYSVIEW_Conf();
+
+    AppManager::instance()->initApp();
+    
     osKernelStart();
 }
-
-void PinyCore::coreInit() { SEGGER_SYSVIEW_Conf(); }
 
 void PinyCore::init()
 {
     bspInit();
     coreInit();
-    osInit();
 
     log.info(LOCATION, "Piny", "init");
 }

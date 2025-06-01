@@ -28,7 +28,6 @@ public:
     LOG::Logger &log = LOG::Logger::instance();
 
     void bspInit();  // TODO:
-    void osInit();   // TODO:
     void coreInit(); // TODO:
 
     void init();

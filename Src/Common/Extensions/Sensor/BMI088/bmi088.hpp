@@ -52,16 +52,11 @@ typedef struct BMI088_RAW_DATA {
 typedef struct BMI088_REAL_DATA {
     uint8_t status;
     float accel[3];
-    float temp;
+    float temperate;
     float gyro[3];
     float time;
 } bmi088_real_data_t;
 
-struct bmi088RawIMUData_s {
-    float gyro[3];
-    float accel[3];
-    float temperate;
-};
 
 enum {
     BMI088_NO_ERROR = 0x00,
@@ -88,8 +83,17 @@ enum {
 class BMI088 : public Middleware {
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
-    bmi088RawIMUData_s read();   // read raw data in expected format
     bmi088_raw_data_t readRaw(); // read raw data in raw format
+    bmi088_real_data_t read(); // read raw data in expected format
+    inline float getTemperature(void) { return data_.temperate; }
+    inline float getAccelX(void) { return data_.accel[0]; }
+    inline float getAccelY(void) { return data_.accel[1]; }
+    inline float getAccelZ(void) { return data_.accel[2]; }
+    inline float getGyroX(void) { return data_.gyro[0]; }
+    inline float getGyroY(void) { return data_.gyro[1]; }
+    inline float getGyroZ(void) { return data_.gyro[2]; }
+    inline float getTimestamp(void) { return data_.time; }
+    
 
 protected:
     uint8_t accelInit(void);
@@ -108,6 +112,6 @@ protected:
     void read_muli_reg(uint8_t reg, uint8_t *buf, uint8_t len);
 
 private:
-    bmi088RawIMUData_s data_;
+    bmi088_real_data_t data_;
     bmi088_raw_data_t rawData_;
 };

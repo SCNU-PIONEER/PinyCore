@@ -10,8 +10,9 @@ public:
     AppManager(const AppManager &) = delete;
     AppManager &operator=(const AppManager &) = delete;
 
-    void createApp();
+    void initApp();
 
 private:
     AppManager() = default;
+    void createApp();
 };
