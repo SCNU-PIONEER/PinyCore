@@ -18,7 +18,7 @@ set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 
 # Define the build type
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 
 # Set the project name and version
 set(CMAKE_PROJECT_NAME PinyCore)
