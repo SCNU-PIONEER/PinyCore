@@ -32,7 +32,7 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-
+    void registerRecvCallback();
     this->log(
             "INFO", "green",
             "Motor %s: An instance of DJI_ODMotor created, rxBaseId = 0x%03X, txBaseId = 0x%03X",

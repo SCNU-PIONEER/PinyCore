@@ -37,7 +37,7 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-
+    this->registerRecvCallback(); // 注册解析函数
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }

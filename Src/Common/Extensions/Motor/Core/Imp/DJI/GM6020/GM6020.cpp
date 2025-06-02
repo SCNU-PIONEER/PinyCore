@@ -15,13 +15,13 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x204;
 
     if (this->workMode_ == WorkMode_e::QUAD_CURR) {
-        if (_config.offsetId > 3)
+        if (_config.offsetId > 4)
             this->model_.txBaseId = 0x2FE;
         else
             this->model_.txBaseId = 0x1FE;
     } else if (this->workMode_ == WorkMode_e::QUAD_VOLT)
     {
-        if (_config.offsetId > 3)
+        if (_config.offsetId > 4)
             this->model_.txBaseId = 0x2FF;
         else
             this->model_.txBaseId = 0x1FF;
@@ -43,7 +43,7 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-
+    this->registerRecvCallback(); // 注册解析函数
     this->log(
             "INFO", "green",
             "Motor %s: An instance of DJIMotor created, rxBaseId:%hx, txBaseId:%hx",

@@ -56,12 +56,12 @@ class DJIMotor : public QuadMotorBase<DJIMotor<Derived> > {
     
 
 private:
-    // 注册解析函数
-    void registerRecvCallback();
 
 protected:
     DJIMotorStats_s stats_;
-
+    
+        // 注册解析函数
+    void registerRecvCallback();
     struct Cmd_s {
         bool SW;
         bool prevSW;
@@ -93,7 +93,6 @@ public:
             : Base(_name, _config)
     {
         cmd_.clear();
-        registerRecvCallback(); // 注册解析函数
     }
 
     // 重写电机属性

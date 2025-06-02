@@ -52,11 +52,11 @@ class DJI_ODMotor : public TripMotorBase<DJI_ODMotor<Derived> > {
     }
 
 private:
-    void registerRecvCallback();
+    
 
 protected:
     DJI_ODMotorStats_s stats_;
-
+    void registerRecvCallback();
     struct Cmd_s {
         bool SW;
         bool prevSW;
@@ -82,7 +82,6 @@ public:
             : Base(_name, _config)
     {
         cmd_.clear();
-        registerRecvCallback(); // 注册解析函数
     }
 
     inline void overrideStats(const DJI_ODMotorStats_s& _newStats)

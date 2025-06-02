@@ -35,7 +35,7 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-    
+    void registerRecvCallback();
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }
