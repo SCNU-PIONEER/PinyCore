@@ -32,6 +32,7 @@ void PinyCore::coreInit()
 
 void PinyCore::init()
 {
+    /* Welcome to Piny */
     bspInit();
     coreInit();
 

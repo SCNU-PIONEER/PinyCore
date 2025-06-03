@@ -9,7 +9,7 @@
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
-      "device": "stm32f407",
+      
       "configFiles": [
         //"${workspaceFolder}/tools/openocd/stlink.cfg",
         "${workspaceFolder}/tools/openocd/dap.cfg",
@@ -34,6 +34,9 @@
       "preLaunchCommands": [
         "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
       ],
+       "postLaunchCommands": [
+             "b PinyCore::init"
+        ],
       "rttConfig": {
         "enabled": true,
         "address": "auto",
@@ -47,13 +50,6 @@
             "logfile": "${workspaceRoot}/docs/rtt_log",
             "port": 0,
           },
-          // {      
-          //   "type": "binary",
-          //   "label": "cnt_bin",
-          //   // "encoding": "unsigned",
-          //   // "iencoding": "utf8",
-          //   "port": 1,
-          // },
           // {      
           //   "type": "graph",
           //   "label": "data1",
