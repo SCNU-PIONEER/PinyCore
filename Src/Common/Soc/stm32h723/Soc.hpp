@@ -12,7 +12,7 @@
 #define RX_FIFO1    FDCAN_RX_FIFO1
 
 /*uart*/
-#define SOC_UART_MULTI_BUFFER
+#define SOC_UART_DMA_DR _huart->Instance->RDR
 
 /*dma*/
 #define SOC_DMA_SRAM        0x24000000
