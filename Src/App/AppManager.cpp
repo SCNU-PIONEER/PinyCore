@@ -60,20 +60,20 @@ void ctrlTask(void *param)
 void INSTask(void *param)
 {
     while (1) {
-        // read IMU data
-        bmi088.readRaw();
-        bmi088.read();
-        // load raw 9 axis data
-        IMUSensorData_s data = {
-            .a = { .x = bmi088.getAccelX(),
-                   .y = bmi088.getAccelY(),
-                   .z = bmi088.getAccelZ() },
-            .g = { .x = bmi088.getGyroX(),
-                   .y = bmi088.getGyroY(),
-                   .z = bmi088.getGyroZ() },
-            // .m = NULL TODO:
-            .temperature = bmi088.getTemperature()
-        };
+        // read BMI088 data
+        bmi088.readRaw();   // read raw 6 axis data from device
+        bmi088.read();      // serialize data to real format
+        
+        // load raw INS needed data
+        IMUSensorData_s data = { .a = { .x = bmi088.getAccelX(),
+                                        .y = bmi088.getAccelY(),
+                                        .z = bmi088.getAccelZ() },
+                                 .g = { .x = bmi088.getGyroX(),
+                                        .y = bmi088.getGyroY(),
+                                        .z = bmi088.getGyroZ() },
+                                 // .m = NULL TODO:
+                                 .temperature = bmi088.getTemperature() };
+        
         // update INS
         ins.update(&data, bmi088.getTimestamp());
         vTaskDelay(1);
