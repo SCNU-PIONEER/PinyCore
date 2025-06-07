@@ -75,6 +75,27 @@ void TripMotorBase::updateMotorMap()
     map[getGroupId()]->showMotorInfo();
 }
 
+void TripMotorBase::removeMotorFromMap()
+{
+    auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
+                            [this](const auto &pair) {
+                                return pair.first == this->pComHandle_;
+                            }); // lamda
+    if (it != motorMap_.end()) {
+        auto &map = it->second;
+        if (map.find(getGroupId()) != map.end()) {
+            map[getGroupId()]->motor[getPosInGroup()] = nullptr;
+            this->log("INFO", "green", "Motor %s: remove from group %hx",
+                      this->name_, getGroupId());
+        } else {
+            this->log("ERROR", "red", "Motor %s: not in group %hx",
+                      this->name_, getGroupId());
+        }
+    } else {
+        this->log("ERROR", "red", "Motor %s: not in motorMap_", this->name_);
+    }
+}
+
 uint16_t TripMotorBase::getGroupId() const { return this->model_.txBaseId; }
 
 uint8_t TripMotorBase::getPosInGroup() const

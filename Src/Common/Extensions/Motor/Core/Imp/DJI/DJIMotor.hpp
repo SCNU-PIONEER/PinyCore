@@ -44,6 +44,7 @@ protected:
 
 public:
     DJIMotor(const char _name[16], InitConfig_s _config);
+    ~DJIMotor() override;
     void overrideStats(const DJIMotorStats_s &_newStats);
     
     uint16_t canId() const; // QuadMotor's canId is fixed

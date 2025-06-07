@@ -155,6 +155,7 @@ protected:
     
 public:
     DMMotor(const char _name[16], InitConfig_s _config);
+    ~DMMotor() override;
     
     void overrideStats(const DMMotorStats_s& _newStats);
 

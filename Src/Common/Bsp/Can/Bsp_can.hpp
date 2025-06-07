@@ -14,6 +14,12 @@ public:
      */
     void registerCallback(canHandle *_hcan, uint32_t _stdid,
                           callback _pCallback);
+    
+    /**
+     * @brief can unregisterCallback
+     */
+    void unregisterCallback(canHandle *_hcan, uint32_t _stdid);
+
     /**
     * @brief can初始化并配置滤波器，不过滤任何ID
     */

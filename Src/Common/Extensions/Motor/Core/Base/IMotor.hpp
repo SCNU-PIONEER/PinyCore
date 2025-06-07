@@ -55,10 +55,6 @@ public:
     template <typename... Args>
     void log(std::string_view _type, const char *color, const char *_format,
              Args &&...args);
-
-    // Mock functions for testing
-    void overrideTxBaseId(uint16_t _newTxBaseId);
-    void overrideRxBaseId(uint16_t _newRxBaseId);
 };
 
 template <typename... Args>

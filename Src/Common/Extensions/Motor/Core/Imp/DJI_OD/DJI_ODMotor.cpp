@@ -42,6 +42,14 @@ DJI_ODMotor::DJI_ODMotor(const char _name[16], InitConfig_s _config)
     cmd_->clear();
 }
 
+DJI_ODMotor::~DJI_ODMotor()
+{
+    this->cancelRecvCallback();
+    this->cancelMotor();
+    this->log("INFO", "green", "Motor %s: An instance of DJI_ODMotor destroyed",
+              this->name_);
+}
+
 void DJI_ODMotor::overrideStats(const DJI_ODMotorStats_s &_stats) { stats_ = _stats; }
 
 uint16_t DJI_ODMotor::canId() const { return this->model_.txBaseId + 0u; }
@@ -71,8 +79,8 @@ void DJI_ODMotor::registerRecvCallback()
 
 void DJI_ODMotor::cancelRecvCallback()
 {
-    // Can::instance().cancelCallback(
-    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    Can::instance().unregisterCallback(
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
     this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
 }
 

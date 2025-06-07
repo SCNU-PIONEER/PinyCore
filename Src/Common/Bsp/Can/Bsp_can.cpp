@@ -8,6 +8,17 @@ void Can::registerCallback(canHandle *_hcan, uint32_t _stdid,
     cbTable[_hcan][_stdid] = _pCallback;
 }
 
+void Can::unregisterCallback(canHandle *_hcan, uint32_t _stdid)
+{
+    auto it = cbTable.find(_hcan);
+    if (it != cbTable.end()) {
+        it->second.erase(_stdid);
+        if (it->second.empty()) {
+            cbTable.erase(it);
+        }
+    }
+}
+
 #if defined(SOC_FDCAN)
 
 #define DLC(n) FDCAN_DLC_BYTES_##n

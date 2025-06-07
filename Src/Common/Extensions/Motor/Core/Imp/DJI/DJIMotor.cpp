@@ -42,6 +42,14 @@ DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
     this->cmd_ = std::make_unique<CmdInternal_s>();
     cmd_->clear();
 }
+DJIMotor::~DJIMotor()
+{
+    this->cancelRecvCallback();
+    this->cancelMotor();
+    this->removeMotorFromMap();
+    this->log("INFO", "green", "Motor %s: An instance of DJIMotor destroyed",
+              this->name_);
+}
 
 void DJIMotor::overrideStats(const DJIMotorStats_s &_stats) { stats_ = _stats; }
 
@@ -72,8 +80,8 @@ void DJIMotor::registerRecvCallback()
 
 void DJIMotor::cancelRecvCallback()
 {
-    // Can::instance().cancelCallback(
-    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    Can::instance().unregisterCallback(
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
     this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
 }
 

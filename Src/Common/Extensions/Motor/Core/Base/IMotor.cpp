@@ -69,13 +69,3 @@ void IMotor::overrideMeasureMin(float _newMeasureMin)
 }
 
 const char *IMotor::getName() const { return name_; }
-
-void IMotor::overrideTxBaseId(uint16_t _newTxBaseId)
-{
-    model_.txBaseId = _newTxBaseId;
-}
-
-void IMotor::overrideRxBaseId(uint16_t _newRxBaseId)
-{
-    model_.rxBaseId = _newRxBaseId;
-}

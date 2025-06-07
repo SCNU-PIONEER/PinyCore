@@ -45,6 +45,14 @@ DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
     cmd_->clear();
 }
 
+DMMotor::~DMMotor()
+{
+    this->cancelRecvCallback();
+    this->cancelMotor();
+    this->log("INFO", "green", "Motor %s: An instance of DMMotor destroyed",
+              this->name_);
+}
+
 void DMMotor::overrideStats(const DMMotorStats_s &_stats) { stats_ = _stats; }
 
 bool DMMotor::isEnable() const { return cmd_->SW; }
@@ -77,8 +85,8 @@ void DMMotor::registerRecvCallback()
 
 void DMMotor::cancelRecvCallback()
 {
-    // Can::instance().cancelCallback(
-    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    Can::instance().unregisterCallback(
+            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
     this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
 }
 

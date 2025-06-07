@@ -42,6 +42,7 @@ protected:
 
 public:
     DJI_ODMotor(const char _name[16], InitConfig_s _config);
+    ~DJI_ODMotor() override;
     void overrideStats(const DJI_ODMotorStats_s& _newStats);
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
     MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;

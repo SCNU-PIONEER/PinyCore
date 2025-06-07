@@ -33,7 +33,6 @@ protected:
 
 public:
     MotorBase(const char _name[16], InitConfig_s _config);
-
     void
     regUserRecvCallback(std::function<void(const uint8_t *_rxBuf)> _callback);
 };
@@ -58,6 +57,7 @@ private:
 protected:
     QuadMotors &getMotorMap() const;
     void updateMotorMap();
+    void removeMotorFromMap();
 public:
     QuadMotorBase(const char _name[16], InitConfig_s _config);
     uint16_t getGroupId() const;
@@ -85,6 +85,7 @@ private:
 protected:
     TripMotors &getMotorMap() const;
     void updateMotorMap();
+    void removeMotorFromMap();
 public:
     TripMotorBase(const char _name[16], InitConfig_s _config);
     uint16_t getGroupId() const;
