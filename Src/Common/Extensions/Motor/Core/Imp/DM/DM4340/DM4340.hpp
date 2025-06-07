@@ -2,7 +2,7 @@
 #include "../DMMotor.hpp"
 
 namespace PINYMOTOR {
-class DM4340 : public DMMotor {
+class DM4340 final : public DMMotor {
 private:
 public:
     DM4340(const char _name[16], InitConfig_s _config);

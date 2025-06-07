@@ -2,7 +2,7 @@
 #include "../DJIMotor.hpp"
 
 namespace PINYMOTOR {
-class GM6020 : public DJIMotor {
+class GM6020 final : public DJIMotor {
 private:
 public:
     GM6020(const char _name[16], InitConfig_s _config);

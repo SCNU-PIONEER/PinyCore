@@ -28,7 +28,21 @@ MotorTypeDef_e IMotor::cancelMotor()
 
 Data_s &IMotor::data() { return data_; }
 
+float IMotor::txBaseId() const { return static_cast<float>(model_.txBaseId); }
+
+float IMotor::rxBaseId() const { return static_cast<float>(model_.rxBaseId); }
+
 float IMotor::RR() const { return model_.reductionRatio; }
+
+float IMotor::measureMax() const
+{
+    return static_cast<float>(model_.measureMax);
+}
+
+float IMotor::measureMin() const
+{
+    return static_cast<float>(model_.measureMin);
+}
 
 float IMotor::span() const
 {
@@ -36,6 +50,8 @@ float IMotor::span() const
 }
 
 float IMotor::txFreq() const { return txFreq_; }
+
+float IMotor::rxFreq() const { return rxFreq_; }
 
 void IMotor::overrideReductionRatio(float _newReductionRatio)
 {

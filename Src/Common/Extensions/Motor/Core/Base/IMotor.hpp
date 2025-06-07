@@ -8,6 +8,8 @@
 
 #include <cstdarg>
 
+#include "stm_log.hpp"
+
 namespace PINYMOTOR {
 class IMotor {
 protected:
@@ -33,20 +35,38 @@ public:
     MotorTypeDef_e cancelMotor();
 
     Data_s &data();
-    
+
+    float txBaseId() const;
+    float rxBaseId() const;
+
     float RR() const;
+    float measureMax() const;
+    float measureMin() const;
     float span() const;
     float txFreq() const;
+    float rxFreq() const;
 
     void overrideReductionRatio(float _newReductionRatio);
     void overrideMeasureMax(float _newMeasureMax);
     void overrideMeasureMin(float _newMeasureMin);
 
     const char *getName() const;
-    void log(const char *type, const char *color, const char *format, ...);
+
+    template <typename... Args>
+    void log(std::string_view _type, const char *color, const char *_format,
+             Args &&...args);
 
     // Mock functions for testing
     void overrideTxBaseId(uint16_t _newTxBaseId);
     void overrideRxBaseId(uint16_t _newRxBaseId);
 };
+
+template <typename... Args>
+void IMotor::log(std::string_view _type, const char *color, const char *_format,
+                 Args &&...args)
+{
+    LOG::info(
+        _type, _format, std::forward<Args>(args)...,
+        std::source_location::current());
+}
 }
