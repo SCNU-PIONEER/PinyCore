@@ -35,7 +35,7 @@ private:
 
     mode_e mode = mode_e::OMNI_X;
 
-    Pid *wheelPid_[4];
+    PID *wheelPID_[4];
     WheelsState_s currentWheels;
 
     //TODO: add motor;

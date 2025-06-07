@@ -32,7 +32,7 @@ private:
     float kxyFront = 0.354;
     float kxyBack = 0.354;
 
-    Pid *wheelPid_[4];
+    PID *wheelPID_[4];
     WheelsState_s currentWheels;
 
     //TODO: add motor;

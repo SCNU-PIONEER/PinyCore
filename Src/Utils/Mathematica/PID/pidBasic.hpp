@@ -3,7 +3,7 @@
 #include "pid.hpp"
 
 
-class PidBasic : public Pid {
+class PIDBasic : public PID {
 public:
     /**
     * @brief  init pid parameter

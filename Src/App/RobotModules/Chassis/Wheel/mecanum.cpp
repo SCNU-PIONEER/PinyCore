@@ -6,7 +6,7 @@
 Mecanum::Mecanum()
 {
     for (int i = 0; i < 4; i++) {
-        wheelPid_[i] = new PidBasic();
+        wheelPID_[i] = new PIDBasic();
     }
 }
 
@@ -15,7 +15,7 @@ Mecanum::Mecanum(float diameter, float kxyFront, float kxyBack)
 {
     circumference = diameter * M_PI;
     for (int i = 0; i < 4; i++) {
-        wheelPid_[i] = new PidBasic();
+        wheelPID_[i] = new PIDBasic();
     }
 }
 
@@ -31,7 +31,7 @@ void Mecanum::stop()
     currentWheels.M_RB = 0;
 
     for (int i = 0; i < 4; i++) {
-        wheelPid_[i]->reset();
+        wheelPID_[i]->reset();
     }
 }
 
@@ -91,7 +91,7 @@ void Mecanum::ctrl(ChassisState_s _refState)
     float diff_speed[4] = { 0 };
 
     for (uint8_t i = 0; i < 4; i++) {
-        diff_speed[i] = wheelPid_[i]->calc(wheels_ref.M_RF, currentWheels.M_RF);
+        diff_speed[i] = wheelPID_[i]->calc(wheels_ref.M_RF, currentWheels.M_RF);
     }
 
     for (uint8_t i = 0; i < 4; i++) {

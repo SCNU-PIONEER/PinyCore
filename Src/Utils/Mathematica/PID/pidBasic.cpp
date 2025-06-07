@@ -1,6 +1,6 @@
 #include "pidBasic.hpp"
 
-void PidBasic::init(float _kp, float _ki, float _kd, float _i_max, float _out_max,
+void PIDBasic::init(float _kp, float _ki, float _kd, float _i_max, float _out_max,
                float _deadband)
 {
     kp = _kp;
@@ -11,7 +11,7 @@ void PidBasic::init(float _kp, float _ki, float _kd, float _i_max, float _out_ma
     k_deadband = _deadband;
 }
 
-void PidBasic::reset()
+void PIDBasic::reset()
 {
     err[1] = err[0] = 0.0f;
     p_out = 0.0f;
@@ -19,7 +19,7 @@ void PidBasic::reset()
     d_out = 0.0f;
 }
 
-float PidBasic::calc(float ref, float cur)
+float PIDBasic::calc(float ref, float cur)
 {
     float output = 0;
     err[1] = err[0];
@@ -37,7 +37,7 @@ float PidBasic::calc(float ref, float cur)
     return output;
 }
 
-float PidBasic::calcDeadband(float ref, float cur)
+float PIDBasic::calcDeadband(float ref, float cur)
 {
     float output;
     err[1] = err[0];
