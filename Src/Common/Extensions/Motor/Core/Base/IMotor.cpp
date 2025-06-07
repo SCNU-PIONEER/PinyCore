@@ -25,3 +25,41 @@ MotorTypeDef_e IMotor::cancelMotor()
     motorManager->motors().erase(it);
     return 0;
 }
+
+Data_s &IMotor::data() { return data_; }
+
+float IMotor::RR() const { return model_.reductionRatio; }
+
+float IMotor::span() const
+{
+    return static_cast<float>(model_.measureMax - model_.measureMin);
+}
+
+float IMotor::txFreq() const { return txFreq_; }
+
+void IMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    model_.reductionRatio = _newReductionRatio;
+}
+
+void IMotor::overrideMeasureMax(float _newMeasureMax)
+{
+    model_.measureMax = static_cast<uint16_t>(_newMeasureMax);
+}
+
+void IMotor::overrideMeasureMin(float _newMeasureMin)
+{
+    model_.measureMin = static_cast<uint16_t>(_newMeasureMin);
+}
+
+const char *IMotor::getName() const { return name_; }
+
+void IMotor::overrideTxBaseId(uint16_t _newTxBaseId)
+{
+    model_.txBaseId = _newTxBaseId;
+}
+
+void IMotor::overrideRxBaseId(uint16_t _newRxBaseId)
+{
+    model_.rxBaseId = _newRxBaseId;
+}

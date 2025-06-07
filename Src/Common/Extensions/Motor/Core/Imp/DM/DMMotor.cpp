@@ -1,18 +1,72 @@
 #include "DMMotor.hpp"
 
+#include "../../../Utils/MotorCommonMacros.hpp"
+
 #include "Bsp_can.hpp"
 
-#include "MotorCommonMacros.hpp"
 using namespace PINYMOTOR;
 
-template <typename Derived> void DMMotor<Derived>::registerRecvCallback()
+DMMotorStats_s& DMMotorStats_s::operator=(const DMMotorStats_s& _other) {
+    if (this != &_other) {
+        PMax = _other.PMax;
+        VMax = _other.VMax;
+        TMax = _other.TMax;
+        MITKpMax = _other.MITKpMax;
+        MITKdMax = _other.MITKdMax;
+        currTxCodeSpan = _other.currTxCodeSpan;
+        currRated = _other.currRated;
+        torqRated = _other.torqRated;
+        currMax = _other.currMax;
+        torqMax = _other.torqMax;
+        torqConstant = _other.torqConstant;
+    }
+    return *this;
+}
+
+void DMMotor::CmdInternal_s::clear()
+{
+    SW = prevSW = false;
+    torq = 0;
+    speed = 0;
+    pos = 0;
+}
+void DMMotor::CmdInternal_s::updateSW(bool _sw)
+{
+    if (_sw != prevSW) {
+        SW = _sw;
+        prevSW = _sw;
+    }
+}
+
+DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config)
+{
+    this->cmd_ = std::make_unique<CmdInternal_s>();
+    cmd_->clear();
+}
+
+void DMMotor::overrideStats(const DMMotorStats_s &_stats) { stats_ = _stats; }
+
+bool DMMotor::isEnable() const { return cmd_->SW; }
+
+uint16_t DMMotor::canId() const
+{
+    return this->model_.txBaseId + this->offsetId_;
+}
+
+uint16_t DMMotor::masterId() const
+{
+    return this->model_.rxBaseId + this->offsetId_;
+}
+
+void DMMotor::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t*_rxBuf) {
                 // basic cb
-                this->_parse_(_rxBuf);
+                this->parse(_rxBuf);
                 // user cb
                 if (this->userRecvCallback_ != nullptr) {
                     this->userRecvCallback_(_rxBuf);
@@ -21,18 +75,42 @@ template <typename Derived> void DMMotor<Derived>::registerRecvCallback()
     this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
-template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
+void DMMotor::cancelRecvCallback()
+{
+    // Can::instance().cancelCallback(
+    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+}
+
+void DMMotor::setMITKp(float _kp)
+{
+    if (_kp < 0 || _kp > stats_.MITKpMax) {
+        this->log("ERROR", "red", "Motor %s: MITKp out of range", this->name_);
+        return;
+    }
+    MITKp_ = _kp;
+}
+
+void DMMotor::setMITKd(float _kd)
+{
+    if (_kd < 0 || _kd > stats_.MITKdMax) {
+        this->log("ERROR", "red", "Motor %s: MITKd out of range", this->name_);
+        return;
+    }
+    MITKd_ = _kd;
+}
+
+MotorTypeDef_e DMMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_SPD:
-        cmd_.speed = _cmdData;
+        cmd_->speed = _cmdData;
         break;
     case MotorCmdType_e::SET_POS:
-        cmd_.pos = _cmdData;
+        cmd_->pos = _cmdData;
         break;
     case MotorCmdType_e::SET_TORQ:
-        cmd_.torq = _cmdData;
+        cmd_->torq = _cmdData;
         break;
     default:
         this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
@@ -41,12 +119,12 @@ MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
+MotorTypeDef_e DMMotor::cmd(MotorCmdType_e _cmd)
 {
     if (_cmd == MotorCmdType_e::ON) {
-        cmd_.updateSW(true);
+        cmd_->updateSW(true);
     } else if (_cmd == MotorCmdType_e::OFF) {
-        cmd_.updateSW(false);
+        cmd_->updateSW(false);
     } else {
         this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
         return 1;
@@ -54,15 +132,14 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_cmd_(MotorCmdType_
     return 0;
 }
 
-template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DMMotor::send(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_, _txBuf,
             _len));
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_parse_(const uint8_t *_rxBuf)
+MotorTypeDef_e DMMotor::parse(const uint8_t *_rxBuf)
 {
     // 先处理非常规数据反馈的帧
     if (_rxBuf[0] == static_cast<uint8_t>(canId()) &&
@@ -129,7 +206,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_parse_(const uint8
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
+MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     typedef union {
@@ -155,7 +232,7 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
     }
     case WorkMode_e::MIT_TT: {
         DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_.torq, -stats_.TMax, stats_.TMax, 12);
+                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
         DMMsg.msgMIT.Kp = 0;
         DMMsg.msgMIT.Kd = 0;
         isMIT = true;
@@ -163,34 +240,34 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
     }
     case WorkMode_e::MIT_VDESPDES: {
         DMMsg.msgMIT.exptScale =
-                float2uint(cmd_.pos, -stats_.PMax, stats_.PMax, 16);
+                float2uint(cmd_->pos, -stats_.PMax, stats_.PMax, 16);
         DMMsg.msgMIT.exptVel =
-                float2uint(cmd_.speed, -stats_.VMax, stats_.VMax, 12);
+                float2uint(cmd_->speed, -stats_.VMax, stats_.VMax, 12);
         DMMsg.msgMIT.Kd =
                 float2uint(this->MITKd_, -stats_.MITKdMax, stats_.MITKdMax, 12);
         DMMsg.msgMIT.Kp =
                 float2uint(this->MITKp_, -stats_.MITKpMax, stats_.MITKpMax, 12);
         DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_.torq, -stats_.TMax, stats_.TMax, 12);
+                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
         isMIT = true;
         break;
     }
     case WorkMode_e::MIT_VDES: {
         DMMsg.msgMIT.exptVel =
-                float2uint(cmd_.speed, -stats_.VMax, stats_.VMax, 12);
+                float2uint(cmd_->speed, -stats_.VMax, stats_.VMax, 12);
         DMMsg.msgMIT.Kd =
                 float2uint(this->MITKd_, -stats_.MITKdMax, stats_.MITKdMax, 12);
         DMMsg.msgMIT.Kp = 0;
         DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_.torq, -stats_.TMax, stats_.TMax, 12);
+                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
         isMIT = true;
         break;
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
         this->ctrlId_ = canId() + 0x100;
-        DMMsg.msgPDESVDES.exptScale = cmd_.pos;
-        DMMsg.msgPDESVDES.exptVel = cmd_.speed;
+        DMMsg.msgPDESVDES.exptScale = cmd_->pos;
+        DMMsg.msgPDESVDES.exptVel = cmd_->speed;
         memcpy(txBuf, &DMMsg.msgPDESVDES.exptScale, 4);
         memcpy(&txBuf[4], &DMMsg.msgPDESVDES.exptVel, 4);
         break;
@@ -198,18 +275,18 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
     case WorkMode_e::VDES: {
         lenBuf = 4;
         this->ctrlId_ = canId() + 0x200;
-        DMMsg.msgVDES.exptVel = cmd_.speed;
+        DMMsg.msgVDES.exptVel = cmd_->speed;
         memcpy(txBuf, &DMMsg.msgVDES.exptVel, 4);
         break;
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
         this->ctrlId_ = canId() + 0x300;
-        DMMsg.msgEMIT.exptScale = cmd_.pos;
+        DMMsg.msgEMIT.exptScale = cmd_->pos;
         DMMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
-                ((cmd_.speed < 0) ? -cmd_.speed : cmd_.speed) * 100.f);
+                ((cmd_->speed < 0) ? -cmd_->speed : cmd_->speed) * 100.f);
         DMMsg.msgEMIT.imaxX10000 = static_cast<uint16_t>(
-                ((cmd_.torq < 0) ? -cmd_.torq : cmd_.torq) /
+                ((cmd_->torq < 0) ? -cmd_->torq : cmd_->torq) /
                 stats_.torqConstant / stats_.currMax * stats_.currTxCodeSpan);
         float f = DMMsg.msgEMIT.exptScale;
         memcpy(txBuf, &f, 4);
@@ -243,11 +320,11 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
 
     if (this->checkSend()) {
         this->lastSendTick = xTaskGetTickCount();
-        if ((cmd_.SW && !cmd_.prevSW) ||
-            (cmd_.SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
+        if ((cmd_->SW && !cmd_->prevSW) ||
+            (cmd_->SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
             this->ctrlId_ = canId();
             this->enable();
-        } else if (!cmd_.SW) {
+        } else if (!cmd_->SW) {
             this->ctrlId_ = canId();
             this->disable();
         } else {
@@ -257,43 +334,50 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::_ctrl_()
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::enable()
+MotorTypeDef_e DMMotor::enable()
 {
     MotorTypeDef_e rslt = 0;
     // 定义一个8字节的数组enableCmdPack，用于存储使能命令
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC
     };
-    rslt |= this->send(enableCmdPack, 8);
-    cmd_.updateSW(true); // force enable
+    if (this->checkSend()) {
+        this->lastSendTick = xTaskGetTickCount();
+        rslt |= this->send(enableCmdPack, 8);
+        cmd_->updateSW(true); // force enable
+    }
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::disable()
+MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;
     // 定义一个8字节的数组disableCmdPack，用于存储禁用命令
     uint8_t disableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
     };
-    rslt |= this->send(disableCmdPack, 8);
-    cmd_.updateSW(false); // force disable
+    if (this->checkSend()) {
+        this->lastSendTick = xTaskGetTickCount();
+        rslt |= this->send(disableCmdPack, 8);
+        cmd_->updateSW(false); // force disable
+    }
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::clearError()
+MotorTypeDef_e DMMotor::clearError()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB
     };
-    rslt |= this->send(enableCmdPack, 8);
+    if (this->checkSend()) {
+        this->lastSendTick = xTaskGetTickCount();
+        rslt |= this->send(enableCmdPack, 8);
+    }
     return rslt;
 }
 
-
-template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
+MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj)
 {
     if (_regObj == nullptr) {
         this->log("ERROR", "red",
@@ -314,15 +398,14 @@ MotorTypeDef_e DMMotor<Derived>::registerReg(DMMotorReg_s *_regObj)
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::cancelReg(DMMotorRegId_e regId)
+MotorTypeDef_e DMMotor::cancelReg(DMMotorRegId_e regId)
 {
     this->log("INFO", "green", "Motor %s: cancelReg success", this->name_);
     regObjList_.erase(regId);
     return 0;
 }
 
-template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4])
+MotorTypeDef_e DMMotor::writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4])
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x55, D3 : RID, D4 : dat1,
@@ -340,14 +423,17 @@ MotorTypeDef_e DMMotor<Derived>::writeOneReg(DMMotorRegId_e _regId, uint8_t dat[
                   dat[1],
                   dat[2],
                   dat[3] };
-        rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                writeTxBuffer, 8));
+        if (this->checkSend()) {
+            this->lastSendTick = xTaskGetTickCount();
+            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                    writeTxBuffer, 8));
+        }
     }
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readOneReg(DMMotorRegId_e _regId)
+MotorTypeDef_e DMMotor::readOneReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x33, D3 : RID, D4 : 0x00,
@@ -364,15 +450,17 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readOneReg(DMMotorR
                                     0x00,
                                     0x00,
                                     0x00 };
-        rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                readTxBuffer, 8));
+        if (this->checkSend()) {
+            this->lastSendTick = xTaskGetTickCount();
+            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                    readTxBuffer, 8));
+        }
     }
     return rslt;
 }
 
-template <typename Derived>
-MotorTypeDef_e DMMotor<Derived>::storageOneReg(DMMotorRegId_e _regId)
+MotorTypeDef_e DMMotor::storageOneReg(DMMotorRegId_e _regId)
 {
     MotorTypeDef_e rslt = 0;
     // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0xAA, D3 : RID, D4 : 0x00,
@@ -389,16 +477,19 @@ MotorTypeDef_e DMMotor<Derived>::storageOneReg(DMMotorRegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                storageTxBuf, 8));
+        if (this->checkSend()) {
+            this->lastSendTick = xTaskGetTickCount();
+            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
+                    storageTxBuf, 8));
+        }
     }
     return rslt;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::writeReg()
+MotorTypeDef_e DMMotor::writeReg()
 {
-    static MotorTypeDef_e writeWaitTime =0;
+    static uint16_t writeWaitTime =0;
     static auto it = regObjList_.begin();
     if(it != regObjList_.end()){
         if(writeWaitTime % 10 == 0){
@@ -416,9 +507,9 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::writeReg()
     writeWaitTime++;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg()
+MotorTypeDef_e DMMotor::readReg()
 {
-    static MotorTypeDef_e readWaitTime =0;
+    static uint16_t readWaitTime =0;
     static auto it = regObjList_.begin();
     if(it != regObjList_.end()){
         if(readWaitTime % 10 == 0){
@@ -436,9 +527,9 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::readReg()
     readWaitTime++;
 }
 
-template <typename Derived> MotorTypeDef_e DMMotor<Derived>::storageReg()
+MotorTypeDef_e DMMotor::storageReg()
 {
-    static MotorTypeDef_e storageWaitTime =0;
+    static uint16_t storageWaitTime =0;
     static auto it = regObjList_.begin();
     if(it != regObjList_.end()){
         if(storageWaitTime % 10 == 0){
@@ -455,15 +546,3 @@ template <typename Derived> MotorTypeDef_e DMMotor<Derived>::storageReg()
     }
     storageWaitTime++;
 }
-
-/**********************************************************************************/
-// 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
-// 显式模板实例化 DMMotor<Devired>
-#include "DM4310.hpp"
-template class PINYMOTOR::DMMotor<DM4310>;
-
-#include "DM4340.hpp"
-template class PINYMOTOR::DMMotor<DM4340>;
-
-#include "DM3519.hpp"
-template class PINYMOTOR::DMMotor<DM3519>;

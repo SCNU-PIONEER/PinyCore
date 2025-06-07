@@ -5,7 +5,7 @@
 
 using namespace PINYMOTOR;
 DM3519::DM3519(const char _name[16], InitConfig_s _config)
-        : DMMotor<DM3519>(_name, _config)
+        : DMMotor(_name, _config)
 {
     strcpy(this->model_.name, "DM-DM3519");
     this->model_.measureMax = 16383;
@@ -25,14 +25,18 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
         10000.f, // currTxCodeSpan
 
         9.2f, // currRated
-        3.5f,  // torqRated
+        3.5f, // torqRated
 
         20.5f, // currMax
         7.8f,  // torqMax
 
         0.3805f // torqConstant
     };
+    
     this->registerMotor();
+    this->registerRecvCallback();
+
+    checkBaseConfig();
     
     this->log("INFO", "",
                           "Motor %s: An instance of DM3519 created", this->name_);

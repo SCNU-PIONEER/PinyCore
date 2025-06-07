@@ -6,7 +6,7 @@
 
 using namespace PINYMOTOR;
 GM6020::GM6020(const char _name[16], InitConfig_s _config)
-        : DJIMotor<GM6020>(_name, _config)
+        : DJIMotor(_name, _config)
 {
     strcpy(this->model_.name, "DJI-GM6020");
     this->model_.measureMax = 8191;
@@ -43,7 +43,10 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-    this->registerRecvCallback(); // 注册解析函数
+    this->registerRecvCallback();
+
+    checkBaseConfig();
+
     this->log(
             "INFO", "green",
             "Motor %s: An instance of DJIMotor created, rxBaseId:%hx, txBaseId:%hx",

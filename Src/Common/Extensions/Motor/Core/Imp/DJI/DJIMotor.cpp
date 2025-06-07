@@ -1,20 +1,67 @@
 #include "DJIMotor.hpp"
 
+#include "../../../Utils/MotorCommonMacros.hpp"
+
 #include "Bsp_can.hpp"
-
-#include "MotorCommonMacros.hpp"
-
 
 using namespace PINYMOTOR;
 
-template <typename Derived> void DJIMotor<Derived>::registerRecvCallback()
+DJIMotorStats_s& DJIMotorStats_s::operator=(const DJIMotorStats_s& _other) {
+    if (this != &_other)
+    {
+        voltTxCodeSpan = _other.voltTxCodeSpan;
+        currTxCodeSpan = _other.currTxCodeSpan;
+        currRxCodeSpan = _other.currRxCodeSpan;
+        currRated = _other.currRated;
+        torqRated = _other.torqRated;
+        voltMax = _other.voltMax;
+        currMax = _other.currMax;
+        torqMax = _other.torqMax;
+        torqConstant = _other.torqConstant;
+    }
+    return *this;
+}
+
+void DJIMotor::CmdInternal_s::clear()
+{
+    SW = prevSW = false;
+    torq = 0.f;
+    volt = 0.f;
+}
+void DJIMotor::CmdInternal_s::updateSW(bool _sw)
+{
+    if (_sw != prevSW) {
+        SW = _sw;
+        prevSW = _sw;
+    }
+}
+
+DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config)
+{
+    this->cmd_ = std::make_unique<CmdInternal_s>();
+    cmd_->clear();
+}
+
+void DJIMotor::overrideStats(const DJIMotorStats_s &_stats) { stats_ = _stats; }
+
+uint16_t DJIMotor::canId() const { return this->model_.txBaseId + 0u; }
+
+uint16_t DJIMotor::masterId() const
+{
+    return this->model_.rxBaseId + this->offsetId_;
+}
+
+uint16_t DJIMotor::uid() { return masterId(); }
+
+void DJIMotor::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t *_rxBuf) {
                 // basic cb
-                this->_parse_(_rxBuf);
+                this->parse(_rxBuf);
                 // user cb
                 if (this->userRecvCallback_ != nullptr) {
                     this->userRecvCallback_(_rxBuf);
@@ -23,19 +70,25 @@ template <typename Derived> void DJIMotor<Derived>::registerRecvCallback()
     this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
-template <typename Derived>
-MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
+void DJIMotor::cancelRecvCallback()
+{
+    // Can::instance().cancelCallback(
+    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+}
+
+MotorTypeDef_e DJIMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_TORQ:
         if(this->workMode_ == WorkMode_e::QUAD_CURR)
-           cmd_.torq = _cmdData;
+           cmd_->torq = _cmdData;
         else
            this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
     break;
     case MotorCmdType_e::SET_VOLT:
         if(this->workMode_ == WorkMode_e::QUAD_VOLT)
-           cmd_.volt = _cmdData;
+           cmd_->volt = _cmdData;
         else
            this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
     break;
@@ -46,12 +99,12 @@ MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
+MotorTypeDef_e DJIMotor::cmd(MotorCmdType_e _cmd)
 {
     if (_cmd == MotorCmdType_e::ON) {
-        cmd_.updateSW(true);
+        cmd_->updateSW(true);
     } else if (_cmd == MotorCmdType_e::OFF) {
-        cmd_.updateSW(false);
+        cmd_->updateSW(false);
     } else {
         this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
         return 1;
@@ -59,15 +112,14 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_cmd_(MotorCmdType
     return 0;
 }
 
-template <typename Derived>
-MotorTypeDef_e DJIMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DJIMotor::send(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
             _txBuf, _len));
 }
 
-template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_parse_(const uint8_t *_rxBuf)
+MotorTypeDef_e DJIMotor::parse(const uint8_t *_rxBuf)
 {
     DJIMotorFeedback_s fb;
     fb.rawScale = ((_rxBuf[0] << 8) | _rxBuf[1]);
@@ -101,7 +153,7 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_parse_(const uint
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
+MotorTypeDef_e DJIMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t *txBuf = nullptr;
@@ -118,13 +170,13 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
         this->ctrlId_ = this->getGroupId() + 0u; // 0x1FE OR 0x2FE
-        currCmd = cmd_.torq / stats_.torqConstant /
+        currCmd = cmd_->torq / stats_.torqConstant /
                   this->stats_.currMax * this->stats_.currTxCodeSpan;
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u; // 0x1FF OR 0x2FF
-        currCmd = cmd_.volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
+        currCmd = cmd_->volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
         break;
     }
     default: {
@@ -135,7 +187,7 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
     }
     }
     if (txBuf != nullptr) {
-        if (cmd_.SW) {
+        if (cmd_->SW) {
             txBuf[2 * this->getPosInGroup() + 1] =
                     static_cast<uint8_t>(currCmd & 0xFF);
             txBuf[2 * this->getPosInGroup()] =
@@ -153,14 +205,17 @@ template <typename Derived> MotorTypeDef_e DJIMotor<Derived>::_ctrl_()
     return rslt;
 }
 
-/**********************************************************************************/
-// 模板成员函数基本构建在源文件中，导致链接不到，因此需要显式声明
-// 显式模板实例化 DJIMotor<Devired>
-#include "GM6020.hpp"
-template class PINYMOTOR::DJIMotor<GM6020>;
-
-#include "M3508.hpp"
-template class PINYMOTOR::DJIMotor<M3508>;
-
-#include "M2006.hpp"
-template class PINYMOTOR::DJIMotor<M2006>;
+QuadMotorGroup_s *DJIMotor::findGroup() const
+{
+    QuadMotorGroup_s *group = nullptr;
+    for (auto &entry : getMotorMap()) {
+        if (entry.first == this->pComHandle_) {
+            auto it = entry.second.find(this->getGroupId()); // it" is a map
+            if (it != entry.second.end()) {
+                group = it->second;
+                break;
+            }
+        }
+    }
+    return group;
+}

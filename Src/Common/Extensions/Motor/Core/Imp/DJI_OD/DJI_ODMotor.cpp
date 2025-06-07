@@ -1,20 +1,66 @@
 
 #include "DJI_ODMotor.hpp"
 
-#include "Bsp_can.hpp"
+#include "../../../Utils/MotorCommonMacros.hpp"
 
-#include "MotorCommonMacros.hpp"
+#include "Bsp_can.hpp"
 
 using namespace PINYMOTOR;
 
-template <typename Derived> void DJI_ODMotor<Derived>::registerRecvCallback()
+DJI_ODMotorStats_s& DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s& _other) {
+    if (this != &_other)
+    {
+        voltTxCodeSpan = _other.voltTxCodeSpan;
+        torqRxCodeSpan = _other.torqRxCodeSpan;
+        currRated = _other.currRated;
+        torqRated = _other.torqRated;
+        voltMax = _other.voltMax;
+        currMax = _other.currMax;
+        torqMax = _other.torqMax;
+        torqConstant = _other.torqConstant;
+    }
+    return *this;
+}
+
+void DJI_ODMotor::CmdInternal_s::clear()
+{
+    SW = prevSW = false;
+    volt = 0.f;
+}
+void DJI_ODMotor::CmdInternal_s::updateSW(bool _sw)
+{
+    if (_sw != prevSW) {
+        SW = _sw;
+        prevSW = _sw;
+    }
+}
+
+DJI_ODMotor::DJI_ODMotor(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config)
+{
+    this->cmd_ = std::make_unique<CmdInternal_s>();
+    cmd_->clear();
+}
+
+void DJI_ODMotor::overrideStats(const DJI_ODMotorStats_s &_stats) { stats_ = _stats; }
+
+uint16_t DJI_ODMotor::canId() const { return this->model_.txBaseId + 0u; }
+
+uint16_t DJI_ODMotor::masterId() const
+{
+    return this->model_.rxBaseId + this->offsetId_;
+}
+
+uint16_t DJI_ODMotor::uid() { return masterId(); }
+
+void DJI_ODMotor::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t *_rxBuf) {
                 // basic cb
-                this->_parse_(_rxBuf);
+                this->parse(_rxBuf);
                 // user cb
                 if (this->userRecvCallback_ != nullptr) {
                     this->userRecvCallback_(_rxBuf);
@@ -23,13 +69,19 @@ template <typename Derived> void DJI_ODMotor<Derived>::registerRecvCallback()
     this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
 }
 
-template <typename Derived>
-MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
+void DJI_ODMotor::cancelRecvCallback()
+{
+    // Can::instance().cancelCallback(
+    //         reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
+    this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+}
+
+MotorTypeDef_e DJI_ODMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
     case MotorCmdType_e::SET_VOLT:
         if(this->workMode_ == WorkMode_e::TRIP_VOLT)
-           cmd_.volt = _cmdData;
+           cmd_->volt = _cmdData;
         else
            this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
     break;
@@ -40,12 +92,12 @@ MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd, float _cmdData)
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdType_e _cmd)
+MotorTypeDef_e DJI_ODMotor::cmd(MotorCmdType_e _cmd)
 {
     if (_cmd == MotorCmdType_e::ON) {
-        cmd_.updateSW(true);
+        cmd_->updateSW(true);
     } else if (_cmd == MotorCmdType_e::OFF) {
-        cmd_.updateSW(false);
+        cmd_->updateSW(false);
     } else {
         this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
         return 1;
@@ -53,15 +105,14 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_cmd_(MotorCmdT
     return 0;
 }
 
-template <typename Derived>
-MotorTypeDef_e DJI_ODMotor<Derived>::_send_(uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DJI_ODMotor::send(uint8_t *_txBuf, uint8_t _len)
 {
     return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
             _txBuf, _len));
 }
 
-template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_parse_(const uint8_t *_rxBuf)
+MotorTypeDef_e DJI_ODMotor::parse(const uint8_t *_rxBuf)
 {
     DJI_ODMotorFeedback_s fb;
     fb.rawScale = ((_rxBuf[0] << 8) | _rxBuf[1]);
@@ -99,7 +150,7 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_parse_(const u
     return 0;
 }
 
-template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_ctrl_()
+MotorTypeDef_e DJI_ODMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t *txBuf = nullptr;
@@ -116,7 +167,7 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_ctrl_()
     switch (this->workMode_) {
     case WorkMode_e::TRIP_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u; // 0x1FF
-        currCmd = cmd_.volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
+        currCmd = cmd_->volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
         break;
     }
     default: {
@@ -127,7 +178,7 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_ctrl_()
     }
     }
     if (txBuf != nullptr) {
-        if (cmd_.SW) {
+        if (cmd_->SW) {
             txBuf[2 * this->getPosInGroup() + 1] =
                     static_cast<uint8_t>(currCmd & 0xFF);
             txBuf[2 * this->getPosInGroup()] =
@@ -146,6 +197,17 @@ template <typename Derived> MotorTypeDef_e DJI_ODMotor<Derived>::_ctrl_()
     return rslt;
 }
 
-/**********************************************************************************/
-#include "GM3510.hpp"
-template class PINYMOTOR::DJI_ODMotor<GM3510>;
+TripMotorGroup_s *DJI_ODMotor::findGroup() const
+{
+    TripMotorGroup_s *group = nullptr;
+    for (auto &entry : getMotorMap()) {
+        if (entry.first == this->pComHandle_) {
+            auto it = entry.second.find(this->getGroupId()); // it" is a map
+            if (it != entry.second.end()) {
+                group = it->second;
+                break;
+            }
+        }
+    }
+    return group;
+}

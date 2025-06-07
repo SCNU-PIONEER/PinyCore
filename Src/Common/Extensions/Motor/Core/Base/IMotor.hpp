@@ -8,11 +8,7 @@
 
 #include <cstdarg>
 
-#include "PinyCore.hpp"
-
 namespace PINYMOTOR {
-class MotorManager;
-// 类型擦除 管理异构CRTP
 class IMotor {
 protected:
     Model_s model_;
@@ -36,21 +32,21 @@ public:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
 
-    inline Data_s &data() { return data_; }
-    // 出轴减速比
-    inline float RR(){ return model_.reductionRatio; }
-    // 角度编码量程
-    inline float span()
-    {
-        return static_cast<float>(model_.measureMax - model_.measureMin);
-    }
+    Data_s &data();
+    
+    float RR() const;
+    float span() const;
+    float txFreq() const;
 
-    inline float txFreq() const { return txFreq_; }
+    void overrideReductionRatio(float _newReductionRatio);
+    void overrideMeasureMax(float _newMeasureMax);
+    void overrideMeasureMin(float _newMeasureMin);
 
-    inline const char *getName() const { return name_; }
+    const char *getName() const;
+    void log(const char *type, const char *color, const char *format, ...);
 
-    void log(const char *type, const char *color, const char *format, ...)
-    {
-    }
+    // Mock functions for testing
+    void overrideTxBaseId(uint16_t _newTxBaseId);
+    void overrideRxBaseId(uint16_t _newRxBaseId);
 };
 }

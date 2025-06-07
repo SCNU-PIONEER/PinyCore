@@ -6,7 +6,7 @@
 
 using namespace PINYMOTOR;
 M3508::M3508(const char _name[16], InitConfig_s _config)
-        : DJIMotor<M3508>(_name, _config)
+        : DJIMotor(_name, _config)
 {
     strcpy(this->model_.name, "DJI-M3508");
     this->model_.measureMax = 8191;
@@ -35,7 +35,10 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-    void registerRecvCallback();
+    this->registerRecvCallback();
+
+    checkBaseConfig();
+
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }

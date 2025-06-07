@@ -5,7 +5,7 @@
 
 using namespace PINYMOTOR;
 DM4340::DM4340(const char _name[16], InitConfig_s _config)
-        : DMMotor<DM4340>(_name, _config)
+        : DMMotor(_name, _config)
 {
     strcpy(this->model_.name, "DM-DM4340");
     this->model_.measureMax = 16383;
@@ -34,6 +34,9 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     };
 
     this->registerMotor();
+    this->registerRecvCallback();
+    
+    checkBaseConfig();
     
     this->log("INFO", "green",
                           "Motor %s: An instance of DM4310 created", this->name_);

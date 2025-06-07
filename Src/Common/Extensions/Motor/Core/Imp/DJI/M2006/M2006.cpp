@@ -6,7 +6,7 @@
 
 using namespace PINYMOTOR;
 M2006::M2006(const char _name[16], InitConfig_s _config)
-        : DJIMotor<M2006>(_name, _config)
+        : DJIMotor(_name, _config)
 {
     strcpy(this->model_.name, "DJI-M2006");
     this->model_.measureMax = 8191;
@@ -37,7 +37,10 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->updateMotorMap();
-    this->registerRecvCallback(); // 注册解析函数
+    this->registerRecvCallback();
+
+    checkBaseConfig();
+
     this->log("INFO", "green",
                           "Motor %s: An instance of DJIMotor created", this->name_);
 }

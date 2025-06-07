@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../Projdefs.hpp"
-
-#include <string>
-
+#include <stdint.h>
 #include <unordered_map>
 
 namespace PINYMOTOR {
