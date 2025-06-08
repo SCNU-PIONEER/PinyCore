@@ -141,6 +141,7 @@ private:
 protected:
     void registerRecvCallback();
     void cancelRecvCallback();
+    void updateCtrlId();
 
     DMMotorStats_s stats_;
 
@@ -151,7 +152,7 @@ protected:
 
     DMMotorErrorCode_e errorCode_;
 
-    uint16_t ctrlId_ = 0x00; // sendId - depends on work mode
+    uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
     
 public:
     DMMotor(const char _name[16], InitConfig_s _config);
@@ -166,7 +167,7 @@ public:
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
     MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;
     uint16_t uid() override final;
-    MotorTypeDef_e send(uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
 

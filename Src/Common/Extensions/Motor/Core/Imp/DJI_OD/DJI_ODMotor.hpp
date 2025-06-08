@@ -38,7 +38,8 @@ protected:
     DJI_ODMotorStats_s stats_;
     void registerRecvCallback();
     void cancelRecvCallback();
-    uint16_t ctrlId_ = 0x00; // sendId - depends on work mode
+    void updateCtrlId();
+    uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
     DJI_ODMotor(const char _name[16], InitConfig_s _config);
@@ -49,7 +50,7 @@ public:
     uint16_t canId() const; // TripMotor's canId is fixed
     uint16_t masterId() const;
     uint16_t uid() override final;
-    MotorTypeDef_e send(uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
     TripMotorGroup_s *findGroup() const;

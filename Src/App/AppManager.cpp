@@ -95,7 +95,7 @@ void AppManager::createApp()
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
 
     // Test Module Task
-    // TestModule::instance()->taskCreate();
+    TestModule::instance()->taskCreate();
 }
 
 void AppManager::initApp()

@@ -67,6 +67,8 @@ uint16_t DMMotor::masterId() const
     return this->model_.rxBaseId + this->offsetId_;
 }
 
+uint16_t DMMotor::uid() { return masterId(); }
+
 void DMMotor::registerRecvCallback()
 {
     // lamda
@@ -88,6 +90,54 @@ void DMMotor::cancelRecvCallback()
     Can::instance().unregisterCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
     this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+}
+
+void DMMotor::updateCtrlId()
+{
+    switch (this->workMode_) {
+    case WorkMode_e::QUAD_CURR: {
+        this->log("ERROR", "red", "Motor %s: QUAD_CURR mode is not supported",
+                  this->name_);
+        this->ctrlId_ = 0xFFFF;
+        break;
+    }
+    case WorkMode_e::QUAD_VOLT: {
+        this->log("ERROR", "red", "Motor %s: QUAD_VOLT mode is not supported",
+                  this->name_);
+        this->ctrlId_ = 0xFFFF;
+        break;
+    }
+    case WorkMode_e::MIT_TT: {
+        this->ctrlId_ = this->canId();
+        break;
+    }
+    case WorkMode_e::MIT_VDESPDES: {
+        this->ctrlId_ = this->canId();
+        break;
+    }
+    case WorkMode_e::MIT_VDES: {
+        this->ctrlId_ = this->canId();
+        break;
+    }
+    case WorkMode_e::PDESVDES: {
+        this->ctrlId_ = this->canId() + 0x100;
+        break;
+    }
+    case WorkMode_e::VDES: {
+        this->ctrlId_ = this->canId() + 0x200;
+        break;
+    }
+    case WorkMode_e::EMIT: {
+        this->ctrlId_ = this->canId() + 0x300;
+        break;
+    }
+    default: {
+        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+                  this->name_);
+        this->ctrlId_ = 0xFFFF;
+        break;
+    }
+    }
 }
 
 void DMMotor::setMITKp(float _kp)
@@ -140,11 +190,25 @@ MotorTypeDef_e DMMotor::cmd(MotorCmdType_e _cmd)
     return 0;
 }
 
-MotorTypeDef_e DMMotor::send(uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
-    return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_, _txBuf,
+    if (this->checkSend()) {
+#if 1
+        // Check this Buffer
+        this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx", this->name_,
+                _sendId);
+        this->log("DEBUG", "blue",
+                "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+                this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+                _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
+#endif
+        this->lastSendTick = xTaskGetTickCount();
+        return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+            reinterpret_cast<canHandle *>(this->pComHandle_), _sendId, _txBuf,
             _len));
+    } else {
+        return 0;
+    }
 }
 
 MotorTypeDef_e DMMotor::parse(const uint8_t *_rxBuf)
@@ -223,8 +287,8 @@ MotorTypeDef_e DMMotor::ctrl()
         DMVDESMsg_s msgVDES;
         DMEMITMsg_s msgEMIT;
     } DMMsg_u;
-    DMMsg_u DMMsg = { 0 };
-    uint8_t txBuf[8] = { 0 };
+    DMMsg_u DMMsg = {};
+    uint8_t txBuf[8] = {};
     uint8_t lenBuf = 0;
     bool isMIT = false;
     switch (this->workMode_) {
@@ -273,7 +337,6 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
-        this->ctrlId_ = canId() + 0x100;
         DMMsg.msgPDESVDES.exptScale = cmd_->pos;
         DMMsg.msgPDESVDES.exptVel = cmd_->speed;
         memcpy(txBuf, &DMMsg.msgPDESVDES.exptScale, 4);
@@ -282,14 +345,12 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::VDES: {
         lenBuf = 4;
-        this->ctrlId_ = canId() + 0x200;
         DMMsg.msgVDES.exptVel = cmd_->speed;
         memcpy(txBuf, &DMMsg.msgVDES.exptVel, 4);
         break;
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
-        this->ctrlId_ = canId() + 0x300;
         DMMsg.msgEMIT.exptScale = cmd_->pos;
         DMMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
                 ((cmd_->speed < 0) ? -cmd_->speed : cmd_->speed) * 100.f);
@@ -312,7 +373,6 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     if (isMIT) {
         lenBuf = 8;
-        this->ctrlId_ = canId();
         txBuf[0] = static_cast<uint8_t>((DMMsg.msgMIT.exptScale & 0xFF00) >> 8);
         txBuf[1] = static_cast<uint8_t>(DMMsg.msgMIT.exptScale & 0x00FF);
         txBuf[2] = static_cast<uint8_t>((DMMsg.msgMIT.exptVel & 0x0FF0) >> 4);
@@ -326,18 +386,13 @@ MotorTypeDef_e DMMotor::ctrl()
         txBuf[7] = static_cast<uint8_t>(DMMsg.msgMIT.torqueOffset & 0x00FF);
     }
 
-    if (this->checkSend()) {
-        this->lastSendTick = xTaskGetTickCount();
-        if ((cmd_->SW && !cmd_->prevSW) ||
-            (cmd_->SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
-            this->ctrlId_ = canId();
-            this->enable();
-        } else if (!cmd_->SW) {
-            this->ctrlId_ = canId();
-            this->disable();
-        } else {
-            rslt |= this->send(txBuf, lenBuf);
-        }
+    if ((cmd_->SW && !cmd_->prevSW) ||
+        (cmd_->SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
+        this->enable();
+    } else if (!cmd_->SW) {
+        this->disable();
+    } else {
+        rslt |= this->send(this->ctrlId_, txBuf, lenBuf);
     }
     return rslt;
 }
@@ -349,11 +404,8 @@ MotorTypeDef_e DMMotor::enable()
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC
     };
-    if (this->checkSend()) {
-        this->lastSendTick = xTaskGetTickCount();
-        rslt |= this->send(enableCmdPack, 8);
-        cmd_->updateSW(true); // force enable
-    }
+    rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
+    cmd_->updateSW(true); // force enable
     return rslt;
 }
 
@@ -364,11 +416,8 @@ MotorTypeDef_e DMMotor::disable()
     uint8_t disableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
     };
-    if (this->checkSend()) {
-        this->lastSendTick = xTaskGetTickCount();
-        rslt |= this->send(disableCmdPack, 8);
-        cmd_->updateSW(false); // force disable
-    }
+    rslt |= this->send(this->ctrlId_, disableCmdPack, 8);
+    cmd_->updateSW(false); // force disable
     return rslt;
 }
 
@@ -378,10 +427,7 @@ MotorTypeDef_e DMMotor::clearError()
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB
     };
-    if (this->checkSend()) {
-        this->lastSendTick = xTaskGetTickCount();
-        rslt |= this->send(enableCmdPack, 8);
-    }
+    rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
     return rslt;
 }
 
@@ -431,12 +477,7 @@ MotorTypeDef_e DMMotor::writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4])
                   dat[1],
                   dat[2],
                   dat[3] };
-        if (this->checkSend()) {
-            this->lastSendTick = xTaskGetTickCount();
-            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                    writeTxBuffer, 8));
-        }
+        this->send(0x7FF, writeTxBuffer, 8);
     }
     return rslt;
 }
@@ -458,12 +499,7 @@ MotorTypeDef_e DMMotor::readOneReg(DMMotorRegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        if (this->checkSend()) {
-            this->lastSendTick = xTaskGetTickCount();
-            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                    readTxBuffer, 8));
-        }
+        this->send(0x7FF, readTxBuffer, 8);
     }
     return rslt;
 }
@@ -485,12 +521,7 @@ MotorTypeDef_e DMMotor::storageOneReg(DMMotorRegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        if (this->checkSend()) {
-            this->lastSendTick = xTaskGetTickCount();
-            rslt |= static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), 0x7FF,
-                    storageTxBuf, 8));
-        }
+        this->send(0x7FF, storageTxBuf, 8);
     }
     return rslt;
 }

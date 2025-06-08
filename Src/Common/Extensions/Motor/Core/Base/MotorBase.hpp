@@ -40,7 +40,6 @@ public:
 /*******************************************************************/
 struct QuadMotorGroup_s {
     IMotor *motor[4];
-    uint8_t package[8];
     uint32_t lastSendTick; // ms
     float minTxFreq;
     QuadMotorGroup_s();
@@ -68,7 +67,6 @@ public:
 /*******************************************************************/
 struct TripMotorGroup_s {
     IMotor *motor[3];
-    uint8_t package[8];
     uint32_t lastSendTick; // ms
     float minTxFreq;
     TripMotorGroup_s();

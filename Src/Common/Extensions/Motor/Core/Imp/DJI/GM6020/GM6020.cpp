@@ -44,6 +44,7 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
+    this->updateCtrlId();
 
     checkBaseConfig();
 

@@ -38,6 +38,7 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
+    this->updateCtrlId();
 
     checkBaseConfig();
 

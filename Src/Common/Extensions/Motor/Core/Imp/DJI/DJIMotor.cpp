@@ -85,6 +85,25 @@ void DJIMotor::cancelRecvCallback()
     this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
 }
 
+void DJIMotor::updateCtrlId()
+{
+    switch (this->workMode_) {
+    case WorkMode_e::QUAD_CURR: {
+        this->ctrlId_ = this->getGroupId() + 0u;
+        break;
+    }
+    case WorkMode_e::QUAD_VOLT: {
+        this->ctrlId_ = this->getGroupId() + 0u;
+        break;
+    }
+    default: {
+        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+                  this->name_);
+        break;
+    }
+    }
+}
+
 MotorTypeDef_e DJIMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
 {
     switch (_cmd) {
@@ -120,11 +139,33 @@ MotorTypeDef_e DJIMotor::cmd(MotorCmdType_e _cmd)
     return 0;
 }
 
-MotorTypeDef_e DJIMotor::send(uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
-    return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->ctrlId_,
-            _txBuf, _len));
+    // send data to CAN
+    QuadMotorGroup_s *group = this->findGroup();
+    if (group == nullptr) {
+        this->log("ERROR", "red", "Motor %s: Can't find group %hx",
+                  this->getGroupId());
+        return 1;
+    } else {
+        if (this->checkGroupSend(group)) {
+#if 1
+            // Check this Buffer
+            this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx", this->name_,
+                    _sendId);
+            this->log("DEBUG", "blue",
+                    "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+                    this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+                    _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
+#endif
+            group->lastSendTick = xTaskGetTickCount();
+            return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_),
+                    _sendId, _txBuf, _len));
+        } else {
+            return 0;
+        }
+    }
 }
 
 MotorTypeDef_e DJIMotor::parse(const uint8_t *_rxBuf)
@@ -164,52 +205,38 @@ MotorTypeDef_e DJIMotor::parse(const uint8_t *_rxBuf)
 MotorTypeDef_e DJIMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-    uint8_t *txBuf = nullptr;
-    uint16_t currCmd =0;
-    // 寻找自己所属的电机组
-    QuadMotorGroup_s *group = this->findGroup();
-    if (group != nullptr) {
-        txBuf = group->package;
-    } else {
-        this->log("ERROR", "red", "Motor %s: Can't find group %hx", this->name_,
-                  this->getGroupId());
-        return 1;
-    }
+    uint8_t txBuf[8] = {};
+    int16_t ctrlCmd =0;
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
-        this->ctrlId_ = this->getGroupId() + 0u; // 0x1FE OR 0x2FE
-        currCmd = cmd_->torq / stats_.torqConstant /
-                  this->stats_.currMax * this->stats_.currTxCodeSpan;
+        ctrlCmd = static_cast<int16_t>(cmd_->torq / stats_.torqConstant /
+                                       this->stats_.currMax *
+                                       this->stats_.currTxCodeSpan);
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
-        this->ctrlId_ = this->getGroupId() + 0u; // 0x1FF OR 0x2FF
-        currCmd = cmd_->volt / this->stats_.voltMax * this->stats_.voltTxCodeSpan;
+        ctrlCmd = static_cast<int16_t>(cmd_->volt / this->stats_.voltMax *
+                                       this->stats_.voltTxCodeSpan);
         break;
     }
     default: {
-        currCmd =0;
+        ctrlCmd =0;
         this->log("ERROR", "red", "Motor %s: this mode is not supported",
                   this->name_);
         break;
     }
     }
-    if (txBuf != nullptr) {
-        if (cmd_->SW) {
-            txBuf[2 * this->getPosInGroup() + 1] =
-                    static_cast<uint8_t>(currCmd & 0xFF);
-            txBuf[2 * this->getPosInGroup()] =
-                    static_cast<uint8_t>((currCmd >> 8) & 0xFF);
-        } else {
-            txBuf[2 * this->getPosInGroup() + 1] = 0;
-            txBuf[2 * this->getPosInGroup()] = 0;
-        }
+    if (cmd_->SW) {
+        txBuf[2 * this->getPosInGroup() + 1] =
+                static_cast<uint8_t>(ctrlCmd & 0xFF);
+        txBuf[2 * this->getPosInGroup()] =
+                static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
+    } else {
+        txBuf[2 * this->getPosInGroup() + 1] = 0;
+        txBuf[2 * this->getPosInGroup()] = 0;
     }
 
-    if (this->checkGroupSend(group)) {
-        group->lastSendTick = xTaskGetTickCount();
-        rslt |= this->send(txBuf, 8);
-    }
+    rslt |= this->send(this->ctrlId_, txBuf, 8);
     return rslt;
 }
 

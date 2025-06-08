@@ -35,6 +35,7 @@ DM4310::DM4310(const char _name[16], InitConfig_s _config)
 
     this->registerMotor();
     this->registerRecvCallback();
+    this->updateCtrlId();
 
     checkBaseConfig();
 

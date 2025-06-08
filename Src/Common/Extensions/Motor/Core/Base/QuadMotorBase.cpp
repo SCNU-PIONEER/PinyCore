@@ -8,7 +8,6 @@ QuadMotorGroup_s::QuadMotorGroup_s()
 {
     for (int i = 0; i < 4; i++)
         motor[i] = nullptr;
-    memset(package, 0, sizeof(package));
     lastSendTick = 0.f;
     minTxFreq = 1000.f;
 }
@@ -108,10 +107,10 @@ uint16_t QuadMotorBase::getGroupId() const { return this->model_.txBaseId; }
 
 uint8_t QuadMotorBase::getPosInGroup() const
 {
-    return this->offsetId_ % 4; // 0,1,2,3
+    return (this->offsetId_ - 1) % 4; // 0,1,2,3
 }
 
-bool checkGroupSend(QuadMotorGroup_s *_group)
+bool QuadMotorBase::checkGroupSend(QuadMotorGroup_s *_group)
 {
     return (xTaskGetTickCount() - _group->lastSendTick) >=
            pdMS_TO_TICKS(1000.f / _group->minTxFreq);

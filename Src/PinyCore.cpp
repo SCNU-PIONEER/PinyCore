@@ -2,6 +2,7 @@
 #include "cmsis_os2.h"
 #include "stm_log.hpp"
 #include "Bsp_can.hpp"
+#include "dwt.h"
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
@@ -14,6 +15,8 @@
 
 void PinyCore::bspInit()
 {
+    dwt_init();
+
     extern canHandle hcan1;
     Can::instance().init(&hcan1, RX_FIFO0);
     // Can::instance().init(&hcan1, RX_FIFO1);

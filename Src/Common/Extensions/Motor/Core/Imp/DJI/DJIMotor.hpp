@@ -40,7 +40,8 @@ protected:
     DJIMotorStats_s stats_;
     void registerRecvCallback();
     void cancelRecvCallback();
-    uint16_t ctrlId_ = 0x00; // sendId - depends on work mode
+    void updateCtrlId();
+    uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
     DJIMotor(const char _name[16], InitConfig_s _config);
@@ -53,7 +54,7 @@ public:
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
     MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;
     uint16_t uid() override final;
-    MotorTypeDef_e send (uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send (uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
 

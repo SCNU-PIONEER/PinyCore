@@ -8,7 +8,6 @@ TripMotorGroup_s::TripMotorGroup_s()
 {
     for (int i = 0; i < 3; i++)
         motor[i] = nullptr;
-    memset(package, 0, sizeof(package));
     lastSendTick = 0.f;
     minTxFreq = 1000.f;
 }
@@ -100,7 +99,7 @@ uint16_t TripMotorBase::getGroupId() const { return this->model_.txBaseId; }
 
 uint8_t TripMotorBase::getPosInGroup() const
 {
-    return this->offsetId_ % 3; // 0,1,2
+    return (this->offsetId_ - 1) % 3; // 0,1,2
 }
 
 bool TripMotorBase::checkGroupSend(TripMotorGroup_s *_group)

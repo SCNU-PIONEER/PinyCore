@@ -22,7 +22,7 @@ protected:
     std::queue<MotorErrorCode_e> errQueue_;
 public:
     virtual ~IMotor() = default;
-    virtual MotorTypeDef_e send(uint8_t *_txBuffer, uint8_t _txLen) = 0;
+    virtual MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuffer, uint8_t _txLen) = 0;
     virtual MotorTypeDef_e parse(const uint8_t *_rxBuffer) = 0;
     virtual MotorTypeDef_e ctrl() = 0;
 
