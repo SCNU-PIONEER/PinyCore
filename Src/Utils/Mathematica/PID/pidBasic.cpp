@@ -1,67 +1,75 @@
 #include "pidBasic.hpp"
+#include <cmath>
+#include <cstring>
 
-void PIDBasic::init(float _kp, float _ki, float _kd, float _i_max, float _out_max,
-               float _deadband)
+incrementalPid::incrementalPid(incrementalPid_s &_pid) : pid_(_pid)
 {
-    kp = _kp;
-    ki = _ki;
-    kd = _kd;
-    i_max = _i_max;
-    out_max = _out_max;
-    k_deadband = _deadband;
+    /* Derived coefficient A0 */
+    A0 = pid_.Kp + pid_.Ki + pid_.Kd;
+
+    /* Derived coefficient A1 */
+    A1 = (-pid_.Kp) - ((float_t)2.0f * pid_.Kd);
+
+    /* Derived coefficient A2 */
+    A2 = pid_.Kd;
+
+    /* Reset state to zero, The size will be always 3 samples */
+    memset(state, 0, 3U * sizeof(float_t));
 }
 
-void PIDBasic::reset()
+float incrementalPid::calc(float ref, float cur)
 {
-    err[1] = err[0] = 0.0f;
-    p_out = 0.0f;
-    i_out = 0.0f;
-    d_out = 0.0f;
-}
+    float_t delta = ref - cur;
 
-float PIDBasic::calc(float ref, float cur)
-{
-    float output = 0;
-    err[1] = err[0];
-    err[0] = ref - cur;
-    if (ki == 0.f)
-        i_out = 0.0f;
-
-    p_out = kp * err[0];
-    i_out += ki * err[0];
-    d_out = kd * (err[0] - err[1]);
-    limitMinMax(i_out, -i_max, i_max);
-
-    output = p_out + i_out + d_out;
-    limitMinMax(output, -out_max, out_max);
-    return output;
-}
-
-float PIDBasic::calcDeadband(float ref, float cur)
-{
-    float output;
-    err[1] = err[0];
-
-    err[0] = ref - cur;
-    if (err[0] > k_deadband) {
-        err[0] -= k_deadband;
-    } else if (err[0] < -k_deadband) {
-        err[0] += k_deadband;
-    } else {
-        if (ref < k_deadband && ref > -k_deadband &&
-            (err[1] < -k_deadband || err[1] > k_deadband)) {
-            i_out = 0.0f;
-        }
-        if (deadband_zero_output)
-            return 0.0f;
+    /* Check deadband */
+    if (fabs(delta) <= this->pid_.deadband) {
+        delta = 0.f;
     }
 
-    p_out = kp * err[0];
-    i_out += ki * err[0];
-    d_out = kd * (err[0] - err[1]);
-    limitMinMax(i_out, -i_max, i_max);
+    /* y[n] = y[n-1] + A0 * x[n] + A1 * x[n-1] + A2 * x[n-2]  */
+    float_t out = (A0 * delta) + (A1 * state[0]) + (A2 * state[1]) + (state[2]);
+    limitMinMax(out, -pid_.outMax, pid_.outMax);
 
-    output = p_out + i_out + d_out;
-    limitMinMax(output, -out_max, out_max);
-    return output;
+    /* Update state */
+    state[1] = state[0];
+    state[0] = delta;
+    state[2] = out;
+
+    /* return to application */
+    return out;
+}
+
+void incrementalPid::reset()
+{
+    /* Reset state to zero, The size will be always 3 samples */
+    memset(state, 0, 3U * sizeof(float_t));
+}
+
+
+positonalPid::positonalPid(positonalPid_s &_pid) : pid_(_pid)
+{
+    /* Reset state to zero */
+    memset(err, 0, 2U * sizeof(float_t));
+    iOut = 0.0f;
+}
+
+float positonalPid::calc(float ref, float cur)
+{
+    err[1] = err[0];
+    err[0] = ref - cur;
+    if (fabs(err[0]) <= pid_.deadband) {
+        return 0.0f;
+    }
+    iOut += pid_.ki * err[0] * pid_.dt;
+    iOut = limitMinMax(iOut, -pid_.iMax, pid_.iMax);
+    return limitMinMax(
+            (pid_.kp * err[0] + iOut + pid_.kd * (err[0] - err[1]) / pid_.dt),
+            -pid_.outMax, pid_.outMax);
+}
+
+void positonalPid::reset()
+{
+    /* Reset state to zero */
+    memset(err, 0, 2U * sizeof(float_t));
+    iOut = 0.0f;
 }
