@@ -1,6 +1,8 @@
 #include "pidBasic.hpp"
 #include <cmath>
 #include <cstring>
+#include <algorithm>
+
 
 incrementalPid::incrementalPid(incrementalPid_s &_pid) : pid_(_pid)
 {
@@ -28,7 +30,7 @@ float incrementalPid::calc(float ref, float cur)
 
     /* y[n] = y[n-1] + A0 * x[n] + A1 * x[n-1] + A2 * x[n-2]  */
     float_t out = (A0 * delta) + (A1 * state[0]) + (A2 * state[1]) + (state[2]);
-    limitMinMax(out, -pid_.outMax, pid_.outMax);
+    out = std::clamp(out, -pid_.outMax, pid_.outMax);
 
     /* Update state */
     state[1] = state[0];
@@ -61,8 +63,8 @@ float positonalPid::calc(float ref, float cur)
         return 0.0f;
     }
     iOut += pid_.ki * err[0] * pid_.dt;
-    iOut = limitMinMax(iOut, -pid_.iMax, pid_.iMax);
-    return limitMinMax(
+    iOut = std::clamp(iOut, -pid_.iMax, pid_.iMax);
+    return std::clamp(
             (pid_.kp * err[0] + iOut + pid_.kd * (err[0] - err[1]) / pid_.dt),
             -pid_.outMax, pid_.outMax);
 }
