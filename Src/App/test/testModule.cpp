@@ -4,10 +4,11 @@
 
 #include "cmsis_os2.h"
 #include "task.h"
+#include "sdkconfig.h"
 
 void TestModule::init()
 {
-    extern canHandle hcan1;
+    extern canHandle HCAN1;
     // static PINYMOTOR::InitConfig_s testDM4310Config = {
     //     (uint32_t *)(&hcan1),
     //     PINYMOTOR::ComType_e::CAN,
@@ -19,7 +20,7 @@ void TestModule::init()
     // this->testDM4310Motor_ = &testDM4310Motor;
 
     static PINYMOTOR::InitConfig_s testGM3510Config = {
-        (uint32_t *)(&hcan1),
+        (uint32_t *)(&HCAN1),
         PINYMOTOR::ComType_e::CAN,
         PINYMOTOR::WorkMode_e::TRIP_VOLT,
         static_cast<uint8_t>(3),

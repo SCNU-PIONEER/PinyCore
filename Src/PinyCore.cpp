@@ -6,19 +6,14 @@
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
-
-#include "bmi088.hpp"
-
-
-// #include "../Lib/TinyMPC/src/tinympc/tiny_api.hpp"
-
+#include "sdkconfig.h"
 
 void PinyCore::bspInit()
 {
     dwt_init();
 
-    extern canHandle hcan1;
-    Can::instance().init(&hcan1, RX_FIFO0);
+    extern canHandle HCAN1;
+    Can::instance().init(&HCAN1, RX_FIFO0);
     // Can::instance().init(&hcan1, RX_FIFO1);
 }
 
@@ -29,7 +24,7 @@ void PinyCore::coreInit()
     SEGGER_SYSVIEW_Conf();
 
     AppManager::instance()->initApp();
-    
+
     osKernelStart();
 }
 
