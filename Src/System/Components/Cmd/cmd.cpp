@@ -1,4 +1,14 @@
 #include "cmd.hpp"
+#include "stm_log.hpp"
+
+#define EVENT_MASK (RTT_READY_EVENT | RC_READY_EVENT)
+
+void Cmd::init()
+{
+    eventGroup = xEventGroupCreate();
+    rttHandler.init(eventGroup);
+    rcHandler.init(eventGroup);
+}
 
 void Cmd::addHandler(Handler *handler)
 {
@@ -14,15 +24,22 @@ void Cmd::addObserver(Msg *_msg, IObserver *observer)
 
 void Cmd::parseMsg()
 {
-    for (auto *handler : handlerBus) {
-        if (handler) {
-            handler->parseData();
-            handler->handle();
+    EventBits_t xBits = xEventGroupWaitBits(
+            eventGroup, EVENT_MASK,
+            pdTRUE,  // 是否在等待成功后清除事件位（pdTRUE 为清除）
+            pdFALSE, // 是否需要所有事件位都被置位（pdTRUE 为全部）
+            portMAX_DELAY);
 
-            notifyObservers();
-        }
+    if (xBits & RTT_READY_EVENT) {
+        rttHandler.handle();
     }
 
+    if (xBits & RC_READY_EVENT) {
+        rcHandler.handle();
+    }
+
+    notifyObservers();
+    
     //TODO: check if the cmd is unvalid , disable all modules
 }
 

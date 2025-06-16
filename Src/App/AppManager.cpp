@@ -30,22 +30,16 @@ Cmd cmd;
 Mecanum mecanum;
 Chassis chassis(&mecanum);
 
-chassisMsg cmsg;
 
-RTTMsgHandler rttMsgHandler(&cmsg, NULL);
-rcMsgHandler rcMsgHandler(&cmsg, NULL);
 
 void cmdTask(void *param)
 {
-    rcMsgHandler.init(&RC_UART);
 
-    cmd.addHandler(&rcMsgHandler);
-    cmd.addHandler(&rttMsgHandler);
-    cmd.addObserver(&cmsg, &chassis);
+    // cmd.addObserver(&cmsg, &chassis);
+    cmd.init();
 
     while (1) {
         cmd.parseMsg();
-        vTaskDelay(10);
     }
 }
 

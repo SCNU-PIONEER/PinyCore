@@ -2,20 +2,23 @@
 
 #include <cstdint>
 #include "msgImpl.hpp"
+#include <functional>
+#include "FreeRTOS.h"
+#include "event_groups.h"
 
 class Handler {
 public:
-    Handler(chassisMsg *cmsg, gimbalMsg *gmsg) : cmsg(cmsg), gmsg(gmsg) {};
+    Handler() = default;
 
-    /* get and parse data*/
-    virtual uint8_t parseData() = 0;
+    /* init handler */
+    virtual void init(EventGroupHandle_t _event);
 
     /* handle data to module msg*/
-    virtual void handle() = 0;
+    virtual void handle();
 
-protected:
-    chassisMsg *cmsg;
-    gimbalMsg *gmsg;
+    chassisMsg cmsg;
+    gimbalMsg gmsg;
+    EventGroupHandle_t event;
 };
 
 

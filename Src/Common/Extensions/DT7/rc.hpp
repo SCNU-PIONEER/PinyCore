@@ -18,24 +18,27 @@
 
 #include "rc_msg.hpp"
 #include "FreeRTOS.h"
-#include "semphr.h"
 #include "main.h"
+#include "event_groups.h"
+
+#define RC_READY_EVENT (1 << 1)
 
 namespace RC {
 
 class Rc {
 private:
     Rc();
-    static SemaphoreHandle_t dataReadySem; // 数据更新信号量
     rc_ctrl_t data;
     UART_HandleTypeDef *uart_;
     uint8_t *rc_buffer;
+    uint8_t dt7_rc_rxlost = RC_RX_LOST_MAX;
+    EventGroupHandle_t event;
 
 public:
     Rc(const Rc &) = delete;
     Rc &operator=(const Rc &) = delete;
 
-    void init(UART_HandleTypeDef *huart);
+    void init(UART_HandleTypeDef *huart, EventGroupHandle_t _event);
 
     inline rc_ctrl_t &getData() { return data; }
     inline static Rc &instance()
@@ -44,7 +47,8 @@ public:
         return instance_;
     }
 
-    static void callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos);
+    void callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos);
+    static void RawCallBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos);
     uint8_t parseData();
 };
 
