@@ -16,11 +16,11 @@ void Rc::init(UART_HandleTypeDef *huart)
 {
     uart_ = huart;
 
+    rc_buffer = (uint8_t *)Dma::instance().ram_alloc(2 * RC_FRAME_LENGTH);
     Uart::instance().RecvDmaMultiBufInit(huart, (uint32_t *)&rc_buffer[0],
                                          2 * RC_FRAME_LENGTH);
     Uart::instance().registerCallback(huart, &Rc::callBackFromISR);
     dataReadySem = xSemaphoreCreateBinary();
-    rc_buffer = (uint8_t *)Dma::instance().ram_alloc(2 * RC_FRAME_LENGTH);
 }
 
 void Rc::callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos)
