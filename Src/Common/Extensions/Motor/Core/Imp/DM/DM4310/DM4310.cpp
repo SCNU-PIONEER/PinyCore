@@ -48,10 +48,11 @@ MotorTypeDef_e DM4310::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ == ComType_e ::UART) {
+    if (this->comType_ != ComType_e::FDCAN &&
+        this->comType_ != ComType_e::CAN) {
         rslt |= 1;
         this->log("ERROR", "red",
-                          "DM4310 %s: UART is not supported", this->name_);
+                  "DM4310 %s: only support FDCAN or CAN comtype", this->name_);
     }
 
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {

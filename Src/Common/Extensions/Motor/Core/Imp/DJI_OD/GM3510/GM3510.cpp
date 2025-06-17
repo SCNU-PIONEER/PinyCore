@@ -47,11 +47,11 @@ MotorTypeDef_e GM3510::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ == ComType_e ::UART ||
-        this->comType_ == ComType_e ::FDCAN) {
+    if (this->comType_ != ComType_e::FDCAN &&
+        this->comType_ != ComType_e::CAN) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "GM3510 %s: ComType is not supported", this->name_);
+        this->log("ERROR", "red", "GM3510 %s: only support FDCAN or CAN comtype",
+                  this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::TRIP_VOLT) {

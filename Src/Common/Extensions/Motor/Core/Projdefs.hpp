@@ -7,8 +7,8 @@ using MotorTypeDef_e = uint8_t;
         
 enum class MotorCmdType_e { SET_SPD, SET_POS, SET_TORQ, SET_VOLT, ON, OFF };
 
-enum class ComType_e { NONE, FDCAN, CAN, UART };
 enum class WorkMode_e { TRIP_VOLT, QUAD_CURR, QUAD_VOLT, MIT_TT, MIT_VDES, MIT_VDESPDES, PDESVDES, VDES, EMIT };
+enum class ComType_e { NONE, FDCAN, CAN, RS485 };
 
 enum class GlobalState_e { UNREGISTER, OFFLINE, ONLINE, ERROR };
 

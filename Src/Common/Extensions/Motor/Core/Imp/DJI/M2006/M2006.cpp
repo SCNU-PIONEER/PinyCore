@@ -50,11 +50,10 @@ MotorTypeDef_e M2006::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ == ComType_e ::UART ||
-        this->comType_ == ComType_e ::FDCAN) {
+    if (this->comType_ != ComType_e ::CAN) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "M2006 %s: ComType is not supported", this->name_);
+        this->log("ERROR", "red", "M2006 %s: only support CAN comtype",
+                  this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::QUAD_CURR) {
