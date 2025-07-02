@@ -42,4 +42,24 @@ void RTTMsgHandler::handle()
     } else {
         cmsg.state = State_e::stop;
     }
+
+    notify(cmsg);
+}
+
+void RTTMsgHandler::addObserver(IObserver *observer)
+{
+    {
+        if (observer) {
+            observers.push_back(observer);
+        }
+    }
+}
+
+void RTTMsgHandler::notify(Msg &_msg)
+{
+    for (auto *observer : observers) {
+        if (observer) {
+            observer->getMsg(_msg);
+        }
+    }
 }

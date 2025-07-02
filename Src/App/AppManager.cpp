@@ -11,8 +11,6 @@
 #include "Chassis.hpp"
 
 #include "cmd.hpp"
-#include "rcMsgHandler.hpp"
-#include "rttMsgHandler.hpp"
 
 #include "bmi088.hpp"
 
@@ -30,18 +28,6 @@ Cmd cmd;
 Mecanum mecanum;
 Chassis chassis(&mecanum);
 
-
-
-void cmdTask(void *param)
-{
-
-    // cmd.addObserver(&cmsg, &chassis);
-    cmd.init();
-
-    while (1) {
-        cmd.parseMsg();
-    }
-}
 
 void ctrlTask(void *param)
 {
@@ -67,12 +53,25 @@ void INSTask(void *param)
                                         .z = bmi088.getGyroZ() },
                                  // .m = NULL TODO:
                                  .temperature = bmi088.getTemperature() };
-        
+
         // update INS
         ins.update(&data, bmi088.getTimestamp());
         vTaskDelay(1);
     }
 }
+
+void AppManager::initApp()
+{
+    // INS
+    bmi088.init(&IMU_SPI);
+
+    cmd.init();
+    cmd.addObserver(&chassis);
+
+    // Generate threads at the end
+    this->createApp();
+}
+
 
 void AppManager::createApp()
 {
@@ -83,22 +82,14 @@ void AppManager::createApp()
     xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
 
     // Cmd Polling Task
-    xTaskCreate(cmdTask, "cmd_task", 256, NULL, osPriorityNormal, NULL);
+    xTaskCreate(
+            [](void *param) -> void { cmd.task(); },
+            "cmd_task", 256, NULL, osPriorityNormal, NULL);
 
     // Robot Ctrl Task
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
 
     // Test Module Task
-    TestModule::instance()->taskCreate();
+    // TestModule::instance()->taskCreate();
 }
-
-void AppManager::initApp()
-{
-    // INS 
-    bmi088.init(&IMU_SPI);
-
-    // Generate threads at the end
-    this->createApp();
-}
-
 

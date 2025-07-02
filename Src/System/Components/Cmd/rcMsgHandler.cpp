@@ -15,6 +15,7 @@ void rcMsgHandler::handle()
     rc_.parseData();
     RC::rc_ctrl_t rcData = rc_.getData();
 
+
     rocker.rx =
             std::clamp((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f - rocker.rx,
                        -S_CURVE_ACC, S_CURVE_ACC);
@@ -38,5 +39,25 @@ void rcMsgHandler::handle()
 
     } else {
         cmsg.state = State_e::stop; // Default state
+    }
+
+    notify(cmsg);
+}
+
+void rcMsgHandler::addObserver(IObserver *observer)
+{
+    {
+        if (observer) {
+            observers.push_back(observer);
+        }
+    }
+}
+
+void rcMsgHandler::notify(Msg &_msg)
+{
+    for (auto *observer : observers) {
+        if (observer) {
+            observer->getMsg(_msg);
+        }
     }
 }
