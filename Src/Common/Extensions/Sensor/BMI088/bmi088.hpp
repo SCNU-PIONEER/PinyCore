@@ -44,8 +44,9 @@
 typedef struct BMI088_RAW_DATA {
     uint8_t status;
     int16_t accel[3];
-    int16_t temp;
+    int16_t temperate;
     int16_t gyro[3];
+    float time;
 } bmi088_raw_data_t;
 #pragma pack()
 
@@ -114,4 +115,7 @@ protected:
 private:
     bmi088_real_data_t data_;
     bmi088_raw_data_t rawData_;
+
+    uint32_t sensorTick_ = 0; // sensor time per 39.0625us
+    uint32_t sensorTickLast_ = 0; // last sensor time
 };

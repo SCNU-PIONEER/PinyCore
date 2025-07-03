@@ -299,8 +299,8 @@ bmi088_real_data_t BMI088::read()
     uint8_t buf[8] = { 0, 0, 0, 0, 0, 0 };
     int16_t bmi088_raw_temp;
 
+    // read accel data
     accel_read_muli_reg(BMI088_ACCEL_XOUT_L, buf, 6);
-
     bmi088_raw_temp = (int16_t)((buf[1]) << 8) | buf[0];
     rawData_.accel[0] = bmi088_raw_temp;
     data_.accel[0] = bmi088_raw_temp * BMI088_ACCEL_SEN;
@@ -311,6 +311,7 @@ bmi088_real_data_t BMI088::read()
     rawData_.accel[2] = bmi088_raw_temp;
     data_.accel[2] = bmi088_raw_temp * BMI088_ACCEL_SEN;
 
+    // read gyro data
     gyro_read_muli_reg(BMI088_GYRO_CHIP_ID, buf, 8);
     if (buf[0] == BMI088_GYRO_CHIP_ID_VALUE) {
         bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
@@ -324,6 +325,23 @@ bmi088_real_data_t BMI088::read()
         data_.gyro[2] = bmi088_raw_temp * BMI088_GYRO_SEN;
     }
 
+    // read 24-bits sensor time
+    // this register is incremented every 39.0625us
+    sensorTickLast_ = sensorTick_;
+    accel_read_muli_reg(BMI088_SENSORTIME_DATA_L, buf, 3);
+    sensorTick_ = (uint32_t)((buf[2] << 16) | (buf[1] << 8) | buf[0]);
+    uint32_t tempDeltaTick;
+    if (sensorTick_ < sensorTickLast_) {
+        tempDeltaTick = 0x00FFFFFF - (sensorTickLast_ - sensorTick_);
+    } else {
+        tempDeltaTick = sensorTick_ - sensorTickLast_;
+    }
+    if(tempDeltaTick != 0)
+        data_.time = static_cast<float>(tempDeltaTick) *
+                     0.0000390625f; // convert to seconds
+
+    // read temperature
+    // the temperature data is updated every 1.28s
     accel_read_muli_reg(BMI088_TEMP_M, buf, 2);
 
     bmi088_raw_temp = (int16_t)((buf[0] << 3) | (buf[1] >> 5));
@@ -332,7 +350,9 @@ bmi088_real_data_t BMI088::read()
         bmi088_raw_temp -= 2048;
     }
 
-    data_.temperate = bmi088_raw_temp * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+    rawData_.temperate = data_.temperate =
+            bmi088_raw_temp * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+    
 
     return data_;
 }
