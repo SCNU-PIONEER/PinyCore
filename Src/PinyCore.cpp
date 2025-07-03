@@ -14,7 +14,7 @@ void PinyCore::bspInit()
 
     extern canHandle HCAN1;
     Can::instance().init(&HCAN1, RX_FIFO0);
-    // Can::instance().init(&hcan1, RX_FIFO1);
+    // Can::instance().init(&HCAN1, RX_FIFO1);
 }
 
 void PinyCore::coreInit()

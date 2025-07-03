@@ -68,6 +68,6 @@ auto TestModule::motorTestTask() -> void
     // this->testGM6020Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
     // this->testGM6020Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
 
-    this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
-    this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
+    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
 }
