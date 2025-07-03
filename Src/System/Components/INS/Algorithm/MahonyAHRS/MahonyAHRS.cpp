@@ -35,7 +35,7 @@ float Mahony::invSqrt(float x)
     return y;
 }
 
-void Mahony::init(float ax, float ay, float az)
+void Mahony::init(float _ax, float _ay, float _az)
 {
     float recipNorm;
     float init_yaw, init_pitch, init_roll;
@@ -43,13 +43,13 @@ void Mahony::init(float ax, float ay, float az)
     float sin_roll, cos_roll, sin_pitch, cos_pitch;
     float magX, magY;
 
-    recipNorm = invSqrt(ax * ax + ay * ay + az * az);
-    ax *= recipNorm;
-    ay *= recipNorm;
-    az *= recipNorm;
+    recipNorm = invSqrt(_ax * _ax + _ay * _ay + _az * _az);
+    _ax *= recipNorm;
+    _ay *= recipNorm;
+    _az *= recipNorm;
 
-    init_pitch = atan2f(-ax, az);
-    init_roll = atan2f(ay, az);
+    init_pitch = atan2f(-_ax, _az);
+    init_roll = atan2f(_ay, _az);
 
     sin_roll = sinf(init_roll);
     cos_roll = cosf(init_roll);
@@ -78,25 +78,19 @@ void Mahony::init(float ax, float ay, float az)
     q3 *= recipNorm;
 }
 
-void Mahony::update(fdata_s *_imu_data)
+void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay,
+                    float _az, float _dt)
 {
-    float gx = _imu_data->gx;
-    float gy = _imu_data->gy;
-    float gz = _imu_data->gz;
-    float ax = _imu_data->ax;
-    float ay = _imu_data->ay;
-    float az = _imu_data->az;
-
     // Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-    updateIMU(gx, gy, gz, ax, ay, az);
+    updateIMU(_gx, _gy, _gz, _ax, _ay, _az, _dt);
 
     computeAngles();
 }
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay,
-                       float az)
+void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
+                       float _az, float _dt)
 {
     float recipNorm;
     float halfvx, halfvy, halfvz;
@@ -104,12 +98,12 @@ void Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay,
     float qa, qb, qc;
 
     // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-    if (!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
+    if (!((_ax == 0.0f) && (_ay == 0.0f) && (_az == 0.0f))) {
         // Normalise accelerometer measurement
-        recipNorm = invSqrt(ax * ax + ay * ay + az * az);
-        ax *= recipNorm;
-        ay *= recipNorm;
-        az *= recipNorm;
+        recipNorm = invSqrt(_ax * _ax + _ay * _ay + _az * _az);
+        _ax *= recipNorm;
+        _ay *= recipNorm;
+        _az *= recipNorm;
 
         // Estimated direction of gravity and vector perpendicular to magnetic flux
         halfvx = q1 * q3 - q0 * q2;
@@ -117,9 +111,9 @@ void Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay,
         halfvz = q0 * q0 - 0.5f + q3 * q3;
 
         // Error is sum of cross product between estimated and measured direction of gravity
-        halfex = (ay * halfvz - az * halfvy);
-        halfey = (az * halfvx - ax * halfvz);
-        halfez = (ax * halfvy - ay * halfvx);
+        halfex = (_ay * halfvz - _az * halfvy);
+        halfey = (_az * halfvx - _ax * halfvz);
+        halfez = (_ax * halfvy - _ay * halfvx);
 
         // Compute and apply integral feedback if enabled
         if (twoKi > 0.0f) {
@@ -127,9 +121,9 @@ void Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay,
                            invSampleFreq; // integral error scaled by Ki
             integralFBy += twoKi * halfey * invSampleFreq;
             integralFBz += twoKi * halfez * invSampleFreq;
-            gx += integralFBx; // apply integral feedback
-            gy += integralFBy;
-            gz += integralFBz;
+            _gx += integralFBx; // apply integral feedback
+            _gy += integralFBy;
+            _gz += integralFBz;
         } else {
             integralFBx = 0.0f; // prevent integral windup
             integralFBy = 0.0f;
@@ -137,22 +131,22 @@ void Mahony::updateIMU(float gx, float gy, float gz, float ax, float ay,
         }
 
         // Apply proportional feedback
-        gx += twoKpDef * halfex;
-        gy += twoKpDef * halfey;
-        gz += twoKpDef * halfez;
+        _gx += twoKpDef * halfex;
+        _gy += twoKpDef * halfey;
+        _gz += twoKpDef * halfez;
     }
 
     // Integrate rate of change of quaternion
-    gx *= (0.5f * invSampleFreq); // pre-multiply common factors
-    gy *= (0.5f * invSampleFreq);
-    gz *= (0.5f * invSampleFreq);
+    _gx *= (0.5f * invSampleFreq); // pre-multiply common factors
+    _gy *= (0.5f * invSampleFreq);
+    _gz *= (0.5f * invSampleFreq);
     qa = q0;
     qb = q1;
     qc = q2;
-    q0 += (-qb * gx - qc * gy - q3 * gz);
-    q1 += (qa * gx + qc * gz - q3 * gy);
-    q2 += (qa * gy - qb * gz + q3 * gx);
-    q3 += (qa * gz + qb * gy - qc * gx);
+    q0 += (-qb * _gx - qc * _gy - q3 * _gz);
+    q1 += (qa * _gx + qc * _gz - q3 * _gy);
+    q2 += (qa * _gy - qb * _gz + q3 * _gx);
+    q3 += (qa * _gz + qb * _gy - qc * _gx);
 
     // Normalise quaternion
     recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);

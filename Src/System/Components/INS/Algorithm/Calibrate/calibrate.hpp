@@ -1,6 +1,20 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
+#include <cstring>
+#include <cmath>
+
+#define GYRO_BIAS_MAX (1.0f * 0.01745f)
+
+#define BIAS_ALPHA 0.007f
+
+#define STEADY_CNT_MAX 10
+
+#define STEADY_ACCEL_RANGE 0.28f
+
+#define STEADY_GYRO_RANGE  0.03f
+
+#define GYRO_BIAS_MAX_RAW  100.f
 
 typedef struct {
     float gx;
@@ -48,22 +62,35 @@ typedef enum {
 
 class ImuCalibration {
 public:
-    ImuCalibration(const float ascale, const float gscale,
-                   const AccCali_s &acc_cali, const GyroCali_s &gyro_cali,
-                   const float temp = 0.0f)
-            : acc_cali_(acc_cali)
-            , gyro_cali_(gyro_cali)
-            , aFullscale_(ascale)
-            , gFullscale_(gscale)
-    {
+    void init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
+              const float _temp = 0.0f);
+
+    imu_data_fp_t Correct(float _aFullscale, float _gFullscale_,
+                          float _aRawRange, float _gRawRange, float _gx,
+                          float _gy, float _gz, float _ax, float _ay, float _az,
+                          float _temperature);
+    imu_data_fp_t CorrectInt16(float _aFullscale, float _gFullscale_,
+                               float _aRawRange, float _gRawRange, uint16_t _gx,
+                               uint16_t _gy, uint16_t _gz, uint16_t _ax,
+                               uint16_t _ay, uint16_t _az, float _temperature);
+    
+    // Detect steady state for gyro calibration
+    imu_data_fp_t steadyStateDetection();
+private:
+    template <typename T>
+    T CLAMP(T value, T max) {
+        return std::max(-max, std::min(value, max));
     }
 
-    imu_data_fp_t Correct(uint16_t gx, uint16_t gy, uint16_t gz, uint16_t ax,
-                          uint16_t ay, uint16_t az, float temperature);
+    float invSqrt(float x);
 
-private:
     AccCali_s acc_cali_;
     GyroCali_s gyro_cali_;
-    float aFullscale_ = 3.0f;
-    float gFullscale_ = 2000.0f;
+
+    float g_ = 9.80665f; // Default gravity constant in m/s^2
+
+    // steady state detection parameters
+    uint16_t staticSteadyStateCnt_ = 0;
+
+    imu_data_fp_t corrDat_; // calibrated output
 };

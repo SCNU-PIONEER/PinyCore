@@ -2,15 +2,6 @@
 
 namespace IMU_MahonyAHRS {
 
-struct fdata_s {
-    float gx;
-    float gy;
-    float gz;
-    float ax;
-    float ay;
-    float az;
-};
-
 struct edata_s {
     float roll;
     float pitch;
@@ -20,9 +11,10 @@ struct edata_s {
 class Mahony {
 public:
     void regiter(float sampleFrequency, float _twoKp, float _twoKi);
-    void init(float ax, float ay, float az);
+    void init(float _ax, float _ay, float _az);
 
-    void update(fdata_s *_imu_data);
+    void update(float _gx, float _gy, float _gz, float _ax, float _ay,
+                float _az, float _dt);
 
     edata_s getEdata(void);
 
@@ -32,7 +24,7 @@ public:
 
 protected:
     float invSqrt(float x);
-    void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+    void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt);
     void computeAngles();
 
 private:
