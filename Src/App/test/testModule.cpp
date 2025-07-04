@@ -9,12 +9,16 @@
 void TestModule::init()
 {
     extern canHandle HCAN1;
+
     // static PINYMOTOR::InitConfig_s testDM4310Config = {
     //     (uint32_t *)(&hcan1),
     //     PINYMOTOR::ComType_e::CAN,
     //     PINYMOTOR::WorkMode_e::MIT_TT,
     //     static_cast<uint8_t>(1),
     //     static_cast<float>(1.0f),
+    //     NULL,
+    //     NULL,
+    //     NULL
     // };
     // static PINYMOTOR::DM4310 testDM4310Motor("testdm4310", testDM4310Config);
     // this->testDM4310Motor_ = &testDM4310Motor;
@@ -25,6 +29,9 @@ void TestModule::init()
         PINYMOTOR::WorkMode_e::TRIP_VOLT,
         static_cast<uint8_t>(3),
         static_cast<float>(1.0f),
+        NULL,
+        NULL,
+        NULL
     };
     static PINYMOTOR::GM3510 testGM3510Motor("testgm3510", testGM3510Config);
     this->testGM3510Motor_ = &testGM3510Motor;
@@ -35,6 +42,9 @@ void TestModule::init()
     //     PINYMOTOR::WorkMode_e::QUAD_VOLT,
     //     static_cast<uint8_t>(4),
     //     static_cast<float>(1.0f),
+    //     NULL,
+    //     NULL,
+    //     NULL
     // };
     // static PINYMOTOR::GM6020 testGM6020Motor("testgm6020", testGM6020Config);
     // this->testGM6020Motor_ = &testGM6020Motor;

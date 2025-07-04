@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 
+#include "pid.hpp"
 namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
@@ -29,6 +30,10 @@ struct InitConfig_s {
     WorkMode_e workMode;
     uint8_t offsetId;
     float txFreq;
+
+    PID *posPID;
+    PID *velPID;
+    PID *torqPID;
 };
 
 struct Model_s {

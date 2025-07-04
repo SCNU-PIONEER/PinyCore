@@ -9,7 +9,6 @@
 #include <cstdarg>
 
 #include "stm_log.hpp"
-#include "pid.hpp"
 
 namespace PINYMOTOR {
 class IMotor {

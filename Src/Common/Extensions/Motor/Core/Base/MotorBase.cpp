@@ -10,6 +10,10 @@ MotorBase::MotorBase(const char _name[16], InitConfig_s _config)
     this->offsetId_ = _config.offsetId;
     this->txFreq_ = _config.txFreq;
 
+    this->posPID_ = _config.posPID;
+    this->velPID_ = _config.velPID;
+    this->torqPID_ = _config.torqPID;
+
     strcpy(this->name_, _name);
 }
 
