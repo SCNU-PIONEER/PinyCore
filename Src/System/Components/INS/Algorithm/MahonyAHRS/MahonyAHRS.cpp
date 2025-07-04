@@ -48,8 +48,8 @@ void Mahony::init(float _ax, float _ay, float _az)
     _ay *= recipNorm;
     _az *= recipNorm;
 
-    init_pitch = atan2f(-_ax, _az);
-    init_roll = atan2f(_ay, _az);
+    arm_atan2_f32(-_ax, _az, &init_pitch);
+    arm_atan2_f32(_ay, _az, &init_roll);
 
     sin_roll = sinf(init_roll);
     cos_roll = cosf(init_roll);

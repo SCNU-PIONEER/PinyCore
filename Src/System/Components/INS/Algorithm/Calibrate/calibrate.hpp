@@ -4,11 +4,11 @@
 #include <cstring>
 #include <cmath>
 
-#define GYRO_BIAS_MAX (1.0f * 0.01745f)
+#define GYRO_BIAS_MAX      (1.0f * 0.01745f)
 
-#define BIAS_ALPHA 0.007f
+#define BIAS_ALPHA         0.007f
 
-#define STEADY_CNT_MAX 10
+#define STEADY_CNT_MAX     10
 
 #define STEADY_ACCEL_RANGE 0.28f
 
@@ -71,12 +71,13 @@ public:
     imu_data_fp_t CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
                                int16_t _gy, int16_t _gz, int16_t _ax,
                                int16_t _ay, int16_t _az, float _temperature);
-    
+
     // Detect steady state for gyro calibration
     imu_data_fp_t steadyStateDetection();
+
 private:
-    template <typename T>
-    T CLAMP(T value, T max) {
+    template <typename T> T CLAMP(T value, T max)
+    {
         return std::max(-max, std::min(value, max));
     }
 

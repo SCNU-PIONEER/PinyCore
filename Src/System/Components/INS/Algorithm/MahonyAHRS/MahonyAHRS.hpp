@@ -24,7 +24,8 @@ public:
 
 protected:
     float invSqrt(float x);
-    void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt);
+    void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
+                   float _az, float _dt);
     void computeAngles();
 
 private:

@@ -32,15 +32,9 @@ const AccCali_s accCali = {
 };
 const GyroCali_s gyroCali = {
     // default gyroscope calibration
-    .gx_bias = 1.0695599f,
-    .gy_bias = -0.03854797f,
-    .gz_bias = -1.87499213f,
-    .gx_tco_k = 0.f,
-    .gx_tco_b0 = 0.f,
-    .gy_tco_k = 0.f,
-    .gy_tco_b0 = 0.f,
-    .gz_tco_k = 0.f,
-    .gz_tco_b0 = 0.f
+    .gx_bias = 1.0695599f, .gy_bias = -0.03854797f, .gz_bias = -1.87499213f,
+    .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,        .gy_tco_k = 0.f,
+    .gy_tco_b0 = 0.f,      .gz_tco_k = 0.f,         .gz_tco_b0 = 0.f
 };
 
 //---------------------------------------------------------------------------------------------------
@@ -66,8 +60,8 @@ void INSTask(void *param)
 {
     while (1) {
         // read BMI088 data
-        bmi088.readRaw();   // read raw 6 axis data from device
-        bmi088.read();      // serialize data to real format
+        bmi088.readRaw(); // read raw 6 axis data from device
+        bmi088.read();    // serialize data to real format
 
         // load raw INS needed data, you must transform the raw imu data to correct order
         // the order of axis is defined as:
@@ -107,9 +101,8 @@ void AppManager::createApp()
     xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
 
     // Cmd Polling Task
-    xTaskCreate(
-        [](void *param) -> void { cmd.task(); },
-        "cmd_task", 256, NULL, osPriorityNormal, NULL);
+    xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
+                osPriorityNormal, NULL);
 
     // Robot Ctrl Task
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
@@ -120,10 +113,10 @@ void AppManager::createApp()
 
     // Motor Sending Task
     xTaskCreate(
-        [](void *param) -> void {
-            PINYMOTOR::MotorManager::instance()->ctrlTask();
-        },
-        "motor_task", 256, NULL, osPriorityRealtime, NULL);
+            [](void *param) -> void {
+                PINYMOTOR::MotorManager::instance()->ctrlTask();
+            },
+            "motor_task", 256, NULL, osPriorityRealtime, NULL);
 }
 
 void AppManager::initApp()
@@ -137,7 +130,7 @@ void AppManager::initApp()
 
     // TestModule
     TestModule::instance()->init();
-    
+
     // Generate threads at the end
     this->createApp();
 }

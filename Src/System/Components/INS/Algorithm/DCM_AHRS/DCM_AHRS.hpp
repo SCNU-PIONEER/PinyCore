@@ -6,12 +6,12 @@
 
 #define DEFAULT_GRAVITY (9.80665f) // Standard gravity in m/s^2
 
-static const float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = {0, 0, 1, 0, 0, 0};
+static const float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = { 0, 0, 1, 0, 0, 0 };
 
-#define DEFAULT_Q_DCM2_INIT (1.8f * 1.8f)
-#define DEFAULT_Q_BIAS2_INIT (0.1f * 0.1f)
+#define DEFAULT_Q_DCM2_INIT                  (1.8f * 1.8f)
+#define DEFAULT_Q_BIAS2_INIT                 (0.1f * 0.1f)
 
-#define DEFAULT_R_MEASUREMENT2 (0.003f * 0.003f)
+#define DEFAULT_R_MEASUREMENT2               (0.003f * 0.003f)
 #define DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN (10.f * 10.f)
 
 #define DEFAULT_Q_DCM2                       (0.0037f * 0.0037f)
@@ -72,13 +72,13 @@ protected:
     void computeAngles();
 
 private:
-    template <typename T>
-    T CLAMP(T value, T max) {
+    template <typename T> T CLAMP(T value, T max)
+    {
         return std::max(-max, std::min(value, max));
     }
 
     edata_s edata_; // Euler angles data
-            
+
     uint16_t staticStateCnt_ = 0;
 
     float g_ = DEFAULT_GRAVITY;

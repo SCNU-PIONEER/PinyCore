@@ -2,7 +2,8 @@
 
 class AppManager {
 public:
-    inline static AppManager* instance() {
+    inline static AppManager *instance()
+    {
         static AppManager instance_;
         return &instance_;
     }

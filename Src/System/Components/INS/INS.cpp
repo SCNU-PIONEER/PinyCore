@@ -36,7 +36,7 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
     rawDat_.g.z = static_cast<float>(_sensorDat->g.z) * _sensorDat->g.transK;
 
     float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
-    z = insDat_.q[3];
+          z = insDat_.q[3];
 
     // Update IMU calibration
     imu_data_fp_t fData;
@@ -55,14 +55,14 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
     fData.ay = rawDat_.a.y;
     fData.az = rawDat_.a.z;
 #endif
-    
+
     // Update DCM algorithm
     DCM_.update(fData.gx, fData.gy, fData.gz, fData.ax, fData.ay, fData.az,
                 this->dt_);
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
-    
+
     // Get the Euler angles
     insDat_.roll = DCM_.getRoll();
     insDat_.pitch = DCM_.getPitch();
@@ -78,25 +78,25 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
 
     // Update Rotation Matrix
 #if ROTATION_MATRIX_PITCH_ONLY
-    R_data_[0] = cosf(insDat_.pitch);   // R[0][0]
-    R_data_[1] = 0.0f;                  // R[0][1]
-    R_data_[2] = sinf(insDat_.pitch);   // R[0][2]
-    R_data_[3] = 0.0f;                  // R[1][0]
-    R_data_[4] = 1.0f;                  // R[1][1]
-    R_data_[5] = 0.0f;                  // R[1][2]
-    R_data_[6] = -sinf(insDat_.pitch);  // R[2][0]
-    R_data_[7] = 0.0f;                  // R[2][1]
-    R_data_[8] = cosf(insDat_.pitch);   // R[2][2]
+    R_data_[0] = cosf(insDat_.pitch);  // R[0][0]
+    R_data_[1] = 0.0f;                 // R[0][1]
+    R_data_[2] = sinf(insDat_.pitch);  // R[0][2]
+    R_data_[3] = 0.0f;                 // R[1][0]
+    R_data_[4] = 1.0f;                 // R[1][1]
+    R_data_[5] = 0.0f;                 // R[1][2]
+    R_data_[6] = -sinf(insDat_.pitch); // R[2][0]
+    R_data_[7] = 0.0f;                 // R[2][1]
+    R_data_[8] = cosf(insDat_.pitch);  // R[2][2]
 #else
-    R_data_[0] = 1.f - 2.f*y*y - 2.f*z*z;           // R[0][0] = 1-2y^2-2z^2
-    R_data_[1] = 2.f * x * y - 2.f * w * z;         // R[0][1] = 2xy - 2wz
-    R_data_[2] = 2.f * x * z + 2.f * w * y;         // R[0][2] = 2xz + 2wy
-    R_data_[3] = 2.f * x * y + 2.f * w * z;         // R[1][0] = 2xy + 2wz
-    R_data_[4] = 1.f - 2.f * x * x - 2.f * z * z;   // R[1][1] = 1-2x^2-2z^2
-    R_data_[5] = 2.f * y * z - 2.f * w * x;         // R[1][2] = 2yz - 2wx
-    R_data_[6] = 2.f * x * z - 2.f * w * y;         // R[2][0] = 2xz - 2wy
-    R_data_[7] = 2.f * y * z + 2.f * w * x;         // R[2][1] = 2xy + 2wz
-    R_data_[8] = 1.f - 2.f * x * x - 2.f * y * y;   // R[2][2] = 1-2x^2-2y^2
+    R_data_[0] = 1.f - 2.f * y * y - 2.f * z * z; // R[0][0] = 1-2y^2-2z^2
+    R_data_[1] = 2.f * x * y - 2.f * w * z;       // R[0][1] = 2xy - 2wz
+    R_data_[2] = 2.f * x * z + 2.f * w * y;       // R[0][2] = 2xz + 2wy
+    R_data_[3] = 2.f * x * y + 2.f * w * z;       // R[1][0] = 2xy + 2wz
+    R_data_[4] = 1.f - 2.f * x * x - 2.f * z * z; // R[1][1] = 1-2x^2-2z^2
+    R_data_[5] = 2.f * y * z - 2.f * w * x;       // R[1][2] = 2yz - 2wx
+    R_data_[6] = 2.f * x * z - 2.f * w * y;       // R[2][0] = 2xz - 2wy
+    R_data_[7] = 2.f * y * z + 2.f * w * x;       // R[2][1] = 2xy + 2wz
+    R_data_[8] = 1.f - 2.f * x * x - 2.f * y * y; // R[2][2] = 1-2x^2-2y^2
 #endif
 
     // Initialize Rotation Matrix
@@ -137,4 +137,3 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
     // temperature data
     temperature_ = _temperature;
 }
-
