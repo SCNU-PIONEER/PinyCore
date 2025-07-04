@@ -31,9 +31,9 @@ const AccCali_s accCali = { // default accelerometer calibration
 };
 const GyroCali_s gyroCali = {
     // default gyroscope calibration
-    .gx_bias = -4.39327717f,
-    .gy_bias = 10.1477688f,
-    .gz_bias = 1.05763888f,
+    .gx_bias = 1.0695599f,
+    .gy_bias = -0.03854797f,
+    .gz_bias = -1.87499213f,
     .gx_tco_k = 0.f,
     .gx_tco_b0 = 0.f,
     .gy_tco_k = 0.f,
@@ -80,17 +80,20 @@ void INSTask(void *param)
                      | /
             Y<-------ROBOT 
         */
-        IMUSensorData_s data = { .a = { .x = bmi088.getAccelX(),
-                                        .y = bmi088.getAccelY(),
-                                        .z = bmi088.getAccelZ() },
-                                 .g = { .x = bmi088.getGyroX(),
-                                        .y = bmi088.getGyroY(),
-                                        .z = bmi088.getGyroZ() },
-                                 // .m = NULL TODO:
-                                 .temperature = bmi088.getTemperature() };
+        IMUSensorRawData_s data = {
+            .a = { .x = bmi088.getRawAccelX(),
+                   .y = bmi088.getRawAccelY(),
+                   .z = bmi088.getRawAccelZ(),
+                   .transK = bmi088.getAccelMappingVaule() },
+            .g = { .x = bmi088.getRawGyroX(),
+                   .y = bmi088.getRawGyroY(),
+                   .z = bmi088.getRawGyroZ(),
+                   .transK = bmi088.getGyroMappingVaule() },
+            // .m = NULL TODO:
+        };
 
         // update INS
-        ins.update(&data, bmi088.getTimestamp());
+        ins.update(&data, bmi088.getTimestamp(), bmi088.getTemperature());
         vTaskDelay(1);
     }
 }
@@ -107,8 +110,8 @@ void AppManager::createApp()
 
     // Cmd Polling Task
     xTaskCreate(
-            [](void *param) -> void { cmd.task(); },
-            "cmd_task", 256, NULL, osPriorityNormal, NULL);
+        [](void *param) -> void { cmd.task(); },
+        "cmd_task", 256, NULL, osPriorityNormal, NULL);
     xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
                 osPriorityNormal, NULL);
 

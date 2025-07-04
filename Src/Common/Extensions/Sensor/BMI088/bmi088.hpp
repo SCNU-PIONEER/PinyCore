@@ -85,7 +85,16 @@ class BMI088 : public Middleware {
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
     bmi088_raw_data_t readRaw(); // read raw data in raw format
-    bmi088_real_data_t read(); // read raw data in expected format
+    bmi088_real_data_t read();   // read raw data in expected format
+    inline int16_t getRawTemperature(void) { return rawData_.temperate; }
+    inline int16_t getRawAccelX(void) { return rawData_.accel[0]; }
+    inline int16_t getRawAccelY(void) { return rawData_.accel[1]; }
+    inline int16_t getRawAccelZ(void) { return rawData_.accel[2]; }
+    inline int16_t getRawGyroX(void) { return rawData_.gyro[0]; }
+    inline int16_t getRawGyroY(void) { return rawData_.gyro[1]; }
+    inline int16_t getRawGyroZ(void) { return rawData_.gyro[2]; }
+    inline float getAccelMappingVaule(void) { return aTransK_; }
+    inline float getGyroMappingVaule(void) { return gTransK_; }
     inline float getTemperature(void) { return data_.temperate; }
     inline float getAccelX(void) { return data_.accel[0]; }
     inline float getAccelY(void) { return data_.accel[1]; }
@@ -113,6 +122,10 @@ protected:
     void read_muli_reg(uint8_t reg, uint8_t *buf, uint8_t len);
 
 private:
+    // Mapping encoding to international unit parameters
+    float aTransK_;
+    float gTransK_;
+    
     bmi088_real_data_t data_;
     bmi088_raw_data_t rawData_;
 

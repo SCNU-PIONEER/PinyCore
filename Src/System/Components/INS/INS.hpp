@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./Algorithm/DCM_AHRS/DCM_AHRS.hpp"
-#include "./Algorithm/Calibrate/calibrate.hpp"
+#include "./Algorithm/calibrate/calibrate.hpp"
 
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
@@ -19,6 +19,22 @@ struct IMUSensorData_s {
     } m; // magnetometer data , unit:gauss
     
     float temperature; // temperature data , uint:degC
+};
+
+struct IMUSensorRawData_s {
+    struct Accel_s {
+        int16_t x, y, z;
+        float transK;
+    } a; // accelerometer data , unit:m/s^2
+
+    struct Gyro_s {
+        int16_t x, y, z;
+        float transK;
+    } g; // gyroscope data , unit:rad/s
+
+    struct Mag_s {
+        int16_t x, y, z;
+    } m; // magnetometer data , unit:gauss
 };
 
 struct INSData_s {
@@ -41,8 +57,6 @@ struct INSData_s {
         float gx, gy, gz; // gyroscope , unit:rad/s
         float mx, my, mz; // magnetometer , unit:gauss
     } earth;
-
-    float temperature; // temperature data , unit:degC
 };
 
 class INS {
@@ -58,13 +72,14 @@ class INS {
 //     INS() = default;
 public:
     void init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_);
-    void update(IMUSensorData_s *_sensorDat, float _dt);
+    void update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature);
     inline float roll() const { return insDat_.roll; }
     inline float yaw() const { return insDat_.yaw; }
     inline float pitch() const { return insDat_.pitch; }
 
 private:
     float dt_ = 0.001f; // default time interval in seconds
+    float temperature_; // temperature data , unit:degC
 
     // 3x3 rotation matrix data
     float R_data_[9] = { 0.0f };

@@ -2,7 +2,7 @@
 
 #include "dsp/matrix_functions.h"
 
-#define CORRECT_IMU_DATA 0
+#define CORRECT_IMU_DATA 1
 
 void INS::init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_)
 {
@@ -23,22 +23,29 @@ void INS::init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_)
     this->dt_ = 0.001f; // default to 1 ms
 }
 
-void INS::update(IMUSensorData_s *_sensorDat, float _dt)
+void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
 {
     this->dt_ = _dt; // update time interval
 
-    memcpy(&this->rawDat_, _sensorDat, sizeof(IMUSensorData_s));
+    // Update raw IMU data
+    rawDat_.a.x = static_cast<float>(_sensorDat->a.x) * _sensorDat->a.transK;
+    rawDat_.a.y = static_cast<float>(_sensorDat->a.y) * _sensorDat->a.transK;
+    rawDat_.a.z = static_cast<float>(_sensorDat->a.z) * _sensorDat->a.transK;
+    rawDat_.g.x = static_cast<float>(_sensorDat->g.x) * _sensorDat->g.transK;
+    rawDat_.g.y = static_cast<float>(_sensorDat->g.y) * _sensorDat->g.transK;
+    rawDat_.g.z = static_cast<float>(_sensorDat->g.z) * _sensorDat->g.transK;
 
     float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
     z = insDat_.q[3];
 
     // Update IMU calibration
-    // BMI088_ACCEL_3G_SEN and BMI088_GYRO_2000_SEN
     imu_data_fp_t fData;
 #if CORRECT_IMU_DATA
-    fData = imuCali_.Correct(3.f, 2000.f, 32768.f, 32768.f, rawDat_.g.x,
-                             rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y,
-                             rawDat_.a.z, rawDat_.temperature);
+    fData = imuCali_.CorrectInt16(_sensorDat->a.transK, _sensorDat->g.transK,
+                                  _sensorDat->g.x, _sensorDat->g.y,
+                                  _sensorDat->g.z, _sensorDat->a.x,
+                                  _sensorDat->a.y, _sensorDat->a.z,
+                                  _temperature);
     imuCali_.steadyStateDetection();
 #else
     fData.gx = rawDat_.g.x;
@@ -128,6 +135,6 @@ void INS::update(IMUSensorData_s *_sensorDat, float _dt)
     insDat_.earth.mz = earthV_data_[2];
 
     // temperature data
-    insDat_.temperature = rawDat_.temperature;
+    temperature_ = _temperature;
 }
 

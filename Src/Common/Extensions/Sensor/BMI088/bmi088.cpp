@@ -310,6 +310,7 @@ bmi088_real_data_t BMI088::read()
     bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
     rawData_.accel[2] = bmi088_raw_temp;
     data_.accel[2] = bmi088_raw_temp * BMI088_ACCEL_SEN;
+    aTransK_ = BMI088_ACCEL_SEN;
 
     // read gyro data
     gyro_read_muli_reg(BMI088_GYRO_CHIP_ID, buf, 8);
@@ -324,6 +325,7 @@ bmi088_real_data_t BMI088::read()
         rawData_.gyro[2] = bmi088_raw_temp;
         data_.gyro[2] = bmi088_raw_temp * BMI088_GYRO_SEN;
     }
+    gTransK_ = BMI088_GYRO_SEN;
 
     // read 24-bits sensor time
     // this register is incremented every 39.0625us

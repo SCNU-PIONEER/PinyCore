@@ -65,14 +65,12 @@ public:
     void init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
               const float _temp = 0.0f);
 
-    imu_data_fp_t Correct(float _aFullscale, float _gFullscale_,
-                          float _aRawRange, float _gRawRange, float _gx,
-                          float _gy, float _gz, float _ax, float _ay, float _az,
+    imu_data_fp_t Correct(float _aTransK, float _gTransK, float _gx, float _gy,
+                          float _gz, float _ax, float _ay, float _az,
                           float _temperature);
-    imu_data_fp_t CorrectInt16(float _aFullscale, float _gFullscale_,
-                               float _aRawRange, float _gRawRange, uint16_t _gx,
-                               uint16_t _gy, uint16_t _gz, uint16_t _ax,
-                               uint16_t _ay, uint16_t _az, float _temperature);
+    imu_data_fp_t CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
+                               int16_t _gy, int16_t _gz, int16_t _ax,
+                               int16_t _ay, int16_t _az, float _temperature);
     
     // Detect steady state for gyro calibration
     imu_data_fp_t steadyStateDetection();
