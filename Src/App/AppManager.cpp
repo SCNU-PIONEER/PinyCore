@@ -17,7 +17,6 @@
 #include "testModule.hpp"
 
 
-extern UART_HandleTypeDef RC_UART;
 extern SPI_HandleTypeDef IMU_SPI;
 
 //---------------------------------------------------------------------------------------------------
@@ -54,18 +53,6 @@ Chassis chassis(&mecanum);
 
 
 //---------------------------------------------------------------------------------------------------
-// Tasks
-void cmdTask(void *param)
-{
-
-    // cmd.addObserver(&cmsg, &chassis);
-    cmd.init();
-
-    while (1) {
-        cmd.parseMsg();
-    }
-}
-
 void ctrlTask(void *param)
 {
     while (1) {
@@ -122,6 +109,8 @@ void AppManager::createApp()
     xTaskCreate(
             [](void *param) -> void { cmd.task(); },
             "cmd_task", 256, NULL, osPriorityNormal, NULL);
+    xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
+                osPriorityNormal, NULL);
 
     // Robot Ctrl Task
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
@@ -136,8 +125,8 @@ void AppManager::initApp()
     bmi088.init(&IMU_SPI);
     ins.init(accCali, gyroCali);
 
+    cmd.init();
+
     // Generate threads at the end
     this->createApp();
 }
-
-

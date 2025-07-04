@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./Algorithm/DCM_AHRS/DCM_AHRS.hpp"
-#include "./Algorithm/Calibrate/Calibrate.hpp"
+#include "./Algorithm/Calibrate/calibrate.hpp"
 
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
