@@ -60,7 +60,7 @@ typedef enum {
 } acc_cali_state_t;
 
 
-class ImuCalibration {
+class IMUCalibration {
 public:
     void init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
               const float _temp = 0.0f);

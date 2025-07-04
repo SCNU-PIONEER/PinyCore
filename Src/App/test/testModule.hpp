@@ -15,6 +15,9 @@ public:
 
     TestModule(const TestModule &) = delete;
 
+    void init();
+
+    void task();
     void taskCreate();
 
     uint32_t debugCnt = 0;
@@ -26,9 +29,6 @@ private:
     PINYMOTOR::DM4310 *testDM4310Motor_;
     PINYMOTOR::GM3510 *testGM3510Motor_;
     PINYMOTOR::GM6020 *testGM6020Motor_;
-
-    void init();
-    void task();
 
     auto motorTestTask() -> void;
 };

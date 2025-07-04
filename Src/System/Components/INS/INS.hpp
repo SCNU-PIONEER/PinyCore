@@ -92,7 +92,7 @@ private:
     
     // IMU calibration
     // IMU Algorithm
-    ImuCalibration imuCali_; // IMU calibration object
+    IMUCalibration imuCali_; // IMU calibration object
 
     IMU_DCM_AHRS::DCM_AHRS DCM_ = IMU_DCM_AHRS::DCM_AHRS(dt_); // DCM algorithm object
 

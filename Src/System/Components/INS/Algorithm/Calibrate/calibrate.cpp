@@ -4,14 +4,14 @@
 
 #define IMU_RAW_RANGE (32768)
 
-void ImuCalibration::init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
+void IMUCalibration::init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
                           const float _temp)
 {
     acc_cali_ = accCali;
     gyro_cali_ = gyroCali;
     staticSteadyStateCnt_ = 0;
 }
-imu_data_fp_t ImuCalibration::Correct(float _aTransK, float _gTransK, float _gx,
+imu_data_fp_t IMUCalibration::Correct(float _aTransK, float _gTransK, float _gx,
                                       float _gy, float _gz, float _ax,
                                       float _ay, float _az, float _temperature)
 {
@@ -48,7 +48,7 @@ imu_data_fp_t ImuCalibration::Correct(float _aTransK, float _gTransK, float _gx,
     return corrDat_;
 }
 imu_data_fp_t
-ImuCalibration::CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
+IMUCalibration::CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
                              int16_t _gy, int16_t _gz, int16_t _ax,
                              int16_t _ay, int16_t _az, float _temperature)
 {
@@ -81,7 +81,7 @@ ImuCalibration::CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
     return corrDat_;
 }
 
-imu_data_fp_t ImuCalibration::steadyStateDetection()
+imu_data_fp_t IMUCalibration::steadyStateDetection()
 {
     float recipNorm =
             invSqrt(corrDat_.ax * corrDat_.ax + corrDat_.ay * corrDat_.ay +
@@ -108,7 +108,7 @@ imu_data_fp_t ImuCalibration::steadyStateDetection()
     return corrDat_;
 }
 
-float ImuCalibration::invSqrt(float x)
+float IMUCalibration::invSqrt(float x)
 {
     float halfx = 0.5f * x;
     float y = x;

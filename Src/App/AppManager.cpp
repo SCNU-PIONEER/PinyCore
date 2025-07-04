@@ -102,9 +102,6 @@ void INSTask(void *param)
 // AppManager
 void AppManager::createApp()
 {
-    // Motor Sending Task
-    PINYMOTOR::MotorManager::instance()->taskCreate();
-
     // INS Task
     xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
 
@@ -112,14 +109,24 @@ void AppManager::createApp()
     xTaskCreate(
         [](void *param) -> void { cmd.task(); },
         "cmd_task", 256, NULL, osPriorityNormal, NULL);
-    xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
-                osPriorityNormal, NULL);
 
     // Robot Ctrl Task
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
 
     // Test Module Task
-    // TestModule::instance()->taskCreate();
+    xTaskCreate(
+            [](void *param) -> void {
+                TestModule *instance = reinterpret_cast<TestModule *>(param);
+                instance->task();
+            },
+            "test_task", 256, this, osPriorityNormal, NULL);
+
+    // Motor Sending Task
+    xTaskCreate(
+        [](void *param) -> void {
+            PINYMOTOR::MotorManager::instance()->ctrlTask();
+        },
+        "motor_task", 256, NULL, osPriorityRealtime, NULL);
 }
 
 void AppManager::initApp()
@@ -128,8 +135,12 @@ void AppManager::initApp()
     bmi088.init(&IMU_SPI);
     ins.init(accCali, gyroCali);
 
+    // cmd
     cmd.init();
 
+    // TestModule
+    TestModule::instance()->init();
+    
     // Generate threads at the end
     this->createApp();
 }
