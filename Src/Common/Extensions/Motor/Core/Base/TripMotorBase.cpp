@@ -16,14 +16,15 @@ void TripMotorGroup_s::showMotorInfo()
     for (int i = 0; i < 3; i++) {
         if (motor[i] != nullptr) {
             motor[i]->log("INFO", "green", "Motor %s: exist, uid: %hx",
-                      motor[i]->getName(), motor[i]->uid());
+                          motor[i]->getName(), motor[i]->uid());
         } else {
             motor[i]->log("INFO", "red", "Motor %d: not exist", i);
         }
     }
 }
 
-TripMotorBase::TripMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+TripMotorBase::TripMotorBase(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config)
 {
     isMutiple_ = true;
 }
@@ -36,9 +37,9 @@ TripMotorBase::TripMotors &TripMotorBase::getMotorMap() const
 void TripMotorBase::updateMotorMap()
 {
     auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                            [this](const auto &pair) {
-                                return pair.first == this->pComHandle_;
-                            }); // lamda
+                                   [this](const auto &pair) {
+                                       return pair.first == this->pComHandle_;
+                                   }); // lamda
     if (it == motorMap_.end()) {
         motorMap_.emplace_back(
                 this->pComHandle_,
@@ -53,8 +54,7 @@ void TripMotorBase::updateMotorMap()
                   this->name_, getGroupId());
     } else {
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-            this->log("ERROR", "red", "Motor %s: already exist",
-                      this->name_);
+            this->log("ERROR", "red", "Motor %s: already exist", this->name_);
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -77,9 +77,9 @@ void TripMotorBase::updateMotorMap()
 void TripMotorBase::removeMotorFromMap()
 {
     auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                            [this](const auto &pair) {
-                                return pair.first == this->pComHandle_;
-                            }); // lamda
+                                   [this](const auto &pair) {
+                                       return pair.first == this->pComHandle_;
+                                   }); // lamda
     if (it != motorMap_.end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
@@ -87,8 +87,8 @@ void TripMotorBase::removeMotorFromMap()
             this->log("INFO", "green", "Motor %s: remove from group %hx",
                       this->name_, getGroupId());
         } else {
-            this->log("ERROR", "red", "Motor %s: not in group %hx",
-                      this->name_, getGroupId());
+            this->log("ERROR", "red", "Motor %s: not in group %hx", this->name_,
+                      getGroupId());
         }
     } else {
         this->log("ERROR", "red", "Motor %s: not in motorMap_", this->name_);

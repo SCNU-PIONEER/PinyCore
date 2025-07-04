@@ -61,7 +61,7 @@ enum class DMMotorRegId_e {
     DM_REG_xout = 81u,      // 输出轴位置	RO	　	float
 };
 
-enum class DMMotorErrorCode_e{
+enum class DMMotorErrorCode_e {
     MotorDisable = 0x0u,
     MotorEnable = 0x1u,
     OverVoltage = 0x8u,
@@ -113,7 +113,7 @@ struct DMPDESVDESMsg_s {
 struct DMVDESMsg_s {
     float exptVel;
     float reserved;
-} ;
+};
 #pragma pack(pop)
 
 struct DMMotorStats_s {
@@ -122,22 +122,20 @@ struct DMMotorStats_s {
     float TMax;
     float MITKpMax;
     float MITKdMax;
-    float currTxCodeSpan; 
+    float currTxCodeSpan;
     float currRated;    // A
     float torqRated;    // Nm
     float currMax;      // A
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DMMotorStats_s& operator=(const DMMotorStats_s& _other);
+    DMMotorStats_s &operator=(const DMMotorStats_s &_other);
 };
 
 class DMMotor : public MotorBase {
     using Base = MotorBase;
-    using RegMap = std::unordered_map<DMMotorRegId_e,DMMotorReg_s*>;
-private:
-    struct CmdInternal_s;
-    std::unique_ptr<CmdInternal_s> cmd_;
+    using RegMap = std::unordered_map<DMMotorRegId_e, DMMotorReg_s *>;
+
 protected:
     void registerRecvCallback();
     void cancelRecvCallback();
@@ -145,7 +143,7 @@ protected:
 
     DMMotorStats_s stats_;
 
-    std::unordered_map<DMMotorRegId_e,DMMotorReg_s*> regObjList_;
+    std::unordered_map<DMMotorRegId_e, DMMotorReg_s *> regObjList_;
 
     float MITKp_ = 0;
     float MITKd_ = 0;
@@ -153,21 +151,20 @@ protected:
     DMMotorErrorCode_e errorCode_;
 
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
-    
+
 public:
     DMMotor(const char _name[16], InitConfig_s _config);
     ~DMMotor() override;
-    
-    void overrideStats(const DMMotorStats_s& _newStats);
+
+    void overrideStats(const DMMotorStats_s &_newStats);
 
     bool isEnable() const;
     uint16_t canId() const;
     uint16_t masterId() const;
 
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;
     uint16_t uid() override final;
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
+                        uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
 
@@ -186,16 +183,5 @@ public:
     MotorTypeDef_e writeReg();
     MotorTypeDef_e readReg();
     MotorTypeDef_e storageReg();
-};
-struct DMMotor::CmdInternal_s {
-    bool SW;
-    bool prevSW;
-    struct {
-        float torq;
-        float speed;
-        float pos;
-    };
-    void clear();
-    void updateSW(bool _sw);
 };
 }

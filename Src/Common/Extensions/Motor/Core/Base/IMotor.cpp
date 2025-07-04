@@ -26,6 +26,57 @@ MotorTypeDef_e IMotor::cancelMotor()
     return 0;
 }
 
+MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
+{
+    if (_cmd != MotorCmdType_e::ON && _cmd != MotorCmdType_e::OFF) {
+        this->curCmdType_ = _cmd;
+    }
+    switch (this->curCmdType_) {
+    case MotorCmdType_e::ON: {
+        this->cmd_.updateSW(true);
+        break;
+    }
+    case MotorCmdType_e::OFF: {
+        this->cmd_.updateSW(false);
+        break;
+    }
+    case MotorCmdType_e::SET_ELEC: {
+        this->cmd_.elec = _cmdData;
+        break;
+    }
+    case MotorCmdType_e::SET_TORQ: {
+        this->cmd_.torq = _cmdData;
+        break;
+    }
+    case MotorCmdType_e::SET_VEL: {
+        this->cmd_.vel = _cmdData;
+        break;
+    }
+    case MotorCmdType_e::SET_POS: {
+        this->cmd_.pos = _cmdData;
+        break;
+    }
+    default: {
+        this->log("ERROR", "red", "Motor %s: Invalid cmd!", this->name_);
+        return 1;
+    }
+    }
+    return 0;
+}
+
+MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
+{
+    if (_cmd == MotorCmdType_e::ON) {
+        this->cmd_.updateSW(true);
+    } else if (_cmd == MotorCmdType_e::OFF) {
+        this->cmd_.updateSW(false);
+    } else {
+        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
+        return 1;
+    }
+    return 0;
+}
+
 Data_s &IMotor::data() { return data_; }
 
 float IMotor::txBaseId() const { return static_cast<float>(model_.txBaseId); }

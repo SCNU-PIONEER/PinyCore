@@ -26,14 +26,12 @@ struct DJI_ODMotorStats_s {
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DJI_ODMotorStats_s& operator=(const DJI_ODMotorStats_s& _other);
+    DJI_ODMotorStats_s &operator=(const DJI_ODMotorStats_s &_other);
 };
 
 class DJI_ODMotor : public TripMotorBase {
     using Base = TripMotorBase;
-private:
-    struct CmdInternal_s;
-    std::unique_ptr<CmdInternal_s> cmd_;
+
 protected:
     DJI_ODMotorStats_s stats_;
     void registerRecvCallback();
@@ -44,24 +42,15 @@ protected:
 public:
     DJI_ODMotor(const char _name[16], InitConfig_s _config);
     ~DJI_ODMotor() override;
-    void overrideStats(const DJI_ODMotorStats_s& _newStats);
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;
+    void overrideStats(const DJI_ODMotorStats_s &_newStats);
+
     uint16_t canId() const; // TripMotor's canId is fixed
     uint16_t masterId() const;
     uint16_t uid() override final;
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
+                        uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
     TripMotorGroup_s *findGroup() const;
-};
-struct DJI_ODMotor::CmdInternal_s {
-    bool SW;
-    bool prevSW;
-    struct {
-        float volt;
-    };
-    void clear();
-    void updateSW(bool _sw);
 };
 };

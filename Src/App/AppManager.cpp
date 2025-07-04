@@ -23,7 +23,8 @@ extern SPI_HandleTypeDef IMU_SPI;
 // INS
 BMI088 bmi088;
 INS ins;
-const AccCali_s accCali = { // default accelerometer calibration
+const AccCali_s accCali = {
+    // default accelerometer calibration
     .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
                  { 0.001142f, 1.009152f, 0.006399f },
                  { -0.005477f, 0.002071f, 1.013539f } },
@@ -114,12 +115,8 @@ void AppManager::createApp()
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
 
     // Test Module Task
-    xTaskCreate(
-            [](void *param) -> void {
-                TestModule *instance = reinterpret_cast<TestModule *>(param);
-                instance->task();
-            },
-            "test_task", 256, this, osPriorityNormal, NULL);
+    xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
+                "test_task", 256, this, osPriorityNormal, NULL);
 
     // Motor Sending Task
     xTaskCreate(

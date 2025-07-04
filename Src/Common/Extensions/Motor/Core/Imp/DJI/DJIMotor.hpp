@@ -28,14 +28,12 @@ struct DJIMotorStats_s {
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DJIMotorStats_s& operator=(const DJIMotorStats_s& _other);
+    DJIMotorStats_s &operator=(const DJIMotorStats_s &_other);
 };
 
 class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
-private:
-    struct CmdInternal_s;
-    std::unique_ptr<CmdInternal_s> cmd_;
+
 protected:
     DJIMotorStats_s stats_;
     void registerRecvCallback();
@@ -47,28 +45,17 @@ public:
     DJIMotor(const char _name[16], InitConfig_s _config);
     ~DJIMotor() override;
     void overrideStats(const DJIMotorStats_s &_newStats);
-    
+
     uint16_t canId() const; // QuadMotor's canId is fixed
     uint16_t masterId() const;
 
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData) override final;
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd) override final;
     uint16_t uid() override final;
-    MotorTypeDef_e send (uint16_t _sendId, uint8_t *_txBuf, uint8_t _len) override final;
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
+                        uint8_t _len) override final;
     MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
     MotorTypeDef_e ctrl() override final;
 
     QuadMotorGroup_s *findGroup() const;
 };
 
-struct DJIMotor::CmdInternal_s {
-    bool SW;
-    bool prevSW;
-    struct {
-        float torq;
-        float volt;
-    };
-    void clear();
-    void updateSW(bool _sw);
-};
 }

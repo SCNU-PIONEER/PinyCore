@@ -16,13 +16,14 @@ void QuadMotorGroup_s::showMotorInfo()
     for (int i = 0; i < 4; i++) {
         if (motor[i] != nullptr) {
             motor[i]->log("INFO", "green", "Motor %s: exist, uid: %hx",
-                      motor[i]->getName(), motor[i]->uid());
+                          motor[i]->getName(), motor[i]->uid());
         } else {
             motor[i]->log("INFO", "red", "Motor %d: not exist", i);
         }
     }
 }
-QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config): Base(_name, _config)
+QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config)
 {
     isMutiple_ = true;
 }
@@ -37,9 +38,9 @@ void QuadMotorBase::updateMotorMap()
     // 注册电机到motorMap_中
     // 先寻找是否存在对应的pComHandle_
     auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                            [this](const auto &pair) {
-                                return pair.first == this->pComHandle_;
-                            }); // lamda
+                                   [this](const auto &pair) {
+                                       return pair.first == this->pComHandle_;
+                                   }); // lamda
     if (it == motorMap_.end()) {
         // 如果不存在，则直接在motorMap_尾部增多一个pair对象
         motorMap_.emplace_back(
@@ -55,12 +56,11 @@ void QuadMotorBase::updateMotorMap()
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
         this->log("INFO", "green", "Motor %s: create QuadMotorGroup %hx",
-                    this->name_, getGroupId());
+                  this->name_, getGroupId());
     } else {
         // 如果存在，则检查电机组中是否已经存在该电机
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-            this->log("ERROR", "red", "Motor %s: already exist",
-                        this->name_);
+            this->log("ERROR", "red", "Motor %s: already exist", this->name_);
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -71,7 +71,7 @@ void QuadMotorBase::updateMotorMap()
         if (map[getGroupId()]->motor[i] != nullptr) {
             if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
                 this->log("WARN", "", "Motor %s: txFreq not match",
-                            this->name_);
+                          this->name_);
             }
         }
         map[getGroupId()]->minTxFreq =
@@ -84,21 +84,20 @@ void QuadMotorBase::updateMotorMap()
 void QuadMotorBase::removeMotorFromMap()
 {
     auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                            [this](const auto &pair) {
-                                return pair.first == this->pComHandle_;
-                            }); // lamda
+                                   [this](const auto &pair) {
+                                       return pair.first == this->pComHandle_;
+                                   }); // lamda
     if (it != motorMap_.end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             this->log("INFO", "green", "Motor %s: remove from group %hx",
-                        this->name_, getGroupId());
+                      this->name_, getGroupId());
         } else {
-            this->log("ERROR", "red", "Motor %s: not in group %hx",
-                        this->name_, getGroupId());
+            this->log("ERROR", "red", "Motor %s: not in group %hx", this->name_,
+                      getGroupId());
         }
-    }
-    else {
+    } else {
         this->log("ERROR", "red", "Motor %s: not in motorMap_", this->name_);
     }
 }

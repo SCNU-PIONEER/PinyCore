@@ -36,11 +36,11 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     this->registerMotor();
     this->registerRecvCallback();
     this->updateCtrlId();
-    
+
     checkBaseConfig();
-    
-    this->log("INFO", "green",
-                          "Motor %s: An instance of DM4310 created", this->name_);
+
+    this->log("INFO", "green", "Motor %s: An instance of DM4310 created",
+              this->name_);
     // TODO:
 }
 
@@ -57,20 +57,20 @@ MotorTypeDef_e DM4340::checkBaseConfig()
 
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "DM4340 %s: WorkMode is not supported", this->name_);
+        this->log("ERROR", "red", "DM4340 %s: WorkMode is not supported",
+                  this->name_);
     }
-    
+
     if (this->offsetId_ > 9) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "DM4340 %s: Max Offset ID is only 9!", this->name_);
+        this->log("ERROR", "red", "DM4340 %s: Max Offset ID is only 9!",
+                  this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
         this->log("ERROR", "red", "DM4340 %s: Max TxFreq is only 1000!",
-                    this->name_);
+                  this->name_);
     }
 
     return rslt;

@@ -7,9 +7,10 @@
 
 using namespace PINYMOTOR;
 
-DJI_ODMotorStats_s& DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s& _other) {
-    if (this != &_other)
-    {
+DJI_ODMotorStats_s &
+DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s &_other)
+{
+    if (this != &_other) {
         voltTxCodeSpan = _other.voltTxCodeSpan;
         torqRxCodeSpan = _other.torqRxCodeSpan;
         currRated = _other.currRated;
@@ -22,24 +23,10 @@ DJI_ODMotorStats_s& DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s& _oth
     return *this;
 }
 
-void DJI_ODMotor::CmdInternal_s::clear()
-{
-    SW = prevSW = false;
-    volt = 0.f;
-}
-void DJI_ODMotor::CmdInternal_s::updateSW(bool _sw)
-{
-    if (_sw != prevSW) {
-        SW = _sw;
-        prevSW = _sw;
-    }
-}
-
 DJI_ODMotor::DJI_ODMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, _config)
 {
-    this->cmd_ = std::make_unique<CmdInternal_s>();
-    cmd_->clear();
+    this->cmd_.clear();
 }
 
 DJI_ODMotor::~DJI_ODMotor()
@@ -50,7 +37,10 @@ DJI_ODMotor::~DJI_ODMotor()
               this->name_);
 }
 
-void DJI_ODMotor::overrideStats(const DJI_ODMotorStats_s &_stats) { stats_ = _stats; }
+void DJI_ODMotor::overrideStats(const DJI_ODMotorStats_s &_stats)
+{
+    stats_ = _stats;
+}
 
 uint16_t DJI_ODMotor::canId() const { return this->model_.txBaseId + 0u; }
 
@@ -87,7 +77,7 @@ void DJI_ODMotor::cancelRecvCallback()
 void DJI_ODMotor::updateCtrlId()
 {
     switch (this->workMode_) {
-    case WorkMode_e::TRIP_VOLT:{
+    case WorkMode_e::TRIP_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u;
         break;
     }
@@ -99,50 +89,23 @@ void DJI_ODMotor::updateCtrlId()
     }
 }
 
-MotorTypeDef_e DJI_ODMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
-{
-    switch (_cmd) {
-    case MotorCmdType_e::SET_VOLT:
-        if(this->workMode_ == WorkMode_e::TRIP_VOLT)
-           cmd_->volt = _cmdData;
-        else
-           this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
-    break;
-    default:
-        this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
-        return 1;
-    };
-    return 0;
-}
-
-MotorTypeDef_e DJI_ODMotor::cmd(MotorCmdType_e _cmd)
-{
-    if (_cmd == MotorCmdType_e::ON) {
-        cmd_->updateSW(true);
-    } else if (_cmd == MotorCmdType_e::OFF) {
-        cmd_->updateSW(false);
-    } else {
-        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
-        return 1;
-    }
-    return 0;
-}
-
-MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf,
+                                 uint8_t _len)
 {
     // send data to CAN
     TripMotorGroup_s *group = this->findGroup();
     if (group == nullptr) {
         this->log("ERROR", "red", "Motor %s: Can't find group %hx", this->name_,
-            this->getGroupId());
+                  this->getGroupId());
         return 1;
     } else {
         if (this->checkGroupSend(group)) {
 #if 1
             // Check this Buffer
-            this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx", this->name_,
-                _sendId);
-            this->log("DEBUG", "blue",
+            this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx",
+                      this->name_, _sendId);
+            this->log(
+                    "DEBUG", "blue",
                     "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
                     this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
                     _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
@@ -165,9 +128,9 @@ MotorTypeDef_e DJI_ODMotor::parse(const uint8_t *_rxBuf)
 
     this->data_.rawScale = fb.rawScale;
 
-    this->data_.torq = fb.rawTorq / this->stats_.torqRxCodeSpan *
-                    this->stats_.torqMax;
-    
+    this->data_.torq =
+            fb.rawTorq / this->stats_.torqRxCodeSpan * this->stats_.torqMax;
+
     this->data_.tempture = 0.f; // TODO:
 
     this->data_.curr = this->data_.torq / stats_.torqConstant;
@@ -182,10 +145,10 @@ MotorTypeDef_e DJI_ODMotor::parse(const uint8_t *_rxBuf)
         angDiff = 0;
     }
 
-    if(this->rxFreq_)
+    if (this->rxFreq_)
         this->data_.spdRadps = angDiff / this->rxFreq_;
 
-    this->data_.spdRpm = radps2rpm(this->data_.spdRadps);    
+    this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
     this->data_.lastRawScale = this->data_.rawScale;
 
@@ -199,21 +162,56 @@ MotorTypeDef_e DJI_ODMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t txBuf[8] = {};
-    int16_t ctrlCmd =0;
+    int16_t ctrlCmd = 0;
     switch (this->workMode_) {
     case WorkMode_e::TRIP_VOLT: {
-        ctrlCmd = static_cast<int16_t>(cmd_->volt / this->stats_.voltMax *
+        if (this->curCmdType_ == MotorCmdType_e::SET_TORQ) {
+            if (this->torqPID_ != nullptr) {
+                this->cmd_.elec =
+                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+            } else {
+                this->log("ERROR", "red", "Motor %s: torqPID is null",
+                          this->name_);
+            }
+        } else if (this->curCmdType_ == MotorCmdType_e::SET_VEL) {
+            if (this->velPID_ != nullptr || this->torqPID_ != nullptr) {
+                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
+                                                      this->data_.spdRadps);
+                this->cmd_.elec =
+                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+            } else {
+                this->log("ERROR", "red", "Motor %s: velPID or torqPID is null",
+                          this->name_);
+            }
+        } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+            if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
+                this->torqPID_ != nullptr) {
+                this->cmd_.vel = this->posPID_->calc(
+                        getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                    2.f * PI),
+                        0);
+                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
+                                                      this->data_.spdRadps);
+                this->cmd_.elec =
+                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+            } else {
+                this->log("ERROR", "red",
+                          "Motor %s: posPID or velPID or torqPID is null",
+                          this->name_);
+            }
+        }
+        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->stats_.voltMax *
                                        this->stats_.voltTxCodeSpan);
         break;
     }
     default: {
-        ctrlCmd =0;
+        ctrlCmd = 0;
         this->log("ERROR", "red", "Motor %s: this mode is not supported",
                   this->name_);
         break;
     }
     }
-    if (cmd_->SW) {
+    if (this->cmd_.SW) {
         txBuf[2 * this->getPosInGroup() + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
         txBuf[2 * this->getPosInGroup()] =

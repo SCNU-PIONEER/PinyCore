@@ -51,11 +51,13 @@ void TestModule::task()
 void TestModule::taskCreate()
 {
     this->init();
-    
-    xTaskCreate([](void* param) -> void {
-        TestModule *instance = reinterpret_cast<TestModule *>(param);
-        instance->task();
-    }, "test_task", 256, this, osPriorityNormal, NULL);
+
+    xTaskCreate(
+            [](void *param) -> void {
+                TestModule *instance = reinterpret_cast<TestModule *>(param);
+                instance->task();
+            },
+            "test_task", 256, this, osPriorityNormal, NULL);
 }
 
 float debugVolt = 1.0f;
@@ -66,8 +68,8 @@ auto TestModule::motorTestTask() -> void
     // this->testDM4310Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_TORQ, debugTorq);
 
     // this->testGM6020Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
-    // this->testGM6020Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
+    // this->testGM6020Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_ELEC, debugVolt);
 
-    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
-    // this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_VOLT, debugVolt);
+    this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    this->testGM3510Motor_->cmd(PINYMOTOR::MotorCmdType_e::SET_ELEC, debugVolt);
 }

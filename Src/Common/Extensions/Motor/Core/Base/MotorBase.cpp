@@ -14,7 +14,7 @@ MotorBase::MotorBase(const char _name[16], InitConfig_s _config)
 }
 
 void MotorBase::regUserRecvCallback(
-    std::function<void(const uint8_t *_rxBuf)> _callback)
+        std::function<void(const uint8_t *_rxBuf)> _callback)
 {
     userRecvCallback_ = std::move(_callback);
 }

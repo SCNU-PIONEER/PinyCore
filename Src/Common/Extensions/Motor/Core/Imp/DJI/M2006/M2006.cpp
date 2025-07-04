@@ -13,8 +13,8 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 36.f;
     this->model_.rxBaseId = 0x200;
-    
-    if(_config.offsetId > 3)
+
+    if (_config.offsetId > 3)
         this->model_.txBaseId = 0x1FF;
     else
         this->model_.txBaseId = 0x200;
@@ -42,8 +42,8 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
 
     checkBaseConfig();
 
-    this->log("INFO", "green",
-                          "Motor %s: An instance of DJIMotor created", this->name_);
+    this->log("INFO", "green", "Motor %s: An instance of DJIMotor created",
+              this->name_);
 }
 
 MotorTypeDef_e M2006::checkBaseConfig()
@@ -58,20 +58,20 @@ MotorTypeDef_e M2006::checkBaseConfig()
 
     if (this->workMode_ != WorkMode_e::QUAD_CURR) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "M2006 %s: WorkMode is not supported", this->name_);
+        this->log("ERROR", "red", "M2006 %s: WorkMode is not supported",
+                  this->name_);
     }
-    
+
     if (this->offsetId_ > 8) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "M2006 %s: Max Offset ID is only 8!", this->name_);
+        this->log("ERROR", "red", "M2006 %s: Max Offset ID is only 8!",
+                  this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
         this->log("ERROR", "red", "M2006 %s: Max TxFreq is only 1000!",
-                    this->name_);
+                  this->name_);
     }
 
     return rslt;

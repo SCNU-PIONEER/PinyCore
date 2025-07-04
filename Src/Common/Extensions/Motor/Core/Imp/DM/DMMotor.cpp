@@ -6,7 +6,8 @@
 
 using namespace PINYMOTOR;
 
-DMMotorStats_s& DMMotorStats_s::operator=(const DMMotorStats_s& _other) {
+DMMotorStats_s &DMMotorStats_s::operator=(const DMMotorStats_s &_other)
+{
     if (this != &_other) {
         PMax = _other.PMax;
         VMax = _other.VMax;
@@ -23,26 +24,10 @@ DMMotorStats_s& DMMotorStats_s::operator=(const DMMotorStats_s& _other) {
     return *this;
 }
 
-void DMMotor::CmdInternal_s::clear()
-{
-    SW = prevSW = false;
-    torq = 0;
-    speed = 0;
-    pos = 0;
-}
-void DMMotor::CmdInternal_s::updateSW(bool _sw)
-{
-    if (_sw != prevSW) {
-        SW = _sw;
-        prevSW = _sw;
-    }
-}
-
 DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, _config)
 {
-    this->cmd_ = std::make_unique<CmdInternal_s>();
-    cmd_->clear();
+    this->cmd_.clear();
 }
 
 DMMotor::~DMMotor()
@@ -55,7 +40,7 @@ DMMotor::~DMMotor()
 
 void DMMotor::overrideStats(const DMMotorStats_s &_stats) { stats_ = _stats; }
 
-bool DMMotor::isEnable() const { return cmd_->SW; }
+bool DMMotor::isEnable() const { return this->cmd_.SW; }
 
 uint16_t DMMotor::canId() const
 {
@@ -74,7 +59,7 @@ void DMMotor::registerRecvCallback()
     // lamda
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
-            [this](const uint8_t*_rxBuf) {
+            [this](const uint8_t *_rxBuf) {
                 // basic cb
                 this->parse(_rxBuf);
                 // user cb
@@ -158,54 +143,22 @@ void DMMotor::setMITKd(float _kd)
     MITKd_ = _kd;
 }
 
-MotorTypeDef_e DMMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
-{
-    switch (_cmd) {
-    case MotorCmdType_e::SET_SPD:
-        cmd_->speed = _cmdData;
-        break;
-    case MotorCmdType_e::SET_POS:
-        cmd_->pos = _cmdData;
-        break;
-    case MotorCmdType_e::SET_TORQ:
-        cmd_->torq = _cmdData;
-        break;
-    default:
-        this->log("ERROR", "red", "Motor %s: Invalid cmd type", this->name_);
-        return 1;
-    };
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::cmd(MotorCmdType_e _cmd)
-{
-    if (_cmd == MotorCmdType_e::ON) {
-        cmd_->updateSW(true);
-    } else if (_cmd == MotorCmdType_e::OFF) {
-        cmd_->updateSW(false);
-    } else {
-        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
-        return 1;
-    }
-    return 0;
-}
-
 MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
     if (this->checkSend()) {
 #if 1
         // Check this Buffer
-        this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx", this->name_,
-                _sendId);
+        this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx",
+                  this->name_, _sendId);
         this->log("DEBUG", "blue",
-                "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-                this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
-                _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
+                  "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+                  this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+                  _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 #endif
         this->lastSendTick = xTaskGetTickCount();
         return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-            reinterpret_cast<canHandle *>(this->pComHandle_), _sendId, _txBuf,
-            _len));
+                reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                _txBuf, _len));
     } else {
         return 0;
     }
@@ -303,59 +256,85 @@ MotorTypeDef_e DMMotor::ctrl()
         break;
     }
     case WorkMode_e::MIT_TT: {
-        DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
         DMMsg.msgMIT.Kp = 0;
         DMMsg.msgMIT.Kd = 0;
         isMIT = true;
+        if (this->curCmdType_ == MotorCmdType_e::SET_VEL) {
+            this->cmd_.torq =
+                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+            this->cmd_.torq =
+                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        }
+        DMMsg.msgMIT.torqueOffset =
+                float2uint(this->cmd_.torq, -stats_.TMax, stats_.TMax, 12);
+        break;
+    }
+    case WorkMode_e::MIT_VDES: {
+        DMMsg.msgMIT.Kd =
+                float2uint(this->MITKd_, -stats_.MITKdMax, stats_.MITKdMax, 12);
+        DMMsg.msgMIT.Kp = 0;
+        // forward torque
+        DMMsg.msgMIT.torqueOffset =
+                float2uint(this->cmd_.torq, -stats_.TMax, stats_.TMax, 12);
+        isMIT = true;
+        if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+        }
+        DMMsg.msgMIT.exptVel =
+                float2uint(this->cmd_.vel, -stats_.VMax, stats_.VMax, 12);
         break;
     }
     case WorkMode_e::MIT_VDESPDES: {
         DMMsg.msgMIT.exptScale =
-                float2uint(cmd_->pos, -stats_.PMax, stats_.PMax, 16);
+                float2uint(this->cmd_.pos, -stats_.PMax, stats_.PMax, 16);
         DMMsg.msgMIT.exptVel =
-                float2uint(cmd_->speed, -stats_.VMax, stats_.VMax, 12);
+                float2uint(this->cmd_.vel, -stats_.VMax, stats_.VMax, 12);
         DMMsg.msgMIT.Kd =
                 float2uint(this->MITKd_, -stats_.MITKdMax, stats_.MITKdMax, 12);
         DMMsg.msgMIT.Kp =
                 float2uint(this->MITKp_, -stats_.MITKpMax, stats_.MITKpMax, 12);
+        // forward torque
         DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
-        isMIT = true;
-        break;
-    }
-    case WorkMode_e::MIT_VDES: {
-        DMMsg.msgMIT.exptVel =
-                float2uint(cmd_->speed, -stats_.VMax, stats_.VMax, 12);
-        DMMsg.msgMIT.Kd =
-                float2uint(this->MITKd_, -stats_.MITKdMax, stats_.MITKdMax, 12);
-        DMMsg.msgMIT.Kp = 0;
-        DMMsg.msgMIT.torqueOffset =
-                float2uint(cmd_->torq, -stats_.TMax, stats_.TMax, 12);
+                float2uint(this->cmd_.torq, -stats_.TMax, stats_.TMax, 12);
         isMIT = true;
         break;
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
-        DMMsg.msgPDESVDES.exptScale = cmd_->pos;
-        DMMsg.msgPDESVDES.exptVel = cmd_->speed;
+        DMMsg.msgPDESVDES.exptScale = this->cmd_.pos;
+        DMMsg.msgPDESVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &DMMsg.msgPDESVDES.exptScale, 4);
         memcpy(&txBuf[4], &DMMsg.msgPDESVDES.exptVel, 4);
         break;
     }
     case WorkMode_e::VDES: {
         lenBuf = 4;
-        DMMsg.msgVDES.exptVel = cmd_->speed;
+        if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+        }
+        DMMsg.msgVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &DMMsg.msgVDES.exptVel, 4);
         break;
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
-        DMMsg.msgEMIT.exptScale = cmd_->pos;
+        DMMsg.msgEMIT.exptScale = this->cmd_.pos;
         DMMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
-                ((cmd_->speed < 0) ? -cmd_->speed : cmd_->speed) * 100.f);
+                ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
+                100.f);
         DMMsg.msgEMIT.imaxX10000 = static_cast<uint16_t>(
-                ((cmd_->torq < 0) ? -cmd_->torq : cmd_->torq) /
+                ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
                 stats_.torqConstant / stats_.currMax * stats_.currTxCodeSpan);
         float f = DMMsg.msgEMIT.exptScale;
         memcpy(txBuf, &f, 4);
@@ -386,10 +365,10 @@ MotorTypeDef_e DMMotor::ctrl()
         txBuf[7] = static_cast<uint8_t>(DMMsg.msgMIT.torqueOffset & 0x00FF);
     }
 
-    if ((cmd_->SW && !cmd_->prevSW) ||
-        (cmd_->SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
+    if ((this->cmd_.SW && !this->cmd_.prevSW) ||
+        (this->cmd_.SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
         this->enable();
-    } else if (!cmd_->SW) {
+    } else if (!this->cmd_.SW) {
         this->disable();
     } else {
         rslt |= this->send(this->ctrlId_, txBuf, lenBuf);
@@ -405,7 +384,7 @@ MotorTypeDef_e DMMotor::enable()
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC
     };
     rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
-    cmd_->updateSW(true); // force enable
+    this->cmd_.updateSW(true); // force enable
     return rslt;
 }
 
@@ -417,7 +396,7 @@ MotorTypeDef_e DMMotor::disable()
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
     };
     rslt |= this->send(this->ctrlId_, disableCmdPack, 8);
-    cmd_->updateSW(false); // force disable
+    this->cmd_.updateSW(false); // force disable
     return rslt;
 }
 
@@ -528,17 +507,16 @@ MotorTypeDef_e DMMotor::storageOneReg(DMMotorRegId_e _regId)
 
 MotorTypeDef_e DMMotor::writeReg()
 {
-    static uint16_t writeWaitTime =0;
+    static uint16_t writeWaitTime = 0;
     static auto it = regObjList_.begin();
-    if(it != regObjList_.end()){
-        if(writeWaitTime % 10 == 0){
+    if (it != regObjList_.end()) {
+        if (writeWaitTime % 10 == 0) {
             writeOneReg((*it).first, (*it).second->dat);
             (*it).second->isWrite = true;
             it++;
         }
         return 0;
-    }
-    else{
+    } else {
         writeWaitTime = 0;
         it = regObjList_.begin();
         return 0;
@@ -548,17 +526,16 @@ MotorTypeDef_e DMMotor::writeReg()
 
 MotorTypeDef_e DMMotor::readReg()
 {
-    static uint16_t readWaitTime =0;
+    static uint16_t readWaitTime = 0;
     static auto it = regObjList_.begin();
-    if(it != regObjList_.end()){
-        if(readWaitTime % 10 == 0){
+    if (it != regObjList_.end()) {
+        if (readWaitTime % 10 == 0) {
             readOneReg((*it).first);
             (*it).second->isRead = true;
             it++;
         }
         return 0;
-    }
-    else{
+    } else {
         readWaitTime = 0;
         it = regObjList_.begin();
         return 0;
@@ -568,17 +545,16 @@ MotorTypeDef_e DMMotor::readReg()
 
 MotorTypeDef_e DMMotor::storageReg()
 {
-    static uint16_t storageWaitTime =0;
+    static uint16_t storageWaitTime = 0;
     static auto it = regObjList_.begin();
-    if(it != regObjList_.end()){
-        if(storageWaitTime % 10 == 0){
+    if (it != regObjList_.end()) {
+        if (storageWaitTime % 10 == 0) {
             storageOneReg((*it).first);
             (*it).second->isStorage = true;
             it++;
         }
         return 0;
-    }
-    else{
+    } else {
         storageWaitTime = 0;
         it = regObjList_.begin();
         return 0;

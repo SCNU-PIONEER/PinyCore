@@ -15,7 +15,6 @@ namespace PINYMOTOR {
 // 模板类，用于定义一拖一电机的基类
 class MotorBase : public IMotor {
 protected:
-
     uint32_t *pComHandle_;
     ComType_e comType_;
     WorkMode_e workMode_;
@@ -50,13 +49,16 @@ class QuadMotorBase : public MotorBase {
     using Base = MotorBase;
     using QuadMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, QuadMotorGroup_s *> > >;
+
 private:
     // vector < pair(pComHandle_, <canId, 4 motors>) >
     static QuadMotors motorMap_;
+
 protected:
     QuadMotors &getMotorMap() const;
     void updateMotorMap();
     void removeMotorFromMap();
+
 public:
     QuadMotorBase(const char _name[16], InitConfig_s _config);
     uint16_t getGroupId() const;
@@ -73,17 +75,20 @@ struct TripMotorGroup_s {
     void showMotorInfo();
 };
 // 模板类，用于定义一拖三电机的基类
-class TripMotorBase : public MotorBase{
+class TripMotorBase : public MotorBase {
     using Base = MotorBase;
     using TripMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, TripMotorGroup_s *> > >;
+
 private:
     // vector < pair(pComHandle_, <canId, 3 motors>) >
     static TripMotors motorMap_;
+
 protected:
     TripMotors &getMotorMap() const;
     void updateMotorMap();
     void removeMotorFromMap();
+
 public:
     TripMotorBase(const char _name[16], InitConfig_s _config);
     uint16_t getGroupId() const;
