@@ -15,22 +15,17 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     this->model_.txBaseId = 0x00;
 
     this->stats_ = DMMotorStats_s{
-        12.5f, // PMax
-        30.f,  // VMax
-        10.f,  // TMax
-
-        500.f, // MITKpMax
-        5.f,   // MITKdMax
-
-        10000.f, // currTxCodeSpan
-
-        2.5f, // currRated
-        9.f,  // torqRated
-
-        8.f,  // currMax
-        27.f, // torqMax
-
-        0.9333f // torqConstant
+        DM4340_P_MAX,             // PMax
+        DM4340_V_MAX,             // VMax
+        DM4340_T_MAX,             // TMax
+        DM4340_MITKp_MAX,         // MITKpMax
+        DM4340_MITKd_MAX,         // MITKdMax
+        DM4340_CURR_TX_CODE_SPAN, // currTxCodeSpan
+        DM4340_CURR_RATED,        // currRated
+        DM4340_TORQ_RATED,        // torqRated
+        DM4340_CURR_MAX,          // currMax
+        DM4340_TORQ_MAX,          // torqMax
+        DM4340_TORQ_CONSTANT      // torqConstant
     };
 
     this->registerMotor();

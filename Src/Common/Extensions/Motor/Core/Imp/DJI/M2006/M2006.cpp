@@ -20,19 +20,16 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
         this->model_.txBaseId = 0x200;
 
     this->stats_ = DJIMotorStats_s(
-            25000.f, // voltTxCodeSpan
-            16384.f, // currTxCodeSpan
-            8192.f,  // currRxCodeSpan
-
-            3.f, // currRated
-            1.f, // torqRated
-
-            25.2f, //voltmax
+            M2006_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+            M2006_CURR_TX_CODE_SPAN, // currTxCodeSpan
+            M2006_CURR_RX_CODE_SPAN, // currRxCodeSpan
+            M2006_CURR_RATED,        // currRated
+            M2006_TORQ_RATED,        // torqRated
+            M2006_VOLT_MAX,          //voltmax
             //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
-            3.f, // currMax
-            1.f, // torqMax
-
-            0.18f // torqConstant
+            M2006_CURR_MAX,     // currMax
+            M2006_TORQ_MAX,     // torqMax
+            M2006_TORQ_CONSTANT // torqConstant
     );
 
     this->registerMotor();

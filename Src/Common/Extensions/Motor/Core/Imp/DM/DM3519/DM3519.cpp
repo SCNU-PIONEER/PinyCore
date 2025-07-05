@@ -15,22 +15,17 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
     this->model_.txBaseId = 0x00;
 
     this->stats_ = DMMotorStats_s{
-        12.5f, // PMax
-        30.f,  // VMax
-        10.f,  // TMax
-
-        500.f, // MITKpMax
-        5.f,   // MITKdMax
-
-        10000.f, // currTxCodeSpan
-
-        9.2f, // currRated
-        3.5f, // torqRated
-
-        20.5f, // currMax
-        7.8f,  // torqMax
-
-        0.3805f // torqConstant
+        DM3519_P_MAX,             // PMax
+        DM3519_V_MAX,             // VMax
+        DM3519_T_MAX,             // TMax
+        DM3519_MITKp_MAX,         // MITKpMax
+        DM3519_MITKd_MAX,         // MITKdMax
+        DM3519_CURR_TX_CODE_SPAN, // currTxCodeSpan
+        DM3519_CURR_RATED,        // currRated
+        DM3519_TORQ_RATED,        // torqRated
+        DM3519_CURR_MAX,          // currMax
+        DM3519_TORQ_MAX,          // torqMax
+        DM3519_TORQ_CONSTANT      // torqConstant
     };
 
     this->registerMotor();

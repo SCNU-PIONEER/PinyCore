@@ -19,26 +19,22 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
             this->model_.txBaseId = 0x2FE;
         else
             this->model_.txBaseId = 0x1FE;
-    } else if (this->workMode_ == WorkMode_e::QUAD_VOLT)
-    {
+    } else if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
         if (_config.offsetId > 4)
             this->model_.txBaseId = 0x2FF;
         else
             this->model_.txBaseId = 0x1FF;
     }
 
-    this->stats_ = DJIMotorStats_s(25000.f, // voltTxCodeSpan
-                                   16384.f, // currTxCodeSpan
-                                   8192.f,  // currRxCodeSpan
-
-                                   1.62f, // currRated
-                                   1.2f,  // torqRated
-
-                                   25.2f, // voltMax
-                                   0.9f,  // currMax
-                                   0.86f, // torqMax
-
-                                   0.741f // torqConstant
+    this->stats_ = DJIMotorStats_s(GM6020_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                                   GM6020_CURR_TX_CODE_SPAN, // currTxCodeSpan
+                                   GM6020_CURR_RX_CODE_SPAN, // currRxCodeSpan
+                                   GM6020_CURR_RATED,        // currRated
+                                   GM6020_TORQ_RATED,        // torqRated
+                                   GM6020_VOLT_MAX,          // voltMax
+                                   GM6020_CURR_MAX,          // currMax
+                                   GM6020_TORQ_MAX,          // torqMax
+                                   GM6020_TORQ_CONSTANT      // torqConstant
     );
 
     this->registerMotor();
@@ -67,22 +63,21 @@ MotorTypeDef_e GM6020::checkBaseConfig()
     if (!(this->workMode_ == WorkMode_e::QUAD_CURR ||
           this->workMode_ == WorkMode_e::QUAD_VOLT)) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "GM6020 %s: WorkMode is not supported", this->name_);
+        this->log("ERROR", "red", "GM6020 %s: WorkMode is not supported",
+                  this->name_);
     }
-    
+
     if (this->offsetId_ > 7) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                          "GM6020 %s: Max Offset ID is only 7!", this->name_);
+        this->log("ERROR", "red", "GM6020 %s: Max Offset ID is only 7!",
+                  this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
         this->log("ERROR", "red", "GM6020 %s: Max TxFreq is only 1000!",
-                    this->name_);
+                  this->name_);
     }
 
     return rslt;
 }
-
