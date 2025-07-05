@@ -1,12 +1,32 @@
-#!/bin/sh
+#!/bin/bash
 
-# 获取最近30天内的贡献者邮箱
-recipients=$(git log --since="30 days ago" --pretty="%ae" | sort | uniq)
+# 要关闭编译认证可以使用 git commit -m "..." -n
+RED='\033[31m'
+GREEN='\033[32m'
+NC='\033[0m'
 
-commit_msg=$(git log -1 --pretty=%B)
-subject="代码仓库更新通知"
-message="新的代码提交:\n$commit_msg"
+git stash -u
 
-for email in $recipients; do
-  echo -e "$message" | mail -s "$subject" "$email"
-done
+echo -e "${GREEN}[post commit]: running cmake...${NC}"
+if ! cmake -B build -G Ninja; then
+  echo -e "${RED}[post commit]: Cmake config error。commit interrupt。${NC}"
+  git reset --soft HEAD~1
+  git stash pop
+  echo -e "${RED}[post commit]: reset to previous commit${NC}"
+  exit 1
+fi
+
+echo -e "${GREEN}[post commit]: running ninja...${NC}"
+if ! ninja -C build; then
+  echo -e "${RED}[post commit]: Ninja config error。commit interrupt。${NC}"
+  git reset --soft HEAD~1
+  git stash pop
+  echo -e "${RED}[post commit]: reset to previous commit${NC}"
+  exit 1
+fi
+
+git stash pop
+
+echo -e "${GREEN}[post commit]: build and commit success${NC}"
+
+exit 0
