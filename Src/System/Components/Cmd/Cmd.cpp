@@ -1,22 +1,18 @@
 #include "Cmd.hpp"
-#include "Handler.hpp"
-#include "StmLog.hpp"
+#include "MsgImpl.hpp"
 
-void Cmd::init()
+Cmd::Cmd()
 {
     eventGroup = xEventGroupCreate();
 
-    rcHandler.init(eventGroup);
-    rttHandler.init(eventGroup);
+    msgBus.chassisQueue = xQueueCreate(30, sizeof(chassisMsg));
+    msgBus.gimbalQueue = xQueueCreate(30, sizeof(gimbalMsg));
+    msgBus.armQueue = xQueueCreate(30, sizeof(armMsg));
+
+    rttHandler.init(&msgBus, eventGroup);
+    rcHandler.init(&msgBus, eventGroup);
 }
 
-void Cmd::addObserver(IObserver *observer)
-{
-    if (observer) {
-        rcHandler.addObserver(observer);
-        rttHandler.addObserver(observer);
-    }
-}
 
 void Cmd::parseMsg()
 {

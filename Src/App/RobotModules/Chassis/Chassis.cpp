@@ -1,6 +1,7 @@
 #include "Chassis.hpp"
 #include "ChassisRunState.hpp"
 #include "ChassisStopState.hpp"
+#include <memory>
 
 Chassis::Chassis(Wheel *_wheel)
 {
@@ -10,6 +11,11 @@ Chassis::Chassis(Wheel *_wheel)
     stateFactory_.init(stateFactory_.getNextState("stop"));
 }
 
-void Chassis::getMsg(Msg &_msg) { msg_ = static_cast<chassisMsg &>(_msg); }
-
-void Chassis::update() { stateFactory_.update(); }
+void Chassis::update(void *_param)
+{
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 10) ==
+        pdTRUE) {
+        log.info(LOCATION, "chassis", "chassis update");
+    };
+    stateFactory_.update();
+}

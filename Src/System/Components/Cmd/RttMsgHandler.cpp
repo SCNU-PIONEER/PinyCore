@@ -2,8 +2,9 @@
 #include "SEGGER_RTT.h"
 #include <string.h>
 
-void RTTMsgHandler::init(EventGroupHandle_t _event)
+void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
+    msgBus = _bus;
     event = _event;
     TimerHandle_t xTimer = xTimerCreate("rttTime",         // 定时器名称
                                         pdMS_TO_TICKS(10), // 周期
@@ -35,6 +36,10 @@ void RTTMsgHandler::handle()
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
 
+    chassisMsg cmsg;
+    gimbalMsg gmsg;
+
+
     if (strcmp((const char *)data, "run\n") == 0) {
         cmsg.state = State_e::run;
     } else if (strcmp((const char *)data, "stop\n") == 0) {
@@ -43,23 +48,10 @@ void RTTMsgHandler::handle()
         cmsg.state = State_e::stop;
     }
 
-    notify(cmsg);
+    notify(&cmsg, msgBus->chassisQueue);
 }
 
-void RTTMsgHandler::addObserver(IObserver *observer)
+void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
-    {
-        if (observer) {
-            observers.push_back(observer);
-        }
-    }
-}
-
-void RTTMsgHandler::notify(Msg &_msg)
-{
-    for (auto *observer : observers) {
-        if (observer) {
-            observer->getMsg(_msg);
-        }
-    }
+    xQueueSend(_queue, _msg, 0);
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "IObserver.hpp"
 #include "Wheel.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
@@ -16,12 +15,11 @@ const float MAX_WZ_SPEED = 3.0f;
 
 const float MOUSE_CAL = 200.0f;
 
-class Chassis : public IObserver {
+class Chassis {
 public:
     Chassis(Wheel *_wheel);
 
-    void getMsg(Msg &_msg) override;
-    void update();
+    void update(void *_param);
 
     StateFactory stateFactory_;
 

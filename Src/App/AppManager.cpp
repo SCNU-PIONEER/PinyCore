@@ -55,7 +55,7 @@ Chassis chassis(&mecanum);
 void ctrlTask(void *param)
 {
     while (1) {
-        chassis.update();
+        chassis.update(param);
         vTaskDelay(1);
     }
 }
@@ -105,11 +105,12 @@ void AppManager::createApp()
     xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
 
     // Cmd-Polling Continuous Task
-    xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
-                osPriorityNormal, NULL);
+    xTaskCreate([](void *param) { cmd.task(); }, "cmd_task", 256,
+                (void *)cmd.getMsgBus(), osPriorityNormal, NULL);
 
     // Robot-Ctrl Continuous Task
-    xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
+    xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd.getMsgBus(),
+                osPriorityRealtime, NULL);
 
     // Test-Module Continuous Task
     xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
@@ -135,9 +136,6 @@ void AppManager::initApp()
     // INS
     bmi088.init(&IMU_SPI);
     ins.init(accCali, gyroCali);
-
-    // cmd
-    cmd.init();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,

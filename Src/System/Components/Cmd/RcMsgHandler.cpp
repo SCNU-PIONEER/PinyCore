@@ -2,8 +2,9 @@
 #include <algorithm>
 #include "sdkconfig.h"
 
-void rcMsgHandler::init(EventGroupHandle_t _event)
+void rcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
+    msgBus = _bus;
     event = _event;
     extern UART_HandleTypeDef RC_UART;
     rc_.init(&RC_UART, _event);
@@ -15,6 +16,8 @@ void rcMsgHandler::handle()
     rc_.parseData();
     RC::rc_ctrl_t rcData = rc_.getData();
 
+    chassisMsg cmsg;
+    gimbalMsg gmsg;
 
     rocker.rx =
             std::clamp((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f - rocker.rx,
@@ -41,23 +44,11 @@ void rcMsgHandler::handle()
         cmsg.state = State_e::stop; // Default state
     }
 
-    notify(cmsg);
+    notify(&cmsg, msgBus->chassisQueue);
 }
 
-void rcMsgHandler::addObserver(IObserver *observer)
-{
-    {
-        if (observer) {
-            observers.push_back(observer);
-        }
-    }
-}
 
-void rcMsgHandler::notify(Msg &_msg)
+void rcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
-    for (auto *observer : observers) {
-        if (observer) {
-            observer->getMsg(_msg);
-        }
-    }
+    xQueueSend(_queue, _msg, 0);
 }

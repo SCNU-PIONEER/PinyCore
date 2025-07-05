@@ -1,7 +1,6 @@
 #pragma once
 #include "Rc.hpp"
 #include "Handler.hpp"
-#include "MsgImpl.hpp"
 
 class rcMsgHandler : public Handler {
     typedef struct {
@@ -12,18 +11,15 @@ class rcMsgHandler : public Handler {
     } rocker_t;
 
 public:
-    void init(EventGroupHandle_t _event) override;
-    void addObserver(IObserver *observer) override;
+    void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
     void handle() override;
-    void notify(Msg &_msg) override;
+    void notify(Msg *_msg, QueueHandle_t _queue) override;
 
 private:
-    const float S_CURVE_ACC = 2.0f;
-    const uint8_t T_ACC_CNT = 100;
+    static constexpr float S_CURVE_ACC = 2.0f;
+    static constexpr uint8_t T_ACC_CNT = 100;
 
     RC::Rc &rc_ = RC::Rc::instance();
     rocker_t rocker;
-
-    chassisMsg cmsg;
-    gimbalMsg gmsg;
+    MsgBus_s *msgBus;
 };

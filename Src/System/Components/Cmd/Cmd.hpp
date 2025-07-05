@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include "MsgBase.hpp"
 #include "FreeRTOS.h"
+#include "queue.h"
 #include "event_groups.h"
-#include "IObserver.hpp"
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
 
@@ -13,12 +10,15 @@
 
 class Cmd {
 public:
-    void init();
+    Cmd();
     void task();
-    void addObserver(IObserver *observer);
+    MsgBus_s *getMsgBus() { return &msgBus; }
+
+protected:
     void parseMsg();
 
 private:
+    MsgBus_s msgBus;
     EventGroupHandle_t eventGroup;
 
     rcMsgHandler rcHandler;

@@ -10,19 +10,14 @@
 
 class RTTMsgHandler : public Handler {
 public:
-    RTTMsgHandler() {}
-
-    void init(EventGroupHandle_t _event) override;
-    void addObserver(IObserver *observer) override;
+    void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
     void handle() override;
-    void notify(Msg &_msg) override;
+    void notify(Msg *_msg, QueueHandle_t _queue) override;
 
 protected:
     static void parse(TimerHandle_t xTimer);
 
 private:
     uint8_t data[25] = { 0 };
-
-    chassisMsg cmsg;
-    gimbalMsg gmsg;
+    MsgBus_s *msgBus;
 };
