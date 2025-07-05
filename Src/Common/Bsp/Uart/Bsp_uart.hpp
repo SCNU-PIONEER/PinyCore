@@ -26,5 +26,4 @@ public:
     */
     HAL_StatusTypeDef RecvDmaInit(UART_HandleTypeDef *_huart,
                                   uint32_t *_dstAddress, uint32_t _dataLength);
-
 };

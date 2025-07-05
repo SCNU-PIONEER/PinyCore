@@ -14,7 +14,7 @@ public:
      */
     void registerCallback(canHandle *_hcan, uint32_t _stdid,
                           callback _pCallback);
-    
+
     /**
      * @brief can unregisterCallback
      */

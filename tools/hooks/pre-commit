@@ -1,18 +1,5 @@
 #!/bin/sh
 
-# 要关闭编译认证可以使用 git commit -m "..." -n
-echo "正在运行cmake..."
-if ! cmake -B build -G Ninja; then
-  echo "CMake配置失败。提交已中止。"
-  exit 1
-fi
-
-echo "正在运行ninja..."
-if ! ninja -C build; then
-  echo "Ninja构建失败。提交已中止。"
-  exit 1
-fi
-
-echo ""
-
-exit 0
+find Src -type d -name "hal" -prune -o \
+  \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.c" \) -print0 |
+  xargs -0 -r clang-format --dry-run --Werror --style=file

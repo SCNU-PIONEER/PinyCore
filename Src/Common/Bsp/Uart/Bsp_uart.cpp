@@ -18,8 +18,8 @@ HAL_StatusTypeDef Uart::RecvDmaMultiBufInit(UART_HandleTypeDef *_huart,
     __HAL_UART_ENABLE_IT(_huart, UART_IT_IDLE);
     uint32_t *secondMemAddress = _dstAddress + (_dataLength / 2);
     result = HAL_DMAEx_MultiBufferStart(
-            _huart->hdmarx, (uint32_t)&SOC_UART_DMA_DR,
-            (uint32_t)_dstAddress, (uint32_t)secondMemAddress, _dataLength);
+            _huart->hdmarx, (uint32_t)&SOC_UART_DMA_DR, (uint32_t)_dstAddress,
+            (uint32_t)secondMemAddress, _dataLength);
 
     return result;
 }

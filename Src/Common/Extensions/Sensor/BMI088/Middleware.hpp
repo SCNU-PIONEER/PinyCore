@@ -20,6 +20,6 @@ public:
 
     uint8_t read_write_byte(uint8_t reg);
 
-  protected:
+protected:
     SPI_HandleTypeDef *BMI088_USING_SPI_UNIT;
 };

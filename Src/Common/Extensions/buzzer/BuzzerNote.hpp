@@ -105,13 +105,11 @@ const Note dji[] = {
     { NOTE_REST, 50 }, { NOTE_FS7, 50 },  { NOTE_C7, 50 },
 };
 
-const Note PinyCore[]{
-    { NOTE_C5, 150 },
-    { NOTE_E5, 150 },
-    { NOTE_G5, 150 },
-    { NOTE_C6, 300 },
-    { 0, 50 } 
-};
+const Note PinyCore[]{ { NOTE_C5, 150 },
+                       { NOTE_E5, 150 },
+                       { NOTE_G5, 150 },
+                       { NOTE_C6, 300 },
+                       { 0, 50 } };
 
 const Note allNote[]{
     { NOTE_B0, 250 },  { NOTE_C1, 250 },  { NOTE_CS1, 250 }, { NOTE_D1, 250 },

@@ -25,12 +25,12 @@ public:
                     uint16_t _dataLength);
 
     void transmitReceive(SPI_HandleTypeDef _spi, uint8_t *_txData,
-                         uint8_t *_rxData, uint16_t _dataLength,uint16_t _timeout);
+                         uint8_t *_rxData, uint16_t _dataLength,
+                         uint16_t _timeout);
 
     void transmitReceiveIT(SPI_HandleTypeDef _spi, uint8_t *_txData,
                            uint8_t *_rxData, uint16_t _dataLength);
 
     void transmitReceiveDMA(SPI_HandleTypeDef _spi, uint8_t *_txData,
                             uint8_t *_rxData, uint16_t _dataLength);
-
 };

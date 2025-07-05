@@ -5,14 +5,14 @@
 
 /*can*/
 #define SOC_FDCAN
-#define SOC_CAN_NUM (3)
-#define canHandle   FDCAN_HandleTypeDef
-#define canHeader   FDCAN_RxHeaderTypeDef
-#define RX_FIFO0    FDCAN_RX_FIFO0
-#define RX_FIFO1    FDCAN_RX_FIFO1
+#define SOC_CAN_NUM         (3)
+#define canHandle           FDCAN_HandleTypeDef
+#define canHeader           FDCAN_RxHeaderTypeDef
+#define RX_FIFO0            FDCAN_RX_FIFO0
+#define RX_FIFO1            FDCAN_RX_FIFO1
 
 /*uart*/
-#define SOC_UART_DMA_DR _huart->Instance->RDR
+#define SOC_UART_DMA_DR     _huart->Instance->RDR
 
 /*dma*/
 #define SOC_DMA_SRAM        0x24000000

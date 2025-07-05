@@ -60,9 +60,11 @@ static struct {
         union {
             volatile unsigned int byte;
             struct {
-                unsigned int IPSR : 8;  // Interrupt Program Status register (IPSR)
-                unsigned int EPSR : 19; // Execution Program Status register (EPSR)
-                unsigned int APSR : 5;  // Application Program Status register (APSR)
+                unsigned int IPSR : 8; // Interrupt Program Status register (IPSR)
+                unsigned int
+                        EPSR : 19; // Execution Program Status register (EPSR)
+                unsigned int
+                        APSR : 5; // Application Program Status register (APSR)
             } bits;
         } psr; // Program status register.
     } SavedRegs;
@@ -71,7 +73,8 @@ static struct {
         struct {
             unsigned int MEMFAULTACT : 1; // Read as 1 if memory management fault
             // is active
-            unsigned int BUSFAULTACT : 1; // Read as 1 if bus fault exception is active
+            unsigned int
+                    BUSFAULTACT : 1; // Read as 1 if bus fault exception is active
             unsigned int UnusedBits1 : 1;
             unsigned int USGFAULTACT : 1; // Read as 1 if usage fault exception
             // is active
@@ -80,20 +83,25 @@ static struct {
             unsigned int MONITORACT : 1; // Read as 1 if debug monitor exception
             // is active
             unsigned int UnusedBits3 : 1;
-            unsigned int PENDSVACT : 1;      // Read as 1 if PendSV exception is active
-            unsigned int SYSTICKACT : 1;     // Read as 1 if SYSTICK exception is active
-            unsigned int USGFAULTPENDED : 1; // Usage fault pended; usage fault started
+            unsigned int PENDSVACT : 1; // Read as 1 if PendSV exception is active
+            unsigned int
+                    SYSTICKACT : 1; // Read as 1 if SYSTICK exception is active
+            unsigned int
+                    USGFAULTPENDED : 1; // Usage fault pended; usage fault started
             // but was replaced by a higher-priority
             // exception
-            unsigned int MEMFAULTPENDED : 1; // Memory management fault pended; memory
+            unsigned int
+                    MEMFAULTPENDED : 1; // Memory management fault pended; memory
             // management fault started but was
             // replaced by a higher-priority exception
-            unsigned int BUSFAULTPENDED : 1; // Bus fault pended; bus fault handler was
+            unsigned int
+                    BUSFAULTPENDED : 1; // Bus fault pended; bus fault handler was
             // started but was replaced by a
             // higher-priority exception
             unsigned int SVCALLPENDED : 1; // SVC pended; SVC was started but was
             // replaced by a higher-priority exception
-            unsigned int MEMFAULTENA : 1; // Memory management fault handler enable
+            unsigned int
+                    MEMFAULTENA : 1; // Memory management fault handler enable
             unsigned int BUSFAULTENA : 1; // Bus fault handler enable
             unsigned int USGFAULTENA : 1; // Usage fault handler enable
         } bits;
@@ -138,7 +146,8 @@ static struct {
             unsigned short NOCP : 1; // Attempts to execute a coprocessor
             // instruction
             unsigned short UnusedBits : 4;
-            unsigned short UNALIGNED : 1; // Indicates that an unaligned access fault
+            unsigned short
+                    UNALIGNED : 1; // Indicates that an unaligned access fault
             // has taken place
             unsigned short DIVBYZERO : 1; // Indicates a divide by zero has taken
                                           // place (can be set only if DIV_0_TRP

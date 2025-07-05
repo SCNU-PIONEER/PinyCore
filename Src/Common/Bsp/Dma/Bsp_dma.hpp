@@ -15,5 +15,4 @@ public:
      * @brief dma ram alloc 
      */
     void *ram_alloc(size_t size, DmaRam_e _ram);
-
 };

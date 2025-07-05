@@ -10,7 +10,8 @@ public:
     MotorManager(const MotorManager &) = delete;
     MotorManager &operator=(const MotorManager &) = delete;
 
-    inline static MotorManager* instance() {
+    inline static MotorManager *instance()
+    {
         static MotorManager instance_;
         return &instance_;
     }

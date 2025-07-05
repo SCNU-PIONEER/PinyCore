@@ -8,7 +8,8 @@
 
 class TestModule {
 public:
-    inline static TestModule *instance() {
+    inline static TestModule *instance()
+    {
         static TestModule instance_;
         return &instance_;
     }

@@ -17,14 +17,13 @@ void MotorManager::ctrlTask()
             IMotor *motor = motorPair.second;
             motor->ctrl();
         }
-        vTaskDelayUntil(&xLastWakeTime,
-                        (1000.f / this->motorTaskFreq_));
+        vTaskDelayUntil(&xLastWakeTime, (1000.f / this->motorTaskFreq_));
     }
 }
 
 void MotorManager::taskCreate()
 {
-    xTaskCreate([](void *param) -> void {
-        MotorManager::instance()->ctrlTask();
-    }, "motor_task", 256, NULL, osPriorityRealtime, NULL);
+    xTaskCreate(
+            [](void *param) -> void { MotorManager::instance()->ctrlTask(); },
+            "motor_task", 256, NULL, osPriorityRealtime, NULL);
 }
