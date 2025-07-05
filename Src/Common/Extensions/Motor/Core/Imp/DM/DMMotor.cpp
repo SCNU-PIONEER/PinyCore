@@ -369,9 +369,12 @@ MotorTypeDef_e DMMotor::ctrl()
         (this->cmd_.SW && errorCode_ == DMMotorErrorCode_e::MotorDisable)) {
         this->enable();
     } else if (!this->cmd_.SW) {
-        this->posPID_->reset();
-        this->velPID_->reset();
-        this->torqPID_->reset();
+        if (this->posPID_ != nullptr)
+            this->posPID_->reset();
+        if (this->velPID_ != nullptr)
+            this->velPID_->reset();
+        if (this->torqPID_ != nullptr)
+            this->torqPID_->reset();
         this->disable();
     } else {
         rslt |= this->send(this->ctrlId_, txBuf, lenBuf);

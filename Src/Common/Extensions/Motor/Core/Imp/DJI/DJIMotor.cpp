@@ -243,9 +243,12 @@ MotorTypeDef_e DJIMotor::ctrl()
         txBuf[2 * this->getPosInGroup()] =
                 static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
     } else {
-        this->posPID_->reset();
-        this->velPID_->reset();
-        this->torqPID_->reset();
+        if (this->posPID_ != nullptr)
+            this->posPID_->reset();
+        if (this->velPID_ != nullptr)
+            this->velPID_->reset();
+        if (this->torqPID_ != nullptr)
+            this->torqPID_->reset();
         txBuf[2 * this->getPosInGroup() + 1] = 0;
         txBuf[2 * this->getPosInGroup()] = 0;
     }
