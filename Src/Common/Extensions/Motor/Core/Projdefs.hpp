@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "pid.hpp"
+#include "Pid.hpp"
 namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;

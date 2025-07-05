@@ -1,10 +1,10 @@
 #pragma once
 
-#include "iObserver.hpp"
-#include "wheel.hpp"
+#include "IObserver.hpp"
+#include "Wheel.hpp"
 #include "FSMState.hpp"
-#include "stm_log.hpp"
-#include "msgImpl.hpp"
+#include "StmLog.hpp"
+#include "MsgImpl.hpp"
 
 const float S_CURVE_VX_ACC = 1.4f;
 const float S_CURVE_VY_ACC = 2.2f;

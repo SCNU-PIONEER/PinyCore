@@ -8,7 +8,7 @@
 
 #include <cstdarg>
 
-#include "stm_log.hpp"
+#include "StmLog.hpp"
 
 namespace PINYMOTOR {
 class IMotor {

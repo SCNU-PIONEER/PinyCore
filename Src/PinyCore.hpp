@@ -11,7 +11,7 @@ void initPinyCore();
 #ifdef __cplusplus
 }
 
-#include "stm_log.hpp"
+#include "StmLog.hpp"
 
 
 class PinyCore {

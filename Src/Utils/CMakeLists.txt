@@ -14,7 +14,7 @@ if(USE_ALGORITHM)
 endif()
 
 if(USE_DWT)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/dwt.c)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/Dwt.c)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
 endif()
 
@@ -24,17 +24,17 @@ if(USE_FSM)
 endif()
 
 if(USE_HARDFAULT)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/hardfault.c)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/Hardfault.c)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/hardfault)
 endif()
 
 if(USE_STM_LOG)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Log/stm_log.cpp)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Log/StmLog.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
 endif()
 
 if(USE_VOFA)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/vofa.cpp)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/Vofa.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
 endif()
 

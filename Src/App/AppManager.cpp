@@ -7,14 +7,14 @@
 
 #include "INS.hpp"
 
-#include "mecanum.hpp"
+#include "Mecanum.hpp"
 #include "Chassis.hpp"
 
-#include "cmd.hpp"
+#include "Cmd.hpp"
 
-#include "bmi088.hpp"
+#include "Bmi088.hpp"
 
-#include "testModule.hpp"
+#include "TestModule.hpp"
 
 #include "Buzzer.hpp"
 
