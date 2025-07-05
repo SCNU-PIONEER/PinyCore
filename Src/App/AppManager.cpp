@@ -16,8 +16,12 @@
 
 #include "testModule.hpp"
 
+#include "Buzzer.hpp"
+
 
 extern SPI_HandleTypeDef IMU_SPI;
+
+extern TIM_HandleTypeDef BEEP_TIMER;
 
 //---------------------------------------------------------------------------------------------------
 // INS
@@ -97,26 +101,33 @@ void INSTask(void *param)
 // AppManager
 void AppManager::createApp()
 {
-    // INS Task
+    // INS Continuous Task
     xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
 
-    // Cmd Polling Task
+    // Cmd-Polling Continuous Task
     xTaskCreate([](void *param) -> void { cmd.task(); }, "cmd_task", 256, NULL,
                 osPriorityNormal, NULL);
 
-    // Robot Ctrl Task
+    // Robot-Ctrl Continuous Task
     xTaskCreate(ctrlTask, "ctrl_task", 256, NULL, osPriorityRealtime, NULL);
 
-    // Test Module Task
+    // Test-Module Continuous Task
     xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
                 "test_task", 256, this, osPriorityNormal, NULL);
 
-    // Motor Sending Task
+    // Motor-Sending Continuous Task
     xTaskCreate(
             [](void *param) -> void {
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
             "motor_task", 256, NULL, osPriorityRealtime, NULL);
+
+    // Buzzer Once Task
+    xTaskCreate(
+            [](void *param) -> void {
+                BUZZER::Buzzer::getInstance().playPinyCore();
+            },
+            "buzzer_task", 64, NULL, osPriorityNormal, NULL);
 }
 
 void AppManager::initApp()
@@ -127,6 +138,10 @@ void AppManager::initApp()
 
     // cmd
     cmd.init();
+
+    // Buzzer
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
+                                       BEEP_APB_FREQ);
 
     // TestModule
     TestModule::instance()->init();
