@@ -4,11 +4,26 @@
 
 class rcMsgHandler : public Handler {
     typedef struct {
-        float rx;
-        float ry;
-        float lx;
-        float ly;
-    } rocker_t;
+        struct {
+            float rx;
+            float ry;
+            float lx;
+            float ly;
+        };
+
+        struct {
+            uint8_t rSwitch;
+            uint8_t lSwitch;
+        };
+
+        struct {
+            uint8_t rPress;
+            uint8_t lPress;
+            int16_t xMove;
+            int16_t yMove;
+            int16_t zRoller;
+        }; // TODO:
+    } RcMsg_t;
 
 public:
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
@@ -20,6 +35,10 @@ private:
     static constexpr uint8_t T_ACC_CNT = 100;
 
     RC::Rc &rc_ = RC::Rc::instance();
-    rocker_t rocker;
-    MsgBus_s *msgBus;
+
+    RcMsg_t rcMsg_;
+
+    RcMsg_t rcMsgPrev_;
+
+    MsgBus_s *msgBus_;
 };

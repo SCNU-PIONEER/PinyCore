@@ -5,7 +5,7 @@
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     msgBus = _bus;
-    event = _event;
+    this->event = _event;
     TimerHandle_t xTimer = xTimerCreate("rttTime",         // 定时器名称
                                         pdMS_TO_TICKS(10), // 周期
                                         pdTRUE,            // 自动重载

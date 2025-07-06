@@ -57,7 +57,7 @@ namespace RC {
 /* ------------------Data Struct Data Struct -------*/
 #define RC_FRAME_LENGTH         18
 
-enum key_codes {
+enum KeyCodes_e {
     W = 1,
     S = 2,
     A = 3,
@@ -82,24 +82,20 @@ typedef struct {
         int16_t ch1;
         int16_t ch2;
         int16_t ch3;
-        uint8_t switch_left;
-        uint8_t switch_right;
-        uint8_t last_switch_left;
-        uint8_t last_switch_right;
+        uint8_t switchLeft;
+        uint8_t switchRight;
     } rc;
     struct {
         int16_t x;
         int16_t y;
         int16_t z;
-        uint8_t press_left;
-        uint8_t press_right;
-        uint8_t last_press_left;
-        uint8_t last_press_right;
+        uint8_t pressLeft;
+        uint8_t pressRight;
     } mouse;
     struct {
-        uint16_t keycode;
-        uint16_t last_keycode;
+        uint16_t keyCode;
+        uint16_t lastKeyCode;
     } keyboard;
     int16_t wheel;
-} rc_ctrl_t;
+} RcRawMsg_t;
 }

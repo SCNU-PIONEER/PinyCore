@@ -28,27 +28,28 @@ namespace RC {
 class Rc {
 private:
     Rc();
-    rc_ctrl_t data;
+    RcRawMsg_t data_;
     UART_HandleTypeDef *uart_;
-    uint8_t *rc_buffer;
-    uint8_t dt7_rc_rxlost = RC_RX_LOST_MAX;
-    EventGroupHandle_t event;
+    uint8_t *rcBuffer_;
+    uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
+    EventGroupHandle_t event_;
 
 public:
     Rc(const Rc &) = delete;
     Rc &operator=(const Rc &) = delete;
 
-    void init(UART_HandleTypeDef *huart, EventGroupHandle_t _event);
+    void init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event);
 
-    inline rc_ctrl_t &getData() { return data; }
+    inline RcRawMsg_t &getData() { return data_; }
+
     inline static Rc &instance()
     {
         static Rc instance_;
         return instance_;
     }
 
-    void callBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos);
-    static void RawCallBackFromISR(UART_HandleTypeDef *huart, uint16_t Pos);
+    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos);
+    static void RawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos);
     uint8_t parseData();
 };
 
