@@ -112,9 +112,9 @@ void AppManager::createApp()
     xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd.getMsgBus(),
                 osPriorityRealtime, NULL);
 
-    // Test-Module Continuous Task
+    // // Test-Module Continuous Task
     xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, this, osPriorityNormal, NULL);
+                "test_task", 256, NULL, osPriorityNormal, NULL);
 
     // Motor-Sending Continuous Task
     xTaskCreate(
@@ -127,6 +127,7 @@ void AppManager::createApp()
     xTaskCreate(
             [](void *param) -> void {
                 BUZZER::Buzzer::getInstance().playPinyCore();
+                vTaskDelete(NULL); // 否则会进ExistError
             },
             "buzzer_task", 64, NULL, osPriorityNormal, NULL);
 }
