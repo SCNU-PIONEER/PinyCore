@@ -3,6 +3,8 @@
 #include "./Algorithm/DCM_AHRS/DCM_AHRS.hpp"
 #include "./Algorithm/Calibrate/calibrate.hpp"
 
+#include "dsp/matrix_functions.h"
+
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
 struct IMUSensorData_s {
@@ -83,12 +85,12 @@ private:
 
     // 3x3 rotation matrix data
     float R_data_[9] = { 0.0f };
-    // arm_matrix_instance_f32 R_ = { 3, 3, R_data_ };
+    arm_matrix_instance_f32 R_ = { 3, 3, R_data_ };
     // 3x1 vector
     float bodyV_data_[3] = { 0.0f };
     float earthV_data_[3] = { 0.0f };
-    // arm_matrix_instance_f32 body_ = { 3, 1, bodyV_data_ };
-    // arm_matrix_instance_f32 earth_ = { 3, 1, earthV_data_ };
+    arm_matrix_instance_f32 bodyVectorT_ = { 3, 1, bodyV_data_ };
+    arm_matrix_instance_f32 earthVectorT_ = { 3, 1, earthV_data_ };
 
     // IMU calibration
     // IMU Algorithm
