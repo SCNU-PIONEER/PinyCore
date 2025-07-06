@@ -13,16 +13,15 @@
 
 #include "stdint.h"
 
-namespace RC {
 /* --------------- RC Channel Definition-----------------*/
 #define RC_CH_VALUE_MIN         ((uint16_t)364)
 #define RC_CH_VALUE_OFFSET      ((uint16_t)1024)
 #define RC_CH_VALUE_MAX         ((uint16_t)1684)
 #define RC_CH_VALUE_RANGE       ((uint16_t)660)
 /* ----------RC Switch Definition------------------------- */
-#define RC_SW_UP                ((uint16_t)1)
-#define RC_SW_MID               ((uint16_t)3)
-#define RC_SW_DOWN              ((uint16_t)2)
+#define RC_SW_UP                ((uint8_t)1)
+#define RC_SW_MID               ((uint8_t)3)
+#define RC_SW_DOWN              ((uint8_t)2)
 /* ----------PC Key Definition---------------------- ------*/
 #define MOUSE_PRESS             ((uint8_t)1)
 #define MOUSE_NOT_PRESS         ((uint8_t)0)
@@ -56,6 +55,8 @@ namespace RC {
 #define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
 /* ------------------Data Struct Data Struct -------*/
 #define RC_FRAME_LENGTH         18
+
+namespace RC {
 
 enum KeyCodes_e {
     W = 1,
