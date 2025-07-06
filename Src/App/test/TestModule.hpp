@@ -1,10 +1,15 @@
-// #include "FSMState.hpp"
+#pragma once
+
+#include "FSMState.hpp"
+#include "StmLog.hpp"
 
 #include "DM4310.hpp"
 
 #include "GM3510.hpp"
 
 #include "GM6020.hpp"
+
+#include "RcMsg.hpp"
 
 class TestModule {
 public:
@@ -18,18 +23,21 @@ public:
 
     void init();
 
-    void task();
-    void taskCreate();
+    void update();
 
-    uint32_t debugCnt = 0;
+    void task();
+
+    RC::RcRawMsg_t rcMsg;
+
+    StateFactory stateFactory_;
+
+    LOG::Logger &log = LOG::Logger::instance();
+
+    /*MOTOR*/
+    PINYMOTOR::DM4310 *testDM4310Motor;
+    PINYMOTOR::GM3510 *testGM3510Motor;
+    PINYMOTOR::GM6020 *testGM6020Motor;
 
 private:
     TestModule() = default;
-
-    /*MOTOR*/
-    PINYMOTOR::DM4310 *testDM4310Motor_;
-    PINYMOTOR::GM3510 *testGM3510Motor_;
-    PINYMOTOR::GM6020 *testGM6020Motor_;
-
-    auto motorTestTask() -> void;
 };
