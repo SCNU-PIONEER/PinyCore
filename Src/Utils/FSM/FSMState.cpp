@@ -43,6 +43,9 @@ void StateFactory::setState(FSMState *state) { currentState_ = state; }
 
 void StateFactory::update()
 {
+    if (currentState_ == nullptr) {
+        return; // No state to update
+    }
     if (currentState_->getMode() == FSMMode_e::NORMAL) {
         currentState_->run();
         currentState_->setNextStateName(currentState_->checkChange());
