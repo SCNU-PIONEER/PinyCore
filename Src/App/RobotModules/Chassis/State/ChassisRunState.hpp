@@ -3,9 +3,9 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-class RunState : public FSMState {
+class ChassisRunState : public FSMState {
 public:
-    RunState(const Chassis *_chassis) : chassis_(_chassis)
+    ChassisRunState(const Chassis *_chassis) : chassis_(_chassis)
     {
         setStateName("run");
     };
@@ -33,9 +33,9 @@ public:
     std::string checkChange() override
     {
         if (chassis_->msg_.state == State_e::stop)
-            return "stop";
+            return "ChassisStop";
         else if (chassis_->msg_.state == State_e::run)
-            return "run";
+            return "ChassisRun";
         else
             return "";
     }

@@ -3,9 +3,12 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-class StopState : public FSMState {
+class ChassisStopState : public FSMState {
 public:
-    StopState(Chassis *_chassis) : chassis_(_chassis) { setStateName("stop"); };
+    ChassisStopState(Chassis *_chassis) : chassis_(_chassis)
+    {
+        setStateName("stop");
+    };
 
     void enter() override
     {
@@ -21,9 +24,9 @@ public:
     std::string checkChange() override
     {
         if (chassis_->msg_.state == State_e::stop)
-            return "stop";
+            return "ChassisStop";
         else if (chassis_->msg_.state == State_e::run)
-            return "run";
+            return "ChassisRun";
         else
             return "";
     }
