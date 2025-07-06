@@ -8,6 +8,7 @@
 #include "SEGGER_SYSVIEW.h"
 #include "sdkconfig.h"
 
+
 void PinyCore::bspInit()
 {
     dwt_init();
@@ -25,6 +26,8 @@ void PinyCore::coreInit()
 
     AppManager::instance()->initApp();
 
+    log.info(LOCATION, "Piny", "kernal start");
+
     osKernelStart();
 }
 
@@ -33,8 +36,6 @@ void PinyCore::init()
     /* Welcome to Piny */
     bspInit();
     coreInit();
-
-    log.info(LOCATION, "Piny", "init");
 }
 
 void initPinyCore() { PinyCore::instance()->init(); }
