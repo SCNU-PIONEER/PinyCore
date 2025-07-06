@@ -13,10 +13,7 @@ public:
         LOG::info("stop", " enter");
     }
 
-    void run() override
-    {
-        chassis_->wheel_->stop();
-    }
+    void run() override { chassis_->wheel_->stop(); }
 
     void exit() override { LOG::info("stop", " exit"); }
 

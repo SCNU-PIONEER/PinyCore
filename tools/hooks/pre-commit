@@ -1,5 +1,6 @@
 #!/bin/sh
 
 find Src -type d -name "hal" -prune -o \
-  \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.c" \) -print0 |
+  \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.c" \) \
+  -not -name "sdkconfig.h" -print0 |
   xargs -0 -r clang-format --dry-run --Werror --style=file
