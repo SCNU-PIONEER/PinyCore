@@ -39,4 +39,4 @@ if(USE_VOFA)
 endif()
 
 # link
-target_link_libraries(Utils PRIVATE stm32cubemx Soc segger CMSISDSP)
+target_link_libraries(Utils PRIVATE stm32cubemx Soc segger PUBLIC CMSISDSP)
