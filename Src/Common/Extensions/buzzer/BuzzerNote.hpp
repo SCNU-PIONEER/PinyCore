@@ -105,6 +105,23 @@ const Note dji[] = {
     { NOTE_REST, 50 }, { NOTE_FS7, 50 },  { NOTE_C7, 50 },
 };
 
+const Note wechat[] = { { NOTE_E5, 80 }, { NOTE_G5, 20 }, { NOTE_REST, 25 },
+                        { NOTE_C5, 80 }, { NOTE_E5, 20 }, { NOTE_REST, 50 } };
+
+const Note windowsXP[] = { { NOTE_A4, 80 },
+                           { NOTE_CS5, 80 },
+                           { NOTE_E5, 80 },
+                           { NOTE_A5, 160 } };
+
+const Note victory[] = { { NOTE_G4, 100 }, { NOTE_C5, 100 }, { NOTE_E5, 100 },
+                         { NOTE_G5, 200 }, { NOTE_E5, 100 }, { NOTE_G5, 400 } };
+
+const Note press[] = { { NOTE_G4, 30 },
+                       { NOTE_G5, 30 },
+                       { NOTE_REST, 30 },
+                       { NOTE_G4, 30 },
+                       { NOTE_G5, 30 } };
+
 const Note PinyCore[]{ { NOTE_C5, 150 },
                        { NOTE_E5, 150 },
                        { NOTE_G5, 150 },
