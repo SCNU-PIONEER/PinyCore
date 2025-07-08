@@ -74,6 +74,11 @@ enum class DMMotorErrorCode_e {
 };
 
 #pragma pack(push, 1)
+union DMMotorRegValue_u {
+    float value;
+    uint8_t dat[4];
+};
+
 struct DMMotorReg_s {
     DMMotorRegId_e regId;
     uint8_t dat[4];
@@ -144,6 +149,8 @@ protected:
     DMMotorStats_s stats_;
 
     std::unordered_map<DMMotorRegId_e, DMMotorReg_s *> regObjList_;
+    std::unordered_map<DMMotorRegId_e,DMMotorRegValue_u*> regValueList_;
+    std::unordered_map<DMMotorRegId_e,uint8_t [4]> preRegValue_;
 
     float MITKp_ = 0;
     float MITKd_ = 0;
@@ -175,7 +182,7 @@ public:
     MotorTypeDef_e disable();
     MotorTypeDef_e clearError();
 
-    MotorTypeDef_e registerReg(DMMotorReg_s *_regObj);
+    MotorTypeDef_e registerReg(DMMotorReg_s *_regObj, DMMotorRegValue_u *_regValue);
     MotorTypeDef_e cancelReg(DMMotorRegId_e regId);
     MotorTypeDef_e writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4]);
     MotorTypeDef_e readOneReg(DMMotorRegId_e _regId);
@@ -183,5 +190,6 @@ public:
     MotorTypeDef_e writeReg();
     MotorTypeDef_e readReg();
     MotorTypeDef_e storageReg();
+    MotorTypeDef_e updateRegDat();
 };
 }

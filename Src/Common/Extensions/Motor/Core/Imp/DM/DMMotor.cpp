@@ -416,7 +416,8 @@ MotorTypeDef_e DMMotor::clearError()
     return rslt;
 }
 
-MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj)
+
+MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj, DMMotorRegValue_u *_regValue)
 {
     if (_regObj == nullptr) {
         this->log("ERROR", "red",
@@ -434,6 +435,7 @@ MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj)
     }
     this->log("INFO", "green", "Motor %s: registerReg success", this->name_);
     regObjList_.insert({ _regObj->regId, _regObj });
+    regValueList_.insert({ _regObj->regId, _regValue });
     return 0;
 }
 
@@ -516,18 +518,20 @@ MotorTypeDef_e DMMotor::writeReg()
     static uint16_t writeWaitTime = 0;
     static auto it = regObjList_.begin();
     if (it != regObjList_.end()) {
-        if (writeWaitTime % 10 == 0) {
-            writeOneReg((*it).first, (*it).second->dat);
-            (*it).second->isWrite = true;
+        if ((*it).second->isWrite == true && writeWaitTime%10 == 0) {
+            writeOneReg((*it).first, (*it).second->dat);   
+            writeWaitTime++;  
             it++;
-        }
-        return 0;
+            return 0; 
+        }              
     } else {
         writeWaitTime = 0;
         it = regObjList_.begin();
-        return 0;
+        return 1;
     }
-    writeWaitTime++;
+    if(writeWaitTime%10 !=0)
+        writeWaitTime++; 
+    return 0;
 }
 
 MotorTypeDef_e DMMotor::readReg()
@@ -535,18 +539,19 @@ MotorTypeDef_e DMMotor::readReg()
     static uint16_t readWaitTime = 0;
     static auto it = regObjList_.begin();
     if (it != regObjList_.end()) {
-        if (readWaitTime % 10 == 0) {
+        if ((*it).second->isRead == true && readWaitTime%10 == 0) {
             readOneReg((*it).first);
-            (*it).second->isRead = true;
+            readWaitTime++; 
             it++;
         }
-        return 0;
     } else {
         readWaitTime = 0;
         it = regObjList_.begin();
-        return 0;
+        return 1;
     }
-    readWaitTime++;
+    if(readWaitTime%10 !=0)
+        readWaitTime++; 
+    return 0;
 }
 
 MotorTypeDef_e DMMotor::storageReg()
@@ -554,16 +559,30 @@ MotorTypeDef_e DMMotor::storageReg()
     static uint16_t storageWaitTime = 0;
     static auto it = regObjList_.begin();
     if (it != regObjList_.end()) {
-        if (storageWaitTime % 10 == 0) {
+        if ((*it).second->isStorage == true && storageWaitTime%10 == 0) {
             storageOneReg((*it).first);
-            (*it).second->isStorage = true;
+            storageWaitTime++;
             it++;
         }
-        return 0;
     } else {
         storageWaitTime = 0;
         it = regObjList_.begin();
-        return 0;
+        return 1;
     }
-    storageWaitTime++;
+    if(storageWaitTime%10 !=0)
+        storageWaitTime++;
+    return 0;
+}
+
+MotorTypeDef_e DMMotor::updateRegDat(){
+    for(auto &regObj : this->regObjList_){
+        auto datCompare = [&]() -> bool { return std::equal(std::begin(this->regValueList_[regObj.first]->dat), std::end(this->regValueList_[regObj.first]->dat), 
+                                                            std::begin(this->preRegValue_[regObj.first]));};
+        if(datCompare() == false){                                                    
+           memcpy(&regObj.second->dat, &this->regValueList_[regObj.first]->dat, 4); 
+           memcpy(&this->preRegValue_[regObj.first], &this->regValueList_[regObj.first]->dat, 4);
+           regObj.second->isWrite = true;
+        }
+    }
+    return 0;
 }
