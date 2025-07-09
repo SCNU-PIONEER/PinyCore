@@ -1,27 +1,29 @@
 #include "Cmd.hpp"
 #include "MsgImpl.hpp"
 
-Cmd::Cmd()
+Cmd::Cmd() {}
+
+void Cmd::init()
 {
-    eventGroup = xEventGroupCreate();
+    eventGroup_ = xEventGroupCreate();
 
-    msgBus.chassisQueue = xQueueCreate(30, sizeof(chassisMsg));
-    msgBus.gimbalQueue = xQueueCreate(30, sizeof(gimbalMsg));
-    msgBus.armQueue = xQueueCreate(30, sizeof(armMsg));
+    msgBus_.chassisQueue = xQueueCreate(30, sizeof(chassisMsg));
+    msgBus_.gimbalQueue = xQueueCreate(30, sizeof(gimbalMsg));
+    msgBus_.armQueue = xQueueCreate(30, sizeof(armMsg));
 
-    rttHandler.init(&msgBus, eventGroup);
-    rcHandler.init(&msgBus, eventGroup);
+    rttHandler_.init(&msgBus_, eventGroup_);
+    rcHandler_.init(&msgBus_, eventGroup_);
 }
 
 
 void Cmd::parseMsg()
 {
-    EventBits_t xBits = xEventGroupWaitBits(eventGroup, EVENT_MASK, pdTRUE,
+    EventBits_t xBits = xEventGroupWaitBits(eventGroup_, EVENT_MASK, pdTRUE,
                                             pdFALSE, portMAX_DELAY);
     if (xBits & RTT_READY_EVENT) {
-        rttHandler.handle();
+        rttHandler_.handle();
     } else if (xBits & RC_READY_EVENT) {
-        rcHandler.handle();
+        rcHandler_.handle();
     }
 }
 

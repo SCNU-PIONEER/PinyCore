@@ -19,5 +19,5 @@ protected:
 
 private:
     uint8_t data[25] = { 0 };
-    MsgBus_s *msgBus;
+    MsgBus_s *msgBus_;
 };

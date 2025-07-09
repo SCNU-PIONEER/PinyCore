@@ -134,6 +134,9 @@ void AppManager::createApp()
 
 void AppManager::initApp()
 {
+    // Cmd
+    cmd.init();
+
     // INS
     bmi088.init(&IMU_SPI);
     ins.init(accCali, gyroCali);

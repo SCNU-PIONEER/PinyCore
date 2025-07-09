@@ -4,7 +4,7 @@
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
-    msgBus = _bus;
+    msgBus_ = _bus;
     this->event = _event;
     TimerHandle_t xTimer = xTimerCreate("rttTime",         // 定时器名称
                                         pdMS_TO_TICKS(10), // 周期
@@ -48,7 +48,7 @@ void RTTMsgHandler::handle()
         cmsg.state = State_e::stop;
     }
 
-    notify(&cmsg, msgBus->chassisQueue);
+    notify(&cmsg, msgBus_->chassisQueue);
 }
 
 void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)

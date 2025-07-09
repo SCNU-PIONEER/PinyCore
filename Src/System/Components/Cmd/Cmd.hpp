@@ -11,16 +11,17 @@
 class Cmd {
 public:
     Cmd();
+    void init();
     void task();
-    MsgBus_s *getMsgBus() { return &msgBus; }
+    MsgBus_s *getMsgBus() { return &msgBus_; }
 
 protected:
     void parseMsg();
 
 private:
-    MsgBus_s msgBus;
-    EventGroupHandle_t eventGroup;
+    MsgBus_s msgBus_;
+    EventGroupHandle_t eventGroup_;
 
-    rcMsgHandler rcHandler;
-    RTTMsgHandler rttHandler;
+    rcMsgHandler rcHandler_;
+    RTTMsgHandler rttHandler_;
 };
