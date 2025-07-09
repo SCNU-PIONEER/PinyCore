@@ -149,8 +149,8 @@ protected:
     DMMotorStats_s stats_;
 
     std::unordered_map<DMMotorRegId_e, DMMotorReg_s *> regObjList_;
-    std::unordered_map<DMMotorRegId_e,DMMotorRegValue_u*> regValueList_;
-    std::unordered_map<DMMotorRegId_e,uint8_t [4]> preRegValue_;
+    std::unordered_map<DMMotorRegId_e, DMMotorRegValue_u *> regValueList_;
+    std::unordered_map<DMMotorRegId_e, uint8_t[4]> preRegValue_;
 
     float MITKp_ = 0;
     float MITKd_ = 0;
@@ -182,7 +182,8 @@ public:
     MotorTypeDef_e disable();
     MotorTypeDef_e clearError();
 
-    MotorTypeDef_e registerReg(DMMotorReg_s *_regObj, DMMotorRegValue_u *_regValue);
+    MotorTypeDef_e registerReg(DMMotorReg_s *_regObj,
+                               DMMotorRegValue_u *_regValue);
     MotorTypeDef_e cancelReg(DMMotorRegId_e regId);
     MotorTypeDef_e writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4]);
     MotorTypeDef_e readOneReg(DMMotorRegId_e _regId);

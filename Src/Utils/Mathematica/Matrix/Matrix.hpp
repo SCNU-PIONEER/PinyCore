@@ -3,11 +3,12 @@
 #include "dsp/matrix_functions.h"
 
 
-template <int _rows, int _cols>
-class Matrix
-{
-   public:
-    Matrix() : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
+template <int _rows, int _cols> class Matrix {
+public:
+    Matrix() : rows_(_rows), cols_(_cols)
+    {
+        arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
+    }
 
     Matrix(float data[_rows * _cols]) : Matrix()
     {
@@ -84,7 +85,8 @@ class Matrix
         return res;
     }
 
-    friend Matrix<_rows, _cols> operator*(const float &val, const Matrix<_rows, _cols> &mat)
+    friend Matrix<_rows, _cols> operator*(const float &val,
+                                          const Matrix<_rows, _cols> &mat)
     {
         arm_status s;
         Matrix<_rows, _cols> res;
@@ -100,7 +102,8 @@ class Matrix
     }
 
     template <int cols2>
-    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &mat1, const Matrix<_cols, cols2> &mat2)
+    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &mat1,
+                                          const Matrix<_cols, cols2> &mat2)
     {
         Matrix<_rows, cols2> res;
         arm_mat_mult_f32(&mat1.arm_mat_, &mat2.arm_mat_, &res.arm_mat_);
@@ -109,8 +112,7 @@ class Matrix
 
     bool operator==(const Matrix<_rows, _cols> &mat) const
     {
-        for (int i = 0; i < _rows * _cols; i++)
-        {
+        for (int i = 0; i < _rows * _cols; i++) {
             if (this->data_[i] != mat.data_[i])
                 return false;
         }
@@ -122,18 +124,25 @@ class Matrix
     Matrix<rows, cols> block(const int &start_row, const int &start_col) const
     {
         Matrix<rows, cols> res;
-        for (int row = start_row; row < start_row + rows; row++)
-        {
-            memcpy((float *)res[0] + (row - start_row) * cols, (float *)this->data_ + row * _cols + start_col, cols * sizeof(float));
+        for (int row = start_row; row < start_row + rows; row++) {
+            memcpy((float *)res[0] + (row - start_row) * cols,
+                   (float *)this->data_ + row * _cols + start_col,
+                   cols * sizeof(float));
         }
         return res;
     }
 
-    Matrix<1, _cols> row(const int &row) const { return block<1, _cols>(row, 0); } //返回指定列
+    Matrix<1, _cols> row(const int &row) const
+    {
+        return block<1, _cols>(row, 0);
+    } //返回指定列
 
-    Matrix<_rows, 1> col(const int &col) const { return block<_rows, 1>(0, col); }  //返回指定行
+    Matrix<_rows, 1> col(const int &col) const
+    {
+        return block<_rows, 1>(0, col);
+    } //返回指定行
 
-    Matrix<_cols, _rows> trans(void) const  //转置矩阵
+    Matrix<_cols, _rows> trans(void) const //转置矩阵
     {
         Matrix<_cols, _rows> res;
         arm_mat_trans_f32(&arm_mat_, &res.arm_mat_);
@@ -144,8 +153,7 @@ class Matrix
     float trace(void) const
     {
         float res = 0;
-        for (int i = 0; i < fmin(_rows, _cols); i++)
-        {
+        for (int i = 0; i < fmin(_rows, _cols); i++) {
             res += (*this)[i][i];
         }
         return res;
@@ -153,7 +161,7 @@ class Matrix
 
     float norm(void) const { return sqrtf((this->trans() * *this)[0][0]); }
 
-    Matrix<_cols, _rows> inv(void) const      //求逆矩阵
+    Matrix<_cols, _rows> inv(void) const //求逆矩阵
     {
         if (_cols != _rows)
             return Matrix<_cols, _rows>::zeros();
@@ -169,15 +177,14 @@ class Matrix
 
     static Matrix<_rows, _cols> zeros(void)
     {
-        float data[_rows * _cols] = {0};
+        float data[_rows * _cols] = { 0 };
         return Matrix<_rows, _cols>(data);
     }
 
     static Matrix<_rows, _cols> ones(void)
     {
-        float data[_rows * _cols] = {0};
-        for (int i = 0; i < _rows * _cols; i++)
-        {
+        float data[_rows * _cols] = { 0 };
+        for (int i = 0; i < _rows * _cols; i++) {
             data[i] = 1;
         }
         return Matrix<_rows, _cols>(data);
@@ -185,9 +192,8 @@ class Matrix
 
     static Matrix<_rows, _cols> eye(void) //unit matrix
     {
-        float data[_rows * _cols] = {0};
-        for (int i = 0; i < fmin(_rows, _cols); i++)
-        {
+        float data[_rows * _cols] = { 0 };
+        for (int i = 0; i < fmin(_rows, _cols); i++) {
             data[i * _cols + i] = 1;
         }
         return Matrix<_rows, _cols>(data);
@@ -196,18 +202,16 @@ class Matrix
     static Matrix<_rows, _cols> diag(Matrix<_rows, 1> vec)
     {
         Matrix<_rows, _cols> res = Matrix<_rows, _cols>::zeros();
-        for (int i = 0; i < fmin(_rows, _cols); i++)
-        {
+        for (int i = 0; i < fmin(_rows, _cols); i++) {
             res[i][i] = vec[i][0];
         }
         return res;
     }
 
-   public:
-    arm_matrix_instance_f32 arm_mat_;  // The arm math instance
+public:
+    arm_matrix_instance_f32 arm_mat_; // The arm math instance
 
-   protected:
+protected:
     int rows_, cols_;
     float data_[_rows * _cols];
 };
-
