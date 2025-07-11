@@ -7,7 +7,7 @@ class ChassisStopState : public FSMState {
 public:
     ChassisStopState(Chassis *_chassis) : chassis_(_chassis)
     {
-        setStateName("stop");
+        setStateName("ChassisStop");
     };
 
     void enter() override

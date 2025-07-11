@@ -7,7 +7,7 @@ class ChassisRunState : public FSMState {
 public:
     ChassisRunState(const Chassis *_chassis) : chassis_(_chassis)
     {
-        setStateName("run");
+        setStateName("ChassisRun");
     };
 
     void enter() override

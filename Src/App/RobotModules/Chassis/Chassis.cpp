@@ -6,9 +6,11 @@
 Chassis::Chassis(Wheel *_wheel)
 {
     wheel_ = _wheel;
-    stateFactory_.addState("run", std::make_unique<ChassisRunState>(this));
-    stateFactory_.addState("stop", std::make_unique<ChassisStopState>(this));
-    stateFactory_.init(stateFactory_.getNextState("stop"));
+    stateFactory_.addState("ChassisRun",
+                           std::make_unique<ChassisRunState>(this));
+    stateFactory_.addState("ChassisStop",
+                           std::make_unique<ChassisStopState>(this));
+    stateFactory_.init(stateFactory_.getNextState("ChassisStop"));
 }
 
 void Chassis::update(void *_param)

@@ -5,17 +5,16 @@
 #include "StmLog.hpp"
 #include "MsgImpl.hpp"
 
-const float S_CURVE_VX_ACC = 1.4f;
-const float S_CURVE_VY_ACC = 2.2f;
-const float S_CURVE_WZ_ACC = 2.8f;
-
-const float MAX_VX_SPEED = 2.f;
-const float MAX_VY_SPEED = 2.f;
-const float MAX_WZ_SPEED = 3.0f;
-
-const float MOUSE_CAL = 200.0f;
-
 class Chassis {
+protected:
+    static constexpr float S_CURVE_VX_ACC = 1.4f;
+    static constexpr float S_CURVE_VY_ACC = 2.2f;
+    static constexpr float S_CURVE_WZ_ACC = 2.8f;
+    static constexpr float MAX_VX_SPEED = 2.f;
+    static constexpr float MAX_VY_SPEED = 2.f;
+    static constexpr float MAX_WZ_SPEED = 3.f;
+    static constexpr float MOUSE_CAL = 200.f;
+
 public:
     Chassis(Wheel *_wheel);
 
