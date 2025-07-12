@@ -37,11 +37,11 @@ void QuadMotorBase::updateMotorMap()
 {
     // 注册电机到motorMap_中
     // 先寻找是否存在对应的pComHandle_
-    auto it = motorMap_.end(); 
+    auto it = motorMap_.end();
     for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
         if (iter->first == this->pComHandle_) {
-            it = iter; 
-            break;   
+            it = iter;
+            break;
         }
     }
     if (it == motorMap_.end()) {
@@ -86,11 +86,11 @@ void QuadMotorBase::updateMotorMap()
 
 void QuadMotorBase::removeMotorFromMap()
 {
-    auto it = motorMap_.end(); 
+    auto it = motorMap_.end();
     for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
         if (iter->first == this->pComHandle_) {
-            it = iter; 
-            break;    
+            it = iter;
+            break;
         }
     }
     if (it != motorMap_.end()) {
