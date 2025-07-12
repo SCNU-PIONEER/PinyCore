@@ -29,4 +29,4 @@ if (BSP_USE_DMA)
 endif()
 
 # link
-target_link_libraries(Bsp PRIVATE System stm32cubemx Soc)
+target_link_libraries(Bsp PRIVATE System stm32cubemx Soc Utils)

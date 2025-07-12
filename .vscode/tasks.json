@@ -12,10 +12,6 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "detail": "make...",
       "problemMatcher": []
     },
@@ -23,23 +19,73 @@
       "type": "shell",
       "label": "cmake",
       "command": " cmake -B 'build' -G 'Ninja' ",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "problemMatcher": []
+    },
+    {
+      "label": "jlinkserver",
+      "type": "shell",
+      "command": "JLinkGDBServer -singlerun  -if swd -port 50000 -swoport 50001 -telnetport 50002 -device stm32f407ig -rtttelnetport 19021",
+      "dependsOn": [
+        "build"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "line": 1,
+              "column": 1,
+              "message": 1
+            }
+          ],
+         "background": {
+            "activeOnStart": true,
+            "beginsPattern": { "regexp": "." },
+            "endsPattern": { "regexp": "^.*$" }
+          }
+        }
+      ]
     },
     {
       "label": "open-RTT",
       "type": "shell",
-      "command": "echo 'Opening cnt terminal...' && code --wait --new-window ${workspaceFolder}",
-      "problemMatcher": [],
+       "dependsOn": [
+        "jlinkserver"
+      ],
+      "command": "JLinkRTTClient",
+      "isBackground": true,
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    }
+        "focus": true,
+        "panel": "dedicated"
+      },
+     "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "line": 1,
+              "column": 1,
+              "message": 1
+            }
+          ],
+         "background": {
+            "activeOnStart": true,
+            "beginsPattern": { "regexp": "." },
+            "endsPattern": { "regexp": "^.*$" }
+          }
+        }
+      ]
+    },
   ]
 }

@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
 
-# Setup compiler settings
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_EXTENSIONS ON)
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -27,9 +21,11 @@ set(CMAKE_PROJECT_NAME PinyCore)
 include("tools/Kconfig/Kconfig.cmake")
 add_subdirectory(Src/Common/Soc)  # BUG: waiting for fix
 include("tools/cmake/GccArmNoneEabi.cmake")
+# include("tools/cmake/Clang.cmake")
 include("tools/cmake/FindInclude.cmake")
 include("tools/cmake/ShowMessage.cmake")
 include("Src/sdkconfig.cmake" OPTIONAL)
+include("tools/cmake/Warning.cmake")
 
 # Core project settings
 project(${CMAKE_PROJECT_NAME} VERSION ${VERSION})
@@ -37,19 +33,6 @@ project(${CMAKE_PROJECT_NAME} VERSION ${VERSION})
 # Enable CMake support for ASM and C languages
 enable_language(C CXX ASM)
 
-# 关闭指定警告
-add_compile_options(-Wno-unused-variable)
-add_compile_options(-Wno-unused-but-set-variable)
-add_compile_options(-Wno-unused-parameter)
-add_compile_options(-Wno-unused-function)
-add_compile_options(-Wno-unused-value)
-add_compile_options(-Wno-sign-compare)
-add_compile_options(-Wno-missing-braces)
-add_compile_options(-Wno-sequence-point)
-add_compile_options(-Wno-pedantic)
-add_compile_options(-Wno-deprecated-volatile)
-add_compile_options(-Wno-missing-field-initializers)
-# add_compile_options(-O0) add_compile_options(-Ofast)
 
 # 启用彩色诊断信息
 add_compile_options($<$<C_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
@@ -101,7 +84,6 @@ target_link_libraries(
   Eigen3
   CMSISDSP
   # TinyMPC
-  syscall
 )
 
 showMessage()

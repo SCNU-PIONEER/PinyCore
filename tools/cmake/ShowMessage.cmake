@@ -2,8 +2,8 @@ function(showMessage)
   message("Build type:" ${CMAKE_BUILD_TYPE})
   message( "C Standard: " ${CMAKE_C_STANDARD})
   message( "C++ Standard: " ${CMAKE_CXX_STANDARD})
-  message( "gcc version: " ${CMAKE_C_COMPILER_VERSION})
-  message( "g++ version: " ${CMAKE_CXX_COMPILER_VERSION})
+  message( "c compiler version: " ${CMAKE_C_COMPILER_VERSION})
+  message( "c++ compiler version: " ${CMAKE_CXX_COMPILER_VERSION})
   message( "robot version: " ${VERSION})
   message(
 "    ____   _                  ______             \n"

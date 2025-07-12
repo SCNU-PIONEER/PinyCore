@@ -36,10 +36,13 @@ TripMotorBase::TripMotors &TripMotorBase::getMotorMap() const
 
 void TripMotorBase::updateMotorMap()
 {
-    auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                                   [this](const auto &pair) {
-                                       return pair.first == this->pComHandle_;
-                                   }); // lamda
+    auto it = motorMap_.end();
+    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+        if (iter->first == this->pComHandle_) {
+            it = iter;
+            break;
+        }
+    }
     if (it == motorMap_.end()) {
         motorMap_.emplace_back(
                 this->pComHandle_,
@@ -76,10 +79,13 @@ void TripMotorBase::updateMotorMap()
 
 void TripMotorBase::removeMotorFromMap()
 {
-    auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                                   [this](const auto &pair) {
-                                       return pair.first == this->pComHandle_;
-                                   }); // lamda
+    auto it = motorMap_.end();
+    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+        if (iter->first == this->pComHandle_) {
+            it = iter;
+            break;
+        }
+    }
     if (it != motorMap_.end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {

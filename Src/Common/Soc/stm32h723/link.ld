@@ -52,12 +52,6 @@
 /* Entry Point */
 ENTRY(Reset_Handler)
 
-/* Highest address of the user mode stack */
-_estack = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);    /* end of RAM */
-/* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x5000;      /* required amount of heap  */
-_Min_Stack_Size = 0x5000; /* required amount of stack */
-
 /* Specify the memory areas */
 MEMORY
 {
@@ -68,6 +62,12 @@ RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 16K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
 }
+
+/* Highest address of the user mode stack */
+_estack = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);    /* end of RAM */
+/* Generate a link error if heap and stack don't fit into RAM */
+_Min_Heap_Size = 0x5000;      /* required amount of heap  */
+_Min_Stack_Size = 0x5000; /* required amount of stack */
 
 /* Define output sections */
 SECTIONS
@@ -172,7 +172,9 @@ SECTIONS
     . = ALIGN(8);
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
+    PROVIDE ( __heap_start = . );
     . = . + _Min_Heap_Size;
+    PROVIDE ( __heap_end = . );
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >DTCMRAM

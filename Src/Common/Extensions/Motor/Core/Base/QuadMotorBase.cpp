@@ -37,10 +37,13 @@ void QuadMotorBase::updateMotorMap()
 {
     // 注册电机到motorMap_中
     // 先寻找是否存在对应的pComHandle_
-    auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                                   [this](const auto &pair) {
-                                       return pair.first == this->pComHandle_;
-                                   }); // lamda
+    auto it = motorMap_.end(); 
+    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+        if (iter->first == this->pComHandle_) {
+            it = iter; 
+            break;   
+        }
+    }
     if (it == motorMap_.end()) {
         // 如果不存在，则直接在motorMap_尾部增多一个pair对象
         motorMap_.emplace_back(
@@ -83,10 +86,13 @@ void QuadMotorBase::updateMotorMap()
 
 void QuadMotorBase::removeMotorFromMap()
 {
-    auto it = std::ranges::find_if(motorMap_.begin(), motorMap_.end(),
-                                   [this](const auto &pair) {
-                                       return pair.first == this->pComHandle_;
-                                   }); // lamda
+    auto it = motorMap_.end(); 
+    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+        if (iter->first == this->pComHandle_) {
+            it = iter; 
+            break;    
+        }
+    }
     if (it != motorMap_.end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 #define GYRO_BIAS_MAX      (1.0f * 0.01745f)
 

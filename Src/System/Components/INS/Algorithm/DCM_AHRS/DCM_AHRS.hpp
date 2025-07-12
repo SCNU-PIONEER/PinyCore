@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 #define DEFAULT_GRAVITY (9.80665f) // Standard gravity in m/s^2
 

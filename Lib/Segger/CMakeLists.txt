@@ -1,7 +1,7 @@
 include (${CMAKE_SOURCE_DIR}/tools/cmake/FindInclude.cmake)
 
 # Add the sourses
-file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp" "*.s")
+file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp" "*.S")
 
 # Add the library
 add_library(segger STATIC ${SOURCES})

@@ -2,6 +2,64 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "lldb",
+      "type": "lldb",
+      "request": "attach",
+      "preLaunchTask": "jlinkserver",
+      "targetCreateCommands": ["target create ${workspaceFolder}/build/PinyCore.elf"],
+      "processCreateCommands": ["gdb-remote 127.0.0.1:50000",
+                                "target modules load --load .text 0x08000000",
+                                "process plugin packet monitor reset"],
+    },
+
+    {
+      "name": "rtt",
+      "type": "node",  //占位
+      "request": "launch",
+      "preLaunchTask": "open-RTT",
+    },
+
+    {
+      "name": "jlink-Debug",
+      "executable": "./build/PinyCore.elf",
+      "type": "cortex-debug",
+      "request": "launch",
+      "showDevDebugOutput": "none",
+      "servertype": "jlink",
+      // "device": "stm32h723vg",
+      "device": "stm32f407ig",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 1
+      },
+      "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit", 
+        "set p obj on",
+        "set p pretty on"
+      ],
+      "postLaunchCommands": [
+        "b PinyCore::init",
+        // "continue"
+      ],
+      "rttConfig": {
+        "enabled": true,
+        "address": "auto",
+        "polling_interval": 10,
+        "decoders": [
+          {
+            "type": "console",
+            "label": "cnt",
+            // "iencoding": "utf8",
+            "noclear": false,
+            "logfile": "${workspaceRoot}/.docs/rtt_log",
+            "port": 0,
+          }
+        ]
+      }
+    },
+
+    {
       "showDevDebugOutput": "none",
       "cwd": "${workspaceFolder}",
       "executable": "./build/PinyCore.elf",
@@ -108,5 +166,13 @@
       //   "source": "probe"
       // },
     }
+  ],
+  "compounds": [
+  {
+    "name": "remote_lldb",
+    "program": "${workspaceFolder}/build/PinyCore.elf",
+    "configurations": ["rtt","lldb"],
+  }
+  
   ]
 }
