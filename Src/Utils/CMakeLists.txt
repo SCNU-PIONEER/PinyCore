@@ -24,8 +24,8 @@ if(USE_FSM)
 endif()
 
 if(USE_HARDFAULT)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/Hardfault.c)
-  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/hardfault)
+  target_sources(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/Hardfault.c)
+  target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault)
 endif()
 
 if(USE_STM_LOG)
