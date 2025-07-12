@@ -6,7 +6,7 @@
 
 class Uart : public BspBase<Uart> {
 public:
-    using callback = void(UART_HandleTypeDef *, uint16_t);
+    using callback = std::function<void(UART_HandleTypeDef *, uint16_t)>;
     /**
     * @brief uart registerCallback
     */
@@ -26,4 +26,12 @@ public:
     */
     HAL_StatusTypeDef RecvDmaInit(UART_HandleTypeDef *_huart,
                                   uint32_t *_dstAddress, uint32_t _dataLength);
+
+    /**
+    * @brief uart rx callbackFromISR
+    */
+    void callbackFromISR(UART_HandleTypeDef *_huart, uint16_t _size);
+
+private:
+    std::unordered_map<UART_HandleTypeDef *, callback> cbTable;
 };
