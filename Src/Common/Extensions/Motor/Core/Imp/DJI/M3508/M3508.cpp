@@ -37,8 +37,9 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
 
     checkBaseConfig();
 
-    this->log("INFO", "green", "Motor %s: An instance of DJIMotor created",
-              this->name_);
+    log.info(LOCATION, "M3508",
+             " %s: An instance of M3508 created, rxBaseId:%hx, txBaseId:%hx",
+             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e M3508::checkBaseConfig()
@@ -47,25 +48,25 @@ MotorTypeDef_e M3508::checkBaseConfig()
 
     if (this->comType_ != ComType_e ::CAN) {
         rslt |= 1;
-        this->log("ERROR", "red", "M3508 %s: only support CAN comtype",
+        log.error(LOCATION, "M3508", " %s: only support CAN comtype",
                   this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::QUAD_CURR) {
         rslt |= 1;
-        this->log("ERROR", "red", "M3508 %s: WorkMode is not supported",
+        log.error(LOCATION, "M3508", " %s: WorkMode is not supported",
                   this->name_);
     }
 
     if (this->offsetId_ > 8) {
         rslt |= 1;
-        this->log("ERROR", "red", "M3508 %s: Max Offset ID is only 8!",
+        log.error(LOCATION, "M3508", " %s: Max Offset ID is only 8!",
                   this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        this->log("ERROR", "red", "M3508 %s: Max TxFreq is only 1000!",
+        log.error(LOCATION, "M3508", " %s: Max TxFreq is only 1000!",
                   this->name_);
     }
 

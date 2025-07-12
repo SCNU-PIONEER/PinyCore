@@ -57,7 +57,8 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
         break;
     }
     default: {
-        this->log("ERROR", "red", "Motor %s: Invalid cmd!", this->name_);
+        log.error(LOCATION, "IMotor", " %s: cmd %d is not supported",
+                  this->name_, static_cast<int>(_cmd));
         return 1;
     }
     }
@@ -71,7 +72,8 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
     } else if (_cmd == MotorCmdType_e::OFF) {
         this->cmd_.updateSW(false);
     } else {
-        this->log("ERROR", "red", "Motor %s: not SW cmd!", this->name_);
+        log.error(LOCATION, "IMotor", " %s: cmd %d is not supported",
+                  this->name_, static_cast<int>(_cmd));
         return 1;
     }
     return 0;

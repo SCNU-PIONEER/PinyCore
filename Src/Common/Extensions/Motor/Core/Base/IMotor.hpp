@@ -63,16 +63,7 @@ public:
 
     const char *getName() const;
 
-    template <typename... Args>
-    void log(std::string_view _type, const char *color, const char *_format,
-             Args &&...args);
+    LOG::Logger &log = LOG::Logger::instance();
 };
 
-template <typename... Args>
-void IMotor::log(std::string_view _type, const char *color, const char *_format,
-                 Args &&...args)
-{
-    LOG::info(_type, _format, std::forward<Args>(args)...,
-              std::source_location::current());
-}
 }

@@ -43,39 +43,37 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->updateCtrlId();
 
     checkBaseConfig();
-
-    this->log(
-            "INFO", "green",
-            "Motor %s: An instance of DJIMotor created, rxBaseId:%hx, txBaseId:%hx",
-            this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    log.info(LOCATION, "GM6020",
+             " %s: An instance of GM6020 created, rxBaseId:%hx, txBaseId:%hx",
+             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e GM6020::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ != ComType_e ::CAN) {
+    if (this->comType_ != PINYMOTOR::ComType_e ::CAN) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM6020 %s: only support CAN comtype",
+        log.error(LOCATION, "GM6020", " %s: only support CAN comtype",
                   this->name_);
     }
 
     if (!(this->workMode_ == WorkMode_e::QUAD_CURR ||
           this->workMode_ == WorkMode_e::QUAD_VOLT)) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM6020 %s: WorkMode is not supported",
+        log.error(LOCATION, "GM6020", "%s: WorkMode is not supported",
                   this->name_);
     }
 
     if (this->offsetId_ > 7) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM6020 %s: Max Offset ID is only 7!",
+        log.error(LOCATION, "GM6020", "%s: Max Offset ID is only 7!",
                   this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM6020 %s: Max TxFreq is only 1000!",
+        log.error(LOCATION, "GM6020", " %s: Max TxFreq is only 1000!",
                   this->name_);
     }
 

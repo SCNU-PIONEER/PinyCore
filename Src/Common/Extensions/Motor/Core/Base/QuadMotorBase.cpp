@@ -15,10 +15,12 @@ void QuadMotorGroup_s::showMotorInfo()
 {
     for (int i = 0; i < 4; i++) {
         if (motor[i] != nullptr) {
-            motor[i]->log("INFO", "green", "Motor %s: exist, uid: %hx",
-                          motor[i]->getName(), motor[i]->uid());
+            motor[i]->log.info(LOCATION, "QuadMotorGroup",
+                               "Motor %s: exist, uid: %hx", motor[i]->getName(),
+                               motor[i]->uid());
         } else {
-            motor[i]->log("INFO", "red", "Motor %d: not exist", i);
+            motor[i]->log.error(LOCATION, "QuadMotorGroup",
+                                "Motor %d: not exist", i);
         }
     }
 }
@@ -58,12 +60,15 @@ void QuadMotorBase::updateMotorMap()
         // 如果不存在，则创建一个电机组
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
-        this->log("INFO", "green", "Motor %s: create QuadMotorGroup %hx",
-                  this->name_, getGroupId());
+        log.info(LOCATION, "QuadMotorBase",
+                 "Motor %s: create QuadMotorGroup %hx", this->name_,
+                 getGroupId());
     } else {
         // 如果存在，则检查电机组中是否已经存在该电机
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-            this->log("ERROR", "red", "Motor %s: already exist", this->name_);
+            log.error(LOCATION, "QuadMotorBase",
+                      "Motor %s: already exist in group %hx, pos in group: %d",
+                      this->name_, getGroupId(), getPosInGroup());
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -73,8 +78,8 @@ void QuadMotorBase::updateMotorMap()
     for (size_t i = 0; i < 4; i++) {
         if (map[getGroupId()]->motor[i] != nullptr) {
             if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
-                this->log("WARN", "", "Motor %s: txFreq not match",
-                          this->name_);
+                log.warn(LOCATION, "QuadMotorBase",
+                         "Motor %s: txFreq not match", this->name_);
             }
         }
         map[getGroupId()]->minTxFreq =
@@ -97,14 +102,16 @@ void QuadMotorBase::removeMotorFromMap()
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
-            this->log("INFO", "green", "Motor %s: remove from group %hx",
-                      this->name_, getGroupId());
+            log.info(LOCATION, "QuadMotorBase",
+                     "Motor %s: remove from group %hx, pos in group: %d",
+                     this->name_, getGroupId(), getPosInGroup());
         } else {
-            this->log("ERROR", "red", "Motor %s: not in group %hx", this->name_,
-                      getGroupId());
+            log.error(LOCATION, "QuadMotorBase", "Motor %s: not in group %hx",
+                      this->name_, getGroupId());
         }
     } else {
-        this->log("ERROR", "red", "Motor %s: not in motorMap_", this->name_);
+        log.error(LOCATION, "QuadMotorBase", "Motor %s: not in motorMap_",
+                  this->name_);
     }
 }
 

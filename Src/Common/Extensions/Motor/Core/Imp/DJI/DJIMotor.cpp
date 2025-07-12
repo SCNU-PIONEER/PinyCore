@@ -32,8 +32,8 @@ DJIMotor::~DJIMotor()
     this->cancelRecvCallback();
     this->cancelMotor();
     this->removeMotorFromMap();
-    this->log("INFO", "green", "Motor %s: An instance of DJIMotor destroyed",
-              this->name_);
+    log.info(LOCATION, "DJIMotor", " %s: An instance of DJIMotor destroyed",
+             this->name_);
 }
 
 void DJIMotor::overrideStats(const DJIMotorStats_s &_stats) { stats_ = _stats; }
@@ -60,14 +60,16 @@ void DJIMotor::registerRecvCallback()
                     this->userRecvCallback_(_rxBuf);
                 }
             });
-    this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
+    log.info(LOCATION, "DJIMotor", " %s: Receive cb registed, masterId:%hx",
+             this->name_, this->masterId());
 }
 
 void DJIMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
-    this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+    log.info(LOCATION, "DJIMotor", " %s: Receive cb canceled, masterId:%hx",
+             this->name_, this->masterId());
 }
 
 void DJIMotor::updateCtrlId()
@@ -82,7 +84,7 @@ void DJIMotor::updateCtrlId()
         break;
     }
     default: {
-        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+        log.error(LOCATION, "DJIMotor", " %s: this mode is not supported",
                   this->name_);
         break;
     }
@@ -94,12 +96,12 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     // send data to CAN
     QuadMotorGroup_s *group = this->findGroup();
     if (group == nullptr) {
-        this->log("ERROR", "red", "Motor %s: Can't find group %hx",
+        log.error(LOCATION, "DJIMotor", " %s: Can't find group %hx",
                   this->getGroupId());
         return 1;
     } else {
         if (this->checkGroupSend(group)) {
-#if 1
+#if 0
             // Check this Buffer
             this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx",
                       this->name_, _sendId);
@@ -168,7 +170,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                                                       this->data_.spdRadps);
                 this->cmd_.elec = this->cmd_.torq / stats_.torqConstant;
             } else {
-                this->log("ERROR", "red", "Motor %s: velPID is null",
+                log.error(LOCATION, "DJIMotor", " %s: velPID is null",
                           this->name_);
             }
         } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
@@ -182,7 +184,8 @@ MotorTypeDef_e DJIMotor::ctrl()
                                                       this->data_.spdRadps);
                 this->cmd_.elec = this->cmd_.torq / stats_.torqConstant;
             } else {
-                this->log("ERROR", "red", "Motor %s: posPID or velPID is null",
+                log.error(LOCATION, "DJIMotor",
+                          " %s: posPID or velPID or torqPID is null",
                           this->name_);
             }
         }
@@ -196,7 +199,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                this->log("ERROR", "red", "Motor %s: torqPID is null",
+                log.error(LOCATION, "DJIMotor", " %s: torqPID is null",
                           this->name_);
             }
         } else if (this->curCmdType_ == MotorCmdType_e::SET_VEL) {
@@ -206,8 +209,8 @@ MotorTypeDef_e DJIMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                this->log("ERROR", "red", "Motor %s: velPID or torqPID is null",
-                          this->name_);
+                log.error(LOCATION, "DJIMotor",
+                          " %s: velPID or torqPID is null", this->name_);
             }
         } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
@@ -221,8 +224,8 @@ MotorTypeDef_e DJIMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                this->log("ERROR", "red",
-                          "Motor %s: posPID or velPID or torqPID is null",
+                log.error(LOCATION, "DJIMotor",
+                          " %s: posPID or velPID or torqPID is null",
                           this->name_);
             }
         }
@@ -232,7 +235,7 @@ MotorTypeDef_e DJIMotor::ctrl()
     }
     default: {
         ctrlCmd = 0;
-        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+        log.error(LOCATION, "DJIMotor", " %s: this mode is not supported",
                   this->name_);
         break;
     }

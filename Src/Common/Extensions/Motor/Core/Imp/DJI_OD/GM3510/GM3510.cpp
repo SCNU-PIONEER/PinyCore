@@ -35,10 +35,9 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     checkBaseConfig();
 
-    this->log(
-            "INFO", "green",
-            "Motor %s: An instance of DJI_ODMotor created, rxBaseId = 0x%03X, txBaseId = 0x%03X",
-            this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    log.info(LOCATION, "GM3510",
+             " %s: An instance of GM3510 created, rxBaseId:%hx, txBaseId:%hx",
+             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e GM3510::checkBaseConfig()
@@ -48,25 +47,25 @@ MotorTypeDef_e GM3510::checkBaseConfig()
     if (this->comType_ != ComType_e::FDCAN &&
         this->comType_ != ComType_e::CAN) {
         rslt |= 1;
-        this->log("ERROR", "red",
-                  "GM3510 %s: only support FDCAN or CAN comtype", this->name_);
+        log.error(LOCATION, "GM3510", " %s: only support FDCAN or CAN comtype",
+                  this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::TRIP_VOLT) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM3510 %s: WorkMode is not supported",
+        log.error(LOCATION, "GM3510", " %s: WorkMode is not supported",
                   this->name_);
     }
 
     if (this->offsetId_ > 3) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM3510 %s: Max Offset ID is only 3!",
+        log.error(LOCATION, "GM3510", " %s: Max Offset ID is only 3!",
                   this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        this->log("ERROR", "red", "GM3510 %s: Max TxFreq is only 1000!",
+        log.error(LOCATION, "GM3510", " %s: Max TxFreq is only 1000!",
                   this->name_);
     }
 

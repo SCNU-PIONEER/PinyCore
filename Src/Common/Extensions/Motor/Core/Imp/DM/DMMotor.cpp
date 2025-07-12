@@ -34,8 +34,9 @@ DMMotor::~DMMotor()
 {
     this->cancelRecvCallback();
     this->cancelMotor();
-    this->log("INFO", "green", "Motor %s: An instance of DMMotor destroyed",
-              this->name_);
+    log.info(LOCATION, "DMMotor",
+             " %s: An instance of DMMotor created, rxBaseId:%hx, txBaseId:%hx",
+             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 void DMMotor::overrideStats(const DMMotorStats_s &_stats) { stats_ = _stats; }
@@ -67,27 +68,29 @@ void DMMotor::registerRecvCallback()
                     this->userRecvCallback_(_rxBuf);
                 }
             });
-    this->log("INFO", "green", "Motor %s: Receive cb registed", this->name_);
+    log.info(LOCATION, "DMMotor", " %s: Receive cb registed, masterId:%hx",
+             this->name_, this->masterId());
 }
 
 void DMMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
-    this->log("INFO", "green", "Motor %s: Receive cb canceled", this->name_);
+    log.info(LOCATION, "DMMotor", " %s: Receive cb canceled, masterId:%hx",
+             this->name_, this->masterId());
 }
 
 void DMMotor::updateCtrlId()
 {
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
-        this->log("ERROR", "red", "Motor %s: QUAD_CURR mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: QUAD_CURR mode is not supported",
                   this->name_);
         this->ctrlId_ = 0xFFFF;
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
-        this->log("ERROR", "red", "Motor %s: QUAD_VOLT mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: QUAD_VOLT mode is not supported",
                   this->name_);
         this->ctrlId_ = 0xFFFF;
         break;
@@ -117,7 +120,7 @@ void DMMotor::updateCtrlId()
         break;
     }
     default: {
-        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: this mode is not supported",
                   this->name_);
         this->ctrlId_ = 0xFFFF;
         break;
@@ -128,7 +131,7 @@ void DMMotor::updateCtrlId()
 void DMMotor::setMITKp(float _kp)
 {
     if (_kp < 0 || _kp > stats_.MITKpMax) {
-        this->log("ERROR", "red", "Motor %s: MITKp out of range", this->name_);
+        log.error(LOCATION, "DMMotor", " %s: MITKp out of range", this->name_);
         return;
     }
     MITKp_ = _kp;
@@ -137,7 +140,7 @@ void DMMotor::setMITKp(float _kp)
 void DMMotor::setMITKd(float _kd)
 {
     if (_kd < 0 || _kd > stats_.MITKdMax) {
-        this->log("ERROR", "red", "Motor %s: MITKd out of range", this->name_);
+        log.error(LOCATION, "DMMotor", " %s: MITKd out of range", this->name_);
         return;
     }
     MITKd_ = _kd;
@@ -148,10 +151,10 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     if (this->checkSend()) {
 #if 1
         // Check this Buffer
-        this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx",
-                  this->name_, _sendId);
-        this->log("DEBUG", "blue",
-                  "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+        log.debug(LOCATION, "DMMotor", " %s: send data to CAN %hx", this->name_,
+                  _sendId);
+        log.debug(LOCATION, "DMMotor",
+                  " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
                   this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
                   _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 #endif
@@ -183,8 +186,9 @@ MotorTypeDef_e DMMotor::parse(const uint8_t *_rxBuf)
             // 存储反馈
             (*it).second->isStorage = true;
         } else {
-            this->log("ERROR", "red", "Motor %s: Unknown feedback type",
-                      this->name_);
+            log.error(LOCATION, "DMMotor",
+                      " %s: Unknown feedback type, rxBuf[2]:%02X", this->name_,
+                      _rxBuf[2]);
             return 1;
         }
     } else {
@@ -246,12 +250,12 @@ MotorTypeDef_e DMMotor::ctrl()
     bool isMIT = false;
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
-        this->log("ERROR", "red", "Motor %s: QUAD_CURR mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: QUAD_CURR mode is not supported",
                   this->name_);
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
-        this->log("ERROR", "red", "Motor %s: QUAD_VOLT mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: QUAD_VOLT mode is not supported",
                   this->name_);
         break;
     }
@@ -345,7 +349,7 @@ MotorTypeDef_e DMMotor::ctrl()
         break;
     }
     default: {
-        this->log("ERROR", "red", "Motor %s: this mode is not supported",
+        log.error(LOCATION, "DMMotor", " %s: this mode is not supported",
                   this->name_);
         break;
     }
@@ -421,20 +425,19 @@ MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj,
                                     DMMotorRegValue_u *_regValue)
 {
     if (_regObj == nullptr) {
-        this->log("ERROR", "red",
-                  "Motor %s: registerReg failed, _regObj is nullptr",
-                  this->name_);
+        log.error(LOCATION, "DMMotor",
+                  " %s: registerReg failed, _regObj is nullptr", this->name_);
         return 1;
     }
     auto it = regObjList_.find(_regObj->regId);
     if (it != regObjList_.end()) {
-        this->log(
-                "ERROR", "",
-                "Motor %s: registerReg failed, _regObj->regId is already registered",
+        log.error(
+                LOCATION, "DMMotor",
+                " %s: registerReg failed, _regObj->regId is already registered",
                 this->name_);
         return 1;
     }
-    this->log("INFO", "green", "Motor %s: registerReg success", this->name_);
+    log.info(LOCATION, "DMMotor", " %s: registerReg success", this->name_);
     regObjList_.insert({ _regObj->regId, _regObj });
     regValueList_.insert({ _regObj->regId, _regValue });
     return 0;
@@ -442,7 +445,8 @@ MotorTypeDef_e DMMotor::registerReg(DMMotorReg_s *_regObj,
 
 MotorTypeDef_e DMMotor::cancelReg(DMMotorRegId_e regId)
 {
-    this->log("INFO", "green", "Motor %s: cancelReg success", this->name_);
+    log.info(LOCATION, "DMMotor", " %s: cancelReg success, regId:%d",
+             this->name_, regId);
     regObjList_.erase(regId);
     return 0;
 }

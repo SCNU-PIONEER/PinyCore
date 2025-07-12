@@ -40,6 +40,17 @@ public:
     }
 
     template <typename... Args>
+    void debug(std::source_location _loc, std::string_view _type,
+               const char *_format, Args &&..._args)
+    {
+        log(LogParams{ .loc = _loc,
+                       .type = _type,
+                       .format = _format,
+                       .level = Level::Debug },
+            std::forward<Args>(_args)...);
+    }
+
+    template <typename... Args>
     void warn(std::source_location _loc, std::string_view _type,
               const char *_format, Args &&..._args)
     {
