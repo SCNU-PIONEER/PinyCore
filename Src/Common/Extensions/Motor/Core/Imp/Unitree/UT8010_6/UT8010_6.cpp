@@ -23,9 +23,8 @@ UT8010_6::UT8010_6(const char _name[16], InitConfig_s _config,
 
     checkBaseConfig();
 
-    log.info(LOCATION, "UT8010_6",
-             " %s: An instance of UT8010_6 created, ctrlId:%hx", this->name_,
-             this->ctrlId_);
+    LOG::info("UT8010_6", " %s: An instance of UT8010_6 created, ctrlId:%hx",
+              this->name_, this->ctrlId_);
 }
 
 MotorTypeDef_e UT8010_6::checkBaseConfig()
@@ -34,26 +33,22 @@ MotorTypeDef_e UT8010_6::checkBaseConfig()
 
     if (this->comType_ != PINYMOTOR::ComType_e ::RS485) {
         rslt |= 1;
-        log.error(LOCATION, "UT8010_6", " %s: only support RS485 comtype",
-                  this->name_);
+        LOG::error("UT8010_6", " %s: only support RS485 comtype", this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::EMIT) {
         rslt |= 1;
-        log.error(LOCATION, "UT8010_6", " %s: WorkMode only support EMIT",
-                  this->name_);
+        LOG::error("UT8010_6", " %s: WorkMode only support EMIT", this->name_);
     }
 
     if (this->offsetId_ > 15) {
         rslt |= 1;
-        log.error(LOCATION, "UT8010_6", " %s: Max Offset ID is only 15!",
-                  this->name_);
+        LOG::error("UT8010_6", " %s: Max Offset ID is only 15!", this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        log.error(LOCATION, "UT8010_6", " %s: Max TxFreq is only 1000!",
-                  this->name_);
+        LOG::error("UT8010_6", " %s: Max TxFreq is only 1000!", this->name_);
     }
 
     return rslt;

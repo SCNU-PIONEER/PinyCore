@@ -5,18 +5,18 @@
 #include <memory>
 
 namespace PINYMOTOR {
-
+namespace DJI_ODMOTOR {
 #pragma pack(push, 1)
-struct DJI_ODMotorMsg_s {
+struct Msg_s {
     int16_t cmd[3];
 };
 
-struct DJI_ODMotorFeedback_s {
+struct Feedback_s {
     uint16_t rawScale;
     int16_t rawTorq;
 };
 #pragma pack(pop)
-struct DJI_ODMotorStats_s {
+struct Status_s {
     float voltTxCodeSpan;
     float torqRxCodeSpan;
     float currRated;    // A
@@ -26,14 +26,17 @@ struct DJI_ODMotorStats_s {
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DJI_ODMotorStats_s &operator=(const DJI_ODMotorStats_s &_other);
+    Status_s &operator=(const Status_s &_other);
 };
 
 class DJI_ODMotor : public TripMotorBase {
     using Base = TripMotorBase;
 
+private:
+    RxBus_s::CANRxBuf_s rxBuf_;
+
 protected:
-    DJI_ODMotorStats_s stats_;
+    Status_s status_;
     void registerRecvCallback();
     void cancelRecvCallback();
     void updateCtrlId();
@@ -42,15 +45,16 @@ protected:
 public:
     DJI_ODMotor(const char _name[16], InitConfig_s _config);
     ~DJI_ODMotor() override;
-    void overrideStats(const DJI_ODMotorStats_s &_newStats);
+    void overrideStats(const Status_s &_newStats);
 
     uint16_t canId() const; // TripMotor's canId is fixed
     uint16_t masterId() const;
     uint16_t uid() override final;
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
                         uint8_t _len) override final;
-    MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
     MotorTypeDef_e ctrl() override final;
     TripMotorGroup_s *findGroup() const;
 };
-};
+}
+}

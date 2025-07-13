@@ -48,8 +48,8 @@ void TestModule::init()
         nullptr,
         nullptr
     };
-    // static PINYMOTOR::DM4310 testDM4310Motor("testdm4310", testDM4310Config);
-    // this->testDM4310Motor = &testDM4310Motor;
+    // this->testDM4310Motor = std::make_unique<PINYMOTOR::DMMOTOR::DM4310>(
+    //         "DM4310", testDM4310Config);
 
     // Test GM3510 ----------------------------------------
     static PINYMOTOR::InitConfig_s testGM3510Config = {
@@ -62,28 +62,28 @@ void TestModule::init()
         nullptr,
         nullptr
     };
-    // static PINYMOTOR::GM3510 testGM3510Motor("testgm3510", testGM3510Config);
-    // this->testGM3510Motor = &testGM3510Motor;
+    // this->testGM3510Motor = std::make_unique<PINYMOTOR::DJI_ODMOTOR::GM3510>(
+    //         "GM3510", testGM3510Config);
 
     // Test GM6020 ----------------------------------------
     static PINYMOTOR::InitConfig_s testGM6020Config = {
         (uint32_t *)(&hcan1),
         PINYMOTOR::ComType_e::CAN,
         PINYMOTOR::WorkMode_e::QUAD_VOLT,
-        static_cast<uint8_t>(3),
+        static_cast<uint8_t>(7),
         static_cast<float>(100.0f),
         nullptr,
         reinterpret_cast<PID *>(&GM6020VelPid),
         nullptr
     };
-    static PINYMOTOR::GM6020 testGM6020Motor("testgm6020", testGM6020Config);
-    this->testGM6020Motor = &testGM6020Motor;
+    this->testGM6020Motor = std::make_unique<PINYMOTOR::DJIMOTOR::GM6020>(
+            "GM6020", testGM6020Config);
 }
 
 void TestModule::update()
 {
     rcMsg = RC::Rc::instance().getData();
-    stateFactory_.update();
+    // stateFactory_.update();
 }
 
 void TestModule::task()

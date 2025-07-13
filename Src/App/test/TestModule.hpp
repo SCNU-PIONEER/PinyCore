@@ -2,12 +2,15 @@
 
 #include "FSMState.hpp"
 #include "StmLog.hpp"
+#include <memory>
 
 #include "DM4310.hpp"
 
 #include "GM3510.hpp"
 
 #include "GM6020.hpp"
+
+#include "M3508.hpp"
 
 #include "RcMsg.hpp"
 
@@ -34,9 +37,11 @@ public:
     LOG::Logger &log = LOG::Logger::instance();
 
     /*MOTOR*/
-    PINYMOTOR::DM4310 *testDM4310Motor;
-    PINYMOTOR::GM3510 *testGM3510Motor;
-    PINYMOTOR::GM6020 *testGM6020Motor;
+    // 智能指针
+    std::unique_ptr<PINYMOTOR::DMMOTOR::DM4310> testDM4310Motor;
+    std::unique_ptr<PINYMOTOR::DJI_ODMOTOR::GM3510> testGM3510Motor;
+    std::unique_ptr<PINYMOTOR::DJIMOTOR::GM6020> testGM6020Motor;
+    std::unique_ptr<PINYMOTOR::DJIMOTOR::M3508> testM3508Motor;
 
 private:
     TestModule() = default;

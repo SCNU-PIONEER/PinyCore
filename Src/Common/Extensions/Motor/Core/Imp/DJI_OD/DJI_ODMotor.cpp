@@ -6,9 +6,9 @@
 #include "Bsp_can.hpp"
 
 using namespace PINYMOTOR;
+using namespace DJI_ODMOTOR;
 
-DJI_ODMotorStats_s &
-DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s &_other)
+Status_s &Status_s::operator=(const Status_s &_other)
 {
     if (this != &_other) {
         voltTxCodeSpan = _other.voltTxCodeSpan;
@@ -26,24 +26,21 @@ DJI_ODMotorStats_s::operator=(const DJI_ODMotorStats_s &_other)
 DJI_ODMotor::DJI_ODMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, _config)
 {
-    this->cmd_.clear();
+    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s));
 }
 
 DJI_ODMotor::~DJI_ODMotor()
 {
     this->cancelRecvCallback();
     this->cancelMotor();
-    log.info(
-            LOCATION, "DJI_ODMotor",
+    LOG::info(
+            "DJI_ODMotor",
             " %s: An instance of DJI_ODMotor created, rxBaseId:%hx, txBaseId:%hx",
             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
     this->removeMotorFromMap();
 }
 
-void DJI_ODMotor::overrideStats(const DJI_ODMotorStats_s &_stats)
-{
-    stats_ = _stats;
-}
+void DJI_ODMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
 uint16_t DJI_ODMotor::canId() const { return this->model_.txBaseId + 0u; }
 
@@ -60,14 +57,11 @@ void DJI_ODMotor::registerRecvCallback()
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t *_rxBuf) {
-                // basic cb
-                this->parse(_rxBuf);
-                // user cb
-                if (this->userRecvCallback_ != nullptr) {
-                    this->userRecvCallback_(_rxBuf);
-                }
+                BaseType_t higherPriorityTaskWoken = pdFALSE;
+                xQueueSendFromISR(this->rxQueue_, const_cast<uint8_t *>(_rxBuf),
+                                  &higherPriorityTaskWoken);
             });
-    log.error(LOCATION, "DJI_ODMotor", " %s: Receive cb registed, masterId:%hx",
+    LOG::info("DJI_ODMotor", " %s: Receive cb registed, masterId:%hx",
               this->name_, this->masterId());
 }
 
@@ -75,7 +69,7 @@ void DJI_ODMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
-    log.error(LOCATION, "DJI_ODMotor", " %s: Receive cb canceled, masterId:%hx",
+    LOG::info("DJI_ODMotor", " %s: Receive cb canceled, masterId:%hx",
               this->name_, this->masterId());
 }
 
@@ -87,8 +81,8 @@ void DJI_ODMotor::updateCtrlId()
         break;
     }
     default: {
-        log.error(LOCATION, "DJI_ODMotor", " %s: this mode is not supported",
-                  this->name_);
+        LOG::error("DJI_ODMotor", " %s: this mode is not supported",
+                   this->name_);
         break;
     }
     }
@@ -100,12 +94,12 @@ MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf,
     // send data to CAN
     TripMotorGroup_s *group = this->findGroup();
     if (group == nullptr) {
-        log.error(LOCATION, "DJI_ODMotor", " %s: Can't find group %hx",
-                  this->name_, this->getGroupId());
+        LOG::error("DJI_ODMotor", " %s: Can't find group %hx", this->name_,
+                   this->getGroupId());
         return 1;
     } else {
         if (this->checkGroupSend(group)) {
-#if 1
+#if 0
             // Check this Buffer
             log.debug(LOCATION, "DJI_ODMotor", " %s: send data to CAN %hx",
                       this->name_, _sendId);
@@ -124,20 +118,20 @@ MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf,
     }
 }
 
-MotorTypeDef_e DJI_ODMotor::parse(const uint8_t *_rxBuf)
+MotorTypeDef_e DJI_ODMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 {
-    DJI_ODMotorFeedback_s fb;
-    fb.rawScale = ((_rxBuf[0] << 8) | _rxBuf[1]);
-    fb.rawTorq = static_cast<int16_t>(((_rxBuf[2] << 8) | _rxBuf[3]));
+    Feedback_s fb;
+    fb.rawScale = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
+    fb.rawTorq = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
 
     this->data_.rawScale = fb.rawScale;
 
     this->data_.torq =
-            fb.rawTorq / this->stats_.torqRxCodeSpan * this->stats_.torqMax;
+            fb.rawTorq / this->status_.torqRxCodeSpan * this->status_.torqMax;
 
     this->data_.tempture = 0.f; // TODO:
 
-    this->data_.curr = this->data_.torq / stats_.torqConstant;
+    this->data_.curr = this->data_.torq / status_.torqConstant;
 
     float angDiff = getMinorArc(this->data_.rawScale, this->data_.lastRawScale,
                                 this->span()) *
@@ -164,6 +158,13 @@ MotorTypeDef_e DJI_ODMotor::parse(const uint8_t *_rxBuf)
 
 MotorTypeDef_e DJI_ODMotor::ctrl()
 {
+    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
+        this->parse(this->rxBuf_);
+        this->calcRecvFreq();
+        if (this->userRecvCallback_ != nullptr) {
+            this->userRecvCallback_(this->rxBuf_.data);
+        }
+    }
     MotorTypeDef_e rslt = 0;
     uint8_t txBuf[8] = {};
     int16_t ctrlCmd = 0;
@@ -174,8 +175,7 @@ MotorTypeDef_e DJI_ODMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                log.error(LOCATION, "DJI_ODMotor", " %s: torqPID is null",
-                          this->name_);
+                LOG::error("DJI_ODMotor", " %s: torqPID is null", this->name_);
             }
         } else if (this->curCmdType_ == MotorCmdType_e::SET_VEL) {
             if (this->velPID_ != nullptr || this->torqPID_ != nullptr) {
@@ -184,8 +184,8 @@ MotorTypeDef_e DJI_ODMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                log.error(LOCATION, "DJI_ODMotor",
-                          " %s: velPID or torqPID is null", this->name_);
+                LOG::error("DJI_ODMotor", " %s: velPID or torqPID is null",
+                           this->name_);
             }
         } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
@@ -199,19 +199,19 @@ MotorTypeDef_e DJI_ODMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                log.error(LOCATION, "DJI_ODMotor",
-                          " %s: posPID or velPID or torqPID is null",
-                          this->name_);
+                LOG::error("DJI_ODMotor",
+                           " %s: posPID or velPID or torqPID is null",
+                           this->name_);
             }
         }
-        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->stats_.voltMax *
-                                       this->stats_.voltTxCodeSpan);
+        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
+                                       this->status_.voltTxCodeSpan);
         break;
     }
     default: {
         ctrlCmd = 0;
-        log.error(LOCATION, "DJI_ODMotor", " %s: this mode is not supported",
-                  this->name_);
+        LOG::error("DJI_ODMotor", " %s: this mode is not supported",
+                   this->name_);
         break;
     }
     }

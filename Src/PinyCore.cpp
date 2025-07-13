@@ -26,7 +26,7 @@ void PinyCore::coreInit()
 
     AppManager::instance()->initApp();
 
-    log.info(LOCATION, "Piny", "kernal start");
+    LOG::info("Piny", "kernal start");
 
     osKernelStart();
 }

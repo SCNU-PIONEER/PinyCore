@@ -26,9 +26,12 @@ protected:
 
     bool checkSend() const;
 
+    void calcRecvFreq();
+
     bool isMutiple_ = false; // default is not quad encoder
 
     uint32_t lastSendTick = 0; // ms
+    uint32_t lastRecvTick = 0; // ms
 
 public:
     MotorBase(const char _name[16], InitConfig_s _config);

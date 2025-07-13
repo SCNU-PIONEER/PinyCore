@@ -2,9 +2,10 @@
 
 #include <cstdint>
 
-#include "../Projdefs.hpp"
+#include "FreeRTOS.h"
+#include "queue.h"
 
-#include <queue>
+#include "../Projdefs.hpp"
 
 #include <cstdarg>
 
@@ -13,6 +14,9 @@
 namespace PINYMOTOR {
 class IMotor {
 protected:
+    uint8_t id_; // start from 0 to 31, system auto assign
+    uint16_t uid_;
+
     Model_s model_;
     Data_s data_;
     Cmd_s cmd_;
@@ -28,16 +32,17 @@ protected:
 
     MotorCmdType_e curCmdType_ = MotorCmdType_e::OFF;
 
-    std::queue<MotorErrorCode_e> errQueue_;
+    QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
 
 public:
+    IMotor();
     virtual ~IMotor() = default;
     virtual MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuffer,
                                 uint8_t _txLen) = 0;
-    virtual MotorTypeDef_e parse(const uint8_t *_rxBuffer) = 0;
     virtual MotorTypeDef_e ctrl() = 0;
 
     virtual uint16_t uid() = 0;
+    uint8_t id() const;
 
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
@@ -62,8 +67,6 @@ public:
     void overrideMeasureMin(float _newMeasureMin);
 
     const char *getName() const;
-
-    LOG::Logger &log = LOG::Logger::instance();
 };
 
 }

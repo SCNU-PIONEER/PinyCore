@@ -4,6 +4,7 @@
 #include <cstring>
 
 using namespace PINYMOTOR;
+using namespace DMMOTOR;
 DM3519::DM3519(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, _config)
 {
@@ -14,7 +15,7 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->stats_ = DMMotorStats_s{
+    this->status_ = Status_s{
         DM3519_P_MAX,             // PMax
         DM3519_V_MAX,             // VMax
         DM3519_T_MAX,             // TMax
@@ -34,9 +35,9 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
 
     checkBaseConfig();
 
-    log.info(LOCATION, "DM3519",
-             " %s: An instance of DM3519 created, rxBaseId:%hx, txBaseId:%hx",
-             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    LOG::info("DM3519",
+              " %s: An instance of DM3519 created, rxBaseId:%hx, txBaseId:%hx",
+              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
     // TODO:
 }
 
@@ -47,25 +48,22 @@ MotorTypeDef_e DM3519::checkBaseConfig()
     if (this->comType_ != ComType_e::FDCAN &&
         this->comType_ != ComType_e::CAN) {
         rslt |= 1;
-        log.error(LOCATION, "DM3519", " %s: only support FDCAN or CAN comtype",
-                  this->name_);
+        LOG::error("DM3519", " %s: only support FDCAN or CAN comtype",
+                   this->name_);
     }
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
         rslt |= 1;
-        log.error(LOCATION, "DM3519", " %s: WorkMode is not supported",
-                  this->name_);
+        LOG::error("DM3519", " %s: WorkMode is not supported", this->name_);
     }
 
     if (this->offsetId_ > 9) {
         rslt |= 1;
-        log.error(LOCATION, "DM3519", " %s: Max Offset ID is only 9!",
-                  this->name_);
+        LOG::error("DM3519", " %s: Max Offset ID is only 9!", this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        log.error(LOCATION, "DM3519", " %s: Max TxFreq is only 1000!",
-                  this->name_);
+        LOG::error("DM3519", " %s: Max TxFreq is only 1000!", this->name_);
     }
 
     return rslt;

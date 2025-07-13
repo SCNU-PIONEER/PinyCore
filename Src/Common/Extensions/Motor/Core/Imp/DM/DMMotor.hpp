@@ -12,8 +12,8 @@
 #include "Bsp_can.hpp"
 
 namespace PINYMOTOR {
-
-enum class DMMotorRegId_e {
+namespace DMMOTOR {
+enum class RegId_e {
     DM_REG_UV_Value = 0u,   // 低压保护值	RW	(10.0,3.4E38]	float
     DM_REG_KT_Value = 1u,   // 扭矩系数	RW	[0.0,3.4E38]	float
     DM_REG_OT_Value = 2u,   // 过温保护值	RW	[80.0,200)	float
@@ -61,7 +61,7 @@ enum class DMMotorRegId_e {
     DM_REG_xout = 81u,      // 输出轴位置	RO	　	float
 };
 
-enum class DMMotorErrorCode_e {
+enum class ErrorCode_e {
     MotorDisable = 0x0u,
     MotorEnable = 0x1u,
     OverVoltage = 0x8u,
@@ -74,22 +74,22 @@ enum class DMMotorErrorCode_e {
 };
 
 #pragma pack(push, 1)
-union DMMotorRegValue_u {
+union RegValue_u {
     float value;
     uint8_t dat[4];
 };
 
-struct DMMotorReg_s {
-    DMMotorRegId_e regId;
+struct Reg_s {
+    RegId_e regId;
     uint8_t dat[4];
     bool isWrite;
     bool isRead;
     bool isStorage;
 };
 
-struct DMMotorFeedback_s {
+struct Feedback_s {
     uint8_t ID : 4;
-    DMMotorErrorCode_e errorCode : 4;
+    ErrorCode_e errorCode : 4;
     uint16_t rawScale : 14;
     uint16_t rawVel : 12;
     uint16_t torque : 12;
@@ -97,7 +97,7 @@ struct DMMotorFeedback_s {
     uint8_t rotorTemperature : 8;
 };
 
-struct DMMITMsg_s {
+struct MITMsg_s {
     int16_t exptScale : 16;
     int16_t exptVel : 12;
     int16_t Kp : 12;
@@ -105,23 +105,23 @@ struct DMMITMsg_s {
     int16_t torqueOffset : 12;
 };
 
-struct DMEMITMsg_s {
+struct EMITMsg_s {
     float exptScale;
     uint16_t exptVelX100 : 16;
     uint16_t imaxX10000 : 16;
 };
-struct DMPDESVDESMsg_s {
+struct PDESVDESMsg_s {
     float exptScale;
     float exptVel;
 };
 
-struct DMVDESMsg_s {
+struct VDESMsg_s {
     float exptVel;
     float reserved;
 };
 #pragma pack(pop)
 
-struct DMMotorStats_s {
+struct Status_s {
     float PMax;
     float VMax;
     float TMax;
@@ -134,28 +134,31 @@ struct DMMotorStats_s {
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DMMotorStats_s &operator=(const DMMotorStats_s &_other);
+    Status_s &operator=(const Status_s &_other);
 };
 
 class DMMotor : public MotorBase {
     using Base = MotorBase;
-    using RegMap = std::unordered_map<DMMotorRegId_e, DMMotorReg_s *>;
+    using RegMap = std::unordered_map<RegId_e, Reg_s *>;
+
+private:
+    RxBus_s::CANRxBuf_s rxBuf_ = {}; // buffer for received data
 
 protected:
     void registerRecvCallback();
     void cancelRecvCallback();
     void updateCtrlId();
 
-    DMMotorStats_s stats_;
+    Status_s status_;
 
-    std::unordered_map<DMMotorRegId_e, DMMotorReg_s *> regObjList_;
-    std::unordered_map<DMMotorRegId_e, DMMotorRegValue_u *> regValueList_;
-    std::unordered_map<DMMotorRegId_e, uint8_t[4]> preRegValue_;
+    std::unordered_map<RegId_e, Reg_s *> regObjList_;
+    std::unordered_map<RegId_e, RegValue_u *> regValueList_;
+    std::unordered_map<RegId_e, uint8_t[4]> preRegValue_;
 
     float MITKp_ = 0;
     float MITKd_ = 0;
 
-    DMMotorErrorCode_e errorCode_;
+    ErrorCode_e errorCode_;
 
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
 
@@ -163,7 +166,7 @@ public:
     DMMotor(const char _name[16], InitConfig_s _config);
     ~DMMotor() override;
 
-    void overrideStats(const DMMotorStats_s &_newStats);
+    void overrideStats(const Status_s &_newStats);
 
     bool isEnable() const;
     uint16_t canId() const;
@@ -172,7 +175,7 @@ public:
     uint16_t uid() override final;
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
                         uint8_t _len) override final;
-    MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
     MotorTypeDef_e ctrl() override final;
 
     void setMITKp(float _kp);
@@ -182,15 +185,15 @@ public:
     MotorTypeDef_e disable();
     MotorTypeDef_e clearError();
 
-    MotorTypeDef_e registerReg(DMMotorReg_s *_regObj,
-                               DMMotorRegValue_u *_regValue);
-    MotorTypeDef_e cancelReg(DMMotorRegId_e regId);
-    MotorTypeDef_e writeOneReg(DMMotorRegId_e _regId, uint8_t dat[4]);
-    MotorTypeDef_e readOneReg(DMMotorRegId_e _regId);
-    MotorTypeDef_e storageOneReg(DMMotorRegId_e _regId);
+    MotorTypeDef_e registerReg(Reg_s *_regObj, RegValue_u *_regValue);
+    MotorTypeDef_e cancelReg(RegId_e regId);
+    MotorTypeDef_e writeOneReg(RegId_e _regId, uint8_t dat[4]);
+    MotorTypeDef_e readOneReg(RegId_e _regId);
+    MotorTypeDef_e storageOneReg(RegId_e _regId);
     MotorTypeDef_e writeReg();
     MotorTypeDef_e readReg();
     MotorTypeDef_e storageReg();
     MotorTypeDef_e updateRegDat();
 };
+}
 }

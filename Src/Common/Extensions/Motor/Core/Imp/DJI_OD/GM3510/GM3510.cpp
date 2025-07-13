@@ -5,6 +5,7 @@
 #include <cstring>
 
 using namespace PINYMOTOR;
+using namespace DJI_ODMOTOR;
 
 GM3510::GM3510(const char _name[16], InitConfig_s _config)
         : DJI_ODMotor(_name, _config)
@@ -17,16 +18,15 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     this->model_.txBaseId = 0x1FF;
 
-    this->stats_ =
-            DJI_ODMotorStats_s(GM3510_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                               GM3510_TORQ_RX_CODE_SPAN, // torqRxCodeSpan
-                               GM3510_CURR_RATED,        // currRated
-                               GM3510_TORQ_RATED,        // torqRated
-                               GM3510_VOLT_MAX,          // voltMax
-                               GM3510_CURR_MAX,          // currMax
-                               GM3510_TORQ_MAX,          // torqMax
-                               GM3510_TORQ_CONSTANT      // torqConstant
-            );
+    this->status_ = Status_s(GM3510_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                             GM3510_TORQ_RX_CODE_SPAN, // torqRxCodeSpan
+                             GM3510_CURR_RATED,        // currRated
+                             GM3510_TORQ_RATED,        // torqRated
+                             GM3510_VOLT_MAX,          // voltMax
+                             GM3510_CURR_MAX,          // currMax
+                             GM3510_TORQ_MAX,          // torqMax
+                             GM3510_TORQ_CONSTANT      // torqConstant
+    );
 
     this->registerMotor();
     this->updateMotorMap();
@@ -35,9 +35,9 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     checkBaseConfig();
 
-    log.info(LOCATION, "GM3510",
-             " %s: An instance of GM3510 created, rxBaseId:%hx, txBaseId:%hx",
-             this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    LOG::info("GM3510",
+              " %s: An instance of GM3510 created, rxBaseId:%hx, txBaseId:%hx",
+              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
 }
 
 MotorTypeDef_e GM3510::checkBaseConfig()
@@ -47,26 +47,23 @@ MotorTypeDef_e GM3510::checkBaseConfig()
     if (this->comType_ != ComType_e::FDCAN &&
         this->comType_ != ComType_e::CAN) {
         rslt |= 1;
-        log.error(LOCATION, "GM3510", " %s: only support FDCAN or CAN comtype",
-                  this->name_);
+        LOG::error("GM3510", " %s: only support FDCAN or CAN comtype",
+                   this->name_);
     }
 
     if (this->workMode_ != WorkMode_e::TRIP_VOLT) {
         rslt |= 1;
-        log.error(LOCATION, "GM3510", " %s: WorkMode is not supported",
-                  this->name_);
+        LOG::error("GM3510", " %s: WorkMode is not supported", this->name_);
     }
 
     if (this->offsetId_ > 3) {
         rslt |= 1;
-        log.error(LOCATION, "GM3510", " %s: Max Offset ID is only 3!",
-                  this->name_);
+        LOG::error("GM3510", " %s: Max Offset ID is only 3!", this->name_);
     }
 
     if (this->txFreq_ > 1000) {
         rslt |= 1;
-        log.error(LOCATION, "GM3510", " %s: Max TxFreq is only 1000!",
-                  this->name_);
+        LOG::error("GM3510", " %s: Max TxFreq is only 1000!", this->name_);
     }
 
     return rslt;

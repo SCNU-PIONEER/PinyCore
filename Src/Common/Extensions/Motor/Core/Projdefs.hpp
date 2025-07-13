@@ -24,6 +24,15 @@ enum class ComType_e { NONE, FDCAN, CAN, RS485 };
 enum class GlobalState_e { UNREGISTER, OFFLINE, ONLINE, ERROR };
 
 enum class MotorErrorCode_e { ErrorNone = 0u };
+
+struct RxBus_s {
+    struct CANRxBuf_s {
+        uint8_t data[8];
+    };
+    struct RS485RxBuf_s {
+        uint8_t data[8];
+    };
+};
 struct InitConfig_s {
     uint32_t *pComHandle;
     ComType_e comType;
@@ -80,5 +89,4 @@ struct Cmd_s {
         }
     }
 };
-
 }

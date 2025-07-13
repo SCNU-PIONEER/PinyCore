@@ -5,19 +5,19 @@
 #include <memory>
 
 namespace PINYMOTOR {
-
+namespace DJIMOTOR {
 #pragma pack(push, 1)
-struct DJIMotorMsg_s {
+struct Msg_s {
     int16_t cmd[4];
 };
-struct DJIMotorFeedback_s {
+struct Feedback_s {
     uint16_t rawScale;
     int16_t rawRpm;
     int16_t current;
     uint8_t temperature;
 };
 #pragma pack(pop)
-struct DJIMotorStats_s {
+struct Status_s {
     float voltTxCodeSpan;
     float currTxCodeSpan;
     float currRxCodeSpan;
@@ -28,14 +28,17 @@ struct DJIMotorStats_s {
     float torqMax;      // Nm
     float torqConstant; // Nm/A
 
-    DJIMotorStats_s &operator=(const DJIMotorStats_s &_other);
+    Status_s &operator=(const Status_s &_other);
 };
 
 class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
 
+private:
+    RxBus_s::CANRxBuf_s rxBuf_ = {}; // buffer for received data
+
 protected:
-    DJIMotorStats_s stats_;
+    Status_s status_;
     void registerRecvCallback();
     void cancelRecvCallback();
     void updateCtrlId();
@@ -44,7 +47,7 @@ protected:
 public:
     DJIMotor(const char _name[16], InitConfig_s _config);
     ~DJIMotor() override;
-    void overrideStats(const DJIMotorStats_s &_newStats);
+    void overrideStats(const Status_s &_newStats);
 
     uint16_t canId() const; // QuadMotor's canId is fixed
     uint16_t masterId() const;
@@ -52,10 +55,11 @@ public:
     uint16_t uid() override final;
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
                         uint8_t _len) override final;
-    MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
     MotorTypeDef_e ctrl() override final;
 
     QuadMotorGroup_s *findGroup() const;
 };
 
+}
 }

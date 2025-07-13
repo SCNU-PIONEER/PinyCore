@@ -4,6 +4,12 @@
 
 using namespace PINYMOTOR;
 
+IMotor::IMotor() : id_(MotorManager::instance()->motorListSize())
+{
+    this->cmd_.clear();
+    memset(&data_, 0, sizeof(Data_s));
+}
+
 MotorTypeDef_e IMotor::registerMotor()
 {
     MotorManager *motorManager = MotorManager::instance();
@@ -57,8 +63,8 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
         break;
     }
     default: {
-        log.error(LOCATION, "IMotor", " %s: cmd %d is not supported",
-                  this->name_, static_cast<int>(_cmd));
+        LOG::error("IMotor", " %s: cmd %d is not supported", this->name_,
+                   static_cast<int>(_cmd));
         return 1;
     }
     }
@@ -72,12 +78,14 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
     } else if (_cmd == MotorCmdType_e::OFF) {
         this->cmd_.updateSW(false);
     } else {
-        log.error(LOCATION, "IMotor", " %s: cmd %d is not supported",
-                  this->name_, static_cast<int>(_cmd));
+        LOG::error("IMotor", " %s: cmd %d is not supported", this->name_,
+                   static_cast<int>(_cmd));
         return 1;
     }
     return 0;
 }
+
+uint8_t IMotor::id() const { return id_; }
 
 Data_s &IMotor::data() { return data_; }
 

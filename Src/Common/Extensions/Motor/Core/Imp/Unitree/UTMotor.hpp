@@ -52,7 +52,7 @@ public:
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
                         uint8_t _len) override final;
-    MotorTypeDef_e parse(const uint8_t *_rxBuf) override final;
+    MotorTypeDef_e parse(const uint8_t *_rxBuf);
     MotorTypeDef_e ctrl() override final;
 
     void setKp(float _kp);
