@@ -5,7 +5,7 @@ using namespace UTMOTOR;
 
 UT8010_6::UT8010_6(const char _name[16], InitConfig_s _config,
                    DMA_HandleTypeDef *_dmaHandle)
-        : UTMotor(_name, _config, _dmaHandle)
+        : UTMotor(_name, std::move(_config), _dmaHandle)
 {
     strcpy(this->model_.name, "UT8010_6");
     this->model_.measureMax = 0;

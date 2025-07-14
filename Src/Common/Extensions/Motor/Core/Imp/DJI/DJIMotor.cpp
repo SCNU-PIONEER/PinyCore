@@ -24,7 +24,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+        : Base(_name, std::move(_config))
 {
     this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s));
 }

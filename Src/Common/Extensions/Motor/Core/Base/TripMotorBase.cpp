@@ -24,7 +24,7 @@ void TripMotorGroup_s::showMotorInfo()
 }
 
 TripMotorBase::TripMotorBase(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+        : Base(_name, std::move(_config))
 {
     isMutiple_ = true;
 }

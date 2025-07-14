@@ -1,14 +1,11 @@
 #pragma once
 
 #include <cstdint>
-
 #include "FreeRTOS.h"
 #include "queue.h"
-
 #include "../Projdefs.hpp"
-
 #include <cstdarg>
-
+#include <memory>
 #include "StmLog.hpp"
 
 namespace PINYMOTOR {
@@ -25,10 +22,10 @@ protected:
     float rxFreq_; // TODO:
     char name_[16] = "NULL";
 
-    PID *posPID_;
-    PID *velPID_;
+    std::unique_ptr<PID> posPID_;
+    std::unique_ptr<PID> velPID_;
 
-    PID *torqPID_; // only VOLT-CTRL motor will need this
+    std::unique_ptr<PID> torqPID_; // only VOLT-CTRL motor will need this
 
     MotorCmdType_e curCmdType_ = MotorCmdType_e::OFF;
 

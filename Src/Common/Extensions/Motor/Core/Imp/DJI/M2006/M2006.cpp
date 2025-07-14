@@ -7,7 +7,7 @@
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
 M2006::M2006(const char _name[16], InitConfig_s _config)
-        : DJIMotor(_name, _config)
+        : DJIMotor(_name, std::move(_config))
 {
     strcpy(this->model_.name, "DJI-M2006");
     this->model_.measureMax = 8191;

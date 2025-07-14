@@ -7,10 +7,6 @@
 
 #include <unordered_map>
 
-#include <memory>
-
-#include "Bsp_can.hpp"
-
 namespace PINYMOTOR {
 namespace DMMOTOR {
 enum class RegId_e {

@@ -8,7 +8,7 @@ using namespace PINYMOTOR;
 using namespace DJI_ODMOTOR;
 
 GM3510::GM3510(const char _name[16], InitConfig_s _config)
-        : DJI_ODMotor(_name, _config)
+        : DJI_ODMotor(_name, std::move(_config))
 {
     strcpy(this->model_.name, "DJI-GM3510");
     this->model_.measureMax = 8191;

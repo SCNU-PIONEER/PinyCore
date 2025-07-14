@@ -23,7 +23,7 @@ void QuadMotorGroup_s::showMotorInfo()
     }
 }
 QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+        : Base(_name, std::move(_config))
 {
     isMutiple_ = true;
 }

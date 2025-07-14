@@ -1,7 +1,11 @@
 #pragma once
+
 #include <cstdint>
+#include <memory>
 
 #include "Pid.hpp"
+
+
 namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
@@ -40,9 +44,9 @@ struct InitConfig_s {
     uint8_t offsetId;
     float txFreq;
 
-    PID *posPID;
-    PID *velPID;
-    PID *torqPID;
+    std::unique_ptr<PID> posPID;
+    std::unique_ptr<PID> velPID;
+    std::unique_ptr<PID> torqPID;
 };
 
 struct Model_s {

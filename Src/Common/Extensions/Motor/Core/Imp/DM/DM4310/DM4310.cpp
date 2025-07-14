@@ -6,7 +6,7 @@
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
 DM4310::DM4310(const char _name[16], InitConfig_s _config)
-        : DMMotor(_name, _config)
+        : DMMotor(_name, std::move(_config))
 {
     strcpy(this->model_.name, "DM-DM4310");
     this->model_.measureMax = 16383;
