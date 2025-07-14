@@ -15,16 +15,6 @@
 
 #include "PidBasic.hpp"
 
-static positonalPid_s GM6020VelPidConfig = {
-    .kp = 0.05f,
-    .ki = 0.0f,
-    .kd = 0.0f,
-    .dt = 1.f / 100.f,
-    .iMax = GM6020_TORQ_MAX,
-    .outMax = GM6020_TORQ_MAX,
-    .deadband = 0.f,
-};
-static positonalPid GM6020VelPid(GM6020VelPidConfig);
 
 void TestModule::init()
 {
@@ -73,7 +63,9 @@ void TestModule::init()
         static_cast<uint8_t>(7),
         static_cast<float>(100.0f),
         nullptr,
-        reinterpret_cast<PID *>(&GM6020VelPid),
+        std::make_unique<positonalPid>(0.05f, 0.f, 0.f, 0.01, GM6020_TORQ_MAX,
+                                       GM6020_TORQ_MAX, 0.f)
+                .get(),
         nullptr
     };
     this->testGM6020Motor = std::make_unique<PINYMOTOR::DJIMOTOR::GM6020>(
