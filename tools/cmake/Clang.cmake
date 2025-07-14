@@ -11,7 +11,6 @@ set(CMAKE_CXX_EXTENSIONS ON)
 # define compiler toolchain for Clang,
 # such as set(TOOLCHAIN_PREFIX "~/apps/ATfE-20.1.0-Linux-x86_64/bin")
 set(TOOLCHAIN_PREFIX "")
-set(TOOLCHAIN_PREFIX "/home/yjy/apps/ATfE-20.1.0-Linux-x86_64/bin")
 
 # Clang compiler
 set(CMAKE_C_COMPILER                "${TOOLCHAIN_PREFIX}/clang")
@@ -46,7 +45,6 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # set newlib_dir
 # such as set(NEWLIB_DIR "~/apps/ATfE-20.1.0-Linux-x86_64/ATfE-newlib-nano-overlay-20.1.0/lib/clang-runtimes/newlib-nano")
 set(NEWLIB_DIR "")
-set(NEWLIB_DIR "/home/yjy/apps/ATfE-20.1.0-Linux-x86_64/ATfE-newlib-nano-overlay-20.1.0/lib/clang-runtimes/newlib-nano")
 
 # set(TARGET_FLAGS "--target=armv7m-none-eabi -mfpu=${fpu} -mfloat-abi=${float-abi} -mthumb")
 set(TARGET_FLAGS "--target=armv7m-none-eabi -mfpu=${fpu} -mfloat-abi=${float-abi} -mthumb --sysroot=${NEWLIB_DIR}" )
