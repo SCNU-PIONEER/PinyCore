@@ -3,11 +3,13 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-class ChassisRunState : public FSMState {
+namespace CHASSIS {
+
+class RunState : public FSMState {
 public:
-    ChassisRunState(const Chassis *_chassis) : chassis_(_chassis)
+    RunState(const Chassis *_chassis) : chassis_(_chassis)
     {
-        setStateName("ChassisRun");
+        setStateName(static_cast<uint8_t>(fsmState_e::RUN));
     };
 
     void enter() override
@@ -30,16 +32,18 @@ public:
 
     void exit() override { LOG::info("run", " exit"); }
 
-    std::string checkChange() override
+    uint8_t checkChange() override
     {
         if (chassis_->msg_.state == State_e::stop)
-            return "ChassisStop";
+            return static_cast<uint8_t>(fsmState_e::STOP);
         else if (chassis_->msg_.state == State_e::run)
-            return "ChassisRun";
+            return static_cast<uint8_t>(fsmState_e::RUN);
         else
-            return "";
+            return -1;
     }
 
 private:
     const Chassis *chassis_;
 };
+
+}

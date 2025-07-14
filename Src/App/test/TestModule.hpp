@@ -14,6 +14,14 @@
 
 #include "RcMsg.hpp"
 
+namespace TEST {
+enum class fsmState_e {
+    MotorVelCtrl = 0,
+    MotorPosCtrl = 1,
+    MotorStop = 2,
+};
+}
+
 class TestModule {
 public:
     inline static TestModule *instance()
@@ -37,7 +45,6 @@ public:
     LOG::Logger &log = LOG::Logger::instance();
 
     /*MOTOR*/
-    // 智能指针
     std::unique_ptr<PINYMOTOR::DMMOTOR::DM4310> testDM4310Motor;
     std::unique_ptr<PINYMOTOR::DJI_ODMOTOR::GM3510> testGM3510Motor;
     std::unique_ptr<PINYMOTOR::DJIMOTOR::GM6020> testGM6020Motor;

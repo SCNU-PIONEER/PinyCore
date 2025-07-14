@@ -1,11 +1,13 @@
 #pragma once
 #include "TestModule.hpp"
 
+using namespace TEST;
+
 class MotorVelCtrlState : public FSMState {
 public:
     MotorVelCtrlState(const TestModule *_testModule) : testModule_(_testModule)
     {
-        setStateName("MotorVelCtrl");
+        setStateName(static_cast<uint8_t>(fsmState_e::MotorVelCtrl));
     };
 
     void enter() override { LOG::info("MotorVelCtrl", " enter"); }
@@ -22,16 +24,16 @@ public:
     };
     void exit() override { LOG::info("MotorVelCtrl", " exit"); }
 
-    std::string checkChange() override
+    uint8_t checkChange() override
     {
         if (testModule_->rcMsg.rc.switchRight == RC_SW_DOWN) {
-            return "MotorStop";
+            return static_cast<uint8_t>(fsmState_e::MotorStop);
         } else if (testModule_->rcMsg.rc.switchRight == RC_SW_MID) {
-            return "MotorVelCtrl";
+            return static_cast<uint8_t>(fsmState_e::MotorVelCtrl);
         } else if (testModule_->rcMsg.rc.switchRight == RC_SW_UP) {
-            return "MotorPosCtrl";
+            return static_cast<uint8_t>(fsmState_e::MotorPosCtrl);
         } else {
-            return "MotorStop";
+            return static_cast<uint8_t>(fsmState_e::MotorStop);
         }
     }
 

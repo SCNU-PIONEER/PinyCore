@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <memory>
 #include <unordered_map>
 
@@ -18,37 +17,38 @@ public:
     virtual void enter() = 0;
     virtual void run() = 0;
     virtual void exit() = 0;
-    virtual std::string checkChange() = 0;
+    virtual uint8_t checkChange() = 0;
 
     FSMMode_e getMode();
-    std::string getStateName();
-    std::string getNextStateName();
+    uint8_t getStateName();
+    uint8_t getNextStateName();
 
     void setMode(FSMMode_e _mode);
-    void setStateName(std::string _stateName);
-    void setNextStateName(std::string _next);
+    void setStateName(uint8_t _name);
+    void setNextStateName(uint8_t _next);
 
 private:
-    std::string stateName;
-    std::string nextStateName;
+    uint8_t name_;
+    uint8_t nextName_;
     FSMMode_e mode_ = FSMMode_e::NORMAL;
 };
 
 
 class StateFactory {
 public:
-    void init(FSMState *state);
+    void init(FSMState *_state);
 
-    void addState(std::string _name, std::unique_ptr<FSMState> _state);
+    void addState(uint8_t _name, std::unique_ptr<FSMState> _state);
+    void removeState(uint8_t _name);
 
-    FSMState *getNextState(std::string _next);
+    FSMState *getNextState(uint8_t _next);
 
-    void setState(FSMState *state);
+    void setState(FSMState &_state);
 
     void update();
 
 private:
     FSMState *currentState_;
     FSMState *nextState_;
-    std::unordered_map<std::string, std::unique_ptr<FSMState> > stateTable;
+    std::unordered_map<uint8_t, std::unique_ptr<FSMState> > stateTable;
 };

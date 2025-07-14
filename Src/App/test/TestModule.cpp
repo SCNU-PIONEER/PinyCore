@@ -2,10 +2,9 @@
 
 #include "Can/Bsp_can.hpp"
 
-#include "cmsis_os2.h"
+#include "FreeRTOS.h"
 #include "task.h"
 #include "sdkconfig.h"
-
 #include "Rc.hpp"
 
 #include "TestModuleMotorVelCtrlState.hpp"
@@ -18,12 +17,14 @@
 
 void TestModule::init()
 {
-    stateFactory_.addState("MotorVelCtrl",
+    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::MotorVelCtrl),
                            std::make_unique<MotorVelCtrlState>(this));
-    stateFactory_.addState("MotorPosCtrl",
+    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::MotorPosCtrl),
                            std::make_unique<MotorPosCtrlState>(this));
-    stateFactory_.addState("MotorStop", std::make_unique<MotorStopState>(this));
-    stateFactory_.init(stateFactory_.getNextState("MotorStop"));
+    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::MotorStop),
+                           std::make_unique<MotorStopState>(this));
+    stateFactory_.init(stateFactory_.getNextState(
+            static_cast<uint8_t>(fsmState_e::MotorStop)));
 
     extern canHandle HCAN1;
 
@@ -75,7 +76,7 @@ void TestModule::init()
 void TestModule::update()
 {
     rcMsg = RC::Rc::instance().getData();
-    // stateFactory_.update();
+    stateFactory_.update();
 }
 
 void TestModule::task()

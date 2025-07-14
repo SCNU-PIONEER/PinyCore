@@ -3,34 +3,36 @@
 
 FSMMode_e FSMState::getMode() { return mode_; };
 
-std::string FSMState::getStateName() { return stateName; };
+uint8_t FSMState::getStateName() { return name_; };
 
-std::string FSMState::getNextStateName() { return nextStateName; };
+uint8_t FSMState::getNextStateName() { return nextName_; };
 
 void FSMState::setMode(FSMMode_e _mode) { mode_ = _mode; };
 
-void FSMState::setStateName(std::string _stateName) { stateName = _stateName; };
+void FSMState::setStateName(uint8_t _name) { name_ = _name; };
 
-void FSMState::setNextStateName(std::string _next)
+void FSMState::setNextStateName(uint8_t _next)
 {
-    if (_next != "")
-        nextStateName = _next;
+    if (_next != -1)
+        nextName_ = _next;
     else
-        nextStateName = stateName;
+        nextName_ = name_;
 };
 
-void StateFactory::init(FSMState *state)
+void StateFactory::init(FSMState *_state)
 {
-    currentState_ = state;
-    nextState_ = state;
+    currentState_ = _state;
+    nextState_ = _state;
 }
 
-void StateFactory::addState(std::string _name, std::unique_ptr<FSMState> _state)
+void StateFactory::addState(uint8_t _name, std::unique_ptr<FSMState> _state)
 {
     stateTable[_name] = std::move(_state);
 }
 
-FSMState *StateFactory::getNextState(std::string _next)
+void StateFactory::removeState(uint8_t _name) { stateTable.erase(_name); }
+
+FSMState *StateFactory::getNextState(uint8_t _next)
 {
     auto it = stateTable.find(_next);
     if (it != stateTable.end()) {
@@ -39,7 +41,8 @@ FSMState *StateFactory::getNextState(std::string _next)
     return nullptr;
 }
 
-void StateFactory::setState(FSMState *state) { currentState_ = state; }
+
+void StateFactory::setState(FSMState &_state) { currentState_ = &_state; }
 
 void StateFactory::update()
 {
@@ -51,14 +54,14 @@ void StateFactory::update()
         currentState_->setNextStateName(currentState_->checkChange());
         if (currentState_->getNextStateName() !=
             currentState_->getStateName()) {
-            std::string nextName = currentState_->getNextStateName();
+            uint8_t nextName = currentState_->getNextStateName();
             nextState_ = getNextState(nextName);
 
             currentState_->setMode(FSMMode_e::CHANGE);
         }
     } else if (currentState_->getMode() == FSMMode_e::CHANGE) {
         currentState_->exit();
-        currentState_ = nextState_;
+        currentState_ = std::move(nextState_);
         if (currentState_) {
             currentState_->enter();
         }

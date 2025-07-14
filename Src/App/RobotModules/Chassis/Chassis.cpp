@@ -3,19 +3,23 @@
 #include "ChassisStopState.hpp"
 #include <memory>
 
+using namespace CHASSIS;
+
 Chassis::Chassis(Wheel *_wheel)
 {
     wheel_ = _wheel;
-    stateFactory_.addState("ChassisRun",
-                           std::make_unique<ChassisRunState>(this));
-    stateFactory_.addState("ChassisStop",
-                           std::make_unique<ChassisStopState>(this));
-    stateFactory_.init(stateFactory_.getNextState("ChassisStop"));
+    memset(&msg_, 0, sizeof(chassisMsg));
+    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::RUN),
+                           std::make_unique<RunState>(this));
+    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::STOP),
+                           std::make_unique<StopState>(this));
+    stateFactory_.init(
+            stateFactory_.getNextState(static_cast<uint8_t>(fsmState_e::STOP)));
 }
 
 void Chassis::update(void *_param)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 10) ==
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 0) ==
         pdTRUE) {
         log.info(LOCATION, "chassis", "chassis update");
     };

@@ -113,8 +113,8 @@ void AppManager::createApp()
                 osPriorityRealtime, NULL);
 
     // // Test-Module Continuous Task
-    xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, NULL, osPriorityNormal, NULL);
+    // xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
+    //             "test_task", 256, NULL, osPriorityNormal, NULL);
 
     // Motor-Sending Continuous Task
     xTaskCreate(
@@ -146,7 +146,7 @@ void AppManager::initApp()
                                        BEEP_APB_FREQ);
 
     // TestModule
-    TestModule::instance()->init();
+    // TestModule::instance()->init();
 
     // Generate threads at the end
     this->createApp();

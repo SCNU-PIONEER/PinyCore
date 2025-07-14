@@ -5,6 +5,10 @@
 #include "StmLog.hpp"
 #include "MsgImpl.hpp"
 
+namespace CHASSIS {
+enum class fsmState_e { STOP = 0, RUN };
+}
+
 class Chassis {
 protected:
     static constexpr float S_CURVE_VX_ACC = 1.4f;
