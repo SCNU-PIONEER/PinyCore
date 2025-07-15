@@ -8,38 +8,8 @@
 
 #include <unordered_map>
 #include <cstring>
-#include <functional>
 
 namespace PINYMOTOR {
-
-// 模板类，用于定义一拖一电机的基类
-class MotorBase : public IMotor {
-protected:
-    uint32_t *pComHandle_;
-    ComType_e comType_;
-    WorkMode_e workMode_;
-    GlobalState_e globalState_;
-    uint8_t offsetId_;
-
-    // 用户自定义回调函数
-    std::function<void(const uint8_t *_rxBuffer)> userRecvCallback_;
-
-    bool checkSend() const;
-
-    void calcRecvFreq();
-
-    bool isMutiple_ = false; // default is not quad encoder
-
-    uint32_t lastSendTick = 0; // ms
-    uint32_t lastRecvTick = 0; // ms
-
-public:
-    MotorBase(const char _name[16], InitConfig_s _config);
-    void
-    regUserRecvCallback(std::function<void(const uint8_t *_rxBuf)> _callback);
-};
-
-/*******************************************************************/
 struct QuadMotorGroup_s {
     IMotor *motor[4];
     uint32_t lastSendTick; // ms
@@ -47,9 +17,8 @@ struct QuadMotorGroup_s {
     QuadMotorGroup_s();
     void showMotorInfo();
 };
-// 模板类，用于定义一拖四电机的基类
-class QuadMotorBase : public MotorBase {
-    using Base = MotorBase;
+class QuadMotorBase : public IMotor {
+    using Base = IMotor;
     using QuadMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, QuadMotorGroup_s *> > >;
 
@@ -77,9 +46,8 @@ struct TripMotorGroup_s {
     TripMotorGroup_s();
     void showMotorInfo();
 };
-// 模板类，用于定义一拖三电机的基类
-class TripMotorBase : public MotorBase {
-    using Base = MotorBase;
+class TripMotorBase : public IMotor {
+    using Base = IMotor;
     using TripMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, TripMotorGroup_s *> > >;
 

@@ -18,12 +18,13 @@ void QuadricycleController::cmdPowerCalc(float *motorSpeed)
     float motorCmdRads[4] = { 0 };
     float powerSum = 0;
     for (int i = 0; i < motorNum_; i++) {
-        Cmd_s _cmd = it->second->cmd();
         motorCmdRads[i] = (motorSpeed[i] * it->second->RR()) / 60.f * 2 * M_PI;
         //TODO:elec的转换
-        cmdPower[i] = (M3508.k0 * _cmd.elec * motorCmdRads[i] +
+        cmdPower[i] = (M3508.k0 * it->second->getCmdCurr() * motorCmdRads[i] +
                        M3508.MLC * motorCmdRads[i] * motorCmdRads[i] +
-                       M3508.ESR * _cmd.elec * _cmd.elec + M3508.LeakagePower);
+                       M3508.ESR * it->second->getCmdCurr() *
+                               it->second->getCmdCurr() +
+                       M3508.LeakagePower);
         powerSum += cmdPower[i];
         it++;
     }
@@ -58,7 +59,6 @@ void QuadricycleController::currentCalc()
     float motorRelRads[4] = { 0 };
     for (int i = 0; i < motorNum_; i++) {
         Data_s motorData = it->second->data();
-        Cmd_s _cmd = it->second->cmd();
         motorRelRads[i] = motorData.spdRadps * it->second->RR();
 
         float Discriminant =
@@ -70,7 +70,7 @@ void QuadricycleController::currentCalc()
             Discriminant = 0;
         }
 
-        float sign = (_cmd.elec > 0) ? 1 : -1;
+        float sign = (it->second->getCmdCurr() > 0) ? 1 : -1;
         setIq[i] = (-M3508.k0 * motorRelRads[i] + sign * sqrt(Discriminant)) /
                    (2 * M3508.ESR);
         it++;

@@ -22,7 +22,7 @@ struct Status_s {
     Status_s &operator=(const Status_s &_other);
 };
 
-class UTMotor : public MotorBase {
+class UTMotor : public IMotor {
 private:
 protected:
     uint16_t ctrlId_ = 0xFFFF;

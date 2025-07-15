@@ -8,6 +8,8 @@
 #include <memory>
 #include "StmLog.hpp"
 
+#include <functional>
+
 namespace PINYMOTOR {
 class IMotor {
 protected:
@@ -18,8 +20,16 @@ protected:
     Data_s data_;
     Cmd_s cmd_;
 
+    uint32_t *pComHandle_;
+    ComType_e comType_;
+    WorkMode_e workMode_;
+    GlobalState_e globalState_;
+    uint8_t offsetId_;
+
     float txFreq_;
-    float rxFreq_; // TODO:
+    float rxFreq_;             // TODO:
+    uint32_t lastSendTick = 0; // ms
+    uint32_t lastRecvTick = 0; // ms
     char name_[16] = "NULL";
 
     std::unique_ptr<PID> posPID_;
@@ -31,8 +41,15 @@ protected:
 
     QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
 
+    std::function<void(const uint8_t *_rxBuffer)> userRecvCallback_;
+
+    bool isMutiple_ = false; // default is not quad encoder
+
+    bool checkSend() const;
+    void calcRecvFreq();
+
 public:
-    IMotor();
+    IMotor(const char _name[16], InitConfig_s _config);
     virtual ~IMotor() = default;
     virtual MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuffer,
                                 uint8_t _txLen) = 0;
@@ -49,7 +66,7 @@ public:
 
     Data_s &data();
 
-    Cmd_s &cmd();
+    float getCmdCurr();
 
     float txBaseId() const;
     float rxBaseId() const;
@@ -66,6 +83,9 @@ public:
     void overrideMeasureMin(float _newMeasureMin);
 
     const char *getName() const;
+
+    void
+    regUserRecvCallback(std::function<void(const uint8_t *_rxBuf)> _callback);
 };
 
 }

@@ -4,10 +4,47 @@
 
 using namespace PINYMOTOR;
 
-IMotor::IMotor() : id_(MotorManager::instance()->motorListSize())
+IMotor::IMotor(const char _name[16], InitConfig_s _config)
+        : id_(MotorManager::instance()->motorListSize())
 {
+    this->pComHandle_ = _config.pComHandle;
+    this->comType_ = _config.comType;
+    this->workMode_ = _config.workMode;
+    this->globalState_ = GlobalState_e::UNREGISTER;
+    this->offsetId_ = _config.offsetId;
+    this->txFreq_ = _config.txFreq;
+
+    this->posPID_ = std::move(_config.posPID);
+    this->velPID_ = std::move(_config.velPID);
+    this->torqPID_ = std::move(_config.torqPID);
+
+    strcpy(this->name_, _name);
+
     this->cmd_.clear();
     memset(&data_, 0, sizeof(Data_s));
+}
+
+bool IMotor::checkSend() const
+{
+    return (xTaskGetTickCount() - lastSendTick) >=
+           pdMS_TO_TICKS(1000.f / this->txFreq_);
+}
+
+void IMotor::calcRecvFreq()
+{
+    uint32_t dt = xTaskGetTickCount() - lastRecvTick;
+    lastRecvTick = xTaskGetTickCount();
+    if (dt == 0) {
+        return;
+    } else {
+        this->rxFreq_ = 1000.f / static_cast<float>(dt);
+    }
+}
+
+void IMotor::regUserRecvCallback(
+        std::function<void(const uint8_t *_rxBuf)> _callback)
+{
+    userRecvCallback_ = std::move(_callback);
 }
 
 MotorTypeDef_e IMotor::registerMotor()
@@ -89,7 +126,15 @@ uint8_t IMotor::id() const { return id_; }
 
 Data_s &IMotor::data() { return data_; }
 
-Cmd_s &IMotor::cmd() { return cmd_; }
+float IMotor::getCmdCurr()
+{
+    if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
+        // TODO: RLS volt ctrl
+        return 0.f;
+    } else {
+        return cmd_.elec;
+    }
+}
 
 float IMotor::txBaseId() const { return static_cast<float>(model_.txBaseId); }
 

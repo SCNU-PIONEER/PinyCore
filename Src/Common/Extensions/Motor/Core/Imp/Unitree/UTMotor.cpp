@@ -28,7 +28,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
                  DMA_HandleTypeDef *_dmaHandle)
-        : MotorBase(_name, std::move(_config))
+        : IMotor(_name, std::move(_config))
 {
     dmaHandle_ = _dmaHandle;
     txBuf_ = (uint8_t *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s));

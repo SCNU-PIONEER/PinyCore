@@ -133,8 +133,8 @@ struct Status_s {
     Status_s &operator=(const Status_s &_other);
 };
 
-class DMMotor : public MotorBase {
-    using Base = MotorBase;
+class DMMotor : public IMotor {
+    using Base = IMotor;
     using RegMap = std::unordered_map<RegId_e, Reg_s *>;
 
 private:
