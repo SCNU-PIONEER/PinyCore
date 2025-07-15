@@ -14,9 +14,9 @@
     std::string str = "PinyCore init start.";
 
     log.raw("Piny");
-    log.info(LOCATION, "Piny", "This is a info.");
-    log.warn(LOCATION, "Piny", "This is a warn.");
-    log.error(LOCATION, "Piny", "This is a error.");
+    LOG::info( "Piny", "This is a info.");
+    LOG::warn( "Piny", "This is a warn.");
+    LOG::error( "Piny", "This is a error.");
 
     log.info("Piny", "num i: %d", i);
     log.info("Piny", "str: %s", str.c_str());
