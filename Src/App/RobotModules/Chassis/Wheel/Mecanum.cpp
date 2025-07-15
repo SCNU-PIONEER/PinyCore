@@ -8,6 +8,7 @@ Mecanum::Mecanum()
     for (int i = 0; i < 4; i++) {
         // wheelPID_[i] = new incrementalPid();
     }
+    ctrl_ = std::make_shared<QuadricycleController>(ChassisType_e::Quadricycle);
 }
 
 Mecanum::Mecanum(float diameter, float kxyFront, float kxyBack)
@@ -40,7 +41,7 @@ void Mecanum::update()
     //TODO: update currentWheels from motor encoder
 }
 
-void Mecanum::forward(WheelsState_s _refState)
+void Mecanum::forward(WheelsState_u _refState)
 {
     chassisState.v_x = circumference *
                        (currentWheels.M_LF - currentWheels.M_RF +
@@ -58,9 +59,9 @@ void Mecanum::forward(WheelsState_s _refState)
 }
 
 
-WheelsState_s Mecanum::reverse(ChassisState_s _refState)
+WheelsState_u Mecanum::reverse(ChassisState_s _refState)
 {
-    WheelsState_s refWheels;
+    WheelsState_u refWheels;
     refWheels.M_RF =
             (60 / circumference) * (-chassisState.v_x + chassisState.v_y) +
             kxyFront / (diameter / 2) * chassisState.w_z * 60.f / (2.f * M_PI);
@@ -76,7 +77,7 @@ WheelsState_s Mecanum::reverse(ChassisState_s _refState)
     return refWheels;
 }
 
-void Mecanum::iir3speed(WheelsState_s _rawSpeed)
+void Mecanum::iir3speed(WheelsState_u _rawSpeed)
 {
     currentWheels.M_RF = iir_filter_3(_rawSpeed.M_RF, 0);
     currentWheels.M_LF = iir_filter_3(_rawSpeed.M_LF, 1);
@@ -86,7 +87,7 @@ void Mecanum::iir3speed(WheelsState_s _rawSpeed)
 
 void Mecanum::ctrl(ChassisState_s _refState)
 {
-    WheelsState_s wheels_ref = reverse(_refState);
+    WheelsState_u wheels_ref = reverse(_refState);
 
     float diff_speed[4] = { 0 };
 
@@ -97,6 +98,6 @@ void Mecanum::ctrl(ChassisState_s _refState)
     for (uint8_t i = 0; i < 4; i++) {
         //TODO: set 4 motor torque
     }
-
+    ctrl_->powerCtrl(wheels_ref.motors);
     // TODO: set motor output
 }

@@ -40,12 +40,12 @@ void Omni::update()
     //TODO: update currentWheels from motor encoder
 }
 
-void Omni::forward(WheelsState_s _refState) {}
+void Omni::forward(WheelsState_u _refState) {}
 
 
-WheelsState_s Omni::reverse(ChassisState_s _refState) {}
+WheelsState_u Omni::reverse(ChassisState_s _refState) {}
 
-void Omni::iir3speed(WheelsState_s _rawSpeed)
+void Omni::iir3speed(WheelsState_u _rawSpeed)
 {
     currentWheels.M_RF = iir_filter_3(_rawSpeed.M_RF, 0);
     currentWheels.M_LF = iir_filter_3(_rawSpeed.M_LF, 1);
@@ -55,12 +55,11 @@ void Omni::iir3speed(WheelsState_s _rawSpeed)
 
 void Omni::ctrl(ChassisState_s _refState)
 {
-    WheelsState_s wheels_ref = reverse(_refState);
+    WheelsState_u wheels_ref = reverse(_refState);
 
     float diff_speed[4] = { 0 };
 
     for (uint8_t i = 0; i < 4; i++) {
-        diff_speed[i] = wheelPID_[i]->calc(wheels_ref.M_RF, currentWheels.M_RF);
     }
 
     for (uint8_t i = 0; i < 4; i++) {

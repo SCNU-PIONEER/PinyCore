@@ -1,4 +1,5 @@
 #pragma once
+#include "QuadricycleController.hpp"
 
 struct ChassisState_s {
     float v_x; // m/s
@@ -13,4 +14,7 @@ public:
     virtual void ctrl(ChassisState_s _refState) = 0;
 
     ChassisState_s chassisState;
+
+protected:
+    std::shared_ptr<PowerController> ctrl_ = nullptr;
 };

@@ -5,11 +5,14 @@
 #include "Wheel.hpp"
 
 
-struct WheelsState_s {
-    float M_RF; ///< motor of the right front
-    float M_LF; ///< motor of the left front
-    float M_LB; ///< motor of the left back
-    float M_RB; ///< motor of the right back
+union WheelsState_u {
+    struct {
+        float M_RF; ///< motor of the right front 0
+        float M_LF; ///< motor of the left front 1
+        float M_LB; ///< motor of the left back 2
+        float M_RB; ///< motor of the right back 3
+    };
+    float motors[4];
 };
 
 class Mecanum : public Wheel {
@@ -22,9 +25,9 @@ public:
     void ctrl(ChassisState_s _refState) override;
 
 protected:
-    void forward(WheelsState_s _refState);
-    WheelsState_s reverse(ChassisState_s _refState);
-    void iir3speed(WheelsState_s _rawSpeed);
+    void forward(WheelsState_u _refState);
+    WheelsState_u reverse(ChassisState_s _refState);
+    void iir3speed(WheelsState_u _rawSpeed);
 
 private:
     float diameter = 0.1525;
@@ -33,7 +36,7 @@ private:
     float kxyBack = 0.354;
 
     PID *wheelPID_[4];
-    WheelsState_s currentWheels;
+    WheelsState_u currentWheels;
 
     //TODO: add motor;
 };
