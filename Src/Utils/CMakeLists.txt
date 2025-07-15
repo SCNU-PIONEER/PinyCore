@@ -11,6 +11,8 @@ if(USE_ALGORITHM)
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Filter
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Smooth
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/CRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/RLS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Matrix
   )
 endif()
 

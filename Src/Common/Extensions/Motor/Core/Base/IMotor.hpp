@@ -49,6 +49,8 @@ public:
 
     Data_s &data();
 
+    Cmd_s &cmd();
+
     float txBaseId() const;
     float rxBaseId() const;
 

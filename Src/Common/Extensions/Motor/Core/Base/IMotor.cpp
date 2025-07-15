@@ -89,6 +89,8 @@ uint8_t IMotor::id() const { return id_; }
 
 Data_s &IMotor::data() { return data_; }
 
+Cmd_s &IMotor::cmd() { return cmd_; }
+
 float IMotor::txBaseId() const { return static_cast<float>(model_.txBaseId); }
 
 float IMotor::rxBaseId() const { return static_cast<float>(model_.rxBaseId); }
