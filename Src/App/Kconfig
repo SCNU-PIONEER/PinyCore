@@ -1,0 +1,7 @@
+menu "app config"
+
+    config USE_POWERCTRL
+    bool "power control"
+    default y
+
+endmenu
