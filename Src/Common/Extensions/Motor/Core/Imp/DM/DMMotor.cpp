@@ -279,6 +279,9 @@ MotorTypeDef_e DMMotor::ctrl()
         }
         DMMsg.msgMIT.torqueOffset =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+        this->cmd_.elec =
+                this->cmd_.torq /
+                status_.torqConstant; // MIT_TT support return expected current
         break;
     }
     case WorkMode_e::MIT_VDES: {
@@ -297,6 +300,9 @@ MotorTypeDef_e DMMotor::ctrl()
         }
         DMMsg.msgMIT.exptVel =
                 float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // MIT_VDES unsupport return expected current
         break;
     }
     case WorkMode_e::MIT_VDESPDES: {
@@ -308,10 +314,13 @@ MotorTypeDef_e DMMotor::ctrl()
                                      status_.MITKdMax, 12);
         DMMsg.msgMIT.Kp = float2uint(this->MITKp_, -status_.MITKpMax,
                                      status_.MITKpMax, 12);
+        isMIT = true;
         // forward torque
         DMMsg.msgMIT.torqueOffset =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
-        isMIT = true;
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // MIT_VDESPDES unsupport return expected current
         break;
     }
     case WorkMode_e::PDESVDES: {
@@ -320,6 +329,9 @@ MotorTypeDef_e DMMotor::ctrl()
         DMMsg.msgPDESVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &DMMsg.msgPDESVDES.exptScale, 4);
         memcpy(&txBuf[4], &DMMsg.msgPDESVDES.exptVel, 4);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // PDESVDES unsupport return expected current
         break;
     }
     case WorkMode_e::VDES: {
@@ -332,6 +344,9 @@ MotorTypeDef_e DMMotor::ctrl()
         }
         DMMsg.msgVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &DMMsg.msgVDES.exptVel, 4);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // VDES unsupport return expected current
         break;
     }
     case WorkMode_e::EMIT: {
@@ -350,6 +365,9 @@ MotorTypeDef_e DMMotor::ctrl()
         txBuf[5] = static_cast<uint8_t>(DMMsg.msgEMIT.exptVelX100);
         txBuf[6] = static_cast<uint8_t>((DMMsg.msgEMIT.imaxX10000) >> 8);
         txBuf[7] = static_cast<uint8_t>(DMMsg.msgEMIT.imaxX10000);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // EMIT unsupport return expected current
         break;
     }
     default: {

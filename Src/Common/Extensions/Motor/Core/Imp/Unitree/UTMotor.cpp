@@ -126,6 +126,8 @@ void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
     _txBuf.comd.tor_des = t_ff * 256;
     _txBuf.CRC16 =
             Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
+    this->cmd_.elec = this->data_.torq /
+                      status_.Kn; // MIT unsupport return expected current
 }
 
 
