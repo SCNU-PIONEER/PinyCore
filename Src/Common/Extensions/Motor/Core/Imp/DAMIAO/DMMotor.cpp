@@ -271,7 +271,7 @@ MotorTypeDef_e DMMotor::ctrl()
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
                     0);
             this->cmd_.torq =
@@ -294,7 +294,7 @@ MotorTypeDef_e DMMotor::ctrl()
         isMIT = true;
         if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
                     0);
         }
@@ -338,7 +338,7 @@ MotorTypeDef_e DMMotor::ctrl()
         lenBuf = 4;
         if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
                     0);
         }
