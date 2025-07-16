@@ -40,6 +40,11 @@ def parse_config_file_header(_config_file):
     config_vars = []
     with open(_config_file, "r") as f:
         for line in f:
+            # Handle "is not set" case
+            if line.startswith("# CONFIG_") and "is not set" in line:
+                key = line.split("# CONFIG_")[1].split(" is not set")[0]
+                config_vars.append((key, "0"))
+                continue
             # Skip comments and empty lines
             if line.startswith("#") or line.strip() == "":
                 continue
