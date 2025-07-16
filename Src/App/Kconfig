@@ -4,4 +4,8 @@ menu "app config"
     bool "power control"
     default y
 
+    config USE_TEST_MODULES
+    bool "test modules"
+    default n
+
 endmenu

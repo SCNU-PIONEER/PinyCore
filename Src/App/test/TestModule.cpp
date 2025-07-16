@@ -31,7 +31,7 @@ void TestModule::init()
     extern canHandle HCAN1;
 
     // Test DM4310 ----------------------------------------
-    PINYMOTOR::InitConfig_s testDM4310Config = { (uint32_t *)(&hcan1),
+    PINYMOTOR::InitConfig_s testDM4310Config = { (uint32_t *)(&HCAN1),
                                                  PINYMOTOR::ComType_e::CAN,
                                                  PINYMOTOR::WorkMode_e::MIT_TT,
                                                  static_cast<uint8_t>(1),
@@ -58,7 +58,7 @@ void TestModule::init()
 
     // Test GM6020 ----------------------------------------
     PINYMOTOR::InitConfig_s testGM6020Config = {
-        (uint32_t *)(&hcan1),
+        (uint32_t *)(&HCAN1),
         PINYMOTOR::ComType_e::CAN,
         PINYMOTOR::WorkMode_e::QUAD_VOLT,
         static_cast<uint8_t>(7),
