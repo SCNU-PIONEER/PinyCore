@@ -13,16 +13,21 @@ void PinyCore::bspInit()
 {
     dwt_init();
 
+    SEGGER_SYSVIEW_Conf();
+
     extern canHandle HCAN1;
     Can::instance().init(&HCAN1, RX_FIFO0);
-    // Can::instance().init(&HCAN1, RX_FIFO1);
+    extern canHandle HCAN2;
+    Can::instance().init(&HCAN2, RX_FIFO1);
+#ifdef HCAN3
+    extern canHandle HCAN3;
+    Can::instance().init(&HCAN3, RX_FIFO0);
+#endif
 }
 
 void PinyCore::coreInit()
 {
     osKernelInitialize();
-
-    SEGGER_SYSVIEW_Conf();
 
     AppManager::instance()->initApp();
 
