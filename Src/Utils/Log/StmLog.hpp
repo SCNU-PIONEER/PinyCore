@@ -218,7 +218,6 @@ template <typename... Args> struct warn {
                                std::forward<Args>(_args)...);
     }
 };
-
 template <typename... Args>
 warn(std::string_view _type, const char *_format, Args &&...args)
         -> warn<Args...>;
@@ -231,7 +230,7 @@ template <typename... Args> struct error {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::Warn },
+                                          .level = Level::Error },
                                std::forward<Args>(_args)...);
     }
 };
