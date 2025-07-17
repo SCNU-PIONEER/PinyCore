@@ -11,4 +11,4 @@ add_compile_options(-Wno-pedantic)
 add_compile_options(-Wno-missing-field-initializers)
 
 # 关闭所有警告
-add_compile_options(-w)
+# add_compile_options(-w)

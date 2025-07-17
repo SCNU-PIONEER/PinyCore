@@ -6,7 +6,7 @@
 #include "MsgImpl.hpp"
 
 namespace CHASSIS {
-enum class fsmState_e { STOP = 0, RUN };
+enum class fsmState_e { STOP = 1, RUN };
 }
 
 class Chassis {

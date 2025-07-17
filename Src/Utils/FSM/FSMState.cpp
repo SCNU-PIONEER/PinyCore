@@ -13,7 +13,7 @@ void FSMState::setStateName(uint8_t _name) { name_ = _name; };
 
 void FSMState::setNextStateName(uint8_t _next)
 {
-    if (_next != -1)
+    if (_next != 0)
         nextName_ = _next;
     else
         nextName_ = name_;

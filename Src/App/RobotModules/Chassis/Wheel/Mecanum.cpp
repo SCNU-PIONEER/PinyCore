@@ -77,16 +77,18 @@ void Mecanum::update()
 
 speed_u Mecanum::forward(const wheelsSpeed_u &_wSpeed)
 {
-    speed_.v_x = circumference *
-                 (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) /
-                 4 / 60;
-    speed_.v_y = circumference *
-                 (kxyBack * _wSpeed.M_RF + kxyBack * _wSpeed.M_LF -
-                  kxyFront * _wSpeed.M_LB - kxyFront * _wSpeed.M_RB) /
-                 (2 * (kxyBack + kxyFront)) / 60;
-    speed_.w_z = (diameter / 2) *
-                 (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) /
-                 (2 * (kxyBack + kxyFront)) * (2.f * M_PI) / 60.f;
+    speed_u speed;
+    speed.v_x = circumference *
+                (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) /
+                4 / 60;
+    speed.v_y = circumference *
+                (kxyBack * _wSpeed.M_RF + kxyBack * _wSpeed.M_LF -
+                 kxyFront * _wSpeed.M_LB - kxyFront * _wSpeed.M_RB) /
+                (2 * (kxyBack + kxyFront)) / 60;
+    speed.w_z = (diameter / 2) *
+                (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) /
+                (2 * (kxyBack + kxyFront)) * (2.f * M_PI) / 60.f;
+    return speed;
 }
 
 

@@ -16,9 +16,9 @@
 
 namespace TEST {
 enum class fsmState_e {
-    MotorVelCtrl = 0,
-    MotorPosCtrl = 1,
-    MotorStop = 2,
+    MotorVelCtrl = 1,
+    MotorPosCtrl = 2,
+    MotorStop = 3,
 };
 }
 

@@ -8,7 +8,7 @@ using namespace CHASSIS;
 Chassis::Chassis(Wheel *_wheel)
 {
     wheel_ = _wheel;
-    memset(&msg_, 0, sizeof(chassisMsg));
+    msg_ = chassisMsg{};
     stateFactory_.addState(static_cast<uint8_t>(fsmState_e::RUN),
                            std::make_unique<RunState>(this));
     stateFactory_.addState(static_cast<uint8_t>(fsmState_e::STOP),

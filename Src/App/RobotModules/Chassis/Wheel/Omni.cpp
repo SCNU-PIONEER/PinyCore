@@ -68,10 +68,10 @@ void Omni::update()
     }
 }
 
-speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {}
+// speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {} //TODO: waiting to set
 
 
-wheelsSpeed_u Omni::reverse(const speed_u &_speed) {}
+// wheelsSpeed_u Omni::reverse(const speed_u &_speed) {} //TODO: waiting to set
 
 void Omni::ctrl(const speed_u &_speed)
 {
