@@ -148,9 +148,9 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     if (this->checkSend()) {
 #if 0
         // Check this Buffer
-        log.debug(LOCATION, "DMMotor", " %s: send data to CAN %hx", this->name_,
+    LOG::debug( "DMMotor", " %s: send data to CAN %hx", this->name_,
                   _sendId);
-        log.debug(LOCATION, "DMMotor",
+    LOG::debug( "DMMotor",
                   " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
                   this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
                   _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);

@@ -101,9 +101,9 @@ MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf,
         if (this->checkGroupSend(group)) {
 #if 0
             // Check this Buffer
-            log.debug(LOCATION, "DJI_ODMotor", " %s: send data to CAN %hx",
+            LOG::debug("DJI_ODMotor", " %s: send data to CAN %hx",
                       this->name_, _sendId);
-            log.debug(LOCATION, "DJI_ODMotor",
+            LOG::debug("DJI_ODMotor",
                       " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
                       this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
                       _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);

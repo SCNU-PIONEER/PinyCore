@@ -15,28 +15,29 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     this->model_.reductionRatio = (3591.f / 187.f);
     this->model_.rxBaseId = 0x200;
 
-    if (_config.offsetId > 3)
+    if (_config.offsetId > 4)
         this->model_.txBaseId = 0x1FF;
     else
         this->model_.txBaseId = 0x200;
 
-    this->status_ = Status_s(M3508_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                             M3508_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             M3508_CURR_RX_CODE_SPAN, // currRxCodeSpan
-                             M3508_CURR_RATED,        // currRated
-                             M3508_TORQ_RATED,        // torqRated
-                             M3508_VOLT_MAX,          // voltMax
-                             M3508_CURR_MAX,          // currMax
-                             M3508_TORQ_MAX,          // torqMax
-                             M3508_TORQ_CONSTANT      // torqConstant
-    );
+    this->status_ =
+            Status_s(M3508_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                     M3508_CURR_TX_CODE_SPAN, // currTxCodeSpan
+                     M3508_CURR_RX_CODE_SPAN, // currRxCodeSpan
+                     M3508_CURR_RATED,        // currRated
+                     M3508_TORQ_RATED,        // torqRated
+                     M3508_VOLT_MAX,          // voltMax
+                     20.f, // currMax BUG: we need C620 MAX_CURRENT value
+                     M3508_TORQ_MAX,     // torqMax
+                     M3508_TORQ_CONSTANT // torqConstant
+            );
 
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    checkBaseConfig();
+    checkBaseConfig(); //BUG: why not check firstly?
 
     LOG::info("M3508",
               " %s: An instance of M3508 created, rxBaseId:%hx, txBaseId:%hx",

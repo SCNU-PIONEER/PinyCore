@@ -99,13 +99,12 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
         if (this->checkGroupSend(group)) {
 #if 0
             // Check this Buffer
-            this->log("DEBUG", "blue", "Motor %s: send data to CAN %hx",
-                      this->name_, _sendId);
-            this->log(
-                    "DEBUG", "blue",
-                    "Motor %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-                    this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
-                    _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
+            LOG::debug("DJIMotor", " %s: send data to CAN %hx", this->name_,
+                      _sendId);
+            LOG::debug("DJIMotor",
+                      " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+                      this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+                      _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 #endif
             group->lastSendTick = xTaskGetTickCount();
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
