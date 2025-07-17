@@ -10,7 +10,15 @@ namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
 
-enum class MotorCmdType_e { SET_VEL, SET_POS, SET_TORQ, SET_ELEC, ON, OFF };
+enum class MotorCmdType_e {
+    SET_MIT,
+    SET_POS,
+    SET_VEL,
+    SET_TORQ,
+    SET_ELEC,
+    ON,
+    OFF
+};
 
 enum class WorkMode_e {
     TRIP_VOLT,
@@ -36,6 +44,13 @@ struct RxBus_s {
     struct RS485RxBuf_s {
         uint8_t data[8];
     };
+};
+
+struct CmdBus_s {
+    MotorCmdType_e cmdType;
+    float cmdVal1;
+    float cmdVal2;
+    float cmdVal3;
 };
 struct InitConfig_s {
     uint32_t *pComHandle;
@@ -74,6 +89,7 @@ struct Data_s {
 struct Cmd_s {
     bool SW; // enable flag
     bool prevSW;
+    MotorCmdType_e curCmdType = MotorCmdType_e::OFF;
     struct {
         float pos;
         float vel;

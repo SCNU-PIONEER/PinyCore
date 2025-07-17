@@ -233,13 +233,6 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 
 MotorTypeDef_e DMMotor::ctrl()
 {
-    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
-        this->parse(this->rxBuf_);
-        this->calcRecvFreq();
-        if (this->userRecvCallback_ != nullptr) {
-            this->userRecvCallback_(this->rxBuf_.data);
-        }
-    }
     MotorTypeDef_e rslt = 0;
     typedef union {
         MITMsg_s msgMIT;
@@ -266,10 +259,10 @@ MotorTypeDef_e DMMotor::ctrl()
         DMMsg.msgMIT.Kp = 0;
         DMMsg.msgMIT.Kd = 0;
         isMIT = true;
-        if (this->curCmdType_ == MotorCmdType_e::SET_VEL) {
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
             this->cmd_.torq =
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        } else if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
                     getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
@@ -292,7 +285,7 @@ MotorTypeDef_e DMMotor::ctrl()
         DMMsg.msgMIT.torqueOffset =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
         isMIT = true;
-        if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
                     getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
@@ -336,7 +329,7 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::VDES: {
         lenBuf = 4;
-        if (this->curCmdType_ == MotorCmdType_e::SET_POS) {
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
                     getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
                                 2.f * PI),
@@ -404,6 +397,22 @@ MotorTypeDef_e DMMotor::ctrl()
     } else {
         rslt |= this->send(this->ctrlId_, txBuf, lenBuf);
     }
+    return rslt;
+}
+
+MotorTypeDef_e DMMotor::update()
+{
+    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
+        this->parse(this->rxBuf_);
+        this->calcRecvFreq();
+        if (this->userRecvCallback_ != nullptr) {
+            this->userRecvCallback_(this->rxBuf_.data);
+        }
+    }
+    if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
+        this->parseCmd();
+    }
+    MotorTypeDef_e rslt = ctrl();
     return rslt;
 }
 

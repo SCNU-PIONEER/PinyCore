@@ -22,6 +22,8 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
 
     this->cmd_.clear();
     memset(&data_, 0, sizeof(Data_s));
+
+    cmdQueue_ = xQueueCreate(3, sizeof(CmdBus_s));
 }
 
 bool IMotor::checkSend() const
@@ -69,57 +71,101 @@ MotorTypeDef_e IMotor::cancelMotor()
     return 0;
 }
 
-MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
+MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _pos, float _vel,
+                           float _torq)
 {
-    if (_cmd != MotorCmdType_e::ON && _cmd != MotorCmdType_e::OFF) {
-        this->curCmdType_ = _cmd;
-    }
-    switch (this->curCmdType_) {
-    case MotorCmdType_e::ON: {
-        this->cmd_.updateSW(true);
-        break;
-    }
-    case MotorCmdType_e::OFF: {
-        this->cmd_.updateSW(false);
-        break;
-    }
-    case MotorCmdType_e::SET_ELEC: {
-        this->cmd_.elec = _cmdData;
-        break;
-    }
-    case MotorCmdType_e::SET_TORQ: {
-        this->cmd_.torq = _cmdData;
-        break;
-    }
-    case MotorCmdType_e::SET_VEL: {
-        this->cmd_.vel = _cmdData;
-        break;
-    }
-    case MotorCmdType_e::SET_POS: {
-        this->cmd_.pos = _cmdData;
-        break;
-    }
-    default: {
-        LOG::error("IMotor", " %s: cmd %d is not supported", this->name_,
-                   static_cast<int>(_cmd));
+    if (_cmd == MotorCmdType_e::SET_MIT) {
+        CmdBus_s cmd = {
+            .cmdType = _cmd, .cmdVal1 = _pos, .cmdVal2 = _vel, .cmdVal3 = _torq
+        };
+        if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
+            LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
+            return 1;
+        }
+        return 0;
+    } else {
+        LOG::error(
+                "IMotor",
+                " %s: none of cmd are supported in this function except SET_MIT",
+                this->name_);
         return 1;
     }
+}
+
+MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
+{
+    if (_cmd != MotorCmdType_e::ON && _cmd != MotorCmdType_e::OFF &&
+        _cmd != MotorCmdType_e::SET_MIT) {
+        CmdBus_s cmd = { .cmdType = _cmd, .cmdVal1 = _cmdData };
+        if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
+            LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
+            return 1;
+        }
+        return 0;
+    } else {
+        LOG::error("IMotor",
+                   " %s: cmd ON or OFF is not supported in this function",
+                   this->name_);
+        return 1;
     }
-    return 0;
 }
 
 MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
 {
-    if (_cmd == MotorCmdType_e::ON) {
-        this->cmd_.updateSW(true);
-    } else if (_cmd == MotorCmdType_e::OFF) {
-        this->cmd_.updateSW(false);
+    if (_cmd == MotorCmdType_e::ON || _cmd == MotorCmdType_e::OFF) {
+        CmdBus_s cmd = { .cmdType = _cmd };
+        if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
+            LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
+            return 1;
+        }
+        return 0;
     } else {
-        LOG::error("IMotor", " %s: cmd %d is not supported", this->name_,
-                   static_cast<int>(_cmd));
+        LOG::error(
+                "IMotor",
+                " %s: none of cmd are supported in this function except ON and OFF",
+                this->name_);
         return 1;
     }
-    return 0;
+}
+
+void IMotor::parseCmd()
+{
+    this->cmd_.curCmdType = cmdBuf_.cmdType;
+    if (cmdBuf_.cmdType == MotorCmdType_e::SET_MIT) {
+        this->cmd_.pos = cmdBuf_.cmdVal1;
+        this->cmd_.vel = cmdBuf_.cmdVal2;
+        this->cmd_.torq = cmdBuf_.cmdVal3;
+    } else {
+        switch (this->cmd_.curCmdType) {
+        case MotorCmdType_e::ON: {
+            this->cmd_.updateSW(true);
+            break;
+        }
+        case MotorCmdType_e::OFF: {
+            this->cmd_.updateSW(false);
+            break;
+        }
+        case MotorCmdType_e::SET_ELEC: {
+            this->cmd_.elec = cmdBuf_.cmdVal1;
+            break;
+        }
+        case MotorCmdType_e::SET_TORQ: {
+            this->cmd_.torq = cmdBuf_.cmdVal1;
+            break;
+        }
+        case MotorCmdType_e::SET_VEL: {
+            this->cmd_.vel = cmdBuf_.cmdVal1;
+            break;
+        }
+        case MotorCmdType_e::SET_POS: {
+            this->cmd_.pos = cmdBuf_.cmdVal1;
+            break;
+        }
+        default: {
+            LOG::error("IMotor", " %s: cmd type is not supported", this->name_);
+        }
+        }
+    }
 }
 
 uint8_t IMotor::id() const { return id_; }

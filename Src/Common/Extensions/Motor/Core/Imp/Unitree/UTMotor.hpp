@@ -24,6 +24,10 @@ struct Status_s {
 
 class UTMotor : public IMotor {
 private:
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
+    MotorTypeDef_e parse(const uint8_t *_rxBuf);
+    MotorTypeDef_e ctrl();
+
 protected:
     uint16_t ctrlId_ = 0xFFFF;
     float Kp_; //电机内置pid
@@ -50,10 +54,7 @@ public:
 
     uint16_t uid() override final;
 
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
-                        uint8_t _len) override final;
-    MotorTypeDef_e parse(const uint8_t *_rxBuf);
-    MotorTypeDef_e ctrl() override final;
+    MotorTypeDef_e update() override final;
 
     void setKp(float _kp);
     void setKd(float _kd);

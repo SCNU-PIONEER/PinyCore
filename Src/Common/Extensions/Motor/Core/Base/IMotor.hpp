@@ -37,9 +37,10 @@ protected:
 
     std::unique_ptr<PID> torqPID_; // only VOLT-CTRL motor will need this
 
-    MotorCmdType_e curCmdType_ = MotorCmdType_e::OFF;
-
     QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
+
+    QueueHandle_t cmdQueue_;
+    CmdBus_s cmdBuf_;
 
     std::function<void(const uint8_t *_rxBuffer)> userRecvCallback_;
 
@@ -47,13 +48,13 @@ protected:
 
     bool checkSend() const;
     void calcRecvFreq();
+    void parseCmd();
 
 public:
     IMotor(const char _name[16], InitConfig_s _config);
     virtual ~IMotor() = default;
-    virtual MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuffer,
-                                uint8_t _txLen) = 0;
-    virtual MotorTypeDef_e ctrl() = 0;
+
+    virtual MotorTypeDef_e update() = 0;
 
     virtual uint16_t uid() = 0;
     uint8_t id() const;
@@ -61,6 +62,8 @@ public:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
 
+    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _pos, float _vel,
+                       float _torq);
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData);
     MotorTypeDef_e cmd(MotorCmdType_e _cmd);
 

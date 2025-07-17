@@ -18,7 +18,7 @@ void QuadMotorGroup_s::showMotorInfo()
             LOG::info("QuadMotorGroup", "Motor %s: exist, uid: %hx",
                       motor[i]->getName(), motor[i]->uid());
         } else {
-            LOG::error("QuadMotorGroup", "Motor %d: not exist", i);
+            LOG::warn("QuadMotorGroup", "Motor %d: not exist", i);
         }
     }
 }

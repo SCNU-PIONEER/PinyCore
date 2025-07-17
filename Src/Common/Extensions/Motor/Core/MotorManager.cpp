@@ -15,7 +15,7 @@ void MotorManager::ctrlTask()
     for (;;) {
         for (const auto &motorPair : motors()) {
             IMotor *motor = motorPair.second;
-            motor->ctrl();
+            motor->update();
         }
         vTaskDelayUntil(&xLastWakeTime, (1000.f / this->motorTaskFreq_));
     }

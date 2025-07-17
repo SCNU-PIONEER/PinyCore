@@ -18,7 +18,7 @@ void TripMotorGroup_s::showMotorInfo()
             LOG::info("TripMotorGroup", "Motor %s: exist, uid: %hx",
                       motor[i]->getName(), motor[i]->uid());
         } else {
-            LOG::error("TripMotorGroup", "Motor %d: not exist", i);
+            LOG::warn("TripMotorGroup", "Motor %d: not exist", i);
         }
     }
 }

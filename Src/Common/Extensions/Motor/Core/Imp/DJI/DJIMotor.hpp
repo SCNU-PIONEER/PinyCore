@@ -37,6 +37,10 @@ class DJIMotor : public QuadMotorBase {
 private:
     RxBus_s::CANRxBuf_s rxBuf_ = {}; // buffer for received data
 
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
+    MotorTypeDef_e ctrl();
+
 protected:
     Status_s status_;
     void registerRecvCallback();
@@ -53,10 +57,7 @@ public:
     uint16_t masterId() const;
 
     uint16_t uid() override final;
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf,
-                        uint8_t _len) override final;
-    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
-    MotorTypeDef_e ctrl() override final;
+    MotorTypeDef_e update() override final;
 
     QuadMotorGroup_s *findGroup() const;
 };

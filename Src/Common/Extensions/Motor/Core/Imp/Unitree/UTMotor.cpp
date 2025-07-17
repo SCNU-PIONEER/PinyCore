@@ -139,6 +139,22 @@ MotorTypeDef_e UTMotor::ctrl()
                 sizeof(TransmitMsg_s));
 }
 
+MotorTypeDef_e UTMotor::update()
+{
+    if (xQueueReceive(this->rxQueue_, this->rxBuf_, 0) == pdTRUE) {
+        this->parse(this->rxBuf_);
+        this->calcRecvFreq();
+        if (this->userRecvCallback_ != nullptr) {
+            this->userRecvCallback_(this->rxBuf_);
+        }
+    }
+    if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
+        this->parseCmd();
+    }
+    MotorTypeDef_e rslt = ctrl();
+    return rslt;
+}
+
 void UTMotor::setKp(float Kp_) { clamp(Kp_, 0.0f, 25.599f); }
 
 void UTMotor::setKd(float Kd_) { clamp(Kd_, 0.0f, 25.599f); }
