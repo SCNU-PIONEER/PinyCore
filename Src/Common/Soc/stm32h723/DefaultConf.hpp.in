@@ -11,6 +11,7 @@
 #ifdef BSP_USE_TIM
 #define BEEP_TIMER       htim12
 #define BEEP_TIM_CHANNEL TIM_CHANNEL_2
+#define BEEP_APB_FREQ    HAL_RCC_GetPCLK1Freq()
 #endif
 
 #ifdef BSP_USE_SPI
