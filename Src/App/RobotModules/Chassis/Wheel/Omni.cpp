@@ -2,11 +2,30 @@
 #include "Filter.hpp"
 #include "PidBasic.hpp"
 #include "Omni.hpp"
+#include "sdkconfig.h"
+#include "Bsp_can.hpp"
+#include "M3508.hpp"
+
+extern canHandle HCAN1;
+
+using namespace CHASSIS;
+using namespace PINYMOTOR;
 
 Omni::Omni()
 {
-    for (int i = 0; i < 4; i++) {
-        // wheelPID_[i] = new incrementalPid();
+    for (uint8_t i = 1; i <= 4; i++) {
+        InitConfig_s M3508Config = {
+            reinterpret_cast<uint32_t *>(&HCAN1),
+            ComType_e::CAN,
+            WorkMode_e::QUAD_CURR,
+            i,
+            1000.0f,
+            nullptr,
+            std::unique_ptr<PID>(
+                    new positonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f)),
+            nullptr
+        };
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
     }
 }
 
@@ -14,57 +33,55 @@ Omni::Omni(float diameter, float kxyFront, float kxyBack)
         : diameter(diameter), kxyFront(kxyFront), kxyBack(kxyBack)
 {
     circumference = diameter * M_PI;
-    for (int i = 0; i < 4; i++) {
-        // wheelPID_[i] = new incrementalPid();
+    for (uint8_t i = 1; i <= 4; i++) {
+        InitConfig_s M3508Config = {
+            reinterpret_cast<uint32_t *>(&HCAN1),
+            ComType_e::CAN,
+            WorkMode_e::QUAD_CURR,
+            i,
+            1000.0f,
+            nullptr,
+            std::unique_ptr<PID>(
+                    new positonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f)),
+            nullptr
+        };
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
     }
 }
 
 void Omni::stop()
 {
-    chassisState.v_x = 0;
-    chassisState.v_y = 0;
-    chassisState.w_z = 0;
+    for (uint8_t i = 0; i < 3; i++) {
+        speed_._[i] = 0;
+    }
 
-    currentWheels.M_RF = 0;
-    currentWheels.M_LF = 0;
-    currentWheels.M_LB = 0;
-    currentWheels.M_RB = 0;
-
-    for (int i = 0; i < 4; i++) {
-        wheelPID_[i]->reset();
+    for (uint8_t i = 0; i < 4; i++) {
+        wSpeed_._[i] = 0;
+        motor[i]->cmd(MotorCmdType_e::OFF);
     }
 }
 
 void Omni::update()
 {
-    //TODO: update currentWheels from motor encoder
+    for (uint8_t i = 0; i < 4; i++) {
+        wSpeed_._[i] = iir_filter_3(motor[i]->data().spdRpm, i);
+    }
 }
 
-void Omni::forward(WheelsState_u _refState) {}
+speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {}
 
 
-WheelsState_u Omni::reverse(ChassisState_s _refState) {}
+wheelsSpeed_u Omni::reverse(const speed_u &_speed) {}
 
-void Omni::iir3speed(WheelsState_u _rawSpeed)
+void Omni::ctrl(const speed_u &_speed)
 {
-    currentWheels.M_RF = iir_filter_3(_rawSpeed.M_RF, 0);
-    currentWheels.M_LF = iir_filter_3(_rawSpeed.M_LF, 1);
-    currentWheels.M_LB = iir_filter_3(_rawSpeed.M_LB, 2);
-    currentWheels.M_RB = iir_filter_3(_rawSpeed.M_RB, 3);
-}
-
-void Omni::ctrl(ChassisState_s _refState)
-{
-    WheelsState_u wheels_ref = reverse(_refState);
-
-    float diff_speed[4] = { 0 };
+    wheelsSpeed_u refWSpeed = reverse(_speed);
 
     for (uint8_t i = 0; i < 4; i++) {
+        motor[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
     }
 
-    for (uint8_t i = 0; i < 4; i++) {
-        //TODO: set 4 motor torque
-    }
-
-    // TODO: set motor output
+#ifdef USE_POWERCTRL
+    powerCtrl_->powerCtrl(refWSpeed._);
+#endif
 }

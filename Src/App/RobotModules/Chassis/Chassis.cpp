@@ -21,7 +21,6 @@ void Chassis::update(void *_param)
 {
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 0) ==
         pdTRUE) {
-        log.info(LOCATION, "chassis", "chassis update");
     };
     stateFactory_.update();
 }

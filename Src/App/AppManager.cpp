@@ -47,15 +47,14 @@ Cmd cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-Mecanum mecanum;
-Chassis chassis(&mecanum);
-
+CHASSIS::Mecanum *mecanum;
+Chassis *chassis;
 
 //---------------------------------------------------------------------------------------------------
 void ctrlTask(void *param)
 {
     while (1) {
-        chassis.update(param);
+        chassis->update(param);
         vTaskDelay(1);
     }
 }
@@ -112,9 +111,6 @@ void AppManager::createApp()
     xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd.getMsgBus(),
                 osPriorityRealtime, NULL);
 
-    // // Test-Module Continuous Task
-    // xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
-    //             "test_task", 256, NULL, osPriorityNormal, NULL);
     // Test-Module Continuous Task
     if constexpr (USE_TEST_MODULES) {
         xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
@@ -146,6 +142,8 @@ void AppManager::initApp()
     bmi088.init(&IMU_SPI);
     ins.init(accCali, gyroCali);
 
+    mecanum = new CHASSIS::Mecanum;
+    chassis = new Chassis(mecanum);
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
                                        BEEP_APB_FREQ);

@@ -15,7 +15,7 @@ public:
     void enter() override
     {
         //TODO: check the motor is offline
-
+        chassis_->wheel_->enter();
         LOG::info("run", " enter");
     }
 
@@ -23,9 +23,9 @@ public:
     {
         chassis_->wheel_->update();
         if (chassis_->msg_.state == State_e::run) {
-            ChassisState_s refState{ .v_x = chassis_->msg_.vx,
-                                     .v_y = chassis_->msg_.vy,
-                                     .w_z = chassis_->msg_.wz };
+            speed_u refState{ .v_x = chassis_->msg_.vx,
+                              .v_y = chassis_->msg_.vy,
+                              .w_z = chassis_->msg_.wz };
             chassis_->wheel_->ctrl(refState);
         }
     }

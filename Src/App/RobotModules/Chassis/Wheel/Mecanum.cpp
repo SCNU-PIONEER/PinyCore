@@ -1,103 +1,118 @@
 #include <stdint.h>
 #include "Filter.hpp"
-#include "PidBasic.hpp"
 #include "Mecanum.hpp"
+#include "M3508.hpp"
+#include "sdkconfig.h"
+#include "Bsp_can.hpp"
+#include "PidBasic.hpp"
+#include "QuadricycleController.hpp"
+
+extern canHandle HCAN1;
+
+using namespace CHASSIS;
+using namespace PINYMOTOR;
 
 Mecanum::Mecanum()
 {
-    for (int i = 0; i < 4; i++) {
-        // wheelPID_[i] = new incrementalPid();
+    for (uint8_t i = 1; i <= 4; i++) {
+        InitConfig_s M3508Config = { reinterpret_cast<uint32_t *>(&HCAN1),
+                                     ComType_e::CAN,
+                                     WorkMode_e::QUAD_CURR,
+                                     i,
+                                     100.0f,
+                                     nullptr,
+                                     std::unique_ptr<PID>(new incrementalPid(
+                                             0.2f, 0.005f, 0.f, 4.f, 0.f)),
+                                     nullptr };
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
     }
-    ctrl_ = std::make_shared<QuadricycleController>(ChassisType_e::Quadricycle);
+
+    if constexpr (USE_POWERCTRL) {
+        powerCtrl_ = std::make_unique<QuadricycleController>(
+                ChassisType_e::Quadricycle);
+    }
 }
 
 Mecanum::Mecanum(float diameter, float kxyFront, float kxyBack)
         : diameter(diameter), kxyFront(kxyFront), kxyBack(kxyBack)
 {
+    extern canHandle HCAN1;
     circumference = diameter * M_PI;
-    for (int i = 0; i < 4; i++) {
-        // wheelPID_[i] = new incrementalPid();
+    for (uint8_t i = 1; i <= 4; i++) {
+        InitConfig_s M3508Config = {
+            reinterpret_cast<uint32_t *>(&HCAN1),
+            ComType_e::CAN,
+            WorkMode_e::QUAD_CURR,
+            i,
+            500.0f,
+            nullptr,
+            std::unique_ptr<PID>(
+                    new positonalPid(32.f, 0.04f, 0.f, 0.002f, 1.f, 20.f, 0.f)),
+            nullptr
+        };
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
     }
 }
 
 void Mecanum::stop()
 {
-    chassisState.v_x = 0;
-    chassisState.v_y = 0;
-    chassisState.w_z = 0;
+    for (uint8_t i = 0; i < 4; i++) {
+        motor[i]->cmd(MotorCmdType_e::OFF);
+    }
+}
 
-    currentWheels.M_RF = 0;
-    currentWheels.M_LF = 0;
-    currentWheels.M_LB = 0;
-    currentWheels.M_RB = 0;
-
-    for (int i = 0; i < 4; i++) {
-        // wheelPID_[i]->reset();
+void Mecanum::enter()
+{
+    for (uint8_t i = 0; i < 4; i++) {
+        motor[i]->cmd(MotorCmdType_e::ON);
     }
 }
 
 void Mecanum::update()
 {
-    //TODO: update currentWheels from motor encoder
+    for (uint8_t i = 0; i < 4; i++) {
+        wSpeed_._[i] = iir_filter_3(motor[i]->data().spdRpm, i);
+    }
 }
 
-void Mecanum::forward(WheelsState_u _refState)
+speed_u Mecanum::forward(const wheelsSpeed_u &_wSpeed)
 {
-    chassisState.v_x = circumference *
-                       (currentWheels.M_LF - currentWheels.M_RF +
-                        currentWheels.M_LB - currentWheels.M_RB) /
-                       4 / 60;
-    chassisState.v_y =
-            circumference *
-            (kxyBack * currentWheels.M_RF + kxyBack * currentWheels.M_LF -
-             kxyFront * currentWheels.M_LB - kxyFront * currentWheels.M_RB) /
-            (2 * (kxyBack + kxyFront)) / 60;
-    chassisState.w_z = (diameter / 2) *
-                       (currentWheels.M_RF + currentWheels.M_LF +
-                        currentWheels.M_LB + currentWheels.M_RB) /
-                       (2 * (kxyBack + kxyFront)) * (2.f * M_PI) / 60.f;
+    speed_.v_x = circumference *
+                 (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) /
+                 4 / 60;
+    speed_.v_y = circumference *
+                 (kxyBack * _wSpeed.M_RF + kxyBack * _wSpeed.M_LF -
+                  kxyFront * _wSpeed.M_LB - kxyFront * _wSpeed.M_RB) /
+                 (2 * (kxyBack + kxyFront)) / 60;
+    speed_.w_z = (diameter / 2) *
+                 (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) /
+                 (2 * (kxyBack + kxyFront)) * (2.f * M_PI) / 60.f;
 }
 
 
-WheelsState_u Mecanum::reverse(ChassisState_s _refState)
+wheelsSpeed_u Mecanum::reverse(const speed_u &_speed)
 {
-    WheelsState_u refWheels;
-    refWheels.M_RF =
-            (60 / circumference) * (-chassisState.v_x + chassisState.v_y) +
-            kxyFront / (diameter / 2) * chassisState.w_z * 60.f / (2.f * M_PI);
-    refWheels.M_LF =
-            (60 / circumference) * (chassisState.v_x + chassisState.v_y) +
-            kxyFront / (diameter / 2) * chassisState.w_z * 60.f / (2.f * M_PI);
-    refWheels.M_LB =
-            (60 / circumference) * (chassisState.v_x - chassisState.v_y) +
-            kxyBack / (diameter / 2) * chassisState.w_z * 60.f / (2.f * M_PI);
-    refWheels.M_RB =
-            (60 / circumference) * (-chassisState.v_x - chassisState.v_y) +
-            kxyBack / (diameter / 2) * chassisState.w_z * 60.f / (2.f * M_PI);
+    wheelsSpeed_u refWheels;
+    refWheels.M_RF = (60 / circumference) * (-_speed.v_x + _speed.v_y) +
+                     kxyFront / (diameter / 2) * _speed.w_z * 30.f / M_PI;
+    refWheels.M_LF = (60 / circumference) * (_speed.v_x + _speed.v_y) +
+                     kxyFront / (diameter / 2) * _speed.w_z * 30.f / M_PI;
+    refWheels.M_LB = (60 / circumference) * (_speed.v_x - _speed.v_y) +
+                     kxyBack / (diameter / 2) * _speed.w_z * 30.f / M_PI;
+    refWheels.M_RB = (60 / circumference) * (-_speed.v_x - _speed.v_y) +
+                     kxyBack / (diameter / 2) * _speed.w_z * 30.f / M_PI;
     return refWheels;
 }
 
-void Mecanum::iir3speed(WheelsState_u _rawSpeed)
+void Mecanum::ctrl(const speed_u &_speed)
 {
-    currentWheels.M_RF = iir_filter_3(_rawSpeed.M_RF, 0);
-    currentWheels.M_LF = iir_filter_3(_rawSpeed.M_LF, 1);
-    currentWheels.M_LB = iir_filter_3(_rawSpeed.M_LB, 2);
-    currentWheels.M_RB = iir_filter_3(_rawSpeed.M_RB, 3);
-}
-
-void Mecanum::ctrl(ChassisState_s _refState)
-{
-    WheelsState_u wheels_ref = reverse(_refState);
-
-    float diff_speed[4] = { 0 };
+    wheelsSpeed_u refWSpeed = reverse(_speed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        // diff_speed[i] = wheelPID_[i]->calc(wheels_ref.M_RF, currentWheels.M_RF);
+        motor[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
     }
 
-    for (uint8_t i = 0; i < 4; i++) {
-        //TODO: set 4 motor torque
+    if constexpr (USE_POWERCTRL) {
+        powerCtrl_->powerCtrl(refWSpeed._);
     }
-    ctrl_->powerCtrl(wheels_ref.motors);
-    // TODO: set motor output
 }

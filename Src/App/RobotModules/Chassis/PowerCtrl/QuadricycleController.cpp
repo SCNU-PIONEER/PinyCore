@@ -2,13 +2,14 @@
 #include <cmath>
 #include <algorithm>
 
+using namespace PINYMOTOR;
 
 QuadricycleController::QuadricycleController(ChassisType_e chassisType)
         : PowerController(chassisType)
 {
-    energyPid_ = std::make_shared<positonalPid>(0.1f, 0, 0, 0.002f, 0, 0.f, 0);
+    energyPid_ = std::make_unique<positonalPid>(0.1f, 0, 0, 0.002f, 0, 0.f, 0);
     powerPid_ =
-            std::make_shared<positonalPid>(300.f, 0, 0, 0.002f, 0, 400.f, 0);
+            std::make_unique<positonalPid>(300.f, 0, 0, 0.002f, 0, 400.f, 0);
 }
 
 void QuadricycleController::cmdPowerCalc(float *motorSpeed)
@@ -77,7 +78,7 @@ void QuadricycleController::currentCalc()
     }
 }
 
-void QuadricycleController::powerCtrl(float *motorSpeed)
+std::vector<float> QuadricycleController::powerCtrl(float *motorSpeed)
 {
     //TODO: refereeData
     refereeDataUpdate();
@@ -125,4 +126,6 @@ void QuadricycleController::powerCtrl(float *motorSpeed)
     chargeCmdPower = std::clamp(limitPower - 0.01f * setPowerDot, 30.f, 120.f);
     cap_.capDataSend(chargeCmdPower, capEnable_, capFeedforwardEnable_,
                      static_cast<uint16_t>(chassisSetPower));
+
+    return setIq;
 }

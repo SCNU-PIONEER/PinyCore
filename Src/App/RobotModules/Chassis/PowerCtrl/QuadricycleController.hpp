@@ -11,7 +11,7 @@ public:
 
     void currentCalc() override final;
 
-    void powerCtrl(float *motorSpeed) override final;
+    std::vector<float> powerCtrl(float *motorSpeed) override final;
 
 private:
     float powerRatio_ = 0.0f;

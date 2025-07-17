@@ -36,11 +36,9 @@ public:
 
     virtual void currentCalc() = 0;
 
-    virtual void powerCtrl(float *motorSpeed) = 0;
+    virtual std::vector<float> powerCtrl(float *motorSpeed) = 0;
 
     void refereeDataUpdate();
-
-    std::vector<float> &getSetIq() { return setIq; }
 
 protected:
     ChassisType_e chassisType_;
@@ -73,6 +71,6 @@ protected:
     bool capFeedforwardEnable_ = 1;
     float chargeCmdPower = 0.f; //期望电容充电功率
 
-    std::shared_ptr<positonalPid> energyPid_ = nullptr;
-    std::shared_ptr<positonalPid> powerPid_ = nullptr;
+    std::unique_ptr<positonalPid> energyPid_ = nullptr;
+    std::unique_ptr<positonalPid> powerPid_ = nullptr;
 };

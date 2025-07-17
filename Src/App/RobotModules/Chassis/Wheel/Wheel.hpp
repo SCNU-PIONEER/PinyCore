@@ -1,20 +1,28 @@
 #pragma once
-#include "QuadricycleController.hpp"
 
-struct ChassisState_s {
-    float v_x; // m/s
-    float v_y; // m/s
-    float w_z; // rad/s
+#include "PowerController.hpp"
+
+namespace CHASSIS {
+
+union speed_u {
+    struct {
+        float v_x; // m/s
+        float v_y; // m/s
+        float w_z; // rad/s
+    };
+    float _[3];
 };
 
 class Wheel {
 public:
     virtual void stop() = 0;
+    virtual void enter() = 0;
     virtual void update() = 0;
-    virtual void ctrl(ChassisState_s _refState) = 0;
-
-    ChassisState_s chassisState;
+    virtual void ctrl(const speed_u &_speed) = 0;
 
 protected:
-    std::shared_ptr<PowerController> ctrl_ = nullptr;
+    std::unique_ptr<PowerController> powerCtrl_;
+    speed_u speed_;
 };
+
+}

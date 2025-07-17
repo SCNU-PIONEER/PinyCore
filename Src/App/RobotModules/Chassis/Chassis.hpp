@@ -19,8 +19,7 @@ public:
     static constexpr float MAX_WZ_SPEED = 3.f;
     static constexpr float MOUSE_CAL = 200.f;
 
-public:
-    Chassis(Wheel *_wheel);
+    Chassis(CHASSIS::Wheel *_wheel);
 
     void update(void *_param);
 
@@ -30,5 +29,5 @@ public:
 
     chassisMsg msg_;
 
-    Wheel *wheel_;
+    CHASSIS::Wheel *wheel_;
 };
