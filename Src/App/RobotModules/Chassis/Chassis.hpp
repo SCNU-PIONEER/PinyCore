@@ -10,7 +10,7 @@ enum class fsmState_e { STOP = 0, RUN };
 }
 
 class Chassis {
-protected:
+public:
     static constexpr float S_CURVE_VX_ACC = 1.4f;
     static constexpr float S_CURVE_VY_ACC = 2.2f;
     static constexpr float S_CURVE_WZ_ACC = 2.8f;
