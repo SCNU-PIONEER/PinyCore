@@ -30,7 +30,7 @@ click 'tools_install.bat' and 'win_install.ps1'
 
 #### build
 ```
-menuconfig
+cmake --build ./build --target menuconfig
 cmake -B build -G Ninja
 ninja -C build
 ```
