@@ -10,6 +10,8 @@ QuadMotorGroup_s::QuadMotorGroup_s()
         motor[i] = nullptr;
     lastSendTick = 0.f;
     minTxFreq = 1000.f;
+    curLoadedCode = (0 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
+    refLoadedCode = (0 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
 }
 void QuadMotorGroup_s::showMotorInfo()
 {
@@ -58,6 +60,7 @@ void QuadMotorBase::updateMotorMap()
         // 如果不存在，则创建一个电机组
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
+        map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         LOG::info("QuadMotorBase", "Motor %s: create QuadMotorGroup %hx",
                   this->name_, getGroupId());
     } else {
@@ -69,6 +72,7 @@ void QuadMotorBase::updateMotorMap()
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
+            map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
     // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
@@ -99,6 +103,7 @@ void QuadMotorBase::removeMotorFromMap()
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
+            map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("QuadMotorBase",
                       "Motor %s: remove from group %hx, pos in group: %d",
                       this->name_, getGroupId(), getPosInGroup());
@@ -120,6 +125,14 @@ uint8_t QuadMotorBase::getPosInGroup() const
 
 bool QuadMotorBase::checkGroupSend(QuadMotorGroup_s *_group)
 {
-    return (xTaskGetTickCount() - _group->lastSendTick) >=
-           pdMS_TO_TICKS(1000.f / _group->minTxFreq);
+    if ((xTaskGetTickCount() - _group->lastSendTick) >=
+                pdMS_TO_TICKS(1000.f / _group->minTxFreq) &&
+        (_group->refLoadedCode == _group->curLoadedCode)) {
+        _group->lastSendTick = xTaskGetTickCount();
+        _group->curLoadedCode = 0; // reset curLoadedCode
+        return true;
+    } else {
+        _group->curLoadedCode |= (1 << getPosInGroup());
+        return false;
+    }
 }

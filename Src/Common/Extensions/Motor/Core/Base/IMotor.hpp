@@ -46,7 +46,7 @@ protected:
 
     bool isMutiple_ = false; // default is not quad encoder
 
-    bool checkSend() const;
+    bool checkSend();
     void calcRecvFreq();
     void parseCmd();
 

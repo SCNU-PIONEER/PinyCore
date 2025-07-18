@@ -12,6 +12,8 @@
 namespace PINYMOTOR {
 struct QuadMotorGroup_s {
     IMotor *motor[4];
+    uint8_t refLoadedCode;
+    uint8_t curLoadedCode;
     uint32_t lastSendTick; // ms
     float minTxFreq;
     QuadMotorGroup_s();
@@ -41,6 +43,8 @@ public:
 /*******************************************************************/
 struct TripMotorGroup_s {
     IMotor *motor[3];
+    uint8_t refLoadedCode;
+    uint8_t curLoadedCode;
     uint32_t lastSendTick; // ms
     float minTxFreq;
     TripMotorGroup_s();

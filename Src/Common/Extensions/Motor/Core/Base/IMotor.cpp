@@ -26,10 +26,15 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
     cmdQueue_ = xQueueCreate(3, sizeof(CmdBus_s));
 }
 
-bool IMotor::checkSend() const
+bool IMotor::checkSend()
 {
-    return (xTaskGetTickCount() - lastSendTick) >=
-           pdMS_TO_TICKS(1000.f / this->txFreq_);
+    if ((xTaskGetTickCount() - lastSendTick) >=
+        pdMS_TO_TICKS(1000.f / this->txFreq_)) {
+        this->lastSendTick = xTaskGetTickCount();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void IMotor::calcRecvFreq()

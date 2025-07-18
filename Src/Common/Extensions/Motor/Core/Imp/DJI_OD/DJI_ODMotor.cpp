@@ -108,7 +108,6 @@ MotorTypeDef_e DJI_ODMotor::send(uint16_t _sendId, uint8_t *_txBuf,
                       this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
                       _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 #endif
-            group->lastSendTick = xTaskGetTickCount();
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
                     reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
                     _txBuf, _len));

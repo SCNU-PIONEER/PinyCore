@@ -10,6 +10,8 @@ TripMotorGroup_s::TripMotorGroup_s()
         motor[i] = nullptr;
     lastSendTick = 0.f;
     minTxFreq = 1000.f;
+    curLoadedCode = (0 << 0) | (0 << 1) | (0 << 2);
+    refLoadedCode = (0 << 0) | (0 << 1) | (0 << 2);
 }
 void TripMotorGroup_s::showMotorInfo()
 {
@@ -53,6 +55,7 @@ void TripMotorBase::updateMotorMap()
     if (map.find(getGroupId()) == map.end()) {
         map[getGroupId()] = new TripMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
+        map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         LOG::info("TripMotorBase",
                   "Motor %s: add to group %hx, pos in group: %d", this->name_,
                   getGroupId(), getPosInGroup());
@@ -64,6 +67,7 @@ void TripMotorBase::updateMotorMap()
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
+            map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
     for (size_t i = 0; i < 3; i++) {
@@ -93,6 +97,7 @@ void TripMotorBase::removeMotorFromMap()
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
+            map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("TripMotorBase", "Motor %s: remove from group %hx",
                       this->name_, getGroupId());
         } else {
@@ -113,6 +118,14 @@ uint8_t TripMotorBase::getPosInGroup() const
 
 bool TripMotorBase::checkGroupSend(TripMotorGroup_s *_group)
 {
-    return (xTaskGetTickCount() - _group->lastSendTick) >=
-           pdMS_TO_TICKS(1000.f / _group->minTxFreq);
+    if ((xTaskGetTickCount() - _group->lastSendTick) >=
+                pdMS_TO_TICKS(1000.f / _group->minTxFreq) &&
+        (_group->refLoadedCode == _group->curLoadedCode)) {
+        _group->lastSendTick = xTaskGetTickCount();
+        _group->curLoadedCode = 0; // reset curLoadedCode
+        return true;
+    } else {
+        _group->curLoadedCode |= (1 << getPosInGroup());
+        return false;
+    }
 }
