@@ -5,15 +5,11 @@
 #include <string_view>
 #include <cstring>
 
-namespace LOG {
-
 #define LOCATION std::source_location::current()
 
-#define LOG_PROTO(type, color, format, ...)                                    \
-    SEGGER_RTT_printf(0, "  %s%s" format "\r\n%s", color, type, ##__VA_ARGS__, \
-                      RTT_CTRL_RESET)
+#define CHECK(x) LOG::Logger::instance().check(LOCATION, [&]() { return (x); })
 
-// #define ERROR_CHECK(x) check([&]() { return (x); }, __FILE__, __LINE__, #x)
+namespace LOG {
 
 class Logger {
 public:
@@ -72,20 +68,19 @@ public:
             std::forward<Args>(_args)...);
     }
 
-
     /**
-    * @brief 完美转发检验错误,请用宏STM_ERROR_CHECK
+    * @brief 完美转发检验错误
     */
-    // template <typename Func>
-    // void check(Func &&_operation, const char *_file, int _line,
-    //            const char *_expr)
-    // {
-    //     stm_err_t _err = _operation();
-    //     if (unlikely(_err != 0)) {
-    //         printf("ERROR: ", RED, "Check failed at %s:%d\nExpr: %s\nError: %d",
-    //                _file, _line, _expr, _err);
-    //     }
-    // }
+    template <typename Func>
+    void check(std::source_location _loc, Func &&_operation)
+    {
+        stm_err_t _err = _operation();
+        if (unlikely(_err != 0)) {
+            error(_loc, "check", "error code: %d", _err);
+            while (1) {
+            }
+        }
+    }
 
     /**
     * @brief 清屏
