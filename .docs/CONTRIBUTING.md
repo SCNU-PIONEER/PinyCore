@@ -117,7 +117,7 @@ sh ./tools/install/linux_install.sh
 
 #### 构建
 ```
-menuconfig
+cmake --build ./build --target menuconfig
 make -B build -G Ninja
 ninja - build
 ```
