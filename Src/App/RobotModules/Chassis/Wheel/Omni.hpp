@@ -19,13 +19,16 @@ enum class mode_e { OMNI_X = 0, OMNI_H = 1 };
 
 class Omni : public Wheel {
 public:
-    Omni();
+    static constexpr float W_DIAMETER = 0.1525f;
+    static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
+    static constexpr float FRONT_R = 0.354f;
+    static constexpr float BACK_R = 0.354f;
 
-    Omni(float diameter, float kxyFront, float kxyBack);
+    Omni();
 
     void stop() override;
     void update() override;
-    void ctrl(const speed_u &_speed) override;
+    void ctrl(const Speed_u &_speed) override;
 
 protected:
     /*
@@ -33,21 +36,16 @@ protected:
      * @param: _wSpeed: speed of each wheel
      * @return: speed of the chassis in m/s and rad/s
     */
-    speed_u forward(const wheelsSpeed_u &_wSpeed);
+    Speed_u forward(const wheelsSpeed_u &_wSpeed);
 
     /*
      * @brief: calculate the speed of each wheel
      * @param: _speed: speed of the chassis in m/s and rad/s
      * @return: speed of each wheel
     */
-    wheelsSpeed_u reverse(const speed_u &_speed);
+    wheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    float diameter = 0.1525;
-    float circumference = (M_PI * diameter);
-    float kxyFront = 0.354;
-    float kxyBack = 0.354;
-
     mode_e mode = mode_e::OMNI_X;
 
     PINYMOTOR::IMotor *motor[4];

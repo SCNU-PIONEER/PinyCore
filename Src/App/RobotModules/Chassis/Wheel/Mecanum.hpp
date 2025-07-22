@@ -17,13 +17,16 @@ union wheelsSpeed_u {
 
 class Mecanum : public Wheel {
 public:
+    static constexpr float W_DIAMETER = 0.1525f;
+    static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
+    static constexpr float FRONT_R = 0.354f;
+    static constexpr float BACK_R = 0.354f;
     Mecanum();
-    Mecanum(float diameter, float kxyFront, float kxyBack);
 
     void stop() override;
     void enter() override;
     void update() override;
-    void ctrl(const speed_u &_speed) override;
+    void ctrl(const Speed_u &_refSpeed) override;
 
 protected:
     /*
@@ -31,22 +34,17 @@ protected:
      * @param: _wSpeed: speed of each wheel
      * @return: speed of the chassis in m/s and rad/s
     */
-    speed_u forward(const wheelsSpeed_u &_wSpeed);
+    Speed_u forward(const wheelsSpeed_u &_wSpeed);
 
     /*
      * @brief: calculate the speed of each wheel
      * @param: _speed: speed of the chassis in m/s and rad/s
      * @return: speed of each wheel
     */
-    wheelsSpeed_u reverse(const speed_u &_speed);
+    wheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    float diameter = 0.1525;
-    float circumference = (M_PI * diameter);
-    float kxyFront = 0.354;
-    float kxyBack = 0.354;
-
-    PINYMOTOR::IMotor *motor[4];
+    PINYMOTOR::IMotor *motor_[4];
     wheelsSpeed_u wSpeed_;
 };
 

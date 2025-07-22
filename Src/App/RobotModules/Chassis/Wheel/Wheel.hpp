@@ -4,7 +4,7 @@
 
 namespace CHASSIS {
 
-union speed_u {
+union Speed_u {
     struct {
         float v_x; // m/s
         float v_y; // m/s
@@ -18,11 +18,12 @@ public:
     virtual void stop() = 0;
     virtual void enter() = 0;
     virtual void update() = 0;
-    virtual void ctrl(const speed_u &_speed) = 0;
+    virtual void ctrl(const Speed_u &_refSpeed) = 0;
 
 protected:
     std::unique_ptr<PowerController> powerCtrl_;
-    speed_u speed_;
+    Speed_u refSpeed_;
+    Speed_u curSpeed_;
 };
 
-}
+} // namespace CHASSIS

@@ -29,30 +29,10 @@ Omni::Omni()
     }
 }
 
-Omni::Omni(float diameter, float kxyFront, float kxyBack)
-        : diameter(diameter), kxyFront(kxyFront), kxyBack(kxyBack)
-{
-    circumference = diameter * M_PI;
-    for (uint8_t i = 1; i <= 4; i++) {
-        InitConfig_s M3508Config = {
-            reinterpret_cast<uint32_t *>(&HCAN1),
-            ComType_e::CAN,
-            WorkMode_e::QUAD_CURR,
-            i,
-            1000.0f,
-            nullptr,
-            std::unique_ptr<PID>(
-                    new positonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f)),
-            nullptr
-        };
-        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
-    }
-}
-
 void Omni::stop()
 {
-    for (uint8_t i = 0; i < 3; i++) {
-        speed_._[i] = 0;
+    for (float &i : refSpeed_._) {
+        i = 0;
     }
 
     for (uint8_t i = 0; i < 4; i++) {
@@ -68,12 +48,12 @@ void Omni::update()
     }
 }
 
-// speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {} //TODO: waiting to set
+// Speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {} //TODO: waiting to set
 
 
-// wheelsSpeed_u Omni::reverse(const speed_u &_speed) {} //TODO: waiting to set
+// wheelsSpeed_u Omni::reverse(const Speed_u &_speed) {} //TODO: waiting to set
 
-void Omni::ctrl(const speed_u &_speed)
+void Omni::ctrl(const Speed_u &_speed)
 {
     wheelsSpeed_u refWSpeed = reverse(_speed);
 

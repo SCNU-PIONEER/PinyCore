@@ -15,18 +15,18 @@ public:
     void enter() override
     {
         //TODO: check the motor is offline
-        chassis_->wheel_->enter();
+        chassis_->wheel->enter();
         LOG::info("run", " enter");
     }
 
     void run() override
     {
-        chassis_->wheel_->update();
-        if (chassis_->msg_.state == State_e::run) {
-            speed_u refState{ .v_x = chassis_->msg_.vx,
-                              .v_y = chassis_->msg_.vy,
-                              .w_z = chassis_->msg_.wz };
-            chassis_->wheel_->ctrl(refState);
+        chassis_->wheel->update();
+        if (chassis_->msg.state == State_e::run) {
+            Speed_u refState{ .v_x = chassis_->msg.vx,
+                              .v_y = chassis_->msg.vy,
+                              .w_z = chassis_->msg.wz };
+            chassis_->wheel->ctrl(refState);
         }
     }
 
@@ -34,9 +34,9 @@ public:
 
     uint8_t checkChange() override
     {
-        if (chassis_->msg_.state == State_e::stop)
+        if (chassis_->msg.state == State_e::stop)
             return static_cast<uint8_t>(fsmState_e::STOP);
-        else if (chassis_->msg_.state == State_e::run)
+        else if (chassis_->msg.state == State_e::run)
             return static_cast<uint8_t>(fsmState_e::RUN);
         else
             return 0;

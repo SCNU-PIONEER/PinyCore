@@ -7,20 +7,20 @@ using namespace CHASSIS;
 
 Chassis::Chassis(Wheel *_wheel)
 {
-    wheel_ = _wheel;
-    msg_ = chassisMsg{};
-    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::RUN),
+    wheel = _wheel;
+    msg = chassisMsg{};
+    stateFactory.addState(static_cast<uint8_t>(fsmState_e::RUN),
                            std::make_unique<RunState>(this));
-    stateFactory_.addState(static_cast<uint8_t>(fsmState_e::STOP),
+    stateFactory.addState(static_cast<uint8_t>(fsmState_e::STOP),
                            std::make_unique<StopState>(this));
-    stateFactory_.init(
-            stateFactory_.getNextState(static_cast<uint8_t>(fsmState_e::STOP)));
+    stateFactory.init(
+            stateFactory.getNextState(static_cast<uint8_t>(fsmState_e::STOP)));
 }
 
 void Chassis::update(void *_param)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 0) ==
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) ==
         pdTRUE) {
     };
-    stateFactory_.update();
+    stateFactory.update();
 }

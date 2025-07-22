@@ -14,20 +14,20 @@ public:
 
     void enter() override
     {
-        chassis_->wheel_->stop();
+        chassis_->wheel->stop();
         LOG::info("stop", " enter");
     }
 
-    void run() override { chassis_->wheel_->stop(); }
+    void run() override { chassis_->wheel->stop(); }
 
     void exit() override { LOG::info("stop", " exit"); }
 
 
     uint8_t checkChange() override
     {
-        if (chassis_->msg_.state == State_e::stop)
+        if (chassis_->msg.state == State_e::stop)
             return static_cast<uint8_t>(fsmState_e::STOP);
-        else if (chassis_->msg_.state == State_e::run)
+        else if (chassis_->msg.state == State_e::run)
             return static_cast<uint8_t>(fsmState_e::RUN);
         else
             return 0;

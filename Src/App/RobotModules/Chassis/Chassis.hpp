@@ -6,14 +6,11 @@
 #include "MsgImpl.hpp"
 
 namespace CHASSIS {
-enum class fsmState_e { STOP = 1, RUN };
+enum class fsmState_e : uint8_t { STOP = 1u, START, RUN };
 }
 
 class Chassis {
 public:
-    static constexpr float S_CURVE_VX_ACC = 1.4f;
-    static constexpr float S_CURVE_VY_ACC = 2.2f;
-    static constexpr float S_CURVE_WZ_ACC = 2.8f;
     static constexpr float MAX_VX_SPEED = 2.f;
     static constexpr float MAX_VY_SPEED = 2.f;
     static constexpr float MAX_WZ_SPEED = 3.f;
@@ -23,11 +20,11 @@ public:
 
     void update(void *_param);
 
-    StateFactory stateFactory_;
+    StateFactory stateFactory;
 
     LOG::Logger &log = LOG::Logger::instance();
 
-    chassisMsg msg_;
+    chassisMsg msg;
 
-    CHASSIS::Wheel *wheel_;
+    CHASSIS::Wheel *wheel;
 };
