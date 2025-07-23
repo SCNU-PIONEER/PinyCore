@@ -5,16 +5,14 @@
 
 using namespace CHASSIS;
 
-Chassis::Chassis(Wheel *_wheel)
+Chassis::Chassis(Wheel *_wheel) : wheel(_wheel)
 {
-    wheel = _wheel;
-    msg = chassisMsg{};
-    stateFactory.addState(static_cast<uint8_t>(fsmState_e::RUN),
-                           std::make_unique<RunState>(this));
-    stateFactory.addState(static_cast<uint8_t>(fsmState_e::STOP),
-                           std::make_unique<StopState>(this));
+    stateFactory.addState(static_cast<uint8_t>(FSMState_e::RUN),
+                          std::make_unique<RunState>(this));
+    stateFactory.addState(static_cast<uint8_t>(FSMState_e::STOP),
+                          std::make_unique<StopState>(this));
     stateFactory.init(
-            stateFactory.getNextState(static_cast<uint8_t>(fsmState_e::STOP)));
+            stateFactory.getNextState(static_cast<uint8_t>(FSMState_e::STOP)));
 }
 
 void Chassis::update(void *_param)

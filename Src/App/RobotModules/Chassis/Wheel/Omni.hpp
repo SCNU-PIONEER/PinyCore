@@ -2,10 +2,11 @@
 
 #include <cmath>
 #include "Wheel.hpp"
+#include <cstdint>
 
 namespace CHASSIS {
 
-union wheelsSpeed_u {
+union WheelsSpeed_u {
     struct {
         float M_RF; ///< motor of the right front 0
         float M_LF; ///< motor of the left front 1
@@ -15,7 +16,7 @@ union wheelsSpeed_u {
     float _[4]; // rpm
 };
 
-enum class mode_e { OMNI_X = 0, OMNI_H = 1 };
+enum class Mode_e : uint8_t { OMNI_X = 0, OMNI_H = 1 };
 
 class Omni : public Wheel {
 public:
@@ -36,20 +37,20 @@ protected:
      * @param: _wSpeed: speed of each wheel
      * @return: speed of the chassis in m/s and rad/s
     */
-    Speed_u forward(const wheelsSpeed_u &_wSpeed);
+    Speed_u forward(const WheelsSpeed_u &_wSpeed);
 
     /*
      * @brief: calculate the speed of each wheel
      * @param: _speed: speed of the chassis in m/s and rad/s
      * @return: speed of each wheel
     */
-    wheelsSpeed_u reverse(const Speed_u &_speed);
+    WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    mode_e mode = mode_e::OMNI_X;
+    Mode_e mode = Mode_e::OMNI_X;
 
     PINYMOTOR::IMotor *motor[4];
-    wheelsSpeed_u wSpeed_;
+    WheelsSpeed_u wSpeed_;
 };
 
-}
+} // namespace CHASSIS

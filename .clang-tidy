@@ -1,7 +1,46 @@
 ---
 Checks:          '-*,
-                  performance-*,
+                  bugprone-*,
                   llvm-namespace-comment,
+                  concurrency-*,
+                  -concurrency-mt-unsafe,
+                  cppcoreguidelines-*,
+                  -cppcoreguidelines-owning-memory,
+                  -cppcoreguidelines-avoid-magic-numbers,
+                  -cppcoreguidelines-pro-bounds-constant-array-index,
+                  -cppcoreguidelines-avoid-const-or-ref-data-members,
+                  -cppcoreguidelines-non-private-member-variables-in-classes,
+                  -cppcoreguidelines-avoid-goto,
+                  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+                  -cppcoreguidelines-avoid-do-while,
+                  -cppcoreguidelines-avoid-non-const-global-variables,
+                  -cppcoreguidelines-special-member-functions,
+                  -cppcoreguidelines-explicit-virtual-functions,
+                  -cppcoreguidelines-avoid-c-arrays,
+                  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+                  -cppcoreguidelines-narrowing-conversions,
+                  -cppcoreguidelines-pro-type-union-access,
+                  -cppcoreguidelines-pro-type-member-init,
+                  -cppcoreguidelines-macro-usage,
+                  -cppcoreguidelines-macro-to-enum,
+                  -cppcoreguidelines-init-variables,
+                  -cppcoreguidelines-pro-type-cstyle-cast,
+                  -cppcoreguidelines-pro-type-vararg,
+                  -cppcoreguidelines-pro-type-reinterpret-cast,
+                  google-global-names-in-headers,
+                  -google-readability-casting,
+                  google-runtime-operator,
+                  modernize-*,
+                  -modernize-return-braced-init-list,
+                  -modernize-use-trailing-return-type,
+                  -modernize-use-using,
+                  -modernize-use-override,
+                  -modernize-avoid-c-arrays,
+                  -modernize-macro-to-enum,
+                  -modernize-loop-convert,
+                  -modernize-use-nodiscard,
+                  -modernize-pass-by-value,
+                  -modernize-use-auto,
                   modernize-redundant-void-arg,
                   modernize-use-nullptr,
                   modernize-use-default,
@@ -9,12 +48,37 @@ Checks:          '-*,
                   modernize-loop-convert,
                   modernize-make-shared,
                   modernize-make-unique,
+                  performance-*,
+                  -performance-avoid-endl,
+                  -performance-unnecessary-value-param,
+                  portability-std-allocator-const,
+                  readability-*,
                   readability-named-parameter,
                   readability-redundant-smartptr-get,
                   readability-redundant-string-cstr,
                   readability-simplify-boolean-expr,
                   readability-container-size-empty,
                   readability-identifier-naming,
+                  -readability-function-cognitive-complexity,
+                  -readability-function-size,
+                  -readability-identifier-length,
+                  -readability-magic-numbers,
+                  -readability-uppercase-literal-suffix,
+                  -readability-braces-around-statements,
+                  -readability-redundant-access-specifiers,
+                  -readability-else-after-return,
+                  -readability-container-data-pointer,
+                  -readability-implicit-bool-conversion,
+                  -readability-avoid-nested-conditional-operator,
+                  -readability-redundant-member-init,
+                  -readability-redundant-string-init,
+                  -readability-avoid-const-params-in-decls,
+                  -readability-named-parameter,
+                  -readability-convert-member-functions-to-static,
+                  -readability-qualified-auto,
+                  -readability-make-member-function-const,
+                  -readability-isolate-declaration,
+                  -readability-inconsistent-declaration-parameter-name,
                   '
 HeaderFilterRegex: ''
 
@@ -23,30 +87,44 @@ CheckOptions:
     value:           '10'
   - key: llvm-namespace-comment.SpacesBeforeComments
     value:           '2'
+  - key: llvm-namespace-comment.SpacesBeforeComments
+    value:           '2'
+  - key: hicpp-uppercase-literal-suffix.FloatSuffix
+    value:           'f'
   # type names
   - key:             readability-identifier-naming.ClassCase
     value:           CamelCase
+  - key:             readability-identifier-naming.StructCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.StructSuffix
+    value:           _s
   - key:             readability-identifier-naming.EnumCase
-    value:           lower_case
-  - key: readability-identifier-naming.EnumConstantCase
-    value:           UPPER_CASE
+    value:           CamelCase
+  - key:             readability-identifier-naming.EnumSuffix
+    value:           _e
   - key:             readability-identifier-naming.UnionCase
-    value:           lower_case
+    value:           CamelCase
+  - key:             readability-identifier-naming.UnionSuffix
+    value:           _u
   # method names
   - key:             readability-identifier-naming.MethodCase
     value:           camelBack
   # variable names
   - key:             readability-identifier-naming.VariableCase
     value:           lower_case
-  - key: readability-identifier-naming.ParameterPrefix
+  - key:             readability-identifier-naming.LocalVariableCase
+    value:           camelBack
+  - key:             readability-identifier-naming.ParameterPrefix
     value:           '_'
   - key:             readability-identifier-naming.ClassMemberSuffix
     value:           '_'
   # UPPER_CASE
-  - key: readability-identifier-naming.StaticConstantCase
+  - key:             readability-identifier-naming.StaticConstantCase
     value:           UPPER_CASE
-  - key: readability-identifier-naming.ConstexprVariableCase
+  - key:             readability-identifier-naming.ConstexprVariableCase
     value:           UPPER_CASE
   - key:             readability-identifier-naming.NamespaceCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.EnumConstantCase
     value:           UPPER_CASE
 ...

@@ -5,7 +5,7 @@
 
 namespace CHASSIS {
 
-union wheelsSpeed_u {
+union WheelsSpeed_u {
     struct {
         float M_RF; // motor of the right front
         float M_LF; // motor of the left front
@@ -34,18 +34,18 @@ protected:
      * @param: _wSpeed: speed of each wheel
      * @return: speed of the chassis in m/s and rad/s
     */
-    Speed_u forward(const wheelsSpeed_u &_wSpeed);
+    Speed_u forward(const WheelsSpeed_u &_wSpeed);
 
     /*
      * @brief: calculate the speed of each wheel
      * @param: _speed: speed of the chassis in m/s and rad/s
      * @return: speed of each wheel
     */
-    wheelsSpeed_u reverse(const Speed_u &_speed);
+    WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
     PINYMOTOR::IMotor *motor_[4];
-    wheelsSpeed_u wSpeed_;
+    WheelsSpeed_u wSpeed_;
 };
 
-}
+} //namespace CHASSIS

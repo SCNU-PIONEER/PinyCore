@@ -19,6 +19,7 @@ public:
     virtual void enter() = 0;
     virtual void update() = 0;
     virtual void ctrl(const Speed_u &_refSpeed) = 0;
+    virtual ~Wheel() = default;
 
 protected:
     std::unique_ptr<PowerController> powerCtrl_;

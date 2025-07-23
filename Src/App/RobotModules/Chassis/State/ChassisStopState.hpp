@@ -9,7 +9,7 @@ class StopState : public FSMState {
 public:
     StopState(Chassis *_chassis) : chassis_(_chassis)
     {
-        setStateName(static_cast<uint8_t>(fsmState_e::STOP));
+        setStateName(static_cast<uint8_t>(FSMState_e::STOP));
     };
 
     void enter() override
@@ -26,9 +26,9 @@ public:
     uint8_t checkChange() override
     {
         if (chassis_->msg.state == State_e::stop)
-            return static_cast<uint8_t>(fsmState_e::STOP);
+            return static_cast<uint8_t>(FSMState_e::STOP);
         else if (chassis_->msg.state == State_e::run)
-            return static_cast<uint8_t>(fsmState_e::RUN);
+            return static_cast<uint8_t>(FSMState_e::RUN);
         else
             return 0;
     }
@@ -37,4 +37,4 @@ private:
     Chassis *chassis_;
 };
 
-}
+} //namespace CHASSIS

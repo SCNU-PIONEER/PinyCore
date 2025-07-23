@@ -14,18 +14,18 @@ using namespace PINYMOTOR;
 Omni::Omni()
 {
     for (uint8_t i = 1; i <= 4; i++) {
-        InitConfig_s M3508Config = {
-            reinterpret_cast<uint32_t *>(&HCAN1),
-            ComType_e::CAN,
-            WorkMode_e::QUAD_CURR,
-            i,
-            1000.0f,
-            nullptr,
-            std::unique_ptr<PID>(
+        InitConfig_s m3508Config = {
+            .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+            .comType = ComType_e::CAN,
+            .workMode = WorkMode_e::QUAD_CURR,
+            .offsetId = i,
+            .txFreq = 500.0f,
+            .posPID = nullptr,
+            .velPID = std::unique_ptr<PID>(
                     new positonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f)),
-            nullptr
+            .torqPID = nullptr
         };
-        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(M3508Config));
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(m3508Config));
     }
 }
 
@@ -55,7 +55,7 @@ void Omni::update()
 
 void Omni::ctrl(const Speed_u &_speed)
 {
-    wheelsSpeed_u refWSpeed = reverse(_speed);
+    WheelsSpeed_u refWSpeed = reverse(_speed);
 
     for (uint8_t i = 0; i < 4; i++) {
         motor[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);

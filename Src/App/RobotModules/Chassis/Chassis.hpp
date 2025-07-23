@@ -6,7 +6,7 @@
 #include "MsgImpl.hpp"
 
 namespace CHASSIS {
-enum class fsmState_e : uint8_t { STOP = 1u, START, RUN };
+enum class FSMState_e : uint8_t { STOP = 1, START, RUN };
 }
 
 class Chassis {
@@ -24,7 +24,7 @@ public:
 
     LOG::Logger &log = LOG::Logger::instance();
 
-    chassisMsg msg;
+    chassisMsg msg = {};
 
     CHASSIS::Wheel *wheel;
 };
