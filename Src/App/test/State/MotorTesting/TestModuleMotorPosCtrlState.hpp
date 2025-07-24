@@ -2,16 +2,16 @@
 
 #include "TestModule.hpp"
 
-using namespace TEST;
+namespace TEST {
 
 class MotorPosCtrlState : public FSMState {
 public:
     MotorPosCtrlState(const TestModule *_testModule) : testModule_(_testModule)
     {
-        setStateName(static_cast<uint8_t>(fsmState_e::MotorPosCtrl));
+        setStateName(static_cast<uint8_t>(FSMState_e::MOTOR_POS_CTRL));
     };
 
-    void enter() override { LOG::info("MotorPosCtrl", " enter"); }
+    void enter() override { LOG::info("MOTOR_POS_CTRL", " enter"); }
 
     void run() override
     {
@@ -20,16 +20,16 @@ public:
                                           1);
     };
 
-    void exit() override { LOG::info("MotorPosCtrl", " exit"); }
+    void exit() override { LOG::info("MOTOR_POS_CTRL", " exit"); }
 
     uint8_t checkChange() override
     {
         if (testModule_->rcMsg.rc.switchRight == RC_SW_DOWN) {
-            return static_cast<uint8_t>(fsmState_e::MotorStop);
+            return static_cast<uint8_t>(FSMState_e::MOTOR_STOP);
         } else if (testModule_->rcMsg.rc.switchRight == RC_SW_MID) {
-            return static_cast<uint8_t>(fsmState_e::MotorVelCtrl);
+            return static_cast<uint8_t>(FSMState_e::MOTOR_VEL_CTRL);
         } else if (testModule_->rcMsg.rc.switchRight == RC_SW_UP) {
-            return static_cast<uint8_t>(fsmState_e::MotorPosCtrl);
+            return static_cast<uint8_t>(FSMState_e::MOTOR_POS_CTRL);
         }
         return -1;
     }
@@ -37,3 +37,4 @@ public:
 private:
     const TestModule *testModule_;
 };
+} // namespace TEST

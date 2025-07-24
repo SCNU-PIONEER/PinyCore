@@ -15,20 +15,16 @@
 #include "RcMsg.hpp"
 
 namespace TEST {
-enum class fsmState_e {
-    MotorVelCtrl = 1,
-    MotorPosCtrl = 2,
-    MotorStop = 3,
+enum class FSMState_e : uint8_t {
+    MOTOR_VEL_CTRL = 1,
+    MOTOR_POS_CTRL = 2,
+    MOTOR_STOP = 3,
 };
 }
 
 class TestModule {
 public:
-    inline static TestModule *instance()
-    {
-        static TestModule instance_;
-        return &instance_;
-    }
+    static TestModule *instance();
 
     TestModule(const TestModule &) = delete;
 
