@@ -50,19 +50,19 @@ static constexpr size_t COLOR_ERROR = 2;   // red
 static constexpr size_t COLOR_FATAL = 9;   // bright red
 static constexpr size_t COLOR_STEP = 5;    // blue
 //
-enum class Level {
-    Raw,   // Raw log output
-    Info,  // Information messages which describe normal flow of events
-    Warn,  // Error conditions from which recovery measures have been taken
-    Error, // Critical errors, software module can not recover on its own
-    Debug, // Extra information which is not necessary for normal use (values, pointers, sizes, etc)
-    Verbose // Bigger chunks of debugging information, or frequent messages which can potentially flood the output
+enum class Level : uint8_t {
+    RAW,   // Raw log output
+    INFO,  // Information messages which describe normal flow of events
+    WARN,  // Error conditions from which recovery measures have been taken
+    ERROR, // Critical errors, software module can not recover on its own
+    DEBUG, // Extra information which is not necessary for normal use (values, pointers, sizes, etc)
+    VERBOSE // Bigger chunks of debugging information, or frequent messages which can potentially flood the output
 };
 
-enum class Proto {
+enum class Proto : uint8_t {
     RTT,
-    VOFA_FireWater,
-    VOFA_JustFloat,
+    VOFA_FIREWATER,
+    VOFA_JUSTFLOAT,
     // LOG_UART, // INFO: waiting for design
     // LOG_USB,  // INFO: waiting for design
 };
@@ -70,7 +70,7 @@ enum class Proto {
 class Config {
 public:
     std::string name{ "" };     // log directory
-    Level level{ Level::Info }; // Log level
+    Level level{ Level::INFO }; // Log level
     Proto proto{ Proto::RTT };  // Log protocol
     bool showColor{ true };     // show full file paths in logs
     bool showlocation{ true };  // show full file paths in logs
@@ -83,34 +83,29 @@ public:
     std::source_location loc = std::source_location::current();
     std::string_view type;
     const char *format;
-    Level level{ Level::Info };
+    Level level{ Level::INFO };
 };
 
 constexpr std::string_view getLevelColor(Level _level)
 {
     switch (_level) {
-    case Level::Raw:
+    case Level::RAW:
         return "";
-    case Level::Info:
+    case Level::INFO:
         return GREEN;
-    case Level::Warn:
+    case Level::WARN:
         return YELLOW;
-    case Level::Error:
+    case Level::ERROR:
         return RED;
-    case Level::Debug:
+    case Level::DEBUG:
         return BLUE;
-    case Level::Verbose:
+    case Level::VERBOSE:
         return WHITE;
     default:
         return "";
     }
 }
 
-// constexpr std::string_view getProto(Proto _proto)
-// {
-//     switch (_proto) {
-//     }
-// }
 
 #if !defined(unlikely)
 #if defined(__GNUC__) || defined(__clang__)
@@ -121,4 +116,4 @@ constexpr std::string_view getLevelColor(Level _level)
 
 #endif
 
-}
+} // namespace LOG

@@ -7,13 +7,11 @@
 
 #define LOCATION std::source_location::current()
 
-#define CHECK(x) LOG::Logger::instance().check(LOCATION, [&]() { return (x); })
-
 namespace LOG {
 
 class Logger {
 public:
-    inline static Logger &instance()
+    static Logger &instance()
     {
         static Logger instance;
         return instance;
@@ -31,7 +29,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::Info },
+                       .level = Level::INFO },
             std::forward<Args>(_args)...);
     }
 
@@ -42,7 +40,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::Debug },
+                       .level = Level::DEBUG },
             std::forward<Args>(_args)...);
     }
 
@@ -53,7 +51,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::Warn },
+                       .level = Level::WARN },
             std::forward<Args>(_args)...);
     }
 
@@ -64,7 +62,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::Error },
+                       .level = Level::ERROR },
             std::forward<Args>(_args)...);
     }
 
@@ -74,9 +72,9 @@ public:
     template <typename Func>
     void check(std::source_location _loc, Func &&_operation)
     {
-        stm_err_t _err = _operation();
-        if (unlikely(_err != 0)) {
-            error(_loc, "check", "error code: %d", _err);
+        stm_err_t err = _operation();
+        if (unlikely(err != 0)) {
+            error(_loc, "check", "error code: %d", err);
             while (1) {
             }
         }
@@ -90,7 +88,7 @@ public:
     /**
     * @brief 浮点数转字符串
     */
-    void Float2Str(char *str, size_t buffer_size, float va);
+    void float2Str(char *_str, size_t _buffer_size, float _va);
 
     void disable() { config.enable = false; }
 
@@ -124,10 +122,9 @@ public:
 
         // 写入颜色控制码（如果启用）
         if (config.showColor) [[likely]] {
-            auto _color = getLevelColor(_params.level);
-            size_t len =
-                    std::min(_color.size(), static_cast<size_t>(end - ptr));
-            memcpy(ptr, _color.data(), len);
+            auto color = getLevelColor(_params.level);
+            size_t len = std::min(color.size(), static_cast<size_t>(end - ptr));
+            memcpy(ptr, color.data(), len);
             ptr += len;
         }
 
@@ -156,7 +153,7 @@ public:
         memcpy(ptr, ": ", len);
         ptr += len;
 
-        if (_params.level == Level::Raw) {
+        if (_params.level == Level::RAW) {
             len = snprintf(ptr, end - ptr, _params.format,
                            std::forward<Args>(_args)...);
             ptr += std::min(len, static_cast<size_t>(end - ptr));
@@ -187,6 +184,7 @@ private:
 
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ some preset ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NOLINTBEGIN
 template <typename... Args> struct info {
     constexpr info(std::string_view _type, const char *_format, Args &&..._args,
                    std::source_location _loc = std::source_location::current())
@@ -194,12 +192,12 @@ template <typename... Args> struct info {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::Info },
+                                          .level = Level::INFO },
                                std::forward<Args>(_args)...);
     }
 };
 template <typename... Args>
-info(std::string_view _type, const char *_format, Args &&...args)
+info(std::string_view _type, const char *_format, Args &&..._args)
         -> info<Args...>;
 
 template <typename... Args> struct warn {
@@ -209,12 +207,12 @@ template <typename... Args> struct warn {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::Warn },
+                                          .level = Level::WARN },
                                std::forward<Args>(_args)...);
     }
 };
 template <typename... Args>
-warn(std::string_view _type, const char *_format, Args &&...args)
+warn(std::string_view _type, const char *_format, Args &&..._args)
         -> warn<Args...>;
 
 template <typename... Args> struct error {
@@ -225,12 +223,26 @@ template <typename... Args> struct error {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::Error },
+                                          .level = Level::ERROR },
                                std::forward<Args>(_args)...);
     }
 };
 template <typename... Args>
-error(std::string_view _type, const char *_format, Args &&...args)
+error(std::string_view _type, const char *_format, Args &&..._args)
         -> error<Args...>;
 
+
+template <typename T> void CHECK(T &&_condition)
+{
+    if constexpr (std::is_invocable_v<T>) {
+        /* 处理可调用对象 */
+        Logger::instance().check(LOCATION, std::forward<T>(_condition));
+    } else {
+        /* 处理原始值 */
+        Logger::instance().check(LOCATION,
+                                 [&] { return static_cast<bool>(_condition); });
+    }
 }
+// NOLINTEND
+
+} // namespace LOG

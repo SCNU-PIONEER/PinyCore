@@ -3,10 +3,12 @@
 using namespace PINYMOTOR;
 using namespace UTMOTOR;
 
-UT8010_6::UT8010_6(const char _name[16], InitConfig_s _config,
-                   DMA_HandleTypeDef *_dmaHandle)
+UT80106::UT80106(const char _name[16], InitConfig_s _config,
+                 DMA_HandleTypeDef *_dmaHandle)
         : UTMotor(_name, std::move(_config), _dmaHandle)
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "UT8010_6");
     this->model_.measureMax = 0;
     this->model_.measureMin = 0;
@@ -15,19 +17,25 @@ UT8010_6::UT8010_6(const char _name[16], InitConfig_s _config,
     this->model_.txBaseId = 0;
     this->ctrlId_ = _config.offsetId;
 
-    this->status_ = Status_s{ P_MAX,    V_MAX,    T_MAX,     KP_MAX, KD_MAX,
-                              TRQE_MAX, CURR_MAX, SPEED_MAX, Kn };
+    this->status_ = Status_s{ .PMax = P_MAX,
+                              .VMax = V_MAX,
+                              .TMax = T_MAX,
+                              .KpMax = KP_MAX,
+                              .KdMax = KD_MAX,
+                              .currMax = CURR_MAX,
+                              .torqMax = TRQE_MAX,
+                              .speedMax = SPEED_MAX,
+                              .Kn = KN };
 
     this->registerMotor();
     this->registerRecvCallback();
 
-    checkBaseConfig();
 
     LOG::info("UT8010_6", " %s: An instance of UT8010_6 created, ctrlId:%hx",
               this->name_, this->ctrlId_);
 }
 
-MotorTypeDef_e UT8010_6::checkBaseConfig()
+MotorTypeDef_e UT80106::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 

@@ -4,8 +4,7 @@
 #include "UTMotorMsg.hpp"
 #include "Bsp_dma.hpp"
 
-namespace PINYMOTOR {
-namespace UTMOTOR {
+namespace PINYMOTOR::UTMOTOR {
 
 struct Status_s {
     float PMax;
@@ -25,15 +24,15 @@ struct Status_s {
 class UTMotor : public IMotor {
 private:
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
-    MotorTypeDef_e parse(const uint8_t *_rxBuf);
+    MotorTypeDef_e parse(uint8_t *_rxBuf);
     MotorTypeDef_e ctrl();
 
 protected:
     uint16_t ctrlId_ = 0xFFFF;
-    float Kp_; //电机内置pid
-    float Kd_;
-    uint8_t *txBuf_;
-    uint8_t *rxBuf_;
+    float kp_; //电机内置pid
+    float kd_;
+    uint8_t *txBuf_ = nullptr;
+    uint8_t *rxBuf_ = nullptr;
     Status_s status_;
 
     DMA_HandleTypeDef *dmaHandle_;
@@ -52,16 +51,15 @@ public:
     uint16_t getSendId() const;
     uint16_t getReceiveId() const;
 
-    uint16_t uid() override final;
+    uint16_t uid() final;
 
-    MotorTypeDef_e update() override final;
+    MotorTypeDef_e update() final;
 
-    void setKp(float _kp);
-    void setKd(float _kd);
+    void setKp(const float _kp);
+    void setKd(const float _kd);
 
     MotorTypeDef_e enable();
     MotorTypeDef_e disable();
 };
 
-}
-}
+} // namespace PINYMOTOR::UTMOTOR

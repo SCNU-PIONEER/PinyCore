@@ -9,7 +9,6 @@
 using namespace PINYMOTOR;
 using namespace UTMOTOR;
 
-
 Status_s &Status_s::operator=(const Status_s &_other)
 {
     if (this != &_other) {
@@ -27,13 +26,12 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 DMA_HandleTypeDef *_dmaHandle)
+                 DMA_HandleTypeDef *_dma_handle)
         : IMotor(_name, std::move(_config))
+        , txBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s)))
+        , rxBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
+        , dmaHandle_(_dma_handle)
 {
-    dmaHandle_ = _dmaHandle;
-    txBuf_ = (uint8_t *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s));
-    rxBuf_ = (uint8_t *)Dma::instance().ram_alloc(sizeof(Feedback_s));
-
     this->cmd_.clear();
 }
 
@@ -55,8 +53,7 @@ void UTMotor::registerRecvCallback()
             reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
             [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
                 // basic cb
-                this->parse(
-                        reinterpret_cast<const uint8_t *>(_huart->pRxBuffPtr));
+                this->parse(_huart->pRxBuffPtr);
                 // user cb
                 if (this->userRecvCallback_ != nullptr) {
                     this->userRecvCallback_(reinterpret_cast<const uint8_t *>(
@@ -76,10 +73,9 @@ MotorTypeDef_e UTMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     return ret;
 }
 
-MotorTypeDef_e UTMotor::parse(const uint8_t *_rxBuf)
+MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
 {
-    Feedback_s *fb =
-            reinterpret_cast<Feedback_s *>(const_cast<uint8_t *>(_rxBuf));
+    Feedback_s *fb = reinterpret_cast<Feedback_s *>(_rxBuf);
     if (fb->CRC16 != Get_CRC16_Check_Sum((uint8_t *)(fb), 14, 0)) {
         return 0; //TODO: CRC error
     } else {
@@ -108,34 +104,33 @@ MotorTypeDef_e UTMotor::parse(const uint8_t *_rxBuf)
 
 void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
 {
-    float p_des = cmd_.pos * this->RR();
-    float v_des = cmd_.vel * this->RR();
-    float t_ff = cmd_.torq * this->RR();
-    clamp(t_ff, -127.99f, 127.99f);
-    clamp(v_des, -804.00f, 804.00f);
-    clamp(p_des, -411774.0f, 411774.0f);
+    float pDes = cmd_.pos * this->RR();
+    float vDes = cmd_.vel * this->RR();
+    float tFF = cmd_.torq * this->RR();
+    clamp(tFF, -127.99f, 127.99f);
+    clamp(vDes, -804.00f, 804.00f);
+    clamp(pDes, -411774.0f, 411774.0f);
 
     _txBuf.head[0] = 0xFE;
     _txBuf.head[1] = 0xEE;
     _txBuf.mode.status = cmd_.SW;
     _txBuf.mode.id = ctrlId_;
-    _txBuf.comd.k_pos = Kp_ / 25.6f * 32768;
-    _txBuf.comd.k_spd = Kd_ / 25.6f * 32768;
-    _txBuf.comd.pos_des = p_des / 6.2832f * 32768;
-    _txBuf.comd.spd_des = v_des / 6.2832f * 256;
-    _txBuf.comd.tor_des = t_ff * 256;
+    _txBuf.comd.k_pos = static_cast<int16_t>(kp_ / 25.6f * 32768);
+    _txBuf.comd.k_spd = static_cast<int16_t>(kd_ / 25.6f * 32768);
+    _txBuf.comd.pos_des = static_cast<int32_t>(pDes / 6.2832f * 32768);
+    _txBuf.comd.spd_des = static_cast<int16_t>(vDes / 6.2832f * 256);
+    _txBuf.comd.tor_des = static_cast<int16_t>(tFF * 256.0f);
     _txBuf.CRC16 =
             Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
-    this->cmd_.elec = this->data_.torq /
-                      status_.Kn; // MIT unsupport return expected current
+    this->cmd_.elec = this->data_.torq / status_.Kn;
 }
 
 
 MotorTypeDef_e UTMotor::ctrl()
 {
-    TransmitMsg_s _txBuf;
-    convert(_txBuf, this->cmd_);
-    return send(this->model_.txBaseId, (uint8_t *)&_txBuf,
+    TransmitMsg_s txBuf{};
+    convert(txBuf, this->cmd_);
+    return send(this->model_.txBaseId, (uint8_t *)&txBuf,
                 sizeof(TransmitMsg_s));
 }
 
@@ -155,22 +150,24 @@ MotorTypeDef_e UTMotor::update()
     return rslt;
 }
 
-void UTMotor::setKp(float Kp_) { clamp(Kp_, 0.0f, 25.599f); }
+void UTMotor::setKp(const float _kp) { kp_ = clamp(_kp, 0.0f, 25.599f); }
 
-void UTMotor::setKd(float Kd_) { clamp(Kd_, 0.0f, 25.599f); }
+void UTMotor::setKd(const float _kd) { kd_ = clamp(_kd, 0.0f, 25.599f); }
 
 MotorTypeDef_e UTMotor::enable()
 {
-    TransmitMsg_s _txBuf;
+    TransmitMsg_s txBuf{};
     this->cmd_.updateSW(true);
-    convert(_txBuf, this->cmd_);
-    return send(ctrlId_, (uint8_t *)&_txBuf, sizeof(TransmitMsg_s));
+    convert(txBuf, this->cmd_);
+    return send(ctrlId_, reinterpret_cast<uint8_t *>(&txBuf),
+                sizeof(TransmitMsg_s));
 }
 
 MotorTypeDef_e UTMotor::disable()
 {
-    TransmitMsg_s _txBuf;
+    TransmitMsg_s txBuf{};
     this->cmd_.updateSW(false);
-    convert(_txBuf, this->cmd_);
-    return send(ctrlId_, (uint8_t *)&txBuf_, sizeof(TransmitMsg_s));
+    convert(txBuf, this->cmd_);
+    return send(ctrlId_, reinterpret_cast<uint8_t *>(&txBuf),
+                sizeof(TransmitMsg_s));
 }

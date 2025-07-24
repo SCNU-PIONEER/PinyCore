@@ -3,15 +3,14 @@
 #include <cstdint>
 #include <cstring>
 
-namespace PINYMOTOR {
-namespace UTMOTOR {
+namespace PINYMOTOR::UTMOTOR {
 
-enum class ErrorStatus_e {
-    Normal = 0u,
-    OverHot,
-    OverCurrent,
-    OverVoltage,
-    EncoderError,
+enum class ErrorStatus_e : uint8_t {
+    NORMAL = 0u,
+    OVERHOT,
+    OVERCURRENT,
+    OVERVOLTAGE,
+    ENCODERERROR,
 };
 
 #pragma pack(push, 1)
@@ -66,5 +65,4 @@ struct Feedback_s {
 
 #pragma pack(pop)
 
-}
-}
+} // namespace PINYMOTOR::UTMOTOR
