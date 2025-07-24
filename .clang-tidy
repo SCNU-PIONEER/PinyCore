@@ -111,7 +111,7 @@ CheckOptions:
     value:           camelBack
   # variable names
   - key:             readability-identifier-naming.VariableCase
-    value:           lower_case
+    value:           camelBack
   - key:             readability-identifier-naming.LocalVariableCase
     value:           camelBack
   - key:             readability-identifier-naming.ParameterPrefix
