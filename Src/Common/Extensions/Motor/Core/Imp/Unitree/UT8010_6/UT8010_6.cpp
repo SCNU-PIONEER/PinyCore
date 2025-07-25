@@ -1,4 +1,5 @@
 #include "UT8010_6.hpp"
+#include "StmLog.hpp"
 
 using namespace PINYMOTOR;
 using namespace UTMOTOR;

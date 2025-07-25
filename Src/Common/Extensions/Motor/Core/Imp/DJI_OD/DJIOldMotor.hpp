@@ -2,10 +2,7 @@
 
 #include "../../Base/MotorBase.hpp"
 
-#include <memory>
-
-namespace PINYMOTOR {
-namespace DJI_ODMOTOR {
+namespace PINYMOTOR::DJI_ODMOTOR {
 #pragma pack(push, 1)
 struct Msg_s {
     int16_t cmd[3];
@@ -29,7 +26,7 @@ struct Status_s {
     Status_s &operator=(const Status_s &_other);
 };
 
-class DJI_ODMotor : public TripMotorBase {
+class DJIOldMotor : public TripMotorBase {
     using Base = TripMotorBase;
 
 private:
@@ -47,16 +44,15 @@ protected:
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
-    DJI_ODMotor(const char _name[16], InitConfig_s _config);
-    ~DJI_ODMotor() override;
+    DJIOldMotor(const char _name[16], InitConfig_s _config);
+    ~DJIOldMotor() override;
     void overrideStats(const Status_s &_newStats);
 
     uint16_t canId() const; // TripMotor's canId is fixed
     uint16_t masterId() const;
-    uint16_t uid() override final;
-    MotorTypeDef_e update() override final;
+    uint16_t uid() final;
+    MotorTypeDef_e update() final;
 
-    TripMotorGroup_s *findGroup() const;
+    TripMotorGroup_s *findGroup();
 };
-}
-}
+} // namespace PINYMOTOR::DJI_ODMOTOR

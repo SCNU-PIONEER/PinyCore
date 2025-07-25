@@ -26,11 +26,11 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 DMA_HandleTypeDef *_dma_handle)
+                 DMA_HandleTypeDef *_dmaHandle)
         : IMotor(_name, std::move(_config))
         , txBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s)))
         , rxBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
-        , dmaHandle_(_dma_handle)
+        , dmaHandle_(_dmaHandle)
 {
     this->cmd_.clear();
 }
@@ -54,11 +54,6 @@ void UTMotor::registerRecvCallback()
             [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
                 // basic cb
                 this->parse(_huart->pRxBuffPtr);
-                // user cb
-                if (this->userRecvCallback_ != nullptr) {
-                    this->userRecvCallback_(reinterpret_cast<const uint8_t *>(
-                            _huart->pRxBuffPtr));
-                }
             });
 }
 
@@ -85,7 +80,7 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
         this->data_.multipCirAng += 6.2832f *
                                     ((float)this->data_.rawScale -
                                      (float)this->data_.lastRawScale) /
-                                    32768 / this->RR();
+                                    32768 / this->rr();
         this->data_.singleCirAng =
                 rangeMap(this->data_.singleCirAng, 0, 2 * PI);
         this->data_.spdRadps = ((float)fb->fbk.speed / 256) * 6.2832f;
@@ -104,9 +99,9 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
 
 void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
 {
-    float pDes = cmd_.pos * this->RR();
-    float vDes = cmd_.vel * this->RR();
-    float tFF = cmd_.torq * this->RR();
+    float pDes = cmd_.pos * this->rr();
+    float vDes = cmd_.vel * this->rr();
+    float tFF = cmd_.torq * this->rr();
     clamp(tFF, -127.99f, 127.99f);
     clamp(vDes, -804.00f, 804.00f);
     clamp(pDes, -411774.0f, 411774.0f);
@@ -119,7 +114,7 @@ void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
     _txBuf.comd.k_spd = static_cast<int16_t>(kd_ / 25.6f * 32768);
     _txBuf.comd.pos_des = static_cast<int32_t>(pDes / 6.2832f * 32768);
     _txBuf.comd.spd_des = static_cast<int16_t>(vDes / 6.2832f * 256);
-    _txBuf.comd.tor_des = static_cast<int16_t>(tFF * 256.0f);
+    _txBuf.comd.tor_des = static_cast<int16_t>(tFF * 256);
     _txBuf.CRC16 =
             Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
     this->cmd_.elec = this->data_.torq / status_.Kn;
@@ -139,9 +134,6 @@ MotorTypeDef_e UTMotor::update()
     if (xQueueReceive(this->rxQueue_, this->rxBuf_, 0) == pdTRUE) {
         this->parse(this->rxBuf_);
         this->calcRecvFreq();
-        if (this->userRecvCallback_ != nullptr) {
-            this->userRecvCallback_(this->rxBuf_);
-        }
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();

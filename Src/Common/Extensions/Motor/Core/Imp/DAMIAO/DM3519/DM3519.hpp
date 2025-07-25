@@ -13,13 +13,12 @@
 #define DM3519_TORQ_MAX          7.8f
 #define DM3519_TORQ_CONSTANT     0.3805f
 
-namespace PINYMOTOR {
-namespace DMMOTOR {
+
+namespace PINYMOTOR::DMMOTOR {
 class DM3519 final : public DMMotor {
 private:
 public:
     DM3519(const char _name[16], InitConfig_s _config);
     MotorTypeDef_e checkBaseConfig();
 };
-}
-} // namespace PINYMOTOR
+} // namespace PINYMOTOR::DMMOTOR

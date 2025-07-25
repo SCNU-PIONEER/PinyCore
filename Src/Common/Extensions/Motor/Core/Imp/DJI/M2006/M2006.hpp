@@ -11,8 +11,8 @@
 #define M2006_TORQ_MAX          1.f
 #define M2006_TORQ_CONSTANT     0.18f
 
-namespace PINYMOTOR {
-namespace DJIMOTOR {
+
+namespace PINYMOTOR::DJIMOTOR {
 
 
 class M2006 final : public DJIMotor {
@@ -21,5 +21,4 @@ public:
     M2006(const char _name[16], InitConfig_s _config);
     MotorTypeDef_e checkBaseConfig();
 };
-}
-} // namespace PINYMOTOR
+} // namespace PINYMOTOR::DJIMOTOR

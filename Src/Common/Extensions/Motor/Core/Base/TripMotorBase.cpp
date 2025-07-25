@@ -1,24 +1,24 @@
 #include "./MotorBase.hpp"
 
+#include "StmLog.hpp"
+
 using namespace PINYMOTOR;
 
-TripMotorBase::TripMotors TripMotorBase::motorMap_ = {};
-
 TripMotorGroup_s::TripMotorGroup_s()
+        : refLoadedCode((0 << 0) | (0 << 1) | (0 << 2))
+        , curLoadedCode((0 << 0) | (0 << 1) | (0 << 2))
+        , lastSendTick(0.f)
+        , minTxFreq(1000.f)
 {
-    for (int i = 0; i < 3; i++)
-        motor[i] = nullptr;
-    lastSendTick = 0.f;
-    minTxFreq = 1000.f;
-    curLoadedCode = (0 << 0) | (0 << 1) | (0 << 2);
-    refLoadedCode = (0 << 0) | (0 << 1) | (0 << 2);
+    for (auto &i : motor)
+        i = nullptr;
 }
 void TripMotorGroup_s::showMotorInfo()
 {
-    for (int i = 0; i < 3; i++) {
-        if (motor[i] != nullptr) {
+    for (auto &i : motor) {
+        if (i != nullptr) {
             LOG::info("TripMotorGroup", "Motor %s: exist, uid: %hx",
-                      motor[i]->getName(), motor[i]->uid());
+                      i->getName(), i->uid());
         } else {
             LOG::warn("TripMotorGroup", "Motor %d: not exist", i);
         }
@@ -31,25 +31,27 @@ TripMotorBase::TripMotorBase(const char _name[16], InitConfig_s _config)
     isMutiple_ = true;
 }
 
-TripMotorBase::TripMotors &TripMotorBase::getMotorMap() const
+TripMotorBase::TripMotors &TripMotorBase::getMotorMap()
 {
-    return motorMap_;
+    static TripMotors motorMap;
+    return motorMap;
 }
 
 void TripMotorBase::updateMotorMap()
 {
-    auto it = motorMap_.end();
-    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+    auto it = getMotorMap().end();
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
+         ++iter) {
         if (iter->first == this->pComHandle_) {
             it = iter;
             break;
         }
     }
-    if (it == motorMap_.end()) {
-        motorMap_.emplace_back(
+    if (it == getMotorMap().end()) {
+        getMotorMap().emplace_back(
                 this->pComHandle_,
                 std::unordered_map<uint16_t, TripMotorGroup_s *>());
-        it = motorMap_.end() - 1;
+        it = getMotorMap().end() - 1;
     }
     auto &map = it->second;
     if (map.find(getGroupId()) == map.end()) {
@@ -86,14 +88,15 @@ void TripMotorBase::updateMotorMap()
 
 void TripMotorBase::removeMotorFromMap()
 {
-    auto it = motorMap_.end();
-    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+    auto it = getMotorMap().end();
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
+         ++iter) {
         if (iter->first == this->pComHandle_) {
             it = iter;
             break;
         }
     }
-    if (it != motorMap_.end()) {
+    if (it != getMotorMap().end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;

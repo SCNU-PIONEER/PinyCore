@@ -1,6 +1,9 @@
 #include "DM3519.hpp"
 
 #include "DMMotor.hpp"
+
+#include "StmLog.hpp"
+
 #include <cstring>
 
 using namespace PINYMOTOR;
@@ -15,19 +18,18 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->status_ = Status_s{
-        DM3519_P_MAX,             // PMax
-        DM3519_V_MAX,             // VMax
-        DM3519_T_MAX,             // TMax
-        DM3519_MITKp_MAX,         // MITKpMax
-        DM3519_MITKd_MAX,         // MITKdMax
-        DM3519_CURR_TX_CODE_SPAN, // currTxCodeSpan
-        DM3519_CURR_RATED,        // currRated
-        DM3519_TORQ_RATED,        // torqRated
-        DM3519_CURR_MAX,          // currMax
-        DM3519_TORQ_MAX,          // torqMax
-        DM3519_TORQ_CONSTANT      // torqConstant
-    };
+    this->status_ = Status_s(DM3519_P_MAX,             // PMax
+                             DM3519_V_MAX,             // VMax
+                             DM3519_T_MAX,             // TMax
+                             DM3519_MITKp_MAX,         // MITKpMax
+                             DM3519_MITKd_MAX,         // MITKdMax
+                             DM3519_CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             DM3519_CURR_RATED,        // currRated
+                             DM3519_TORQ_RATED,        // torqRated
+                             DM3519_CURR_MAX,          // currMax
+                             DM3519_TORQ_MAX,          // torqMax
+                             DM3519_TORQ_CONSTANT      // torqConstant
+    );
 
     this->registerMotor();
     this->registerRecvCallback();

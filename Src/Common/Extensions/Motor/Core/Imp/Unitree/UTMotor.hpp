@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MotorBase.hpp"
+#include "IMotor.hpp"
 #include "UTMotorMsg.hpp"
 #include "Bsp_dma.hpp"
 

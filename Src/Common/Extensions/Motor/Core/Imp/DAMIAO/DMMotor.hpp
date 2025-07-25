@@ -1,19 +1,18 @@
 #pragma once
 
-#include "../../Base/MotorBase.hpp"
+#include "IMotor.hpp"
 
 #include <cstdint>
 #include <cstring>
 
 #include <unordered_map>
 
-namespace PINYMOTOR {
-namespace DMMOTOR {
-enum class RegId_e {
-    DM_REG_UV_Value = 0u,   // 低压保护值	RW	(10.0,3.4E38]	float
-    DM_REG_KT_Value = 1u,   // 扭矩系数	RW	[0.0,3.4E38]	float
-    DM_REG_OT_Value = 2u,   // 过温保护值	RW	[80.0,200)	float
-    DM_REG_OC_Value = 3u,   // 过流保护值	RW	(0.0,1.0)	float
+namespace PINYMOTOR::DMMOTOR {
+enum class RegId_e : uint8_t {
+    DM_REG_UV_VALUE = 0u,   // 低压保护值	RW	(10.0,3.4E38]	float
+    DM_REG_KT_VALUE = 1u,   // 扭矩系数	RW	[0.0,3.4E38]	float
+    DM_REG_OT_VALUE = 2u,   // 过温保护值	RW	[80.0,200)	float
+    DM_REG_OC_VALUE = 3u,   // 过流保护值	RW	(0.0,1.0)	float
     DM_REG_ACC = 4u,        // 加速度	RW	(0.0,3.4E38)	float
     DM_REG_DEC = 5u,        // 减速度	RW	[-3.4E38,0.0)	float
     DM_REG_MAX_SPD = 6u,    // 最大速度	RW	(0.0,3.4E38]	float
@@ -21,16 +20,16 @@ enum class RegId_e {
     DM_REG_ESC_ID = 8u,     // 接收ID	RW	[0,0x7FF]	uint32
     DM_REG_TIMEOUT = 9u,    // 超时警报时间	RW	[0,2^32-1]	uint32
     DM_REG_CTRL_MODE = 10u, // 控制模式	RW	[1,4]	uint32
-    DM_REG_Damp = 11u,      // 电机粘滞系数	RO	/	float
-    DM_REG_Inertia = 12u,   // 电机转动惯量	RO	/	float
-    DM_REG_hw_ver = 13u,    // 保留	RO	/	uint32
-    DM_REG_sw_ver = 14u,    // 软件版本号	RO	/	uint32
+    DM_REG_DAMP = 11u,      // 电机粘滞系数	RO	/	float
+    DM_REG_TINERTIA = 12u,   // 电机转动惯量	RO	/	float
+    DM_REG_HW_VER = 13u,    // 保留	RO	/	uint32
+    DM_REG_SW_VER = 14u,    // 软件版本号	RO	/	uint32
     DM_REG_SN = 15u,        // 保留	RO	/	uint32
     DM_REG_NPP = 16u,       // 电机极对数	RO	/	uint32
-    DM_REG_Rs = 17u,        // 电机相电阻	RO	/	float
-    DM_REG_Ls = 18u,        // 电机相电感	RO	/	float
-    DM_REG_Flux = 19u,      // 电机磁链值	RO	/	float
-    DM_REG_Gr = 20u,        // 齿轮减速比	RO	/	float
+    DM_REG_RS = 17u,        // 电机相电阻	RO	/	float
+    DM_REG_LS = 18u,        // 电机相电感	RO	/	float
+    DM_REG_FLUX = 19u,      // 电机磁链值	RO	/	float
+    DM_REG_GR = 20u,        // 齿轮减速比	RO	/	float
     DM_REG_PMAX = 21u,      // 位置映射范围	RW	(0.0,3.4E38]	float
     DM_REG_VMAX = 22u,      // 速度映射范围	RW	(0.0,3.4E38]	float
     DM_REG_TMAX = 23u,      // 扭矩映射范围	RW	(0.0,3.4E38]	float
@@ -39,34 +38,34 @@ enum class RegId_e {
     DM_REG_KI_ASR = 26u,    // 速度环Ki	RW	[0.0,3.4E38]	float
     DM_REG_KP_APR = 27u,    // 位置环Kp	RW	[0.0,3.4E38]	float
     DM_REG_KI_APR = 28u,    // 位置环Ki	RW	[0.0,3.4E38]	float
-    DM_REG_OV_Value = 29u,  // 过压保护值	RW	TBD	float
+    DM_REG_OV_VALUE = 29u,  // 过压保护值	RW	TBD	float
     DM_REG_GREF = 30u,      // 齿轮力矩效率	RW	(0.0,1.0]	float
-    DM_REG_Deta = 31u,      // 速度环阻尼系数	RW	[1.0,30.0]	float
+    DM_REG_DETA = 31u,      // 速度环阻尼系数	RW	[1.0,30.0]	float
     DM_REG_V_BW = 32u,      // 速度环滤波带宽	RW	(0.0,500.0)	float
-    DM_REG_IQ_c1 = 33u,     // 电流环增强系数	RW	[100.0,10000.0]	float
-    DM_REG_VL_c1 = 34u,     // 速度环增强系数	RW	(0.0,10000.0]	float
-    DM_REG_can_br = 35u,    // CAN波特率代码	RW	[0,4]	uint32
-    DM_REG_sub_ver = 36u,   // 子版本号	RO	/	uint32
-    DM_REG_u_off = 50u,     // u相偏置	RO	　	float
-    DM_REG_v_off = 51u,     // v相偏置	RO	　	float
-    DM_REG_k1 = 52u,        // 补偿因子1	RO	　	float
-    DM_REG_k2 = 53u,        // 补偿因子2	RO	　	float
-    DM_REG_m_off = 54u,     // 角度偏移	RO	　	float
-    DM_REG_dir = 55u,       // 方向	RO	　	float
-    DM_REG_p_m = 80u,       // 电机位置	RO	　	float
-    DM_REG_xout = 81u,      // 输出轴位置	RO	　	float
+    DM_REG_IQ_C1 = 33u,     // 电流环增强系数	RW	[100.0,10000.0]	float
+    DM_REG_VL_C1 = 34u,     // 速度环增强系数	RW	(0.0,10000.0]	float
+    DM_REG_CAN_BR = 35u,    // CAN波特率代码	RW	[0,4]	uint32
+    DM_REG_SUB_VER = 36u,   // 子版本号	RO	/	uint32  
+    DM_REG_U_OFF = 50u,     // u相偏置	RO	　	float
+    DM_REG_V_OFF = 51u,     // v相偏置	RO	　	float
+    DM_REG_K1 = 52u,        // 补偿因子1	RO	　	float
+    DM_REG_K2 = 53u,        // 补偿因子2	RO	　	float
+    DM_REG_M_OFF = 54u,     // 角度偏移	RO	　	float
+    DM_REG_DIR = 55u,       // 方向	RO	　	float
+    DM_REG_P_M = 80u,       // 电机位置	RO	　	float
+    DM_REG_XOUT = 81u,      // 输出轴位置	RO	　	float
 };
 
-enum class ErrorCode_e {
-    MotorDisable = 0x0u,
-    MotorEnable = 0x1u,
-    OverVoltage = 0x8u,
-    LowVoltage = 0x9u,
-    OverCurrent = 0xAu,
-    MosOverHeat = 0xBu,
-    RotorOverHeat = 0xCu,
-    CommunicationLoss = 0xDu,
-    Overload = 0xEu,
+enum class ErrorCode_e : uint8_t {
+    MOTOR_DISABLE = 0x0u,
+    MOTOR_ENABLE = 0x1u,
+    OVER_VOLTAGE = 0x8u,
+    LOW_VOLTAGE = 0x9u,
+    OVER_CURRENT = 0xAu,
+    MOS_OVER_HEAT = 0xBu,
+    ROTOR_OVER_HEAT = 0xCu,
+    COMMUNICATION_LOSS = 0xDu,
+    OVERLOAD = 0xEu,
 };
 
 #pragma pack(push, 1)
@@ -94,11 +93,11 @@ struct Feedback_s {
 };
 
 struct MITMsg_s {
-    int16_t exptScale : 16;
-    int16_t exptVel : 12;
-    int16_t Kp : 12;
-    int16_t Kd : 12;
-    int16_t torqueOffset : 12;
+    uint16_t exptScale : 16;
+    uint16_t exptVel : 12;
+    uint16_t Kp : 12;
+    uint16_t Kd : 12;
+    uint16_t torqueOffset : 12;
 };
 
 struct EMITMsg_s {
@@ -183,8 +182,8 @@ public:
     MotorTypeDef_e clearError();
 
     MotorTypeDef_e registerReg(Reg_s *_regObj, RegValue_u *_regValue);
-    MotorTypeDef_e cancelReg(RegId_e regId);
-    MotorTypeDef_e writeOneReg(RegId_e _regId, uint8_t dat[4]);
+    MotorTypeDef_e cancelReg(RegId_e _regId);
+    MotorTypeDef_e writeOneReg(RegId_e _regId, uint8_t _dat[4]);
     MotorTypeDef_e readOneReg(RegId_e _regId);
     MotorTypeDef_e storageOneReg(RegId_e _regId);
     MotorTypeDef_e writeReg();
@@ -192,5 +191,4 @@ public:
     MotorTypeDef_e storageReg();
     MotorTypeDef_e updateRegDat();
 };
-}
-}
+} // namespace PINYMOTOR::DMMOTOR

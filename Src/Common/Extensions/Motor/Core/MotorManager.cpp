@@ -8,6 +8,12 @@
 
 using namespace PINYMOTOR;
 
+MotorManager *MotorManager::instance()
+{
+    static MotorManager instance;
+    return &instance;
+}
+
 void MotorManager::ctrlTask()
 {
     portTickType xLastWakeTime;
@@ -17,7 +23,8 @@ void MotorManager::ctrlTask()
             IMotor *motor = motorPair.second;
             motor->update();
         }
-        vTaskDelayUntil(&xLastWakeTime, (1000.f / this->motorTaskFreq_));
+        vTaskDelayUntil(&xLastWakeTime,
+                        static_cast<TickType_t>(1000.f / this->motorTaskFreq_));
     }
 }
 
@@ -31,6 +38,6 @@ uint8_t MotorManager::motorListSize()
 void MotorManager::taskCreate()
 {
     xTaskCreate(
-            [](void *param) -> void { MotorManager::instance()->ctrlTask(); },
-            "motor_task", 256, NULL, osPriorityRealtime, NULL);
+            [](void *_param) -> void { MotorManager::instance()->ctrlTask(); },
+            "motor_task", 256, nullptr, osPriorityRealtime, nullptr);
 }

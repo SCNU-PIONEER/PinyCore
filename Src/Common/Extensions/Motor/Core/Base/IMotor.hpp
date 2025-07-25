@@ -6,9 +6,6 @@
 #include "../Projdefs.hpp"
 #include <cstdarg>
 #include <memory>
-#include "StmLog.hpp"
-
-#include <functional>
 
 namespace PINYMOTOR {
 class IMotor {
@@ -41,9 +38,7 @@ protected:
 
     QueueHandle_t cmdQueue_;
     CmdBus_s cmdBuf_;
-
-    std::function<void(const uint8_t *_rxBuffer)> userRecvCallback_;
-
+    
     bool isMutiple_ = false; // default is not quad encoder
 
     bool checkSend();
@@ -74,7 +69,7 @@ public:
     float txBaseId() const;
     float rxBaseId() const;
 
-    float RR() const;
+    float rr() const;
     float measureMax() const;
     float measureMin() const;
     float span() const;
@@ -86,9 +81,6 @@ public:
     void overrideMeasureMin(float _newMeasureMin);
 
     const char *getName() const;
-
-    void
-    regUserRecvCallback(std::function<void(const uint8_t *_rxBuf)> _callback);
 };
 
-}
+} // namespace PINYMOTOR

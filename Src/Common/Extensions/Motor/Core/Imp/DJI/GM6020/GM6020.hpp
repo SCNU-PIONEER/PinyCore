@@ -11,8 +11,8 @@
 #define GM6020_TORQ_MAX          0.86f
 #define GM6020_TORQ_CONSTANT     0.741f
 
-namespace PINYMOTOR {
-namespace DJIMOTOR {
+
+namespace PINYMOTOR::DJIMOTOR {
 
 
 class GM6020 final : public DJIMotor {
@@ -21,5 +21,4 @@ public:
     GM6020(const char _name[16], InitConfig_s _config);
     MotorTypeDef_e checkBaseConfig();
 };
-}
-} // namespace PINYMOTOR
+} // namespace PINYMOTOR::DJIMOTOR

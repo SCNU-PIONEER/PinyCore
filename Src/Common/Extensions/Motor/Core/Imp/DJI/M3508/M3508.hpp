@@ -11,8 +11,8 @@
 #define M3508_TORQ_MAX          4.5f
 #define M3508_TORQ_CONSTANT     0.3f
 
-namespace PINYMOTOR {
-namespace DJIMOTOR {
+
+namespace PINYMOTOR::DJIMOTOR {
 
 
 class M3508 final : public DJIMotor {
@@ -22,5 +22,4 @@ private:
 public:
     M3508(const char _name[16], InitConfig_s _config);
 };
-}
-} // namespace PINYMOTOR
+} // namespace PINYMOTOR::DJIMOTOR

@@ -1,6 +1,8 @@
 #include "DJIMotor.hpp"
 
-#include "../../../Utils/MotorCommonMacros.hpp"
+#include "MotorCommonMacros.hpp"
+
+#include "StmLog.hpp"
 
 #include "Bsp_can.hpp"
 
@@ -55,7 +57,7 @@ void DJIMotor::registerRecvCallback()
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(this->rxQueue_, const_cast<uint8_t *>(_rxBuf),
+                xQueueSendFromISR(this->rxQueue_, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
     LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx", this->name_,
@@ -73,10 +75,7 @@ void DJIMotor::cancelRecvCallback()
 void DJIMotor::updateCtrlId()
 {
     switch (this->workMode_) {
-    case WorkMode_e::QUAD_CURR: {
-        this->ctrlId_ = this->getGroupId() + 0u;
-        break;
-    }
+    case WorkMode_e::QUAD_CURR:
     case WorkMode_e::QUAD_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u;
         break;
@@ -97,15 +96,14 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
         return 1;
     } else {
         if (this->checkGroupSend(group)) {
-#if 0
             // Check this Buffer
-            LOG::debug("DJIMotor", " %s: send data to CAN %hx", this->name_,
-                      _sendId);
-            LOG::debug("DJIMotor",
-                      " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-                      this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
-                      _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
-#endif
+            // LOG::warn("DJIMotor", " %s: send data to CAN %hx", this->name_,
+            //           _sendId);
+            // LOG::warn("DJIMotor",
+            //           " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
+            //           this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+            //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
+
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
                     reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
                     _txBuf, _len));
@@ -120,7 +118,7 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     Feedback_s fb;
     fb.rawScale = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawRpm = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
-    fb.current = ((_rxBuf.data[4] << 8) | _rxBuf.data[5]);
+    fb.current = static_cast<int16_t>((_rxBuf.data[4] << 8) | _rxBuf.data[5]);
     fb.temperature = _rxBuf.data[6];
 
     this->data_.rawScale = fb.rawScale;
@@ -130,12 +128,14 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     this->data_.tempture = fb.temperature;
 
     this->data_.torq = this->data_.curr * status_.torqConstant;
-    this->data_.spdRpm = fb.rawRpm / this->RR();
+    this->data_.spdRpm = static_cast<float>(fb.rawRpm) / this->rr();
     this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
 
-    float angDiff = getMinorArc(this->data_.rawScale, this->data_.lastRawScale,
-                                this->span()) *
-                    2 * PI / (this->span() * this->RR());
+    float angDiff = (getMinorArc(static_cast<float>(this->data_.rawScale),
+                                 static_cast<float>(this->data_.lastRawScale),
+                                 this->span())) *
+                    2 * std::numbers::pi_v<float> / (this->span() * this->rr());
+
     if (this->globalState_ == GlobalState_e::OFFLINE &&
         this->data_.lastRawScale != this->data_.rawScale) {
         this->globalState_ = GlobalState_e::ONLINE;
@@ -265,7 +265,7 @@ MotorTypeDef_e DJIMotor::ctrl()
     }
     }
     if (this->cmd_.SW) {
-        txBuf[2 * this->getPosInGroup() + 1] =
+        txBuf[(2 * this->getPosInGroup()) + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
         txBuf[2 * this->getPosInGroup()] =
                 static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
@@ -276,7 +276,7 @@ MotorTypeDef_e DJIMotor::ctrl()
             this->velPID_->reset();
         if (this->torqPID_ != nullptr)
             this->torqPID_->reset();
-        txBuf[2 * this->getPosInGroup() + 1] = 0;
+        txBuf[(2 * this->getPosInGroup()) + 1] = 0;
         txBuf[2 * this->getPosInGroup()] = 0;
     }
 
@@ -289,9 +289,6 @@ MotorTypeDef_e DJIMotor::update()
     if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
         this->parse(this->rxBuf_);
         this->calcRecvFreq();
-        if (this->userRecvCallback_ != nullptr) {
-            this->userRecvCallback_(this->rxBuf_.data);
-        }
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
@@ -300,7 +297,7 @@ MotorTypeDef_e DJIMotor::update()
     return rslt;
 }
 
-QuadMotorGroup_s *DJIMotor::findGroup() const
+QuadMotorGroup_s *DJIMotor::findGroup()
 {
     QuadMotorGroup_s *group = nullptr;
     for (auto &entry : getMotorMap()) {

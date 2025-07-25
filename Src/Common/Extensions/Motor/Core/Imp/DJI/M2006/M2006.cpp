@@ -2,6 +2,8 @@
 
 #include "DJIMotor.hpp"
 
+#include "StmLog.hpp"
+
 #include <cstring>
 
 using namespace PINYMOTOR;

@@ -1,6 +1,9 @@
 #include "DM4310.hpp"
 
 #include "DMMotor.hpp"
+
+#include "StmLog.hpp"
+
 #include <cstring>
 
 using namespace PINYMOTOR;
@@ -15,19 +18,18 @@ DM4310::DM4310(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->status_ = Status_s{
-        DM4310_P_MAX,             // PMax
-        DM4310_V_MAX,             // VMax
-        DM4310_T_MAX,             // TMax
-        DM4310_MITKp_MAX,         // MITKpMax
-        DM4310_MITKd_MAX,         // MITKdMax
-        DM4310_CURR_TX_CODE_SPAN, // currTxCodeSpan
-        DM4310_CURR_RATED,        // currRated
-        DM4310_TORQ_RATED,        // torqRated
-        DM4310_CURR_MAX,          // currMax
-        DM4310_TORQ_MAX,          // torqMax
-        DM4310_TORQ_CONSTANT      // torqConstant
-    };
+    this->status_ = Status_s(DM4310_P_MAX,             // PMax
+                             DM4310_V_MAX,             // VMax
+                             DM4310_T_MAX,             // TMax
+                             DM4310_MITKp_MAX,         // MITKpMax
+                             DM4310_MITKd_MAX,         // MITKdMax
+                             DM4310_CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             DM4310_CURR_RATED,        // currRated
+                             DM4310_TORQ_RATED,        // torqRated
+                             DM4310_CURR_MAX,          // currMax
+                             DM4310_TORQ_MAX,          // torqMax
+                             DM4310_TORQ_CONSTANT      // torqConstant
+    );
 
     this->registerMotor();
     this->registerRecvCallback();

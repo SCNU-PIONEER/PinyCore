@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <unordered_map>
 
 #include "FreeRTOS.h"
@@ -15,11 +15,7 @@ public:
     MotorManager(const MotorManager &) = delete;
     MotorManager &operator=(const MotorManager &) = delete;
 
-    inline static MotorManager *instance()
-    {
-        static MotorManager instance_;
-        return &instance_;
-    }
+    static MotorManager *instance();
 
     void init();
 
@@ -32,10 +28,7 @@ public:
     uint8_t motorListSize();
 
     // <uint16_t, IMotor *> -> <uid, motor>
-    inline std::unordered_map<uint8_t, IMotor *> &motors()
-    {
-        return motorList_;
-    }
+    std::unordered_map<uint8_t, IMotor *> &motors() { return motorList_; }
 
 private:
     MotorManager() = default;
@@ -45,4 +38,4 @@ private:
     std::unordered_map<uint8_t, IMotor *> motorList_;
     uint8_t motorListSize_ = 0;
 };
-}
+} // namespace PINYMOTOR

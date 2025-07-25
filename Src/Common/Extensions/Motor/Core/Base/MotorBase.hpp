@@ -6,6 +6,7 @@
 #include "task.h"
 #include "semphr.h"
 
+#include <vector>
 #include <unordered_map>
 #include <cstring>
 
@@ -24,12 +25,8 @@ class QuadMotorBase : public IMotor {
     using QuadMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, QuadMotorGroup_s *> > >;
 
-private:
-    // vector < pair(pComHandle_, <canId, 4 motors>) >
-    static QuadMotors motorMap_;
-
 protected:
-    QuadMotors &getMotorMap() const;
+    QuadMotors &getMotorMap();
     void updateMotorMap();
     void removeMotorFromMap();
 
@@ -55,12 +52,8 @@ class TripMotorBase : public IMotor {
     using TripMotors = std::vector<std::pair<
             uint32_t *, std::unordered_map<uint16_t, TripMotorGroup_s *> > >;
 
-private:
-    // vector < pair(pComHandle_, <canId, 3 motors>) >
-    static TripMotors motorMap_;
-
 protected:
-    TripMotors &getMotorMap() const;
+    TripMotors &getMotorMap();
     void updateMotorMap();
     void removeMotorFromMap();
 
@@ -70,4 +63,5 @@ public:
     uint8_t getPosInGroup() const;
     bool checkGroupSend(TripMotorGroup_s *_group);
 };
-}
+
+} // namespace PINYMOTOR

@@ -2,28 +2,27 @@
 
 #include "MotorManager.hpp"
 
+#include "StmLog.hpp"
+
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
         : id_(MotorManager::instance()->motorListSize())
+        , pComHandle_(_config.pComHandle)
+        , comType_(_config.comType)
+        , workMode_(_config.workMode)
+        , globalState_(GlobalState_e::UNREGISTER)
+        , offsetId_(_config.offsetId)
+        , txFreq_(_config.txFreq)
+        , posPID_(std::move(_config.posPID))
+        , velPID_(std::move(_config.velPID))
+        , torqPID_(std::move(_config.torqPID))
+        , cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
 {
-    this->pComHandle_ = _config.pComHandle;
-    this->comType_ = _config.comType;
-    this->workMode_ = _config.workMode;
-    this->globalState_ = GlobalState_e::UNREGISTER;
-    this->offsetId_ = _config.offsetId;
-    this->txFreq_ = _config.txFreq;
-
-    this->posPID_ = std::move(_config.posPID);
-    this->velPID_ = std::move(_config.velPID);
-    this->torqPID_ = std::move(_config.torqPID);
-
     strcpy(this->name_, _name);
 
     this->cmd_.clear();
     memset(&data_, 0, sizeof(Data_s));
-
-    cmdQueue_ = xQueueCreate(3, sizeof(CmdBus_s));
 }
 
 bool IMotor::checkSend()
@@ -46,12 +45,6 @@ void IMotor::calcRecvFreq()
     } else {
         this->rxFreq_ = 1000.f / static_cast<float>(dt);
     }
-}
-
-void IMotor::regUserRecvCallback(
-        std::function<void(const uint8_t *_rxBuf)> _callback)
-{
-    userRecvCallback_ = std::move(_callback);
 }
 
 MotorTypeDef_e IMotor::registerMotor()
@@ -191,7 +184,7 @@ float IMotor::txBaseId() const { return static_cast<float>(model_.txBaseId); }
 
 float IMotor::rxBaseId() const { return static_cast<float>(model_.rxBaseId); }
 
-float IMotor::RR() const { return model_.reductionRatio; }
+float IMotor::rr() const { return model_.reductionRatio; }
 
 float IMotor::measureMax() const
 {

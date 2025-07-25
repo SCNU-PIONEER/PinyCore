@@ -19,7 +19,7 @@ void QuadricycleController::cmdPowerCalc(float *motorSpeed)
     float motorCmdRads[4] = { 0 };
     float powerSum = 0;
     for (int i = 0; i < motorNum_; i++) {
-        motorCmdRads[i] = (motorSpeed[i] * it->second->RR()) / 60.f * 2 * M_PI;
+        motorCmdRads[i] = (motorSpeed[i] * it->second->rr()) / 60.f * 2 * M_PI;
         //TODO:elec的转换
         cmdPower[i] = (M3508.k0 * it->second->getCmdCurr() * motorCmdRads[i] +
                        M3508.MLC * motorCmdRads[i] * motorCmdRads[i] +
@@ -41,7 +41,7 @@ void QuadricycleController::relPowerCalc()
     float powerSum = 0;
     for (int i = 0; i < motorNum_; i++) {
         Data_s motorData = it->second->data();
-        motorRelRads[i] = motorData.spdRadps * it->second->RR();
+        motorRelRads[i] = motorData.spdRadps * it->second->rr();
         relPower[i] = (M3508.k0 * motorData.curr * motorRelRads[i] +
                        M3508.MLC * motorRelRads[i] * motorRelRads[i] +
                        M3508.ESR * motorData.curr * motorData.curr +
@@ -60,7 +60,7 @@ void QuadricycleController::currentCalc()
     float motorRelRads[4] = { 0 };
     for (int i = 0; i < motorNum_; i++) {
         Data_s motorData = it->second->data();
-        motorRelRads[i] = motorData.spdRadps * it->second->RR();
+        motorRelRads[i] = motorData.spdRadps * it->second->rr();
 
         float Discriminant =
                 M3508.k0 * M3508.k0 * motorRelRads[i] * motorRelRads[i] -

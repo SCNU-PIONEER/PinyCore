@@ -1,24 +1,24 @@
 #include "./MotorBase.hpp"
 
+#include "StmLog.hpp"
+
 using namespace PINYMOTOR;
 
-QuadMotorBase::QuadMotors QuadMotorBase::motorMap_ = {};
-
 QuadMotorGroup_s::QuadMotorGroup_s()
+        : refLoadedCode((0 << 0) | (0 << 1) | (0 << 2) | (0 << 3))
+        , curLoadedCode((0 << 0) | (0 << 1) | (0 << 2) | (0 << 3))
+        , lastSendTick(0.f)
+        , minTxFreq(1000.f)
 {
-    for (int i = 0; i < 4; i++)
-        motor[i] = nullptr;
-    lastSendTick = 0.f;
-    minTxFreq = 1000.f;
-    curLoadedCode = (0 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
-    refLoadedCode = (0 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
+    for (auto &i : motor)
+        i = nullptr;
 }
 void QuadMotorGroup_s::showMotorInfo()
 {
-    for (int i = 0; i < 4; i++) {
-        if (motor[i] != nullptr) {
+    for (auto &i : motor) {
+        if (i != nullptr) {
             LOG::info("QuadMotorGroup", "Motor %s: exist, uid: %hx",
-                      motor[i]->getName(), motor[i]->uid());
+                      i->getName(), i->uid());
         } else {
             LOG::warn("QuadMotorGroup", "Motor %d: not exist", i);
         }
@@ -30,28 +30,30 @@ QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config)
     isMutiple_ = true;
 }
 
-QuadMotorBase::QuadMotors &QuadMotorBase::getMotorMap() const
+QuadMotorBase::QuadMotors &QuadMotorBase::getMotorMap()
 {
-    return motorMap_;
+    static QuadMotors motorMap;
+    return motorMap;
 }
 
 void QuadMotorBase::updateMotorMap()
 {
     // 注册电机到motorMap_中
     // 先寻找是否存在对应的pComHandle_
-    auto it = motorMap_.end();
-    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+    auto it = getMotorMap().end();
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
+         ++iter) {
         if (iter->first == this->pComHandle_) {
             it = iter;
             break;
         }
     }
-    if (it == motorMap_.end()) {
+    if (it == getMotorMap().end()) {
         // 如果不存在，则直接在motorMap_尾部增多一个pair对象
-        motorMap_.emplace_back(
+        getMotorMap().emplace_back(
                 this->pComHandle_,
                 std::unordered_map<uint16_t, QuadMotorGroup_s *>());
-        it = motorMap_.end() - 1;
+        it = getMotorMap().end() - 1;
     }
     // 在找到的pair对象中添加电机组
     auto &map = it->second;
@@ -76,9 +78,9 @@ void QuadMotorBase::updateMotorMap()
         }
     }
     // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
-    for (size_t i = 0; i < 4; i++) {
-        if (map[getGroupId()]->motor[i] != nullptr) {
-            if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
+    for (auto &i : map[getGroupId()]->motor) {
+        if (i != nullptr) {
+            if (i->txFreq() != this->txFreq()) {
                 LOG::warn("QuadMotorBase", "Motor %s: txFreq not match",
                           this->name_);
             }
@@ -92,14 +94,15 @@ void QuadMotorBase::updateMotorMap()
 
 void QuadMotorBase::removeMotorFromMap()
 {
-    auto it = motorMap_.end();
-    for (auto iter = motorMap_.begin(); iter != motorMap_.end(); ++iter) {
+    auto it = getMotorMap().end();
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
+         ++iter) {
         if (iter->first == this->pComHandle_) {
             it = iter;
             break;
         }
     }
-    if (it != motorMap_.end()) {
+    if (it != getMotorMap().end()) {
         auto &map = it->second;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;

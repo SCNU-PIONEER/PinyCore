@@ -11,8 +11,8 @@ namespace PINYMOTOR {
 
 static inline float getMinorArc(float _cur, float _ref, float _range)
 {
-    return (fmodf(((_cur) - (_ref) + (_range) * 1.5f), (_range)) -
-            (_range) / 2.f);
+    return (fmodf(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
+            ((_range) / 2.f));
 }
 
 static inline float rangeMap(float _scale, float _min, float _max)
@@ -27,17 +27,18 @@ static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
     /// converts unsigned int to float, given range and number of _bits ///
     float span = _xMax - _xMin;
     float offset = _xMin;
-    return ((float)_xInt) * span / ((float)((1 << _bits) - 1)) + offset;
+    return (((float)_xInt) * span / ((float)((1 << _bits) - 1))) + offset;
 }
 
-static inline uint16_t float2uint(float _x, float _xMin, float _xMax, int _bits)
+static inline uint16_t float2uint(float _xInt, float _xMin, float _xMax,
+                                  int _bits)
 {
     /// Converts a float to an unsigned int, given range and number of _bits ///
     float span = _xMax - _xMin;
     float offset = _xMin;
-    uint16_t raw_set =
-            (uint16_t)((_x - offset) * ((float)((1 << _bits) - 1)) / span);
-    return raw_set;
+    uint16_t rawSet =
+            (uint16_t)((_xInt - offset) * ((float)((1 << _bits) - 1)) / span);
+    return rawSet;
 }
 static inline float rad2deg(float _rad) { return _rad * 180.f / PI; }
 
@@ -50,12 +51,13 @@ static inline float radps2rpm(float _radps)
     return _radps * 60.f / (2.f * PI);
 }
 
-template <typename T> inline T clamp(const T &value, const T &min, const T &max)
+template <typename T>
+inline T clamp(const T &_value, const T &_min, const T &_max)
 {
-    return (min > max)   ? value :
-           (value < min) ? min :
-           (value > max) ? max :
-                           value;
+    return (_min > _max)   ? _value :
+           (_value < _min) ? _min :
+           (_value > _max) ? _max :
+                             _value;
 }
 
-};
+} // namespace PINYMOTOR

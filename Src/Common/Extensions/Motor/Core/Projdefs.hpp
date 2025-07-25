@@ -10,7 +10,7 @@ namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
 
-enum class MotorCmdType_e {
+enum class MotorCmdType_e : uint8_t {
     SET_MIT,
     SET_POS,
     SET_VEL,
@@ -20,7 +20,7 @@ enum class MotorCmdType_e {
     OFF
 };
 
-enum class WorkMode_e {
+enum class WorkMode_e : uint8_t {
     TRIP_VOLT,
     QUAD_CURR,
     QUAD_VOLT,
@@ -31,11 +31,11 @@ enum class WorkMode_e {
     VDES,
     EMIT
 };
-enum class ComType_e { NONE, FDCAN, CAN, RS485 };
+enum class ComType_e : uint8_t { NONE, FDCAN, CAN, RS485 };
 
-enum class GlobalState_e { UNREGISTER, OFFLINE, ONLINE, ERROR };
+enum class GlobalState_e : uint8_t { UNREGISTER, OFFLINE, ONLINE, ERROR };
 
-enum class MotorErrorCode_e { ErrorNone = 0u };
+enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
 struct RxBus_s {
     struct CANRxBuf_s {
@@ -96,12 +96,12 @@ struct Cmd_s {
         float torq;
         float elec; // common elecric input (current or voltage)
     };
-    inline void clear()
+    void clear()
     {
         SW = prevSW = false;
         torq = 0.f;
     }
-    inline void updateSW(bool _sw)
+    void updateSW(bool _sw)
     {
         if (_sw != prevSW) {
             SW = _sw;
@@ -109,4 +109,4 @@ struct Cmd_s {
         }
     }
 };
-}
+} // namespace PINYMOTOR

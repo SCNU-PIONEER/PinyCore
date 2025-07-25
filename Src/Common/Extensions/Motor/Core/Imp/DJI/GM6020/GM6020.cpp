@@ -2,6 +2,8 @@
 
 #include "DJIMotor.hpp"
 
+#include "StmLog.hpp"
+
 #include <cstring>
 
 using namespace PINYMOTOR;
@@ -58,8 +60,8 @@ MotorTypeDef_e GM6020::checkBaseConfig()
         LOG::error("GM6020", " %s: only support CAN comtype", this->name_);
     }
 
-    if (!(this->workMode_ == WorkMode_e::QUAD_CURR ||
-          this->workMode_ == WorkMode_e::QUAD_VOLT)) {
+    if (this->workMode_ != WorkMode_e::QUAD_CURR &&
+        this->workMode_ != WorkMode_e::QUAD_VOLT) {
         rslt |= 1;
         LOG::error("GM6020", "%s: WorkMode is not supported", this->name_);
     }

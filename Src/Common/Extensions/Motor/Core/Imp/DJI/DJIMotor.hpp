@@ -2,10 +2,7 @@
 
 #include "../../Base/MotorBase.hpp"
 
-#include <memory>
-
-namespace PINYMOTOR {
-namespace DJIMOTOR {
+namespace PINYMOTOR::DJIMOTOR {
 #pragma pack(push, 1)
 struct Msg_s {
     int16_t cmd[4];
@@ -56,11 +53,10 @@ public:
     uint16_t canId() const; // QuadMotor's canId is fixed
     uint16_t masterId() const;
 
-    uint16_t uid() override final;
-    MotorTypeDef_e update() override final;
+    uint16_t uid() final;
+    MotorTypeDef_e update() final;
 
-    QuadMotorGroup_s *findGroup() const;
+    QuadMotorGroup_s *findGroup();
 };
 
-}
-}
+} // namespace PINYMOTOR::DJIMOTOR
