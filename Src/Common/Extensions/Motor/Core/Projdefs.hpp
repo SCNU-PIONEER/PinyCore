@@ -74,16 +74,19 @@ struct Model_s {
 };
 
 struct Data_s {
-    int32_t rawScale;     // 原始比例
-    int32_t lastRawScale; // 上一次原始比例
-    float singleCirAng;   // rad
-    float multipCirAng;   // rad
-    float spdRadps;       // rad/s
-    float spdRpm;         // rpm
-    float curr;           // A
-    float torq;           // Nm
-    float tempture;       // °C
-    float feedbackFreq;   // Hz
+    float rawAng;     // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
+    float rawAngLast; // 上次收到的编码角度的映射 rad
+    float zeroAng;    // 零点角度值 rad
+    float ang;        // 相对零点的角度 rad
+
+    float singleCirAng; // 相对零点单圈值 rad
+    float multipCirAng; // 设置零点后清空 rad
+
+    float spdRadps; // 角速度 rad/s
+    float spdRpm;   // 角速度 rpm
+    float curr;     // 电流   A
+    float torq;     // 扭矩   Nm
+    float tempture; // 温度   °C
 };
 
 struct Cmd_s {

@@ -21,7 +21,7 @@ enum class RegId_e : uint8_t {
     DM_REG_TIMEOUT = 9u,    // 超时警报时间	RW	[0,2^32-1]	uint32
     DM_REG_CTRL_MODE = 10u, // 控制模式	RW	[1,4]	uint32
     DM_REG_DAMP = 11u,      // 电机粘滞系数	RO	/	float
-    DM_REG_TINERTIA = 12u,   // 电机转动惯量	RO	/	float
+    DM_REG_TINERTIA = 12u,  // 电机转动惯量	RO	/	float
     DM_REG_HW_VER = 13u,    // 保留	RO	/	uint32
     DM_REG_SW_VER = 14u,    // 软件版本号	RO	/	uint32
     DM_REG_SN = 15u,        // 保留	RO	/	uint32
@@ -45,7 +45,7 @@ enum class RegId_e : uint8_t {
     DM_REG_IQ_C1 = 33u,     // 电流环增强系数	RW	[100.0,10000.0]	float
     DM_REG_VL_C1 = 34u,     // 速度环增强系数	RW	(0.0,10000.0]	float
     DM_REG_CAN_BR = 35u,    // CAN波特率代码	RW	[0,4]	uint32
-    DM_REG_SUB_VER = 36u,   // 子版本号	RO	/	uint32  
+    DM_REG_SUB_VER = 36u,   // 子版本号	RO	/	uint32
     DM_REG_U_OFF = 50u,     // u相偏置	RO	　	float
     DM_REG_V_OFF = 51u,     // v相偏置	RO	　	float
     DM_REG_K1 = 52u,        // 补偿因子1	RO	　	float
@@ -85,7 +85,7 @@ struct Reg_s {
 struct Feedback_s {
     uint8_t ID : 4;
     ErrorCode_e errorCode : 4;
-    uint16_t rawScale : 14;
+    uint16_t rawAng : 14;
     uint16_t rawVel : 12;
     uint16_t torque : 12;
     uint8_t mosTemperature : 8;

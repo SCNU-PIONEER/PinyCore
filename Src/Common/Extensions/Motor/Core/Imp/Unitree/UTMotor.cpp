@@ -75,12 +75,13 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
         return 0; //TODO: CRC error
     } else {
         this->status_.error_ = static_cast<ErrorStatus_e>(fb->mode.status);
-        this->data_.lastRawScale = this->data_.rawScale;
-        this->data_.rawScale = fb->fbk.pos;
-        this->data_.multipCirAng += 6.2832f *
-                                    ((float)this->data_.rawScale -
-                                     (float)this->data_.lastRawScale) /
-                                    32768 / this->rr();
+        this->data_.rawAngLast = this->data_.rawAng;
+        this->data_.rawAng = 6.2832f * static_cast<float>(fb->fbk.pos) / 32768;
+        float del = this->data_.rawAng - this->data_.zeroAng;
+        this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) :
+                                    del;
+        this->data_.multipCirAng +=
+                (this->data_.rawAng - this->data_.rawAngLast) / this->rr();
         this->data_.singleCirAng =
                 rangeMap(this->data_.singleCirAng, 0, 2 * PI);
         this->data_.spdRadps = ((float)fb->fbk.speed / 256) * 6.2832f;

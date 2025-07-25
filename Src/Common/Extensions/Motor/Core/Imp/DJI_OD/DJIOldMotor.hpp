@@ -9,7 +9,7 @@ struct Msg_s {
 };
 
 struct Feedback_s {
-    uint16_t rawScale;
+    uint16_t rawAng;
     int16_t rawTorq;
 };
 #pragma pack(pop)

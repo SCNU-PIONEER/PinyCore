@@ -170,6 +170,14 @@ uint8_t IMotor::id() const { return id_; }
 
 Data_s &IMotor::data() { return data_; }
 
+void IMotor::setZeroAng()
+{
+    data_.zeroAng = data_.rawAng;
+    float del = this->data_.rawAng - this->data_.zeroAng;
+    this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) : del;
+    data_.multipCirAng = data_.singleCirAng = 0;
+}
+
 float IMotor::getCmdCurr()
 {
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {

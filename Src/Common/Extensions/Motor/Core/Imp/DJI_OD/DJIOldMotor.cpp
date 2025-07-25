@@ -121,40 +121,42 @@ MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,
 MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 {
     Feedback_s fb;
-    fb.rawScale = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
+    fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawTorq = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
 
-    this->data_.rawScale = fb.rawScale;
+    this->data_.rawAng = static_cast<float>(fb.rawAng) / this->span() * 2.f *
+                         std::numbers::pi_v<float>;
 
     this->data_.torq = static_cast<float>(fb.rawTorq) /
                        this->status_.torqRxCodeSpan * this->status_.torqMax;
-
 
     this->data_.tempture = 0.f; // TODO:
 
     this->data_.curr = this->data_.torq / status_.torqConstant;
 
-    float angDiff = (getMinorArc(static_cast<float>(this->data_.rawScale),
-                                 static_cast<float>(this->data_.lastRawScale),
-                                 this->span())) *
-                    2 * std::numbers::pi_v<float> / (this->span() * this->rr());
+    float del = this->data_.rawAng - this->data_.zeroAng;
+    this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) : del;
+
+    float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
+                                 2.f * std::numbers::pi_v<float>)) /
+                    this->rr();
 
     if (this->globalState_ == GlobalState_e::OFFLINE &&
-        this->data_.lastRawScale != this->data_.rawScale) {
+        this->data_.rawAngLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
     }
 
     if (this->rxFreq_ > 1.f)
-        this->data_.spdRadps = angDiff / this->rxFreq_;
+        this->data_.spdRadps = angDiff * this->rxFreq_;
 
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
-    this->data_.lastRawScale = this->data_.rawScale;
+    this->data_.rawAngLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
-    this->data_.singleCirAng += angDiff;
-    this->data_.singleCirAng = rangeMap(this->data_.singleCirAng, 0, 2 * PI);
+    this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0,
+                                        2.f * std::numbers::pi_v<float>);
     return 0;
 }
 

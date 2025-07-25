@@ -8,7 +8,7 @@ struct Msg_s {
     int16_t cmd[4];
 };
 struct Feedback_s {
-    uint16_t rawScale;
+    uint16_t rawAng;
     int16_t rawRpm;
     int16_t current;
     uint8_t temperature;

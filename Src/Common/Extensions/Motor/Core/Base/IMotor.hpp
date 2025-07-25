@@ -38,7 +38,7 @@ protected:
 
     QueueHandle_t cmdQueue_;
     CmdBus_s cmdBuf_;
-    
+
     bool isMutiple_ = false; // default is not quad encoder
 
     bool checkSend();
@@ -63,6 +63,8 @@ public:
     MotorTypeDef_e cmd(MotorCmdType_e _cmd);
 
     Data_s &data();
+
+    void setZeroAng();
 
     float getCmdCurr();
 
