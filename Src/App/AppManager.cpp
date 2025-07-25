@@ -25,8 +25,8 @@ extern TIM_HandleTypeDef BEEP_TIMER;
 
 //---------------------------------------------------------------------------------------------------
 // INS
-BMI088 bmi088;
-INS ins;
+BMI088 *bmi088;
+INS *ins;
 const AccCali_s accCali = {
     // default accelerometer calibration
     .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
@@ -43,7 +43,7 @@ const GyroCali_s gyroCali = {
 
 //---------------------------------------------------------------------------------------------------
 // CMD
-Cmd cmd;
+Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
@@ -51,20 +51,20 @@ CHASSIS::Mecanum *mecanum;
 Chassis *chassis;
 
 //---------------------------------------------------------------------------------------------------
-void ctrlTask(void *param)
+void ctrlTask(void *_param)
 {
-    while (1) {
-        chassis->update(param);
+    while (true) {
+        chassis->update(_param);
         vTaskDelay(1);
     }
 }
 
-void INSTask(void *param)
+void INSTask(void *_param)
 {
-    while (1) {
+    while (true) {
         // read BMI088 data
-        bmi088.readRaw(); // read raw 6 axis data from device
-        bmi088.read();    // serialize data to real format
+        bmi088->readRaw(); // read raw 6 axis data from device
+        bmi088->read();    // serialize data to real format
 
         // load raw INS needed data, you must transform the raw imu data to correct order
         // the order of axis is defined as:
@@ -79,19 +79,19 @@ void INSTask(void *param)
             Y<-------ROBOT 
         */
         IMUSensorRawData_s data = {
-            .a = { .x = bmi088.getRawAccelX(),
-                   .y = bmi088.getRawAccelY(),
-                   .z = bmi088.getRawAccelZ(),
-                   .transK = bmi088.getAccelMappingVaule() },
-            .g = { .x = bmi088.getRawGyroX(),
-                   .y = bmi088.getRawGyroY(),
-                   .z = bmi088.getRawGyroZ(),
-                   .transK = bmi088.getGyroMappingVaule() },
+            .a = { .x = bmi088->getRawAccelX(),
+                   .y = bmi088->getRawAccelY(),
+                   .z = bmi088->getRawAccelZ(),
+                   .transK = bmi088->getAccelMappingVaule() },
+            .g = { .x = bmi088->getRawGyroX(),
+                   .y = bmi088->getRawGyroY(),
+                   .z = bmi088->getRawGyroZ(),
+                   .transK = bmi088->getGyroMappingVaule() },
             // .m = NULL TODO:
         };
 
         // update INS
-        ins.update(&data, bmi088.getTimestamp(), bmi088.getTemperature());
+        ins->update(&data, bmi088->getTimestamp(), bmi088->getTemperature());
         vTaskDelay(1);
     }
 }
@@ -101,49 +101,55 @@ void INSTask(void *param)
 void AppManager::createApp()
 {
     // INS Continuous Task
-    xTaskCreate(INSTask, "ins_task", 256, NULL, osPriorityNormal, NULL);
+    xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal, nullptr);
 
     // Cmd-Polling Continuous Task
-    xTaskCreate([](void *param) { cmd.task(); }, "cmd_task", 256,
-                (void *)cmd.getMsgBus(), osPriorityNormal, NULL);
+    xTaskCreate([](void *_param) { cmd->task(); }, "cmd_task", 256,
+                (void *)cmd->getMsgBus(), osPriorityNormal, nullptr);
 
     // Robot-Ctrl Continuous Task
-    xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd.getMsgBus(),
-                osPriorityRealtime, NULL);
+    xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd->getMsgBus(),
+                osPriorityRealtime, nullptr);
 
     // Test-Module Continuous Task
     if constexpr (USE_TEST_MODULES) {
-        xTaskCreate([](void *param) -> void { TestModule::instance()->task(); },
-                    "test_task", 256, NULL, osPriorityNormal, NULL);
+        xTaskCreate(
+                [](void *_param) -> void { TestModule::instance()->task(); },
+                "test_task", 256, nullptr, osPriorityNormal, nullptr);
     }
 
     // Motor-Sending Continuous Task
     xTaskCreate(
-            [](void *param) -> void {
+            [](void *_param) -> void {
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
-            "motor_task", 256, NULL, osPriorityRealtime, NULL);
+            "motor_task", 256, nullptr, osPriorityRealtime, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
-            [](void *param) -> void {
+            [](void *_param) -> void {
                 BUZZER::Buzzer::getInstance().playPinyCore();
-                vTaskDelete(NULL); // 否则会进ExistError
+                vTaskDelete(nullptr); // 否则会进ExistError
             },
-            "buzzer_task", 64, NULL, osPriorityNormal, NULL);
+            "buzzer_task", 64, nullptr, osPriorityNormal, nullptr);
 }
 
 void AppManager::initApp()
 {
     // Cmd
-    cmd.init();
+    cmd = new Cmd;
+    cmd->init();
 
     // INS
-    bmi088.init(&IMU_SPI);
-    ins.init(accCali, gyroCali);
+    bmi088 = new BMI088;
+    ins = new INS;
+    bmi088->init(&IMU_SPI);
+    ins->init(accCali, gyroCali);
 
+    // Chassis
     mecanum = new CHASSIS::Mecanum;
     chassis = new Chassis(mecanum);
+
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
                                        BEEP_APB_FREQ);
