@@ -1,6 +1,7 @@
 ---
 Checks:          '-*,
                   bugprone-*,
+                  -bugprone-easily-swappable-parameters,
                   llvm-namespace-comment,
                   concurrency-*,
                   -concurrency-mt-unsafe,
