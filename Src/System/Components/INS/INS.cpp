@@ -2,7 +2,7 @@
 
 #define CORRECT_IMU_DATA 1
 
-void INS::init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_)
+void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
 {
     // Initialize Rotation Matrix
     arm_mat_init_f32(&R_, 3, 3, R_data_);
@@ -12,7 +12,7 @@ void INS::init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_)
     arm_mat_init_f32(&earthVectorT_, 3, 1, earthV_data_);
 
     // Initialize IMU calibration
-    imuCali_.init(accCali_, gyroCali_);
+    imuCali_.init(_accCali, _gyroCali);
 
     // Initialize DCM algorithm
     DCM_.init();
@@ -21,6 +21,7 @@ void INS::init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_)
     this->dt_ = 0.001f; // default to 1 ms
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
 {
     this->dt_ = _dt; // update time interval
@@ -39,7 +40,7 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
     // Update IMU calibration
     imu_data_fp_t fData;
 #if CORRECT_IMU_DATA
-    fData = imuCali_.CorrectInt16(_sensorDat->a.transK, _sensorDat->g.transK,
+    fData = imuCali_.correctInt16(_sensorDat->a.transK, _sensorDat->g.transK,
                                   _sensorDat->g.x, _sensorDat->g.y,
                                   _sensorDat->g.z, _sensorDat->a.x,
                                   _sensorDat->a.y, _sensorDat->a.z,

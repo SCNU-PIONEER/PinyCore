@@ -44,7 +44,7 @@ typedef struct {
     float gz_tco_k, gz_tco_b0;
 } GyroCali_s;
 
-typedef enum {
+typedef enum : uint8_t {
     ACC_PX = 0,
     ACC_NX = 1,
     ACC_PX_O = 6,
@@ -63,13 +63,13 @@ typedef enum {
 
 class IMUCalibration {
 public:
-    void init(const AccCali_s &accCali, const GyroCali_s &gyroCali,
+    void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali,
               const float _temp = 0.0f);
 
-    imu_data_fp_t Correct(float _aTransK, float _gTransK, float _gx, float _gy,
+    imu_data_fp_t correct(float _aTransK, float _gTransK, float _gx, float _gy,
                           float _gz, float _ax, float _ay, float _az,
                           float _temperature);
-    imu_data_fp_t CorrectInt16(float _aTransK, float _gTransK, int16_t _gx,
+    imu_data_fp_t correctInt16(float _aTransK, float _gTransK, int16_t _gx,
                                int16_t _gy, int16_t _gz, int16_t _ax,
                                int16_t _ay, int16_t _az, float _temperature);
 
@@ -77,12 +77,12 @@ public:
     imu_data_fp_t steadyStateDetection();
 
 private:
-    template <typename T> T CLAMP(T value, T max)
+    template <typename T> T clamp(T _value, T _max)
     {
-        return std::max(-max, std::min(value, max));
+        return std::max(-_max, std::min(_value, _max));
     }
 
-    float invSqrt(float x);
+    float invSqrt(float _x);
 
     AccCali_s acc_cali_;
     GyroCali_s gyro_cali_;

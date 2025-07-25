@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./Algorithm/DCM_AHRS/DCM_AHRS.hpp"
+#include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
 #include "./Algorithm/Calibrate/calibrate.hpp"
 
 #include "dsp/matrix_functions.h"
@@ -62,22 +62,12 @@ struct INSData_s {
 };
 
 class INS {
-    // public:
-    //     INS(const INS &) = delete;
-    //     INS &operator=(const INS &) = delete;
-    //     inline static INS* instance() {
-    //         static INS instance_;
-    //         return &instance_;
-    //     }
-
-    // private:
-    //     INS() = default;
 public:
-    void init(const AccCali_s &accCali_, const GyroCali_s &gyroCali_);
+    void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali);
     void update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature);
-    inline float roll() const { return insDat_.roll; }
-    inline float yaw() const { return insDat_.yaw; }
-    inline float pitch() const { return insDat_.pitch; }
+    float roll() const { return insDat_.roll; }
+    float yaw() const { return insDat_.yaw; }
+    float pitch() const { return insDat_.pitch; }
 
 private:
     float dt_ = 0.001f; // default time interval in seconds
@@ -96,8 +86,8 @@ private:
     // IMU Algorithm
     IMUCalibration imuCali_; // IMU calibration object
 
-    IMU_DCM_AHRS::DCM_AHRS DCM_ =
-            IMU_DCM_AHRS::DCM_AHRS(dt_); // DCM algorithm object
+    IMU_DCM_AHRS::DcmAhrs DCM_ =
+            IMU_DCM_AHRS::DcmAhrs(dt_); // DCM algorithm object
 
     // INS data
     IMUSensorData_s rawDat_; // raw data from IMU, body axis system

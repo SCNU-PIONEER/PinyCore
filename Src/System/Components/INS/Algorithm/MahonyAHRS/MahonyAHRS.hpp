@@ -1,8 +1,8 @@
 #pragma once
 
-namespace IMU_MahonyAHRS {
+namespace IMU_MAHONY_AHRS {
 
-struct edata_s {
+struct EData_s {
     float roll;
     float pitch;
     float yaw;
@@ -10,20 +10,20 @@ struct edata_s {
 
 class Mahony {
 public:
-    void regiter(float sampleFrequency, float _twoKp, float _twoKi);
+    void regiter(float _sampleFrequency, float _twoKp, float _twoKi);
     void init(float _ax, float _ay, float _az);
 
     void update(float _gx, float _gy, float _gz, float _ax, float _ay,
                 float _az, float _dt);
 
-    edata_s getEdata(void);
+    EData_s getEdata();
 
-    float getRoll(void);
-    float getPitch(void);
-    float getYaw(void);
+    float getRoll();
+    float getPitch();
+    float getYaw();
 
 protected:
-    float invSqrt(float x);
+    float invSqrt(float _x);
     void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
                    float _az, float _dt);
     void computeAngles();
@@ -37,7 +37,7 @@ private:
     float invSampleFreq;
     char anglesComputed;
 
-    edata_s edata_;
+    EData_s edata_;
 };
 
-}
+} // namespace IMU_MAHONY_AHRS

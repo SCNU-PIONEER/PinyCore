@@ -5,9 +5,7 @@
 #include <cmath>
 #include <algorithm>
 
-#define DEFAULT_GRAVITY (9.80665f) // Standard gravity in m/s^2
-
-static const float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = { 0, 0, 1, 0, 0, 0 };
+#define DEFAULT_GRAVITY                      (9.80665f) // Standard gravity in m/s^2
 
 #define DEFAULT_Q_DCM2_INIT                  (1.8f * 1.8f)
 #define DEFAULT_Q_BIAS2_INIT                 (0.1f * 0.1f)
@@ -27,26 +25,30 @@ static const float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = { 0, 0, 1, 0, 0, 0 };
 
 namespace IMU_DCM_AHRS {
 
-struct edata_s {
+struct EData_s {
     float roll;  // Roll angle in radians
     float pitch; // Pitch angle in radians
     float yaw;   // Yaw angle in radians
 };
 
-class DCM_AHRS {
+class DcmAhrs {
+    static constexpr float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = {
+        0, 0, 1, 0, 0, 0
+    };
+
 public:
-    DCM_AHRS(float _sampleFrequency,
-             float _DCMVarianceInit = DEFAULT_Q_DCM2_INIT,
-             float _DCMVariance = DEFAULT_Q_DCM2,
-             float _biasVarianceInit = DEFAULT_Q_BIAS2_INIT,
-             float _biasVariance = DEFAULT_Q_BIAS2,
-             float _measurementVariance = DEFAULT_R_MEASUREMENT2,
-             float _measurementVarianceVariableGain =
-                     DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN)
+    DcmAhrs(float _sampleFrequency,
+            float _dcmVarianceInit = DEFAULT_Q_DCM2_INIT,
+            float _dcmVariance = DEFAULT_Q_DCM2,
+            float _biasVarianceInit = DEFAULT_Q_BIAS2_INIT,
+            float _biasVariance = DEFAULT_Q_BIAS2,
+            float _measurementVariance = DEFAULT_R_MEASUREMENT2,
+            float _measurementVarianceVariableGain =
+                    DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN)
             : dt_(_sampleFrequency)
-            , DCMVarianceInit_(_DCMVarianceInit)
+            , DCMVarianceInit_(_dcmVarianceInit)
             , biasVarianceInit_(_biasVarianceInit)
-            , DCMVariance_(_DCMVariance)
+            , DCMVariance_(_dcmVariance)
             , biasVariance_(_biasVariance)
             , measurementVariance_(_measurementVariance)
             , measurementVarianceVariableGain_(_measurementVarianceVariableGain)
@@ -58,27 +60,27 @@ public:
     void update(float _gx, float _gy, float _gz, float _ax, float _ay,
                 float _az, float _dt);
 
-    edata_s getEdata(void);
+    EData_s getEdata();
 
-    float getRoll(void);
-    float getPitch(void);
-    float getYaw(void);
+    float getRoll();
+    float getPitch();
+    float getYaw();
 
-    void getQuaternion(float *q);
+    void getQuaternion(float *_q);
 
 protected:
-    float invSqrt(float x);
+    float invSqrt(float _x);
     void updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
                    float _az, float _dt);
     void computeAngles();
 
 private:
-    template <typename T> T CLAMP(T value, T max)
+    template <typename T> T clamp(T _value, T _max)
     {
-        return std::max(-max, std::min(value, max));
+        return std::max(-_max, std::min(_value, _max));
     }
 
-    edata_s edata_; // Euler angles data
+    EData_s edata_; // Euler angles data
 
     uint16_t staticStateCnt_ = 0;
 
@@ -111,4 +113,4 @@ private:
     float P55_;
 };
 
-}
+} // namespace IMU_DCM_AHRS

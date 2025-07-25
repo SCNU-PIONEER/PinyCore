@@ -1,12 +1,12 @@
 #include "MahonyAHRS.hpp"
 #include "dsp/fast_math_functions.h"
 
-namespace IMU_MahonyAHRS {
+using namespace IMU_MAHONY_AHRS;
 
 #define twoKpDef (2.0f * 0.5f) // 2 * proportional gain
 #define twoKiDef (2.0f * 0.0f) // 2 * integral gain
 
-void Mahony::regiter(float sampleFrequency, float _twoKp = (2.0f * 0.5f),
+void Mahony::regiter(float _sampleFrequency, float _twoKp = (2.0f * 0.5f),
                      float _twoKi = (2.0f * 0.0f))
 {
     twoKp = _twoKp;
@@ -19,13 +19,13 @@ void Mahony::regiter(float sampleFrequency, float _twoKp = (2.0f * 0.5f),
     integralFBy = 0.0f;
     integralFBz = 0.0f;
     anglesComputed = 0;
-    invSampleFreq = 1.0f / sampleFrequency;
+    invSampleFreq = 1.0f / _sampleFrequency;
 }
 
-float Mahony::invSqrt(float x)
+float Mahony::invSqrt(float _x)
 {
-    float halfx = 0.5f * x;
-    float y = x;
+    float halfx = 0.5f * _x;
+    float y = _x;
     long i;
     memcpy(&i, &y, sizeof(float));
     i = 0x5f3759df - (i >> 1);
@@ -38,32 +38,32 @@ float Mahony::invSqrt(float x)
 void Mahony::init(float _ax, float _ay, float _az)
 {
     float recipNorm;
-    float init_yaw, init_pitch, init_roll;
+    float initYaw, initPitch, initRoll;
     float cr2, cp2, cy2, sr2, sp2, sy2;
-    float sin_roll, cos_roll, sin_pitch, cos_pitch;
+    float sinRoll, cosRoll, sinPitch, cosPitch;
     float magX, magY;
 
-    recipNorm = invSqrt(_ax * _ax + _ay * _ay + _az * _az);
+    recipNorm = invSqrt((_ax * _ax) + (_ay * _ay) + (_az * _az));
     _ax *= recipNorm;
     _ay *= recipNorm;
     _az *= recipNorm;
 
-    arm_atan2_f32(-_ax, _az, &init_pitch);
-    arm_atan2_f32(_ay, _az, &init_roll);
+    arm_atan2_f32(-_ax, _az, &initPitch);
+    arm_atan2_f32(_ay, _az, &initRoll);
 
-    sin_roll = sinf(init_roll);
-    cos_roll = cosf(init_roll);
-    cos_pitch = cosf(init_pitch);
-    sin_pitch = sinf(init_pitch);
+    sinRoll = sinf(initRoll);
+    cosRoll = cosf(initRoll);
+    cosPitch = cosf(initPitch);
+    sinPitch = sinf(initPitch);
 
-    init_yaw = 0.0f;
+    initYaw = 0.0f;
 
-    cr2 = cosf(init_roll * 0.5f);
-    cp2 = cosf(init_pitch * 0.5f);
-    cy2 = cosf(init_yaw * 0.5f);
-    sr2 = sinf(init_roll * 0.5f);
-    sp2 = sinf(init_pitch * 0.5f);
-    sy2 = sinf(init_yaw * 0.5f);
+    cr2 = cosf(initRoll * 0.5f);
+    cp2 = cosf(initPitch * 0.5f);
+    cy2 = cosf(initYaw * 0.5f);
+    sr2 = sinf(initRoll * 0.5f);
+    sp2 = sinf(initPitch * 0.5f);
+    sy2 = sinf(initYaw * 0.5f);
 
     q0 = cr2 * cp2 * cy2 + sr2 * sp2 * sy2;
     q1 = sr2 * cp2 * cy2 - cr2 * sp2 * sy2;
@@ -71,7 +71,7 @@ void Mahony::init(float _ax, float _ay, float _az)
     q3 = cr2 * cp2 * sy2 - sr2 * sp2 * cy2;
 
     // Normalise quaternion
-    recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+    recipNorm = invSqrt((q0 * q0) + (q1 * q1) + (q2 * q2) + (q3 * q3));
     q0 *= recipNorm;
     q1 *= recipNorm;
     q2 *= recipNorm;
@@ -98,9 +98,9 @@ void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
     float qa, qb, qc;
 
     // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-    if (!((_ax == 0.0f) && (_ay == 0.0f) && (_az == 0.0f))) {
+    if ((_ax != 0.0f) || (_ay != 0.0f) || (_az != 0.0f)) {
         // Normalise accelerometer measurement
-        recipNorm = invSqrt(_ax * _ax + _ay * _ay + _az * _az);
+        recipNorm = invSqrt((_ax * _ax) + (_ay * _ay) + (_az * _az));
         _ax *= recipNorm;
         _ay *= recipNorm;
         _az *= recipNorm;
@@ -149,7 +149,7 @@ void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
     q3 += (qa * _gz + qb * _gy - qc * _gx);
 
     // Normalise quaternion
-    recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+    recipNorm = invSqrt((q0 * q0) + (q1 * q1) + (q2 * q2) + (q3 * q3));
     q0 *= recipNorm;
     q1 *= recipNorm;
     q2 *= recipNorm;
@@ -158,21 +158,20 @@ void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
 
 void Mahony::computeAngles()
 {
-    arm_atan2_f32(q0 * q1 + q2 * q3, 0.5f - q1 * q1 - q2 * q2, &edata_.roll);
+    arm_atan2_f32((q0 * q1) + (q2 * q3), 0.5f - (q1 * q1) - (q2 * q2),
+                  &edata_.roll);
     edata_.roll *= 57.29578f;
     edata_.pitch = 57.29578f * asinf(-2.0f * (q1 * q3 - q0 * q2));
-    arm_atan2_f32(q1 * q2 + q0 * q3, 0.5f - q2 * q2 - q3 * q3, &edata_.yaw);
+    arm_atan2_f32((q1 * q2) + (q0 * q3), 0.5f - (q2 * q2) - (q3 * q3),
+                  &edata_.yaw);
     edata_.yaw *= 57.29578f;
     anglesComputed = 1;
 }
 
-edata_s Mahony::getEdata(void) { return edata_; }
+EData_s Mahony::getEdata() { return edata_; }
 
-float Mahony::getRoll(void) { return edata_.roll; }
+float Mahony::getRoll() { return edata_.roll; }
 
-float Mahony::getPitch(void) { return edata_.pitch; }
+float Mahony::getPitch() { return edata_.pitch; }
 
-float Mahony::getYaw(void) { return edata_.yaw; }
-
-
-}
+float Mahony::getYaw() { return edata_.yaw; }
