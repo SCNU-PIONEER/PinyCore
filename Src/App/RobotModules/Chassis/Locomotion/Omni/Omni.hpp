@@ -1,32 +1,35 @@
 #pragma once
 
 #include <cmath>
-#include "Wheel.hpp"
+#include "Locomotion.hpp"
+#include <cstdint>
 
 namespace CHASSIS {
 
 union WheelsSpeed_u {
     struct {
-        float M_RF; // motor of the right front
-        float M_LF; // motor of the left front
-        float M_LB; // motor of the left back
-        float M_RB; // motor of the right back
+        float M_RF; ///< motor of the right front 0
+        float M_LF; ///< motor of the left front 1
+        float M_LB; ///< motor of the left back 2
+        float M_RB; ///< motor of the right back 3
     };
     float _[4]; // rpm
 };
 
-class Mecanum : public Wheel {
+enum class Mode_e : uint8_t { OMNI_X = 0, OMNI_H = 1 };
+
+class Omni : public Locomotion {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
     static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
     static constexpr float FRONT_R = 0.354f;
     static constexpr float BACK_R = 0.354f;
-    Mecanum();
+
+    Omni();
 
     void stop() override;
-    void enter() override;
     void update() override;
-    void ctrl(const Speed_u &_refSpeed) override;
+    void ctrl(const Speed_u &_speed) override;
 
 protected:
     /*
@@ -44,8 +47,10 @@ protected:
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    PINYMOTOR::IMotor *motor_[4];
+    Mode_e mode = Mode_e::OMNI_X;
+
+    PINYMOTOR::IMotor *motor[4];
     WheelsSpeed_u wSpeed_;
 };
 
-} //namespace CHASSIS
+} // namespace CHASSIS

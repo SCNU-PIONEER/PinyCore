@@ -5,7 +5,7 @@
 
 using namespace CHASSIS;
 
-Chassis::Chassis(Wheel *_wheel) : wheel(_wheel)
+Chassis::Chassis(Locomotion *_wheel) : wheel(_wheel)
 {
     stateFactory.addState(static_cast<uint8_t>(FSMState_e::RUN),
                           std::make_unique<RunState>(this));

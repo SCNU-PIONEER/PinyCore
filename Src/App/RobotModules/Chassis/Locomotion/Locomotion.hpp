@@ -13,13 +13,13 @@ union Speed_u {
     float _[3];
 };
 
-class Wheel {
+class Locomotion {
 public:
     virtual void stop() = 0;
     virtual void enter() = 0;
     virtual void update() = 0;
     virtual void ctrl(const Speed_u &_refSpeed) = 0;
-    virtual ~Wheel() = default;
+    virtual ~Locomotion() = default;
 
 protected:
     std::unique_ptr<PowerController> powerCtrl_;
