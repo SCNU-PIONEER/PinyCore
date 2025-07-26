@@ -51,11 +51,11 @@ static constexpr size_t COLOR_FATAL = 9;   // bright red
 static constexpr size_t COLOR_STEP = 5;    // blue
 //
 enum class Level : uint8_t {
-    RAW,   // Raw log output
-    INFO,  // Information messages which describe normal flow of events
-    WARN,  // Error conditions from which recovery measures have been taken
-    ERROR, // Critical errors, software module can not recover on its own
-    DEBUG, // Extra information which is not necessary for normal use (values, pointers, sizes, etc)
+    RAW,       // Raw log output
+    INFO,      // Information messages which describe normal flow of events
+    WARN,      // Error conditions from which recovery measures have been taken
+    ERROR,     // Critical errors, software module can not recover on its own
+    DEBUGGING, // Extra information which is not necessary for normal use (values, pointers, sizes, etc)
     VERBOSE // Bigger chunks of debugging information, or frequent messages which can potentially flood the output
 };
 
@@ -97,7 +97,7 @@ constexpr std::string_view getLevelColor(Level _level)
         return YELLOW;
     case Level::ERROR:
         return RED;
-    case Level::DEBUG:
+    case Level::DEBUGGING:
         return BLUE;
     case Level::VERBOSE:
         return WHITE;

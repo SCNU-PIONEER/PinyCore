@@ -40,7 +40,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::DEBUG },
+                       .level = Level::DEBUGGING },
             std::forward<Args>(_args)...);
     }
 
