@@ -12,14 +12,14 @@ public:
         setStateName(static_cast<uint8_t>(FSMState_e::RUN));
     };
 
-    void enter() override
+    void enter() final
     {
         //TODO: check the motor is offline
         chassis_->wheel->enter();
         LOG::info("run", " enter");
     }
 
-    void run() override
+    void run() final
     {
         chassis_->wheel->update();
         if (chassis_->msg.state == State_e::run) {
@@ -30,9 +30,9 @@ public:
         }
     }
 
-    void exit() override { LOG::info("run", " exit"); }
+    void exit() final { LOG::info("run", " exit"); }
 
-    uint8_t checkChange() override
+    uint8_t checkChange() final
     {
         if (chassis_->msg.state == State_e::stop)
             return static_cast<uint8_t>(FSMState_e::STOP);

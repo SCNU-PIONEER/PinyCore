@@ -10,20 +10,20 @@ public:
     StopState(Chassis *_chassis) : chassis_(_chassis)
     {
         setStateName(static_cast<uint8_t>(FSMState_e::STOP));
-    };
+    }
 
-    void enter() override
+    void enter() final
     {
         chassis_->wheel->stop();
         LOG::info("stop", " enter");
     }
 
-    void run() override { chassis_->wheel->stop(); }
+    void run() final { chassis_->wheel->stop(); }
 
-    void exit() override { LOG::info("stop", " exit"); }
+    void exit() final { LOG::info("ChassisStop", " exit"); }
 
 
-    uint8_t checkChange() override
+    uint8_t checkChange() final
     {
         if (chassis_->msg.state == State_e::stop)
             return static_cast<uint8_t>(FSMState_e::STOP);
