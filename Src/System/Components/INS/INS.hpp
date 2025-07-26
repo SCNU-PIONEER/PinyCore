@@ -5,8 +5,11 @@
 
 #include "dsp/matrix_functions.h"
 
+#include "Topic.hpp"
+
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
+namespace INS_SYS {
 struct IMUSensorData_s {
     struct Accel_s {
         float x, y, z;
@@ -63,6 +66,7 @@ struct INSData_s {
 
 class INS {
 public:
+    INS();
     void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali);
     void update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature);
     float roll() const { return insDat_.roll; }
@@ -93,4 +97,7 @@ private:
     IMUSensorData_s rawDat_; // raw data from IMU, body axis system
 
     INSData_s insDat_; // data after INS algorithm, body and earth axis system
+
+    Publisher<INSData_s> *insPub_;
 };
+} // namespace INS_SYS

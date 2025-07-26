@@ -26,7 +26,7 @@ extern TIM_HandleTypeDef BEEP_TIMER;
 //---------------------------------------------------------------------------------------------------
 // INS
 BMI088 *bmi088;
-INS *ins;
+INS_SYS::INS *ins;
 const AccCali_s accCali = {
     // default accelerometer calibration
     .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
@@ -78,7 +78,7 @@ void INSTask(void *_param)
                      | /
             Y<-------ROBOT 
         */
-        IMUSensorRawData_s data = {
+        INS_SYS::IMUSensorRawData_s data = {
             .a = { .x = bmi088->getRawAccelX(),
                    .y = bmi088->getRawAccelY(),
                    .z = bmi088->getRawAccelZ(),
@@ -142,7 +142,7 @@ void AppManager::initApp()
 
     // INS
     bmi088 = new BMI088;
-    ins = new INS;
+    ins = new INS_SYS::INS;
     bmi088->init(&IMU_SPI);
     ins->init(accCali, gyroCali);
 

@@ -1,6 +1,16 @@
 #include "INS.hpp"
 
+#include "TopicRouter.hpp"
+
 #define CORRECT_IMU_DATA 1
+
+using namespace INS_SYS;
+
+INS::INS()
+        : insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
+                                           &insDat_))
+{
+}
 
 void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
 {
@@ -125,4 +135,7 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
 
     // temperature data
     temperature_ = _temperature;
+
+    // send queue
+    insPub_->publish();
 }

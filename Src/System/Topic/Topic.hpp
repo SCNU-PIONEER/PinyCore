@@ -18,17 +18,20 @@ protected:
     uint8_t uid_;
 };
 
-class TopicBase {
-public:
-    virtual ~TopicBase() = default;
-    virtual void publish() = 0;
-};
-
 template <typename T> class Topic;
 
 template <typename T> class Publisher : public Node {
 public:
-    explicit Publisher(T *_sourceObject) : sourceObject_(_sourceObject) {}
+    explicit Publisher(Topic<T> *_topic, T *_sourceObject)
+            : topic_(_topic), sourceObject_(_sourceObject)
+    {
+        if (topic_ != nullptr)
+            topic_->registerPublisher(this);
+        else {
+            while (true)
+                ;
+        }
+    }
     ~Publisher()
     {
         if (topic_ != nullptr)
@@ -48,13 +51,20 @@ private:
 
 template <typename T> class Subscriber : public Node {
 public:
-    Subscriber(const UBaseType_t _queueSize, T *_targetObject)
-            : targetObject_(_targetObject)
+    Subscriber(const UBaseType_t _queueSize, Topic<T> *_topic, T *_targetObject)
+            : topic_(_topic)
+            , targetObject_(_targetObject)
             , queue_(xQueueCreate(_queueSize, sizeof(T)))
     {
         if (queue_ == nullptr) {
             while (true)
                 ; // TODO: queue creation failed
+        }
+        if (topic_ != nullptr)
+            topic_->registerSubscriber(this);
+        else {
+            while (true)
+                ;
         }
     }
     ~Subscriber()
@@ -78,8 +88,9 @@ private:
     QueueHandle_t queue_;
 };
 
-template <typename T> class Topic : public TopicBase {
+template <typename T> class Topic {
 public:
+    explicit Topic(std::string _name) : name_(_name) {}
     std::string name() { return name_; }
     void registerPublisher(Publisher<T> *_publisher)
     {
@@ -106,15 +117,16 @@ public:
                            subscribers_.end());
         LOG::info("Topic", "%s: cancel subscriber uid:%d", _subscriber->uid());
     }
-    void publish() final
+    void publish()
     {
         if (publisher_ == nullptr) {
             LOG::error("Topic", "%s: publisher not registered", this->name_);
             return;
         }
         for (auto &subscriber : subscribers_) {
-            xQueueSend(subscriber->queue(), publisher_->sourceObject_,
-                       portMAX_DELAY);
+            if (subscriber != nullptr)
+                xQueueSend(subscriber->queue(), publisher_->sourceObject_,
+                           portMAX_DELAY);
         }
     }
 
