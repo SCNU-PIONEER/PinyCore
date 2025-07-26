@@ -76,10 +76,7 @@ public:
     }
     QueueHandle_t queue() { return queue_; }
 
-    bool receive()
-    {
-        return xQueueReceive(queue_, targetObject_, portMAX_DELAY) == pdTRUE;
-    }
+    bool receive() { return xQueueReceive(queue_, targetObject_, 0) == pdTRUE; }
 
 private:
     friend class Topic<T>;
@@ -125,8 +122,7 @@ public:
         }
         for (auto &subscriber : subscribers_) {
             if (subscriber != nullptr)
-                xQueueSend(subscriber->queue(), publisher_->sourceObject_,
-                           portMAX_DELAY);
+                xQueueSend(subscriber->queue(), publisher_->sourceObject_, 0);
         }
     }
 
