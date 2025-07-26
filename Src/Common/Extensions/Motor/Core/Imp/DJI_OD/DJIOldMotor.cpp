@@ -145,6 +145,8 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
         this->data_.rawAngLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
+        this->data_.multipCirAng =
+                this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
     }
 
     if (this->rxFreq_ > 1.f)
