@@ -5,6 +5,9 @@
 namespace PINYMOTOR::UTMOTOR {
 
 class UT80106 : UTMotor {
+private:
+    MotorTypeDef_e checkBaseConfig();
+
 public:
     /* 控制帧幅值 */
     static constexpr uint32_t P_MAX = 411774; // rad
@@ -21,7 +24,6 @@ public:
 
     UT80106(const char _name[16], PINYMOTOR::InitConfig_s _config,
             DMA_HandleTypeDef *_dmaHandle);
-    MotorTypeDef_e checkBaseConfig();
 };
 
 } // namespace PINYMOTOR::UTMOTOR

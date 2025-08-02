@@ -11,6 +11,8 @@ using namespace DMMOTOR;
 DM3519::DM3519(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DM-DM3519");
     this->model_.measureMax = 16383;
     this->model_.measureMin = 0;
@@ -18,24 +20,22 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->status_ = Status_s(DM3519_P_MAX,             // PMax
-                             DM3519_V_MAX,             // VMax
-                             DM3519_T_MAX,             // TMax
-                             DM3519_MITKp_MAX,         // MITKpMax
-                             DM3519_MITKd_MAX,         // MITKdMax
-                             DM3519_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             DM3519_CURR_RATED,        // currRated
-                             DM3519_TORQ_RATED,        // torqRated
-                             DM3519_CURR_MAX,          // currMax
-                             DM3519_TORQ_MAX,          // torqMax
-                             DM3519_TORQ_CONSTANT      // torqConstant
+    this->status_ = Status_s(P_MAX,             // PMax
+                             V_MAX,             // VMax
+                             T_MAX,             // TMax
+                             MIT_KP_MAX,        // MITKpMax
+                             MIT_KP_MAX,        // MITKdMax
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             CURR_RATED,        // currRated
+                             TORQ_RATED,        // torqRated
+                             CURR_MAX,          // currMax
+                             TORQ_MAX,          // torqMax
+                             TORQ_CONSTANT      // torqConstant
     );
 
     this->registerMotor();
     this->registerRecvCallback();
     this->updateCtrlId();
-
-    checkBaseConfig();
 
     LOG::info("DM3519",
               " %s: An instance of DM3519 created, rxBaseId:%hx, txBaseId:%hx",

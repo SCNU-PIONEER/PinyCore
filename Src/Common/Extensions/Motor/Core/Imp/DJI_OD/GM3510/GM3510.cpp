@@ -12,6 +12,8 @@ using namespace DJI_ODMOTOR;
 GM3510::GM3510(const char _name[16], InitConfig_s _config)
         : DJIOldMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DJI-GM3510");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
@@ -20,22 +22,20 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     this->model_.txBaseId = 0x1FF;
 
-    this->status_ = Status_s(GM3510_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                             GM3510_TORQ_RX_CODE_SPAN, // torqRxCodeSpan
-                             GM3510_CURR_RATED,        // currRated
-                             GM3510_TORQ_RATED,        // torqRated
-                             GM3510_VOLT_MAX,          // voltMax
-                             GM3510_CURR_MAX,          // currMax
-                             GM3510_TORQ_MAX,          // torqMax
-                             GM3510_TORQ_CONSTANT      // torqConstant
+    this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                             TORQ_RX_CODE_SPAN, // torqRxCodeSpan
+                             CURR_RATED,        // currRated
+                             TORQ_RATED,        // torqRated
+                             VOLT_MAX,          // voltMax
+                             CURR_MAX,          // currMax
+                             TORQ_MAX,          // torqMax
+                             TORQ_CONSTANT      // torqConstant
     );
 
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();
-
-    checkBaseConfig();
 
     LOG::info("GM3510",
               " %s: An instance of GM3510 created, rxBaseId:%hx, txBaseId:%hx",

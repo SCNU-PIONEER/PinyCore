@@ -67,7 +67,8 @@ void TestModule::init()
         .txFreq = (100.0f),
         .posPID = nullptr,
         .velPID = std::unique_ptr<PID>(new positonalPid(
-                0.05f, 0.f, 0.f, 0.01, GM6020_TORQ_MAX, GM6020_TORQ_MAX, 0.f)),
+                0.05f, 0.f, 0.f, 0.01, PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX,
+                PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX, 0.f)),
         .torqPID = nullptr
     };
     this->testGM6020Motor = std::make_unique<DJIMOTOR::GM6020>(

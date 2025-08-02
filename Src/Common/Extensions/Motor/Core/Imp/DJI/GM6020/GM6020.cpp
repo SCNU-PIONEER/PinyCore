@@ -11,6 +11,8 @@ using namespace DJIMOTOR;
 GM6020::GM6020(const char _name[16], InitConfig_s _config)
         : DJIMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DJI-GM6020");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
@@ -29,15 +31,15 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
             this->model_.txBaseId = 0x1FF;
     }
 
-    this->status_ = Status_s(GM6020_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                             GM6020_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             GM6020_CURR_RX_CODE_SPAN, // currRxCodeSpan
-                             GM6020_CURR_RATED,        // currRated
-                             GM6020_TORQ_RATED,        // torqRated
-                             GM6020_VOLT_MAX,          // voltMax
-                             GM6020_CURR_MAX,          // currMax
-                             GM6020_TORQ_MAX,          // torqMax
-                             GM6020_TORQ_CONSTANT      // torqConstant
+    this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             CURR_RX_CODE_SPAN, // currRxCodeSpan
+                             CURR_RATED,        // currRated
+                             TORQ_RATED,        // torqRated
+                             VOLT_MAX,          // voltMax
+                             CURR_MAX,          // currMax
+                             TORQ_MAX,          // torqMax
+                             TORQ_CONSTANT      // torqConstant
     );
 
     this->registerMotor();
@@ -45,7 +47,6 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    checkBaseConfig();
     LOG::info("GM6020",
               " %s: An instance of GM6020 created, rxBaseId:%hx, txBaseId:%hx",
               this->name_, this->model_.rxBaseId, this->model_.txBaseId);

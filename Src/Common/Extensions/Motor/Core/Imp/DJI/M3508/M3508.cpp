@@ -11,6 +11,8 @@ using namespace DJIMOTOR;
 M3508::M3508(const char _name[16], InitConfig_s _config)
         : DJIMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DJI-M3508");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
@@ -23,23 +25,21 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
         this->model_.txBaseId = 0x200;
 
     this->status_ =
-            Status_s(M3508_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                     M3508_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                     M3508_CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     M3508_CURR_RATED,        // currRated
-                     M3508_TORQ_RATED,        // torqRated
-                     M3508_VOLT_MAX,          // voltMax
-                     20.f, // currMax BUG: we need C620 MAX_CURRENT value
-                     M3508_TORQ_MAX,     // torqMax
-                     M3508_TORQ_CONSTANT // torqConstant
+            Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                     CURR_TX_CODE_SPAN, // currTxCodeSpan
+                     CURR_RX_CODE_SPAN, // currRxCodeSpan
+                     CURR_RATED,        // currRated
+                     TORQ_RATED,        // torqRated
+                     VOLT_MAX,          // voltMax
+                     20.f,     // currMax BUG: we need C620 MAX_CURRENT value
+                     TORQ_MAX, // torqMax
+                     TORQ_CONSTANT // torqConstant
             );
 
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();
-
-    checkBaseConfig(); //BUG: why not check firstly?
 
     LOG::info("M3508",
               " %s: An instance of M3508 created, rxBaseId:%hx, txBaseId:%hx",
