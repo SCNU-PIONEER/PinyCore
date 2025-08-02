@@ -18,5 +18,5 @@ struct gimbalMsg : public Msg {
 };
 
 struct armMsg : public Msg {
-    float j1, j2, j3, j4, j5, j6;
+    float j1, j2, j3, j4, j5, j6, j7;
 };
