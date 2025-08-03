@@ -1,0 +1,33 @@
+enhancement:
+ - head-branch: [feat, Feat, FEAT]
+
+workflow:
+- any:
+  - head-branch: [repo, Repo]
+  - changed-files:
+    - any-glob-to-any-file: .github
+
+bug:
+  - head-branch: [fix, bug, Fix, FIX, Bug, BUG]
+
+documentation:
+- changed-files:
+  - any-glob-to-any-file: ['.docs/*', '**/*.md', 'README*']
+
+engineer:
+  - head-branch: [engineer]
+
+sentry:
+  - head-branch: [sentry]
+
+UAV:
+  - head-branch: [UAV]
+
+hero:
+  - head-branch: [hero]
+
+infantry:
+  - head-branch: [infantry]
+
+dart:
+  - head-branch: [dart]
