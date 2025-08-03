@@ -22,11 +22,11 @@ we also suggest to install following software:
 2. commitizen
 
 # 🌟Getting started
-## 🏗️build
+## 🏗️Build
 
 ```
 cmake --build ./build --target menuconfig
-make -B build -G Ninja
+cmake -B build -G Ninja
 ninja - build
 ```
 
