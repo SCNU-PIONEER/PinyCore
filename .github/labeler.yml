@@ -14,6 +14,9 @@ documentation:
 - changed-files:
   - any-glob-to-any-file: ['.docs/*', '**/*.md', 'README*']
 
+develop:
+  - head-branch: [develop]
+
 engineer:
   - head-branch: [engineer]
 
