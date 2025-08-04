@@ -62,7 +62,7 @@ public:
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData);
     MotorTypeDef_e cmd(MotorCmdType_e _cmd);
 
-    Data_s &data();
+    const Data_s &data() const;
 
     void setZeroAng();
 

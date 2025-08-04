@@ -22,9 +22,12 @@ struct QuadMotorGroup_s {
     void showMotorInfo();
 };
 class QuadMotorBase : public IMotor {
+    struct GroupBus_s {
+        uint32_t *handle;
+        std::unordered_map<uint16_t, QuadMotorGroup_s *> groupMap;
+    };
     using Base = IMotor;
-    using QuadMotors = std::vector<std::pair<
-            uint32_t *, std::unordered_map<uint16_t, QuadMotorGroup_s *> > >;
+    using QuadMotors = std::vector<GroupBus_s>;
 
 protected:
     QuadMotors &getMotorMap();
@@ -52,9 +55,12 @@ struct TripMotorGroup_s {
     void showMotorInfo();
 };
 class TripMotorBase : public IMotor {
+    struct GroupBus_s {
+        uint32_t *handle;
+        std::unordered_map<uint16_t, TripMotorGroup_s *> groupMap;
+    };
     using Base = IMotor;
-    using TripMotors = std::vector<std::pair<
-            uint32_t *, std::unordered_map<uint16_t, TripMotorGroup_s *> > >;
+    using TripMotors = std::vector<GroupBus_s>;
 
 protected:
     TripMotors &getMotorMap();

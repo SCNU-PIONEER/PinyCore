@@ -168,7 +168,7 @@ void IMotor::parseCmd()
 
 uint8_t IMotor::id() const { return id_; }
 
-Data_s &IMotor::data() { return data_; }
+const Data_s &IMotor::data() const { return data_; }
 
 void IMotor::setZeroAng()
 {

@@ -44,7 +44,7 @@ void QuadMotorBase::updateMotorMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
@@ -58,7 +58,7 @@ void QuadMotorBase::updateMotorMap()
     }
 
     // 在找到的pair对象中添加电机组
-    auto &map = it->second;
+    auto &map = it->groupMap;
 
     // 检查pair中是否已经存在电机组
     if (map.find(getGroupId()) == map.end()) {
@@ -102,13 +102,13 @@ void QuadMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
     }
     if (it != getMotorMap().end()) {
-        auto &map = it->second;
+        auto &map = it->groupMap;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());

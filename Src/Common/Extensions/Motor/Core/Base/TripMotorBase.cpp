@@ -43,7 +43,7 @@ void TripMotorBase::updateMotorMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
@@ -55,7 +55,7 @@ void TripMotorBase::updateMotorMap()
         it = getMotorMap().end() - 1;
     }
 
-    auto &map = it->second;
+    auto &map = it->groupMap;
 
     if (map.find(getGroupId()) == map.end()) {
         map[getGroupId()] = new TripMotorGroup_s();
@@ -96,13 +96,13 @@ void TripMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
     }
     if (it != getMotorMap().end()) {
-        auto &map = it->second;
+        auto &map = it->groupMap;
         if (map.find(getGroupId()) != map.end()) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
