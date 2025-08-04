@@ -2,24 +2,29 @@
 
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 
 #ifndef PI
-#define PI 3.14159265358979323846f
+#define PI std::numbers::pi_v<float>
 #endif // !PI
 
 namespace PINYMOTOR {
 
 static inline float getMinorArc(float _cur, float _ref, float _range)
 {
-    return (fmodf(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
-            ((_range) / 2.f));
+    return (std::fmod(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
+            ((_range) * 0.5f));
+}
+
+static inline float getMinorArc(float _cur, float _ref)
+{
+    return getMinorArc(_cur, _ref, 2 * PI);
 }
 
 static inline float rangeMap(float _scale, float _min, float _max)
 {
-    return ((_min) > (_max)) ?
-                   (_scale) :
-                   (_min) + fmodf(((_scale) - (_min)), ((_max) - (_min)));
+    return std::min(
+            _max, std::max(_min, _min + std::fmod(_scale - _min, _max - _min)));
 }
 
 static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
@@ -54,10 +59,7 @@ static inline float radps2rpm(float _radps)
 template <typename T>
 inline T clamp(const T &_value, const T &_min, const T &_max)
 {
-    return (_min > _max)   ? _value :
-           (_value < _min) ? _min :
-           (_value > _max) ? _max :
-                             _value;
+    return std::min(std::max(_value, _min), _max);
 }
 
 } // namespace PINYMOTOR

@@ -13,6 +13,7 @@
 namespace PINYMOTOR {
 struct QuadMotorGroup_s {
     IMotor *motor[4];
+    uint8_t txBuf[8];
     uint8_t refLoadedCode;
     uint8_t curLoadedCode;
     uint32_t lastSendTick; // ms
@@ -30,6 +31,8 @@ protected:
     void updateMotorMap();
     void removeMotorFromMap();
 
+    QuadMotorGroup_s *group_ = nullptr;
+
 public:
     QuadMotorBase(const char _name[16], InitConfig_s _config);
     uint16_t getGroupId() const;
@@ -40,6 +43,7 @@ public:
 /*******************************************************************/
 struct TripMotorGroup_s {
     IMotor *motor[3];
+    uint8_t txBuf[8];
     uint8_t refLoadedCode;
     uint8_t curLoadedCode;
     uint32_t lastSendTick; // ms
@@ -56,6 +60,8 @@ protected:
     TripMotors &getMotorMap();
     void updateMotorMap();
     void removeMotorFromMap();
+
+    TripMotorGroup_s *group_ = nullptr;
 
 public:
     TripMotorBase(const char _name[16], InitConfig_s _config);

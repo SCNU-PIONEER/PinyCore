@@ -52,7 +52,5 @@ public:
     uint16_t masterId() const;
     uint16_t uid() final;
     MotorTypeDef_e update() final;
-
-    TripMotorGroup_s *findGroup();
 };
 } // namespace PINYMOTOR::DJI_ODMOTOR

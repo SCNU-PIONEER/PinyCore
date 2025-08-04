@@ -12,6 +12,7 @@ QuadMotorGroup_s::QuadMotorGroup_s()
 {
     for (auto &i : motor)
         i = nullptr;
+    memset(txBuf, 0, 8);
 }
 void QuadMotorGroup_s::showMotorInfo()
 {
@@ -55,8 +56,10 @@ void QuadMotorBase::updateMotorMap()
                 std::unordered_map<uint16_t, QuadMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
+
     // 在找到的pair对象中添加电机组
     auto &map = it->second;
+
     // 检查pair中是否已经存在电机组
     if (map.find(getGroupId()) == map.end()) {
         // 如果不存在，则创建一个电机组
@@ -77,6 +80,8 @@ void QuadMotorBase::updateMotorMap()
             map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
+    group_ = map[getGroupId()];
+
     // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
     for (auto &i : map[getGroupId()]->motor) {
         if (i != nullptr) {

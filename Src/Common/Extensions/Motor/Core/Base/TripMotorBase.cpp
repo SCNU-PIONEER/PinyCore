@@ -12,6 +12,7 @@ TripMotorGroup_s::TripMotorGroup_s()
 {
     for (auto &i : motor)
         i = nullptr;
+    memset(txBuf, 0, 8);
 }
 void TripMotorGroup_s::showMotorInfo()
 {
@@ -53,7 +54,9 @@ void TripMotorBase::updateMotorMap()
                 std::unordered_map<uint16_t, TripMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
+
     auto &map = it->second;
+
     if (map.find(getGroupId()) == map.end()) {
         map[getGroupId()] = new TripMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -72,9 +75,11 @@ void TripMotorBase::updateMotorMap()
             map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
-    for (size_t i = 0; i < 3; i++) {
-        if (map[getGroupId()]->motor[i] != nullptr) {
-            if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
+    group_ = map[getGroupId()];
+
+    for (auto &i : map[getGroupId()]->motor) {
+        if (i != nullptr) {
+            if (i->txFreq() != this->txFreq()) {
                 LOG::warn("TripMotorBase", "Motor %s: txFreq not match",
                           this->name_);
             }
