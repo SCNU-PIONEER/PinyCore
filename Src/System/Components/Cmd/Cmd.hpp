@@ -10,7 +10,6 @@
 
 class Cmd {
 public:
-    Cmd();
     void init();
     void task();
     MsgBus_s *getMsgBus() { return &msgBus_; }
@@ -22,6 +21,6 @@ private:
     MsgBus_s msgBus_;
     EventGroupHandle_t eventGroup_;
 
-    rcMsgHandler rcHandler_;
+    RcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
 };
