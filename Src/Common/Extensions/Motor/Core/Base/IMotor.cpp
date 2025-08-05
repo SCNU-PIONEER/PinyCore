@@ -47,6 +47,11 @@ void IMotor::calcRecvFreq()
     } else {
         this->rxFreq_ = 1000.f / static_cast<float>(dt);
     }
+    if (this->rxFreq_ < 1.f) {
+        this->globalState_ = GlobalState_e::OFFLINE;
+    } else {
+        this->globalState_ = GlobalState_e::ONLINE;
+    }
 }
 
 MotorTypeDef_e IMotor::registerMotor()

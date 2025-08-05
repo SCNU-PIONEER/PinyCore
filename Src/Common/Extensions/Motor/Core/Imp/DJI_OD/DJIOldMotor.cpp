@@ -140,7 +140,8 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
                                  2.f * PI)) /
                     this->rr();
 
-    if (this->globalState_ == GlobalState_e::OFFLINE &&
+    if ((this->globalState_ == GlobalState_e::OFFLINE ||
+         this->globalState_ == GlobalState_e::UNREGISTER) &&
         this->data_.rawAngLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
@@ -157,7 +158,12 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 
     this->data_.multipCirAng += angDiff;
     this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
-    this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0, 2.f * PI);
+
+    if (this->rr() == 1)
+        this->data_.singleCirAng = this->data_.ang;
+    else
+        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
+
     return 0;
 }
 
