@@ -63,7 +63,11 @@ public:
 
     MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq);
 
-    MotorTypeDef_e clampVel(float _velLimit);
+    MotorTypeDef_e cmdPos(float _pos);
+
+    void clampVel(float _velMax);
+    void clampPos(float _posMin, float _posMax);
+    void disableClampPos();
 
     const Data_s &data() const;
 

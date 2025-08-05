@@ -156,6 +156,7 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     this->data_.rawAngLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
+    this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
     this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0, 2.f * PI);
     return 0;
 }

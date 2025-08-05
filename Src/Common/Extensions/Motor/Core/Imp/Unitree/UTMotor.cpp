@@ -82,6 +82,7 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
                                     del;
         this->data_.multipCirAng +=
                 (this->data_.rawAng - this->data_.rawAngLast) / this->rr();
+        this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
         this->data_.singleCirAng =
                 rangeMap(this->data_.singleCirAng, 0, 2 * PI);
         this->data_.spdRadps = ((float)fb->fbk.speed / 256) * 6.2832f;

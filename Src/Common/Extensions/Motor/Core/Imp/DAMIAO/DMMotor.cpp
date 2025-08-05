@@ -225,6 +225,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
         this->data_.rawAngLast = this->data_.rawAng;
 
         this->data_.multipCirAng += angDiff;
+        this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
         this->data_.singleCirAng =
                 rangeMap(this->data_.multipCirAng, 0, 2.f * PI);
     }
@@ -264,7 +265,7 @@ MotorTypeDef_e DMMotor::ctrl()
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
             if (!(this->cmd_.velMax < 0.f)) {
@@ -291,7 +292,7 @@ MotorTypeDef_e DMMotor::ctrl()
         isMIT = true;
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
         }
@@ -335,7 +336,7 @@ MotorTypeDef_e DMMotor::ctrl()
         lenBuf = 4;
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
         }

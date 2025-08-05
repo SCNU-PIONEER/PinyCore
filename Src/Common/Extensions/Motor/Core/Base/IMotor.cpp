@@ -4,6 +4,8 @@
 
 #include "StmLog.hpp"
 
+#include "MotorCommonMacros.hpp"
+
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
@@ -105,6 +107,16 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
     }
 }
 
+void IMotor::clampVel(float _velMax) { this->cmd_.velMax = _velMax; }
+
+void IMotor::clampPos(float _posMin, float _posMax)
+{
+    this->cmd_.posMin = _posMin;
+    this->cmd_.posMax = _posMax;
+}
+
+void IMotor::disableClampPos() { clampPos(0.f, 0.f); }
+
 MotorTypeDef_e IMotor::cmdMIT(float _pos, float _vel, float _torq)
 {
     CmdBus_s cmd = { .cmdType = MotorCmdType_e::SET_MIT,
@@ -118,10 +130,9 @@ MotorTypeDef_e IMotor::cmdMIT(float _pos, float _vel, float _torq)
     return 0;
 }
 
-MotorTypeDef_e IMotor::clampVel(float _velMax)
+MotorTypeDef_e IMotor::cmdPos(float _pos)
 {
-    this->cmd_.velMax = _velMax;
-    return 0;
+    return cmd(MotorCmdType_e::SET_POS, _pos);
 }
 
 void IMotor::parseCmd()
@@ -165,6 +176,10 @@ void IMotor::parseCmd()
     if (!(this->cmd_.velMax < 0.f)) {
         this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
                                     this->cmd_.velMax);
+    }
+    if (this->cmd_.posMax != this->cmd_.posMin) {
+        this->cmd_.pos =
+                clampArc(this->cmd_.pos, this->cmd_.posMin, this->cmd_.posMax);
     }
 }
 

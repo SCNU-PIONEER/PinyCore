@@ -12,8 +12,9 @@ namespace PINYMOTOR {
 
 static inline float getMinorArc(float _cur, float _ref, float _range)
 {
-    return (std::fmod(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
-            ((_range) * 0.5f));
+    float rslt = std::fmod(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
+                 ((_range) * 0.5f);
+    return rslt;
 }
 
 static inline float getMinorArc(float _cur, float _ref)
@@ -21,10 +22,42 @@ static inline float getMinorArc(float _cur, float _ref)
     return getMinorArc(_cur, _ref, 2 * PI);
 }
 
+static inline float clampArc(float _ang, float _min, float _max, float _range)
+{
+    float rslt = _ang;
+    const float arc = getMinorArc(_min, _max, _range);
+    if (arc < 0) {
+        const float ang1 = getMinorArc(_ang, _min, _range);
+        if (ang1 <= 0)
+            rslt = _min;
+        else {
+            const float ang2 = getMinorArc(_ang, _max, _range);
+            if (ang2 >= 0)
+                rslt = _max;
+        }
+    } else {
+        const float ang2 = getMinorArc(_ang, _max, _range);
+        if (ang2 <= 0)
+            rslt = _max;
+        else {
+            const float ang1 = getMinorArc(_ang, _min, _range);
+            if (ang1 >= 0)
+                rslt = _min;
+        }
+    }
+    return rslt;
+}
+
+static inline float clampArc(float _ang, float _min, float _max)
+{
+    return clampArc(_ang, _min, _max, 2 * PI);
+}
+
 static inline float rangeMap(float _scale, float _min, float _max)
 {
-    return std::min(
+    float rslt = std::min(
             _max, std::max(_min, _min + std::fmod(_scale - _min, _max - _min)));
+    return rslt;
 }
 
 static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
