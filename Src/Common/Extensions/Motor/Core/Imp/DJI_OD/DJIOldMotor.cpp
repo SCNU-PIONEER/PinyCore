@@ -192,6 +192,11 @@ MotorTypeDef_e DJIOldMotor::ctrl()
                         getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                     2.f * PI),
                         0);
+                if (!(this->cmd_.velMax < 0.f)) {
+                    this->cmd_.vel = std::clamp(this->cmd_.vel,
+                                                -this->cmd_.velMax,
+                                                this->cmd_.velMax);
+                }
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
                 this->cmd_.elec =

@@ -93,6 +93,8 @@ struct Cmd_s {
     bool SW; // enable flag
     bool prevSW;
     MotorCmdType_e curCmdType = MotorCmdType_e::OFF;
+
+    float velMax = -1.f; // rad/s
     struct {
         float pos;
         float vel;

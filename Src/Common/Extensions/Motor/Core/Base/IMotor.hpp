@@ -57,10 +57,13 @@ public:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
 
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _pos, float _vel,
-                       float _torq);
+
     MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData);
     MotorTypeDef_e cmd(MotorCmdType_e _cmd);
+
+    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq);
+
+    MotorTypeDef_e clampVel(float _velLimit);
 
     const Data_s &data() const;
 
@@ -77,6 +80,13 @@ public:
     float span() const;
     float txFreq() const;
     float rxFreq() const;
+
+    float ang() const;
+    float center() const;
+    float pos() const;
+    float posNorm() const;
+    float vel() const;
+    float torq() const;
 
     void overrideReductionRatio(float _newReductionRatio);
     void overrideMeasureMax(float _newMeasureMax);
