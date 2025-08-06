@@ -21,17 +21,17 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->status_ = Status_s(DM8009_P_MAX,             // PMax
-                             DM8009_V_MAX,             // VMax
-                             DM8009_T_MAX,             // TMax
-                             DM8009_MITKP_MAX,         // MITKpMax
-                             DM8009_MITKD_MAX,         // MITKdMax
-                             DM8009_CURR_TX_CODE_SPAN, // currTxCodeSpan
+    this->status_ = Status_s(P_MAX,             // PMax
+                             V_MAX,             // VMax
+                             T_MAX,             // TMax
+                             MIT_KP_MAX,        // MITKpMax
+                             MIT_KD_MAX,        // MITKdMax
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
                              0.f, // 临时占位，实际需补充真实值
                              0.f, // 临时占位，实际需补充真实值
-                             DM8009_CURR_MAX,     // currMax
-                             DM8009_TORQ_MAX,     // torqMax
-                             DM8009_TORQ_CONSTANT // torqConstant
+                             CURR_MAX,     // currMax
+                             TORQ_MAX,     // torqMax
+                             TORQ_CONSTANT // torqConstant
     );
 
     this->registerMotor();
