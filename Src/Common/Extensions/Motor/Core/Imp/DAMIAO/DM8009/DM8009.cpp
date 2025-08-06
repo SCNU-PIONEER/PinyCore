@@ -11,11 +11,8 @@ using namespace DMMOTOR;
 DM8009::DM8009(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, std::move(_config))
 {
-    MotorTypeDef_e configResult = checkBaseConfig();
-    if (configResult != 0) {
-        LOG::error("DM8009", " %s: Configuration check failed! Error code: %d",
-                   this->name_, configResult);
-    }
+    LOG::CHECK(checkBaseConfig());
+
 
     strcpy(this->model_.name, "DM-DM8009");
     this->model_.measureMax = 16383;
