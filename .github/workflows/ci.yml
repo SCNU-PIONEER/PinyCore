@@ -21,8 +21,11 @@ jobs:
           python-version: '3.13'
       - run: pip install -r tools/workflow/requirements.txt
 
-      - name: Build 
+      - name: cmake
         run: cmake -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: build
+        run: ninja -C build
 
       - name: Run clang-format style check for C/C++/Protobuf programs.
         uses: jidicula/clang-format-action@v4.15.0

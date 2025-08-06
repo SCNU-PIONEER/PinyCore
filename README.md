@@ -17,17 +17,24 @@
 5. [kconfiglib](https://github.com/ulfalizer/Kconfiglib)
 
 we also suggest to install following software:
-1. [clangd](https://clangd.llvm.org/)
-1. clang-format
+1. [clangd](https://clangd.llvm.org/) >= 20.0
+1. clang-format >= 20.0
 2. commitizen
 
 # 🌟Getting started
 ## 🏗️Build
 
-```
-cmake --build ./build --target menuconfig
+```sh
 cmake -B build -G Ninja
-ninja - build
+ninja -C build
+```
+
+### menuconfig
+
+```sh
+cmake --build ./build --target menuconfig
+```
+```
 ```
 
 ## 🐞Debug
