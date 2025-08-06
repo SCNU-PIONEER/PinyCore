@@ -11,11 +11,10 @@ using namespace DMMOTOR;
 DM8009::DM8009(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, std::move(_config))
 {
-    
     MotorTypeDef_e configResult = checkBaseConfig();
     if (configResult != 0) {
-        LOG::error("DM8009", " %s: Configuration check failed! Error code: %d", 
-                  this->name_, configResult);
+        LOG::error("DM8009", " %s: Configuration check failed! Error code: %d",
+                   this->name_, configResult);
     }
 
     strcpy(this->model_.name, "DM-DM8009");
@@ -31,11 +30,11 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
                              DM8009_MITKP_MAX,         // MITKpMax
                              DM8009_MITKD_MAX,         // MITKdMax
                              DM8009_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             0.f,                      // 临时占位，实际需补充真实值
-                             0.f,                      // 临时占位，实际需补充真实值
-                             DM8009_CURR_MAX,          // currMax
-                             DM8009_TORQ_MAX,          // torqMax
-                             DM8009_TORQ_CONSTANT      // torqConstant
+                             0.f, // 临时占位，实际需补充真实值
+                             0.f, // 临时占位，实际需补充真实值
+                             DM8009_CURR_MAX,     // currMax
+                             DM8009_TORQ_MAX,     // torqMax
+                             DM8009_TORQ_CONSTANT // torqConstant
     );
 
     this->registerMotor();
