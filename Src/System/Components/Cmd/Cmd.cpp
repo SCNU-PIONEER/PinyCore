@@ -1,7 +1,6 @@
 #include "Cmd.hpp"
 #include "MsgImpl.hpp"
 
-Cmd::Cmd() {}
 
 void Cmd::init()
 {
@@ -29,7 +28,7 @@ void Cmd::parseMsg()
 
 void Cmd::task()
 {
-    while (1) {
+    for (;;) {
         parseMsg();
     }
 }

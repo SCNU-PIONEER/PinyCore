@@ -1,24 +1,24 @@
 #pragma once
 #include "../DJIMotor.hpp"
 
-#define M2006_VOLT_TX_CODE_SPAN 25000.f
-#define M2006_CURR_TX_CODE_SPAN 16384.f
-#define M2006_CURR_RX_CODE_SPAN 8192.f
-#define M2006_CURR_RATED        3.f
-#define M2006_TORQ_RATED        1.f
-#define M2006_VOLT_MAX          25.2f
-#define M2006_CURR_MAX          3.f
-#define M2006_TORQ_MAX          1.f
-#define M2006_TORQ_CONSTANT     0.18f
-
-
 namespace PINYMOTOR::DJIMOTOR {
-
 
 class M2006 final : public DJIMotor {
 private:
-public:
-    M2006(const char _name[16], InitConfig_s _config);
     MotorTypeDef_e checkBaseConfig();
+
+public:
+    static constexpr float VOLT_TX_CODE_SPAN = 25000.f;
+    static constexpr float CURR_TX_CODE_SPAN = 16384.f;
+    static constexpr float CURR_RX_CODE_SPAN = 8192.f;
+    
+    static constexpr float CURR_RATED = 3.f;
+    static constexpr float TORQ_RATED = 1.f;
+    static constexpr float VOLT_MAX = 25.2f;
+    static constexpr float CURR_MAX = 3.f;
+    static constexpr float TORQ_MAX = 1.f;
+    static constexpr float TORQ_CONSTANT = 0.18f;
+
+    M2006(const char _name[16], InitConfig_s _config);
 };
 } // namespace PINYMOTOR::DJIMOTOR

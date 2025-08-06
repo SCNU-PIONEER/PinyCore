@@ -90,12 +90,11 @@ void DJIMotor::updateCtrlId()
 MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
     // send data to CAN
-    QuadMotorGroup_s *group = this->findGroup();
-    if (group == nullptr) {
+    if (this->group_ == nullptr) {
         LOG::error("DJIMotor", " %s: Can't find group %hx", this->getGroupId());
         return 1;
     } else {
-        if (this->checkGroupSend(group)) {
+        if (this->checkGroupSend(this->group_)) {
             // Check this Buffer
             // LOG::warn("DJIMotor", " %s: send data to CAN %hx", this->name_,
             //           _sendId);
@@ -121,8 +120,8 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     fb.current = static_cast<int16_t>((_rxBuf.data[4] << 8) | _rxBuf.data[5]);
     fb.temperature = _rxBuf.data[6];
 
-    this->data_.rawAng = static_cast<float>(fb.rawAng) / this->span() * 2.f *
-                         std::numbers::pi_v<float>;
+    this->data_.rawAng =
+            static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
 
     this->data_.curr = static_cast<float>(fb.current) /
                        this->status_.currRxCodeSpan * this->status_.currMax;
@@ -133,13 +132,14 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
 
     float del = this->data_.rawAng - this->data_.zeroAng;
-    this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) : del;
+    this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
     float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                 2.f * std::numbers::pi_v<float>)) /
+                                 2.f * PI)) /
                     this->rr();
 
-    if (this->globalState_ == GlobalState_e::OFFLINE &&
+    if ((this->globalState_ == GlobalState_e::OFFLINE ||
+         this->globalState_ == GlobalState_e::UNREGISTER) &&
         this->data_.rawAngLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
@@ -149,15 +149,19 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     this->data_.rawAngLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
-    this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0,
-                                        2.f * std::numbers::pi_v<float>);
+    this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
+
+    if (this->rr() == 1) // TODO: 因fmod的精度问题 多圈始终不准
+        this->data_.singleCirAng = this->data_.ang;
+    else
+        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
+
     return 0;
 }
 
 MotorTypeDef_e DJIMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-    uint8_t txBuf[8] = {};
     int16_t ctrlCmd = 0;
     switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR: {
@@ -179,6 +183,11 @@ MotorTypeDef_e DJIMotor::ctrl()
                         getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                     2.f * PI),
                         0);
+                if (!(this->cmd_.velMax < 0.f)) {
+                    this->cmd_.vel = std::clamp(this->cmd_.vel,
+                                                -this->cmd_.velMax,
+                                                this->cmd_.velMax);
+                }
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
                 this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
@@ -232,6 +241,11 @@ MotorTypeDef_e DJIMotor::ctrl()
                         getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                     2.f * PI),
                         0);
+                if (!(this->cmd_.velMax < 0.f)) {
+                    this->cmd_.vel = std::clamp(this->cmd_.vel,
+                                                -this->cmd_.velMax,
+                                                this->cmd_.velMax);
+                }
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
                 this->cmd_.elec =
@@ -270,9 +284,9 @@ MotorTypeDef_e DJIMotor::ctrl()
     }
     }
     if (this->cmd_.SW) {
-        txBuf[(2 * this->getPosInGroup()) + 1] =
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
-        txBuf[2 * this->getPosInGroup()] =
+        this->group_->txBuf[2 * this->getPosInGroup()] =
                 static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
     } else {
         if (this->posPID_ != nullptr)
@@ -281,11 +295,11 @@ MotorTypeDef_e DJIMotor::ctrl()
             this->velPID_->reset();
         if (this->torqPID_ != nullptr)
             this->torqPID_->reset();
-        txBuf[(2 * this->getPosInGroup()) + 1] = 0;
-        txBuf[2 * this->getPosInGroup()] = 0;
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
+        this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }
 
-    rslt |= this->send(this->ctrlId_, txBuf, 8);
+    rslt |= this->send(this->ctrlId_, this->group_->txBuf, 8);
     return rslt;
 }
 
@@ -300,19 +314,4 @@ MotorTypeDef_e DJIMotor::update()
     }
     MotorTypeDef_e rslt = ctrl();
     return rslt;
-}
-
-QuadMotorGroup_s *DJIMotor::findGroup()
-{
-    QuadMotorGroup_s *group = nullptr;
-    for (auto &entry : getMotorMap()) {
-        if (entry.first == this->pComHandle_) {
-            auto it = entry.second.find(this->getGroupId()); // it" is a map
-            if (it != entry.second.end()) {
-                group = it->second;
-                break;
-            }
-        }
-    }
-    return group;
 }

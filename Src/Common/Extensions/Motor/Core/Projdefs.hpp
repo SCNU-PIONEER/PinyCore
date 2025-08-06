@@ -82,6 +82,8 @@ struct Data_s {
     float singleCirAng; // 相对零点单圈值 rad
     float multipCirAng; // 设置零点后清空 rad
 
+    float cirNum; // 相对零点的圈数
+
     float spdRadps; // 角速度 rad/s
     float spdRpm;   // 角速度 rpm
     float curr;     // 电流   A
@@ -93,6 +95,10 @@ struct Cmd_s {
     bool SW; // enable flag
     bool prevSW;
     MotorCmdType_e curCmdType = MotorCmdType_e::OFF;
+
+    float velMax = -1.f; // rad/s
+    float posMax = 0.f;  // rad
+    float posMin = 0.f;  // rad
     struct {
         float pos;
         float vel;

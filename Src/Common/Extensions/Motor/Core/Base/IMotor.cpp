@@ -4,6 +4,8 @@
 
 #include "StmLog.hpp"
 
+#include "MotorCommonMacros.hpp"
+
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
@@ -45,6 +47,11 @@ void IMotor::calcRecvFreq()
     } else {
         this->rxFreq_ = 1000.f / static_cast<float>(dt);
     }
+    if (this->rxFreq_ < 1.f) {
+        this->globalState_ = GlobalState_e::OFFLINE;
+    } else {
+        this->globalState_ = GlobalState_e::ONLINE;
+    }
 }
 
 MotorTypeDef_e IMotor::registerMotor()
@@ -67,27 +74,6 @@ MotorTypeDef_e IMotor::cancelMotor()
     }
     motorManager->motors().erase(it);
     return 0;
-}
-
-MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _pos, float _vel,
-                           float _torq)
-{
-    if (_cmd == MotorCmdType_e::SET_MIT) {
-        CmdBus_s cmd = {
-            .cmdType = _cmd, .cmdVal1 = _pos, .cmdVal2 = _vel, .cmdVal3 = _torq
-        };
-        if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
-            LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
-            return 1;
-        }
-        return 0;
-    } else {
-        LOG::error(
-                "IMotor",
-                " %s: none of cmd are supported in this function except SET_MIT",
-                this->name_);
-        return 1;
-    }
 }
 
 MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd, float _cmdData)
@@ -124,6 +110,34 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _cmd)
                 this->name_);
         return 1;
     }
+}
+
+void IMotor::clampVel(float _velMax) { this->cmd_.velMax = _velMax; }
+
+void IMotor::clampPos(float _posMin, float _posMax)
+{
+    this->cmd_.posMin = _posMin;
+    this->cmd_.posMax = _posMax;
+}
+
+void IMotor::disableClampPos() { clampPos(0.f, 0.f); }
+
+MotorTypeDef_e IMotor::cmdMIT(float _pos, float _vel, float _torq)
+{
+    CmdBus_s cmd = { .cmdType = MotorCmdType_e::SET_MIT,
+                     .cmdVal1 = _pos,
+                     .cmdVal2 = _vel,
+                     .cmdVal3 = _torq };
+    if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
+        LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
+        return 1;
+    }
+    return 0;
+}
+
+MotorTypeDef_e IMotor::cmdPos(float _pos)
+{
+    return cmd(MotorCmdType_e::SET_POS, _pos);
 }
 
 void IMotor::parseCmd()
@@ -164,11 +178,19 @@ void IMotor::parseCmd()
         }
         }
     }
+    if (!(this->cmd_.velMax < 0.f)) {
+        this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
+                                    this->cmd_.velMax);
+    }
+    if (this->cmd_.posMax != this->cmd_.posMin) {
+        this->cmd_.pos =
+                clampArc(this->cmd_.pos, this->cmd_.posMin, this->cmd_.posMax);
+    }
 }
 
 uint8_t IMotor::id() const { return id_; }
 
-Data_s &IMotor::data() { return data_; }
+const Data_s &IMotor::data() const { return data_; }
 
 void IMotor::setZeroAng()
 {
@@ -212,6 +234,18 @@ float IMotor::span() const
 float IMotor::txFreq() const { return txFreq_; }
 
 float IMotor::rxFreq() const { return rxFreq_; }
+
+float IMotor::ang() const { return data_.ang; }
+
+float IMotor::center() const { return data_.zeroAng; }
+
+float IMotor::pos() const { return data_.multipCirAng; }
+
+float IMotor::posNorm() const { return data_.singleCirAng; }
+
+float IMotor::vel() const { return data_.spdRadps; }
+
+float IMotor::torq() const { return data_.torq; }
 
 void IMotor::overrideReductionRatio(float _newReductionRatio)
 {

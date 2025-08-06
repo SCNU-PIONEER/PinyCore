@@ -11,6 +11,8 @@ using namespace DMMOTOR;
 DM4340::DM4340(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DM-DM4340");
     this->model_.measureMax = 16383;
     this->model_.measureMin = 0;
@@ -18,24 +20,22 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     this->model_.rxBaseId = 0x10;
     this->model_.txBaseId = 0x00;
 
-    this->status_ = Status_s(DM4340_P_MAX,             // PMax
-                             DM4340_V_MAX,             // VMax
-                             DM4340_T_MAX,             // TMax
-                             DM4340_MITKp_MAX,         // MITKpMax
-                             DM4340_MITKd_MAX,         // MITKdMax
-                             DM4340_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             DM4340_CURR_RATED,        // currRated
-                             DM4340_TORQ_RATED,        // torqRated
-                             DM4340_CURR_MAX,          // currMax
-                             DM4340_TORQ_MAX,          // torqMax
-                             DM4340_TORQ_CONSTANT      // torqConstant
+    this->status_ = Status_s(P_MAX,             // PMax
+                             V_MAX,             // VMax
+                             T_MAX,             // TMax
+                             MIT_KP_MAX,        // MITKpMax
+                             MIT_KD_MAX,        // MITKdMax
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             CURR_RATED,        // currRated
+                             TORQ_RATED,        // torqRated
+                             CURR_MAX,          // currMax
+                             TORQ_MAX,          // torqMax
+                             TORQ_CONSTANT      // torqConstant
     );
 
     this->registerMotor();
     this->registerRecvCallback();
     this->updateCtrlId();
-
-    checkBaseConfig();
 
     LOG::info("DM4340",
               " %s: An instance of DM4340 created, rxBaseId:%hx, txBaseId:%hx",

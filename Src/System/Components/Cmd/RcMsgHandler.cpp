@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-void rcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
+void RcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     msgBus_ = _bus;
     this->event = _event;
@@ -15,7 +15,7 @@ void rcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 }
 
 
-void rcMsgHandler::handle()
+void RcMsgHandler::handle()
 {
     rc_.parseData();
     RC::RcRawMsg_t rcData = rc_.getData();
@@ -24,16 +24,16 @@ void rcMsgHandler::handle()
     gimbalMsg gmsg;
 
     rcMsg_.rx +=
-            std::clamp((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f - rcMsg_.rx,
+            std::clamp(((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f) - rcMsg_.rx,
                        -S_CURVE_ACC, S_CURVE_ACC);
     rcMsg_.ry +=
-            std::clamp((float)rcData.rc.ch1 * T_ACC_CNT / 660.0f - rcMsg_.ry,
+            std::clamp(((float)rcData.rc.ch1 * T_ACC_CNT / 660.0f) - rcMsg_.ry,
                        -S_CURVE_ACC, S_CURVE_ACC);
     rcMsg_.lx +=
-            std::clamp((float)rcData.rc.ch2 * T_ACC_CNT / 660.0f - rcMsg_.lx,
+            std::clamp(((float)rcData.rc.ch2 * T_ACC_CNT / 660.0f) - rcMsg_.lx,
                        -S_CURVE_ACC, S_CURVE_ACC);
     rcMsg_.ly +=
-            std::clamp((float)rcData.rc.ch3 * T_ACC_CNT / 660.0f - rcMsg_.ly,
+            std::clamp(((float)rcData.rc.ch3 * T_ACC_CNT / 660.0f) - rcMsg_.ly,
                        -S_CURVE_ACC, S_CURVE_ACC);
 
     rcMsg_.rSwitch = rcData.rc.switchRight;
@@ -63,7 +63,7 @@ void rcMsgHandler::handle()
 }
 
 
-void rcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
+void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
     xQueueSend(_queue, _msg, 0);
 }

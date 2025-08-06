@@ -2,7 +2,7 @@
 #include "Rc.hpp"
 #include "Handler.hpp"
 
-class rcMsgHandler : public Handler {
+class RcMsgHandler : public Handler {
     typedef struct {
         struct {
             float rx;
@@ -36,9 +36,9 @@ private:
 
     RC::Rc &rc_ = RC::Rc::instance();
 
-    RcMsg_t rcMsg_;
+    RcMsg_t rcMsg_ = {};
 
-    RcMsg_t rcMsgPrev_;
+    RcMsg_t rcMsgPrev_ = {};
 
     MsgBus_s *msgBus_;
 };

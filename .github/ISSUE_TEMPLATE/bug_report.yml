@@ -1,0 +1,30 @@
+---
+name: Bug report
+about: Create a bug report
+title: ''
+labels: bug, needs triage
+assignees: ''
+
+---
+
+<!--- Before opening up a new bug report, please make sure to check for similar existing issues -->
+
+**Description:**
+A clear and concise description of what the bug is.(对错误是什么的清晰简洁的描述)
+
+**Platform:**
+- [ ] Linux
+- [ ] Windows
+
+**Runner type:**
+- [ ] Release
+- [ ] Debug
+
+**Repro steps:**  
+A description with steps to reproduce the issue.(说明其中包含重现问题的步骤)
+
+**Expected behavior:**
+A description of what you expected to happen.(预期会发生的事情)
+
+**Actual behavior:**
+A description of what is actually happening.(实际发生的事情)

@@ -11,6 +11,8 @@ using namespace DJIMOTOR;
 M2006::M2006(const char _name[16], InitConfig_s _config)
         : DJIMotor(_name, std::move(_config))
 {
+    LOG::CHECK(checkBaseConfig());
+
     strcpy(this->model_.name, "DJI-M2006");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
@@ -23,24 +25,22 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
         this->model_.txBaseId = 0x200;
 
     this->status_ =
-            Status_s(M2006_VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                     M2006_CURR_TX_CODE_SPAN, // currTxCodeSpan
-                     M2006_CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     M2006_CURR_RATED,        // currRated
-                     M2006_TORQ_RATED,        // torqRated
-                     M2006_VOLT_MAX,          //voltmax
+            Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                     CURR_TX_CODE_SPAN, // currTxCodeSpan
+                     CURR_RX_CODE_SPAN, // currRxCodeSpan
+                     CURR_RATED,        // currRated
+                     TORQ_RATED,        // torqRated
+                     VOLT_MAX,          //voltmax
                      //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
-                     M2006_CURR_MAX,     // currMax
-                     M2006_TORQ_MAX,     // torqMax
-                     M2006_TORQ_CONSTANT // torqConstant
+                     CURR_MAX,     // currMax
+                     TORQ_MAX,     // torqMax
+                     TORQ_CONSTANT // torqConstant
             );
 
     this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();
-
-    checkBaseConfig();
 
     LOG::info("M2006",
               " %s: An instance of M2006 created, rxBaseId:%hx, txBaseId:%hx",

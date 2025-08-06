@@ -1,0 +1,32 @@
+name: Code Review
+
+on: [pull_request]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake ninja-build gcc-arm-none-eabi
+          version: 1.0
+      
+      - name: Cache pip packages
+        id: pip-cache
+        uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
+          python-version: '3.13'
+      - run: pip install -r tools/workflow/requirements.txt
+
+      - name: Build 
+        run: cmake -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-format style check for C/C++/Protobuf programs.
+        uses: jidicula/clang-format-action@v4.15.0
+        with:
+          clang-format-version: '20'
+          check-path: 'Src'
+          exclude-regex: '.*/hal/.*|.*sdkconfig\.h'

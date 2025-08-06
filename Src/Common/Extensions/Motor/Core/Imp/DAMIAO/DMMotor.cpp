@@ -192,8 +192,8 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 
         errorCode_ = fb.errorCode;
 
-        this->data_.rawAng = static_cast<float>(fb.rawAng) / this->span() *
-                             2.f * std::numbers::pi_v<float>;
+        this->data_.rawAng =
+                static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
 
         this->data_.spdRadps =
                 uint2float(fb.rawVel, -status_.VMax, status_.VMax, 12) /
@@ -208,14 +208,14 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
         this->data_.tempture = fb.mosTemperature;
 
         float del = this->data_.rawAng - this->data_.zeroAng;
-        this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) :
-                                    del;
+        this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
         float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                     2.f * std::numbers::pi_v<float>)) /
+                                     2.f * PI)) /
                         this->rr();
 
-        if (this->globalState_ == GlobalState_e::OFFLINE &&
+        if ((this->globalState_ == GlobalState_e::OFFLINE ||
+             this->globalState_ == GlobalState_e::UNREGISTER) &&
             this->data_.rawAngLast != this->data_.rawAng) {
             this->globalState_ = GlobalState_e::ONLINE;
             angDiff = 0;
@@ -226,8 +226,12 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
         this->data_.rawAngLast = this->data_.rawAng;
 
         this->data_.multipCirAng += angDiff;
-        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0,
-                                            2.f * std::numbers::pi_v<float>);
+        this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
+
+        if (this->rr() == 1)
+            this->data_.singleCirAng = this->data_.ang;
+        else
+            this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
     }
     return 0;
 }
@@ -265,9 +269,13 @@ MotorTypeDef_e DMMotor::ctrl()
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
+            if (!(this->cmd_.velMax < 0.f)) {
+                this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
+                                            this->cmd_.velMax);
+            }
             this->cmd_.torq =
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         }
@@ -288,7 +296,7 @@ MotorTypeDef_e DMMotor::ctrl()
         isMIT = true;
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
         }
@@ -332,7 +340,7 @@ MotorTypeDef_e DMMotor::ctrl()
         lenBuf = 4;
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.multipCirAng,
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                 2.f * PI),
                     0);
         }

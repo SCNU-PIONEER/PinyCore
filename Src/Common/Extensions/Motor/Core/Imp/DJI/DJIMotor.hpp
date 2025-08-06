@@ -55,8 +55,6 @@ public:
 
     uint16_t uid() final;
     MotorTypeDef_e update() final;
-
-    QuadMotorGroup_s *findGroup();
 };
 
 } // namespace PINYMOTOR::DJIMOTOR
