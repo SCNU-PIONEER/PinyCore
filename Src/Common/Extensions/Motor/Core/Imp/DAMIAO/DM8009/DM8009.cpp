@@ -38,8 +38,6 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    checkBaseConfig();
-
     LOG::info("DM8009",
               " %s: An instance of DM8009 created, rxBaseId:%hx, txBaseId:%hx",
               this->name_, this->model_.rxBaseId, this->model_.txBaseId);
