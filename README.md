@@ -34,8 +34,6 @@ ninja -C build
 ```sh
 cmake --build ./build --target menuconfig
 ```
-```
-```
 
 ## 🐞Debug
 
