@@ -8,4 +8,8 @@ menu "app config"
     bool "test modules"
     default n
 
+    config USE_UI
+    bool "UI"
+    default n
+
 endmenu
