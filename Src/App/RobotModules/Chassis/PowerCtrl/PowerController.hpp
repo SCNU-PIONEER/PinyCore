@@ -6,8 +6,8 @@
 #include "PidBasic.hpp"
 #include <memory>
 #include "SuperCap.hpp"
-
-using namespace PINYMOTOR;
+#include "RLS.hpp"
+#include "MotorCommonMacros.hpp"
 
 #define USEConfidenceLevel 0
 #define USELinearityRatio  1
@@ -19,24 +19,28 @@ struct MotorParam_s {
     float LeakagePower; //静态功耗
 };
 
-enum class ChassisType_e {
-    Quadricycle = 4u,
-    Wheelleg = 6u,
-    Helm = 8u,
-    Banned = 1u,
+enum class ChassisType_e : uint8_t {
+    QUADRICYCLE = 4u,
+    WHEELLEG = 6u,
+    SWERVE = 8u,
+    BANNED = 1u,
 };
 
 class PowerController {
 public:
-    PowerController(ChassisType_e chassisType);
+    PowerController(ChassisType_e _chassisType);
+
+    virtual ~PowerController() = default;
 
     virtual void relPowerCalc() = 0;
 
-    virtual void cmdPowerCalc(float *motorSpeed) = 0;
+    virtual void cmdPowerCalc(float *_motorSpeed) = 0;
 
     virtual void currentCalc() = 0;
 
-    virtual std::vector<float> powerCtrl(float *motorSpeed) = 0;
+    virtual std::vector<float> powerCtrl(float *_motorSpeed) = 0;
+
+    virtual void rlsUpdate() = 0;
 
     void refereeDataUpdate();
 

@@ -34,7 +34,7 @@ Mecanum::Mecanum()
 
     if constexpr (USE_POWERCTRL) {
         powerCtrl_ = std::make_unique<QuadricycleController>(
-                ChassisType_e::Quadricycle);
+                ChassisType_e::QUADRICYCLE);
     }
 }
 
