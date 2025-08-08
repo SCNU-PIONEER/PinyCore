@@ -16,7 +16,7 @@ void initPinyCore();
 
 class PinyCore {
 public:
-    inline static PinyCore *instance()
+    static PinyCore *instance()
     {
         static PinyCore instance_;
         return &instance_;

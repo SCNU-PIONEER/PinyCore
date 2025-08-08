@@ -61,7 +61,7 @@ void StateFactory::update()
         }
     } else if (currentState_->getMode() == FSMMode_e::CHANGE) {
         currentState_->exit();
-        currentState_ = std::move(nextState_);
+        currentState_ = nextState_;
         if (currentState_) {
             currentState_->enter();
         }

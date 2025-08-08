@@ -17,10 +17,10 @@ union WheelsSpeed_u {
 
 class Mecanum : public Locomotion {
 public:
-    static constexpr float W_DIAMETER = 0.1525f;
+    static constexpr float W_DIAMETER = 0.1525F;
     static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
-    static constexpr float FRONT_R = 0.354f;
-    static constexpr float BACK_R = 0.354f;
+    static constexpr float FRONT_R = 0.354F;
+    static constexpr float BACK_R = 0.354F;
     Mecanum();
 
     void stop() override;

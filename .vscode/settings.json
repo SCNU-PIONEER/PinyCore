@@ -28,7 +28,7 @@
         "singleInstance": true,
         "command": "openocd -f interface/cmsis-dap.cfg -f target/stm32h7x.cfg  -c 'program ./build/robot.elf verify reset exit' && exit",
         "tooltip": "Build and flash project"
-      },
+      }
       // {
       //     "name": "$(bug)",
       //     "color": "none",
@@ -52,7 +52,7 @@
   },
   "fileheader.configObj": {
     "specialOptions": {
-      "FilePath": "File",
+      "FilePath": "File"
     },
     "wideSame": true, // 设置为true开启
     "wideNum": 13, // 字段长度 默认为13
@@ -60,11 +60,8 @@
     "switch": {
       "newlineAddAnnotation": true // 默认开启
     },
-    "supportAutoLanguage": [
-      "c",
-      "cpp",
-      "h",
-      "hpp"
-    ]
-  }
+    "supportAutoLanguage": ["c", "cpp", "h", "hpp"]
+  },
+  //"clangd.path": "D:\\Somethings\\PinyCoreSoftware\\clangd\\clangd_20.1.8\\bin",
+  //"clangd.useScriptAsExecutable": true
 }

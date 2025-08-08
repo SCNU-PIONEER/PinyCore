@@ -22,7 +22,7 @@ public:
     virtual ~Locomotion() = default;
 
 protected:
-    std::unique_ptr<PowerController> powerCtrl_;
+     std::unique_ptr<PowerController> powerCtrl_;
     Speed_u refSpeed_;
     Speed_u curSpeed_;
 };
