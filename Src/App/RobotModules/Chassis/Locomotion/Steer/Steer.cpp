@@ -76,7 +76,6 @@ void Steer::update()
     float tempdir[4];
     for (uint8_t i = 0; i < 8; i++) {
         wSpeed_._[i] = iir_filter_3(motor_[i]->data().spdRpm, i);
-        curDir._[i] = iir_filter_3(motor_[i]->data().spdRpm, i);
     }
 
     for (uint8_t i = 0; i < 4; i++) {
