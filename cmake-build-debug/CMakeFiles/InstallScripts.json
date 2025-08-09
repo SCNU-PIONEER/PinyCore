@@ -1,0 +1,18 @@
+{
+	"InstallScripts" : 
+	[
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/Common/Soc/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Lib/Segger/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Lib/Eigen3/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/App/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/Common/Soc/stm32f407/hal/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/Common/Extensions/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/Common/Bsp/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/System/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/Utils/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Src/cmake_install.cmake",
+		"A:/STUDY/2026_Aerial_Robotics/PinyCore/cmake-build-debug/Lib/CMSIS-DSP/Source/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

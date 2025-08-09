@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 # define compiler toolchain for Clang,
 # such as set(TOOLCHAIN_PREFIX "~/apps/ATfE-20.1.0-Linux-x86_64/bin")
-set(TOOLCHAIN_PREFIX "")
+set(TOOLCHAIN_PREFIX "A:/STUDY/Tools/arm/bin/arm-none-eabi-gcc.exe")
 
 # Clang compiler
 set(CMAKE_C_COMPILER                "${TOOLCHAIN_PREFIX}/clang")

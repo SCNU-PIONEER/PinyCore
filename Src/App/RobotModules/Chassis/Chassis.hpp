@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>////////////////
 #include "Locomotion.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
