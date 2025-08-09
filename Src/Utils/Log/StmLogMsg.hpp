@@ -1,14 +1,17 @@
 #pragma once
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <source_location>
+#include <unordered_map>
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 namespace LOG {
 
 /* Definitions for error constants. */
 #define STM_OK                   0 /*!< stm_err_t value indicating success (no error) */
-#define STM_FAIL                 -1 /*!< Generic stm_err_t code indicating failure */
+#define STM_FAIL                 (-1) /*!< Generic stm_err_t code indicating failure */
 
 #define STM_ERR_NO_MEM           0x101 /*!< Out of memory */
 #define STM_ERR_INVALID_ARG      0x102 /*!< Invalid argument */
@@ -50,16 +53,17 @@ static constexpr size_t COLOR_ERROR = 2;   // red
 static constexpr size_t COLOR_FATAL = 9;   // bright red
 static constexpr size_t COLOR_STEP = 5;    // blue
 //
-enum class Level : uint8_t {
-    RAW,       // Raw log output
-    INFO,      // Information messages which describe normal flow of events
-    WARN,      // Error conditions from which recovery measures have been taken
-    ERROR,     // Critical errors, software module can not recover on its own
-    DEBUGGING, // Extra information which is not necessary for normal use (values, pointers, sizes, etc)
-    VERBOSE // Bigger chunks of debugging information, or frequent messages which can potentially flood the output
+enum class Level_e : uint8_t {
+    NONE,      // 完全禁用日志 (0)
+    ERROR,     // 关键错误，系统无法自行恢复 (1)
+    WARN,      // 警告条件，已采取恢复措施 (2)
+    INFO,      // 正常运行信息 (3)
+    DEBUGGING, // 调试信息（变量、指针等）(4)
+    VERBOSE,   // 高频/详细调试信息 (5)
+    RAW        // 原始输出（不受级别控制）(6)
 };
 
-enum class Proto : uint8_t {
+enum class Proto_e : uint8_t {
     RTT,
     VOFA_FIREWATER,
     VOFA_JUSTFLOAT,
@@ -67,15 +71,62 @@ enum class Proto : uint8_t {
     // LOG_USB,  // INFO: waiting for design
 };
 
+class ModuleControl {
+public:
+    ModuleControl()
+    {
+        QueueHandle_t mutex = xSemaphoreCreateMutex();
+        configASSERT(mutex != NULL);
+    }
+
+    ~ModuleControl() { vSemaphoreDelete(mutex_); }
+
+    void setModuleLevel(std::string_view _module, Level_e _level)
+    {
+        if (xSemaphoreTake(mutex_, portMAX_DELAY) == pdTRUE) {
+            // 转换为 string 存储
+            module_levels_[std::string(_module)] = _level;
+            xSemaphoreGive(mutex_);
+        }
+    }
+
+    Level_e getModuleLevel(std::string_view _module) const
+    {
+        Level_e ret = global_level_;
+        if (xSemaphoreTake(mutex_, portMAX_DELAY) == pdTRUE) {
+            // 查找时也转换为 string
+            auto it = module_levels_.find(std::string(_module));
+            ret = (it != module_levels_.end()) ? it->second : global_level_;
+            xSemaphoreGive(mutex_);
+        }
+        return ret;
+    }
+
+    void setGlobalLevel(Level_e _level)
+    {
+        if (xSemaphoreTake(mutex_, portMAX_DELAY) == pdTRUE) {
+            global_level_ = _level;
+            xSemaphoreGive(mutex_);
+        }
+    }
+
+private:
+    mutable SemaphoreHandle_t mutex_;                        // FreeRTOS互斥量
+    std::unordered_map<std::string, Level_e> module_levels_; // 模块级别映射表
+    Level_e global_level_ = Level_e::INFO;                   // 全局默认日志级别
+};
+
 class Config {
 public:
-    std::string name{ "" };     // log directory
-    Level level{ Level::INFO }; // Log level
-    Proto proto{ Proto::RTT };  // Log protocol
-    bool showColor{ true };     // show full file paths in logs
-    bool showlocation{ true };  // show full file paths in logs
-    bool enable{ true };        // Enable or disable logging
-    uint8_t bufNum{ 0 };        // Buffer number
+    std::string name{ "" };         // log directory
+    Level_e level{ Level_e::INFO }; // Log level
+    Proto_e proto{ Proto_e::RTT };  // Log protocol
+    bool showColor{ true };         // show full file paths in logs
+    bool showlocation{ true };      // show full file paths in logs
+    bool enable{ true };            // Enable or disable logging
+    uint8_t bufNum{ 0 };            // Buffer number
+    ModuleControl moduleControl;    // 模块级别控制器
+    bool vofaEnabled{ false };      // 是否启用VOFA协议
 };
 
 class LogParams {
@@ -83,23 +134,23 @@ public:
     std::source_location loc = std::source_location::current();
     std::string_view type;
     const char *format;
-    Level level{ Level::INFO };
+    Level_e level{ Level_e::INFO };
 };
 
-constexpr std::string_view getLevelColor(Level _level)
+constexpr std::string_view getLevelColor(Level_e _level)
 {
     switch (_level) {
-    case Level::RAW:
+    case Level_e::RAW:
         return "";
-    case Level::INFO:
+    case Level_e::INFO:
         return GREEN;
-    case Level::WARN:
+    case Level_e::WARN:
         return YELLOW;
-    case Level::ERROR:
+    case Level_e::ERROR:
         return RED;
-    case Level::DEBUGGING:
+    case Level_e::DEBUGGING:
         return BLUE;
-    case Level::VERBOSE:
+    case Level_e::VERBOSE:
         return WHITE;
     default:
         return "";

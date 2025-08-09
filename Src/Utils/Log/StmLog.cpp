@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 #include <cstdlib>
 #include "StmLog.hpp"
