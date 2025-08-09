@@ -1,6 +1,4 @@
 #pragma once
-
-#include "Steer.hpp"
 #include <cmath>
 #include "Locomotion.hpp"
 

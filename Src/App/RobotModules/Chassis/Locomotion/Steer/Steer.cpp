@@ -73,14 +73,19 @@ void Steer::enter()
 
 void Steer::update()
 {
+    float tempdir[4];
     for (uint8_t i = 0; i < 8; i++) {
         wSpeed_._[i] = iir_filter_3(motor_[i]->data().spdRpm, i);
         curDir._[i] = iir_filter_3(motor_[i]->data().spdRpm, i);
     }
 
     for (uint8_t i = 0; i < 4; i++) {
-        curDir._[i] = iir_filter_3(motor_[i]->data().spdRpm, i);
+        tempdir[i] = iir_filter_3(motor_[i]->data().rawAng, i);
+        //顺时针增大改为逆时针增大
+        tempdir[i] = -tempdir[i] + 2 * F_PI;
+        curDir._[i] = (tempdir[i] - SteerZero[i]);
     }
+
     this->curSpeed_ = forward(wSpeed_);
 }
 
@@ -209,21 +214,22 @@ void Steer::ctrl(const Speed_u &_refSpeed)
 {
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
-    //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
     for (uint8_t i = 0; i < 4; i++) {
+        //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
         if (expDir._[i] >= F_PI) {
             refWSpeed._[i + 4] = -refWSpeed._[i + 4];
             expDir._[i] -= F_PI; //[0,pi]
             //TODO:此方法限制6020在180°内，但是考虑30°到-30°用上面的方法有明显缺陷，理当求取劣弧。
         }
-    }
+        for (uint8_t i = 0; i < 4; i++) {
+            //6020
+            motor_[i]->cmd(MotorCmdType_e::SET_POS, expDir._[i]); //估计会寄
+            //3508
+            motor_[i + 4]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
+        }
 
-
-    for (uint8_t i = 0; i < 8; i++) {
-        motor_[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
-    }
-
-    if constexpr (USE_POWERCTRL) {
-        powerCtrl_->powerCtrl(refWSpeed._);
+        if constexpr (USE_POWERCTRL) {
+            powerCtrl_->powerCtrl(refWSpeed._);
+        }
     }
 }
