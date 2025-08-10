@@ -6,11 +6,12 @@
 template <int rank> class RLS {
 public:
     RLS(float _lamda)
-            : lamda_(_lamda)
+            : K_(Matrix<rank, 1>::zeros())
             , P_(Matrix<rank, rank>::eye() * 0.00001f)
-            , K_(Matrix<rank, 1>::zeros())
             , inputVector_(Matrix<rank, 1>::zeros())
             , estVector_(Matrix<rank, 1>::zeros())
+            , lamda_(_lamda)
+
     {
     }
     void update(Matrix<rank, 1> _inputVector, float _outPut)
