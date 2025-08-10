@@ -210,6 +210,7 @@ WheelsSpeed_u Steer::reverse(const Speed_u &_speed)
 
     return refWheels;
 }
+
 /**
  * @brief 控制电机
  * @note 模型中逆时针角度增大，实际6020id端在上,顺时针编码值增大。
