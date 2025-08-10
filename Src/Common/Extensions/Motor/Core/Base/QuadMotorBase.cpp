@@ -12,7 +12,7 @@ QuadMotorGroup_s::QuadMotorGroup_s()
 {
     for (auto &i : motor)
         i = nullptr;
-    memset(txBuf, 0, 8);
+    memset(txBuf.data, 0, 8);
 }
 void QuadMotorGroup_s::showMotorInfo()
 {

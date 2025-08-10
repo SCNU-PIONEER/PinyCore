@@ -13,7 +13,7 @@
 namespace PINYMOTOR {
 struct QuadMotorGroup_s {
     IMotor *motor[4];
-    uint8_t txBuf[8];
+    TxBus_s::CANTxBuf_s<8> txBuf;
     uint8_t refLoadedCode;
     uint8_t curLoadedCode;
     uint32_t lastSendTick; // ms

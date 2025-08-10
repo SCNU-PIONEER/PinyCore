@@ -144,7 +144,7 @@ private:
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
-    MotorTypeDef_e ctrl(const TxBus_s::CANTxBuf_s<8> &_txBuf);
+    MotorTypeDef_e ctrl();
 
     ConvertFunc selectWorkMode(WorkMode_e _mode);
     ConvertFunc convert = nullptr;

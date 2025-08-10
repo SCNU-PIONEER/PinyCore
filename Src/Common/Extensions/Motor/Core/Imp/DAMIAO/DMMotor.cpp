@@ -227,10 +227,12 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     return 0;
 }
 
-MotorTypeDef_e DMMotor::ctrl(const TxBus_s::CANTxBuf_s<8> &_txBuf)
+MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-    TxBus_s::CANTxBuf_s<8> copyData = _txBuf;
+
+    (this->*convert)();
+
     if ((this->cmd_.SW && !this->cmd_.prevSW) ||
         (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
         this->enable();
@@ -243,7 +245,7 @@ MotorTypeDef_e DMMotor::ctrl(const TxBus_s::CANTxBuf_s<8> &_txBuf)
             this->torqPID_->reset();
         this->disable();
     } else {
-        rslt |= this->send(this->ctrlId_, copyData.data, copyData.len);
+        rslt |= this->send(this->ctrlId_, txBuf_.data, txBuf_.len);
     }
     return rslt;
 }
@@ -257,8 +259,7 @@ MotorTypeDef_e DMMotor::update()
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
     }
-    (this->*convert)();
-    MotorTypeDef_e rslt = ctrl(txBuf_);
+    MotorTypeDef_e rslt = ctrl();
     return rslt;
 }
 

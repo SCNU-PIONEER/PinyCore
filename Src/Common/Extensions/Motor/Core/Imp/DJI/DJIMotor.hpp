@@ -31,6 +31,8 @@ struct Status_s {
 class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
 
+    using ConvertFunc = int16_t (DJIMotor::*)();
+
 private:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
 
@@ -38,22 +40,69 @@ private:
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
 
+    ConvertFunc selectWorkMode(WorkMode_e _mode);
+    ConvertFunc convert = nullptr;
+
+    int16_t convertQuadCurr();
+    int16_t convertQuadVolt();
+    int16_t convertDefault();
+
 protected:
-    Status_s status_;
+    /**
+     * @brief Register the receive callback function
+     * 
+     */
     void registerRecvCallback();
+    /**
+     * @brief Cancel the receive callback function
+     * 
+     */
     void cancelRecvCallback();
+    /**
+     * @brief Update the control ID based on the current work mode
+     * 
+     */
     void updateCtrlId();
+
+    Status_s status_;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
     DJIMotor(const char _name[16], InitConfig_s _config);
     ~DJIMotor() override;
+    /**
+     * @brief Override the status of the motor
+     * 
+     * @param _newStats 
+     */
     void overrideStats(const Status_s &_newStats);
 
+    /**
+     * @brief Get the CAN ID of the motor
+     * 
+     * @return uint16_t 
+     */
     uint16_t canId() const; // QuadMotor's canId is fixed
+
+    /**
+     * @brief Get the master ID of the motor
+     * 
+     * @return uint16_t 
+     */
     uint16_t masterId() const;
 
+    /**
+     * @brief Get the unique identifier (UID) of the motor
+     * 
+     * @return uint16_t 
+     */
     uint16_t uid() final;
+
+    /**
+     * @brief Update the motor state
+     * 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e update() final;
 };
 
