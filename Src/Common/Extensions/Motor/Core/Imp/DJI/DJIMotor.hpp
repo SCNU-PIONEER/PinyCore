@@ -32,10 +32,10 @@ class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
 
 private:
-    RxBus_s::CANRxBuf_s rxBuf_ = {}; // buffer for received data
+    RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
-    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
 
 protected:

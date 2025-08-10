@@ -28,7 +28,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
 {
-    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s));
+    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
 
 DJIOldMotor::~DJIOldMotor()
@@ -117,7 +117,7 @@ MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,
     }
 }
 
-MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
+MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
     Feedback_s fb;
     fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);

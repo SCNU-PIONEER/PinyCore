@@ -97,7 +97,7 @@ struct MITMsg_s {
     uint16_t exptVel : 12;
     uint16_t Kp : 12;
     uint16_t Kd : 12;
-    uint16_t torqueOffset : 12;
+    uint16_t torqueForward : 12;
 };
 
 struct EMITMsg_s {
@@ -136,16 +136,44 @@ class DMMotor : public IMotor {
     using Base = IMotor;
     using RegMap = std::unordered_map<RegId_e, Reg_s *>;
 
+    using ConvertFunc = void (DMMotor::*)();
+
 private:
-    RxBus_s::CANRxBuf_s rxBuf_ = {}; // buffer for received data
+    RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
+    TxBus_s::CANTxBuf_s<8> txBuf_ = {};
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
-    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s &_rxBuf);
-    MotorTypeDef_e ctrl();
+    MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
+    MotorTypeDef_e ctrl(const TxBus_s::CANTxBuf_s<8> &_txBuf);
+
+    ConvertFunc selectWorkMode(WorkMode_e _mode);
+    ConvertFunc convert = nullptr;
+
+    void convertMitTt();
+    void convertMitVdes();
+    void convertMitVdesPdes();
+    void convertPdesVdes();
+    void convertVdes();
+    void convertEmit();
+    void convertDefault();
+
+    void serializeMITMsg(MITMsg_s &_msgMIT);
 
 protected:
+    /**
+     * @brief Register the receive callback function
+     * 
+     */
     void registerRecvCallback();
+    /**
+     * @brief Cancel the receive callback function
+     * 
+     */
     void cancelRecvCallback();
+    /**
+     * @brief Update the control ID based on the current work mode
+     * 
+     */
     void updateCtrlId();
 
     Status_s status_;
@@ -165,30 +193,132 @@ public:
     DMMotor(const char _name[16], InitConfig_s _config);
     ~DMMotor() override;
 
+    /**
+     * @brief Override the status of the motor
+     * 
+     * @param _newStats 
+     */
     void overrideStats(const Status_s &_newStats);
 
+    /**
+     * @brief Check if the motor is enabled
+     * 
+     * @return true 
+     * @return false 
+     */
     bool isEnable() const;
+
+    /**
+     * @brief Get the CAN ID of the motor
+     * 
+     * @return uint16_t 
+     */
     uint16_t canId() const;
+
+    /**
+     * @brief Get the master ID of the motor
+     * 
+     * @return uint16_t 
+     */
     uint16_t masterId() const;
 
-    uint16_t uid() override final;
-    MotorTypeDef_e update() override final;
+    /**
+     * @brief Get the unique identifier (UID) of the motor
+     * 
+     * @return uint16_t 
+     */
+    uint16_t uid() final;
 
+    /**
+     * @brief Update the motor state
+     * 
+     * @return MotorTypeDef_e 
+     */
+    MotorTypeDef_e update() final;
+
+    /**
+     * @brief Set the MIT Kp value
+     * 
+     * @param _kp 
+     */
     void setMITKp(float _kp);
+
+    /**
+     * @brief Set the MIT Kd value
+     * 
+     * @param _kd 
+     */
     void setMITKd(float _kd);
 
+    /**
+     * @brief Enable the motor
+     * 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e enable();
+
+    /**
+     * @brief Disable the motor
+     * 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e disable();
+
+    /**
+     * @brief Clear the error code of the motor
+     * 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e clearError();
 
+    /**
+     * @brief Register a register object
+     * 
+     * @param _regObj 
+     * @param _regValue 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e registerReg(Reg_s *_regObj, RegValue_u *_regValue);
+
+    /**
+     * @brief Cancel a register object
+     * 
+     * @param _regId 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e cancelReg(RegId_e _regId);
+
+    /**
+     * @brief Write a single register
+     * 
+     * @param _regId 
+     * @param _dat 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e writeOneReg(RegId_e _regId, uint8_t _dat[4]);
+
+    /**
+     * @brief Read a single register
+     * 
+     * @param _regId 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e readOneReg(RegId_e _regId);
+
+    /**
+     * @brief Store a single register
+     * 
+     * @param _regId 
+     * @return MotorTypeDef_e 
+     */
     MotorTypeDef_e storageOneReg(RegId_e _regId);
-    MotorTypeDef_e writeReg();
-    MotorTypeDef_e readReg();
-    MotorTypeDef_e storageReg();
+
+    /**
+     * @brief Update and mark the registers that need to be written
+     * 
+     * @return MotorTypeDef_e 
+     */
+
     MotorTypeDef_e updateRegDat();
 };
 } // namespace PINYMOTOR::DMMOTOR

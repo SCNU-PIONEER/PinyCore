@@ -58,7 +58,7 @@ void Omni::ctrl(const Speed_u &_speed)
     WheelsSpeed_u refWSpeed = reverse(_speed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        motor[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
+        motor[i]->cmdVel(refWSpeed._[i]);
     }
 
 #ifdef USE_POWERCTRL

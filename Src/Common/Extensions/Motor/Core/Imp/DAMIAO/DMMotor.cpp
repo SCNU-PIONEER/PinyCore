@@ -29,8 +29,10 @@ Status_s &Status_s::operator=(const Status_s &_other)
 
 DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
+        , convert(selectWorkMode(this->workMode_))
+
 {
-    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s));
+    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
 
 DMMotor::~DMMotor()
@@ -72,6 +74,7 @@ void DMMotor::registerRecvCallback()
               this->masterId());
 }
 
+
 void DMMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
@@ -83,18 +86,6 @@ void DMMotor::cancelRecvCallback()
 void DMMotor::updateCtrlId()
 {
     switch (this->workMode_) {
-    case WorkMode_e::QUAD_CURR: {
-        LOG::error("DMMotor", " %s: QUAD_CURR mode is not supported",
-                   this->name_);
-        this->ctrlId_ = 0xFFFF;
-        break;
-    }
-    case WorkMode_e::QUAD_VOLT: {
-        LOG::error("DMMotor", " %s: QUAD_VOLT mode is not supported",
-                   this->name_);
-        this->ctrlId_ = 0xFFFF;
-        break;
-    }
     case WorkMode_e::MIT_TT:
     case WorkMode_e::MIT_VDESPDES:
     case WorkMode_e::MIT_VDES: {
@@ -157,7 +148,7 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     }
 }
 
-MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
+MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
     // 先处理非常规数据反馈的帧
     if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) &&
@@ -181,7 +172,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
             return 1;
         }
     } else {
-        Feedback_s fb;
+        Feedback_s fb = {};
         fb.ID = _rxBuf.data[0] & 0x0F;
         fb.errorCode = static_cast<ErrorCode_e>(_rxBuf.data[0] >> 4);
         fb.rawAng = (_rxBuf.data[1] << 8) | _rxBuf.data[2];
@@ -236,162 +227,10 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
     return 0;
 }
 
-MotorTypeDef_e DMMotor::ctrl()
+MotorTypeDef_e DMMotor::ctrl(const TxBus_s::CANTxBuf_s<8> &_txBuf)
 {
     MotorTypeDef_e rslt = 0;
-    typedef union {
-        MITMsg_s msgMIT;
-        PDESVDESMsg_s msgPDESVDES;
-        VDESMsg_s msgVDES;
-        EMITMsg_s msgEMIT;
-    } DMMsg_u;
-    DMMsg_u dmMsg = {};
-    uint8_t txBuf[8] = {};
-    uint8_t lenBuf = 0;
-    bool isMIT = false;
-    switch (this->workMode_) {
-    case WorkMode_e::QUAD_CURR: {
-        LOG::error("DMMotor", " %s: QUAD_CURR mode is not supported",
-                   this->name_);
-        break;
-    }
-    case WorkMode_e::QUAD_VOLT: {
-        LOG::error("DMMotor", " %s: QUAD_VOLT mode is not supported",
-                   this->name_);
-        break;
-    }
-    case WorkMode_e::MIT_TT: {
-        dmMsg.msgMIT.Kp = 0;
-        dmMsg.msgMIT.Kd = 0;
-        isMIT = true;
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
-            this->cmd_.torq =
-                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                2.f * PI),
-                    0);
-            if (!(this->cmd_.velMax < 0.f)) {
-                this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                            this->cmd_.velMax);
-            }
-            this->cmd_.torq =
-                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        }
-        dmMsg.msgMIT.torqueOffset =
-                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
-        this->cmd_.elec =
-                this->cmd_.torq /
-                status_.torqConstant; // MIT_TT support return expected current
-        break;
-    }
-    case WorkMode_e::MIT_VDES: {
-        dmMsg.msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax,
-                                     status_.MITKdMax, 12);
-        dmMsg.msgMIT.Kp = 0;
-        // forward torque
-        dmMsg.msgMIT.torqueOffset =
-                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
-        isMIT = true;
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                2.f * PI),
-                    0);
-        }
-        dmMsg.msgMIT.exptVel =
-                float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // MIT_VDES unsupport return expected current
-        break;
-    }
-    case WorkMode_e::MIT_VDESPDES: {
-        dmMsg.msgMIT.exptScale =
-                float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
-        dmMsg.msgMIT.exptVel =
-                float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
-        dmMsg.msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax,
-                                     status_.MITKdMax, 12);
-        dmMsg.msgMIT.Kp = float2uint(this->MITKp_, -status_.MITKpMax,
-                                     status_.MITKpMax, 12);
-        isMIT = true;
-        // forward torque
-        dmMsg.msgMIT.torqueOffset =
-                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // MIT_VDESPDES unsupport return expected current
-        break;
-    }
-    case WorkMode_e::PDESVDES: {
-        lenBuf = 8;
-        dmMsg.msgPDESVDES.exptScale = this->cmd_.pos;
-        dmMsg.msgPDESVDES.exptVel = this->cmd_.vel;
-        memcpy(txBuf, &dmMsg.msgPDESVDES.exptScale, 4);
-        memcpy(&txBuf[4], &dmMsg.msgPDESVDES.exptVel, 4);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // PDESVDES unsupport return expected current
-        break;
-    }
-    case WorkMode_e::VDES: {
-        lenBuf = 4;
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            this->cmd_.vel = this->posPID_->calc(
-                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                2.f * PI),
-                    0);
-        }
-        dmMsg.msgVDES.exptVel = this->cmd_.vel;
-        memcpy(txBuf, &dmMsg.msgVDES.exptVel, 4);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // VDES unsupport return expected current
-        break;
-    }
-    case WorkMode_e::EMIT: {
-        lenBuf = 8;
-        dmMsg.msgEMIT.exptScale = this->cmd_.pos;
-        dmMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
-                ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
-                100.f);
-        dmMsg.msgEMIT.imaxX10000 = static_cast<uint16_t>(
-                ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
-                status_.torqConstant / status_.currMax *
-                status_.currTxCodeSpan);
-        float f = dmMsg.msgEMIT.exptScale;
-        memcpy(txBuf, &f, 4);
-        txBuf[4] = static_cast<uint8_t>((dmMsg.msgEMIT.exptVelX100) >> 8);
-        txBuf[5] = static_cast<uint8_t>(dmMsg.msgEMIT.exptVelX100);
-        txBuf[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
-        txBuf[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // EMIT unsupport return expected current
-        break;
-    }
-    default: {
-        LOG::error("DMMotor", " %s: this mode is not supported", this->name_);
-        break;
-    }
-    }
-    if (isMIT) {
-        lenBuf = 8;
-        txBuf[0] = static_cast<uint8_t>((dmMsg.msgMIT.exptScale & 0xFF00) >> 8);
-        txBuf[1] = static_cast<uint8_t>(dmMsg.msgMIT.exptScale & 0x00FF);
-        txBuf[2] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x0FF0) >> 4);
-        txBuf[3] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x000F) << 4 |
-                                        ((dmMsg.msgMIT.Kp & 0x0FF0) >> 8));
-        txBuf[4] = static_cast<uint8_t>(dmMsg.msgMIT.Kp & 0x000F);
-        txBuf[5] = static_cast<uint8_t>((dmMsg.msgMIT.Kd & 0x0FF0) >> 4);
-        txBuf[6] = static_cast<uint8_t>(
-                (dmMsg.msgMIT.Kd & 0x000F) << 4 |
-                ((dmMsg.msgMIT.torqueOffset & 0x0F00) >> 8));
-        txBuf[7] = static_cast<uint8_t>(dmMsg.msgMIT.torqueOffset & 0x00FF);
-    }
-
+    TxBus_s::CANTxBuf_s<8> copyData = _txBuf;
     if ((this->cmd_.SW && !this->cmd_.prevSW) ||
         (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
         this->enable();
@@ -404,7 +243,7 @@ MotorTypeDef_e DMMotor::ctrl()
             this->torqPID_->reset();
         this->disable();
     } else {
-        rslt |= this->send(this->ctrlId_, txBuf, lenBuf);
+        rslt |= this->send(this->ctrlId_, copyData.data, copyData.len);
     }
     return rslt;
 }
@@ -418,7 +257,8 @@ MotorTypeDef_e DMMotor::update()
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
     }
-    MotorTypeDef_e rslt = ctrl();
+    (this->*convert)();
+    MotorTypeDef_e rslt = ctrl(txBuf_);
     return rslt;
 }
 
@@ -454,182 +294,4 @@ MotorTypeDef_e DMMotor::clearError()
     };
     rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
     return rslt;
-}
-
-
-MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
-{
-    if (_regObj == nullptr) {
-        LOG::error("DMMotor", " %s: registerReg failed, _regObj is nullptr",
-                   this->name_);
-        return 1;
-    }
-    auto it = regObjList_.find(_regObj->regId);
-    if (it != regObjList_.end()) {
-        LOG::error(
-                "DMMotor",
-                " %s: registerReg failed, _regObj->regId is already registered",
-                this->name_);
-        return 1;
-    }
-    LOG::info("DMMotor", " %s: registerReg success", this->name_);
-    regObjList_.insert({ _regObj->regId, _regObj });
-    regValueList_.insert({ _regObj->regId, _regValue });
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::cancelReg(RegId_e _regId)
-{
-    LOG::info("DMMotor", " %s: cancelReg success, regId:%d", this->name_,
-              _regId);
-    regObjList_.erase(_regId);
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::writeOneReg(RegId_e _regId, uint8_t _dat[4])
-{
-    MotorTypeDef_e rslt = 0;
-    // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x55, D3 : RID, D4 : dat1,
-    // D5 : dat2, D6 : dat3, D7 : dat4
-    auto it = regObjList_.find(_regId);
-    if (it != regObjList_.end()) {
-        (*it).second->isWrite = false;
-        uint16_t id = canId();
-        uint8_t writeTxBuffer[8] = //
-                { static_cast<uint8_t>(id),
-                  static_cast<uint8_t>(id >> 8),
-                  0x55,
-                  static_cast<uint8_t>(_regId),
-                  _dat[0],
-                  _dat[1],
-                  _dat[2],
-                  _dat[3] };
-        this->send(0x7FF, writeTxBuffer, 8);
-    }
-    return rslt;
-}
-
-MotorTypeDef_e DMMotor::readOneReg(RegId_e _regId)
-{
-    MotorTypeDef_e rslt = 0;
-    // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0x33, D3 : RID, D4 : 0x00,
-    // D5 : 0x00, D6 : 0x00, D7 : 0x00
-    auto it = regObjList_.find(_regId);
-    if (it != regObjList_.end()) {
-        (*it).second->isRead = false;
-        uint16_t id = canId();
-        uint8_t readTxBuffer[8] = { static_cast<uint8_t>(id),
-                                    static_cast<uint8_t>(id >> 8),
-                                    0x33,
-                                    static_cast<uint8_t>(_regId),
-                                    0x00,
-                                    0x00,
-                                    0x00,
-                                    0x00 };
-        this->send(0x7FF, readTxBuffer, 8);
-    }
-    return rslt;
-}
-
-MotorTypeDef_e DMMotor::storageOneReg(RegId_e _regId)
-{
-    MotorTypeDef_e rslt = 0;
-    // 报文ID : 0x7FF, D0 : CANID_L, D1 : CANID_H, D2 : 0xAA, D3 : RID, D4 : 0x00,
-    // D5 : 0x00, D6 : 0x00, D7 : 0x00
-    auto it = regObjList_.find(_regId);
-    if (it != regObjList_.end()) {
-        (*it).second->isStorage = false;
-        uint16_t id = canId();
-        uint8_t storageTxBuf[8] = { static_cast<uint8_t>(id),
-                                    static_cast<uint8_t>(id >> 8),
-                                    0xAA,
-                                    static_cast<uint8_t>(_regId),
-                                    0x00,
-                                    0x00,
-                                    0x00,
-                                    0x00 };
-        this->send(0x7FF, storageTxBuf, 8);
-    }
-    return rslt;
-}
-
-MotorTypeDef_e DMMotor::writeReg()
-{
-    static uint16_t writeWaitTime = 0;
-    static auto it = regObjList_.begin();
-    if (it != regObjList_.end()) {
-        if ((*it).second->isWrite && writeWaitTime % 10 == 0) {
-            writeOneReg((*it).first, (*it).second->dat);
-            writeWaitTime++;
-            it++;
-            return 0;
-        }
-    } else {
-        writeWaitTime = 0;
-        it = regObjList_.begin();
-        return 1;
-    }
-    if (writeWaitTime % 10 != 0)
-        writeWaitTime++;
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::readReg()
-{
-    static uint16_t readWaitTime = 0;
-    static auto it = regObjList_.begin();
-    if (it != regObjList_.end()) {
-        if ((*it).second->isRead && readWaitTime % 10 == 0) {
-            readOneReg((*it).first);
-            readWaitTime++;
-            it++;
-        }
-    } else {
-        readWaitTime = 0;
-        it = regObjList_.begin();
-        return 1;
-    }
-    if (readWaitTime % 10 != 0)
-        readWaitTime++;
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::storageReg()
-{
-    static uint16_t storageWaitTime = 0;
-    static auto it = regObjList_.begin();
-    if (it != regObjList_.end()) {
-        if ((*it).second->isStorage && storageWaitTime % 10 == 0) {
-            storageOneReg((*it).first);
-            storageWaitTime++;
-            it++;
-        }
-    } else {
-        storageWaitTime = 0;
-        it = regObjList_.begin();
-        return 1;
-    }
-    if (storageWaitTime % 10 != 0)
-        storageWaitTime++;
-    return 0;
-}
-
-MotorTypeDef_e DMMotor::updateRegDat()
-{
-    for (auto &regObj : this->regObjList_) {
-        auto datCompare = [&]() -> bool {
-            return std::equal(
-                    std::begin(this->regValueList_[regObj.first]->dat),
-                    std::end(this->regValueList_[regObj.first]->dat),
-                    std::begin(this->preRegValue_[regObj.first]));
-        };
-        if (!datCompare()) {
-            memcpy(&regObj.second->dat, &this->regValueList_[regObj.first]->dat,
-                   4);
-            memcpy(&this->preRegValue_[regObj.first],
-                   &this->regValueList_[regObj.first]->dat, 4);
-            regObj.second->isWrite = true;
-        }
-    }
-    return 0;
 }

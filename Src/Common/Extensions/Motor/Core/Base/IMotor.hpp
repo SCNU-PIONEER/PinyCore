@@ -9,6 +9,9 @@
 
 namespace PINYMOTOR {
 class IMotor {
+private:
+    MotorTypeDef_e cmdProto(CmdBus_s &_cmd);
+
 protected:
     uint8_t id_; // start from 0 to 31, system auto assign
     uint16_t uid_;
@@ -57,13 +60,23 @@ public:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
 
+    MotorTypeDef_e cmd(MotorCmdType_e _type);
 
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData);
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd);
+    MotorTypeDef_e cmdPos(float _pos, float _velMax = -1.f, float _posMin = 0.f,
+                          float _posMax = 0.f);
 
-    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq);
+    MotorTypeDef_e cmdVel(float _pos, float _velMax = -1.f);
 
-    MotorTypeDef_e cmdPos(float _pos);
+    MotorTypeDef_e cmdTorq(float _torq);
+
+    MotorTypeDef_e cmdElec(float _elec);
+
+    MotorTypeDef_e cmdPosVel(float _pos, float _vel, float _velMax = -1.f,
+                             float _posMin = 0.f, float _posMax = 0.f);
+
+    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq,
+                          float _velMax = -1.f, float _posMin = 0.f,
+                          float _posMax = 0.f);
 
     void clampVel(float _velMax);
     void clampPos(float _posMin, float _posMax);
