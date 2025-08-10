@@ -61,7 +61,7 @@ void QuadMotorBase::updateMotorMap()
     auto &map = it->groupMap;
 
     // 检查pair中是否已经存在电机组
-    if (map.find(getGroupId()) == map.end()) {
+    if (!map.contains(getGroupId())) {
         // 如果不存在，则创建一个电机组
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -109,7 +109,7 @@ void QuadMotorBase::removeMotorFromMap()
     }
     if (it != getMotorMap().end()) {
         auto &map = it->groupMap;
-        if (map.find(getGroupId()) != map.end()) {
+        if (map.contains(getGroupId())) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("QuadMotorBase",
