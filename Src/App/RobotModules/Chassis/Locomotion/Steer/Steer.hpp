@@ -53,7 +53,6 @@ protected:
     float SteerZero[4] = { 0, 0, 0, 0 };
 
     SteerDirectionAngle_u curDir; //舵轮当前方向角
-    
     SteerDirectionAngle_u expDir; //舵轮期望方向角
 
     /*

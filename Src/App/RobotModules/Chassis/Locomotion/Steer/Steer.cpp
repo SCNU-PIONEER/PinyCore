@@ -229,9 +229,9 @@ void Steer::ctrl(const Speed_u &_refSpeed)
     }
     for (uint8_t i = 0; i < 4; i++) {
         //6020
-        motor_[i]->cmd(MotorCmdType_e::SET_POS, expDir._[i]); //估计会寄
+        motor_[i]->cmdPos(expDir._[i], 1, 1, 1); //估计会寄
         //3508
-        motor_[i + 4]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
+        motor_[i + 4]->cmdVel(refWSpeed._[i], 1);
     }
 
     if constexpr (USE_POWERCTRL) {
