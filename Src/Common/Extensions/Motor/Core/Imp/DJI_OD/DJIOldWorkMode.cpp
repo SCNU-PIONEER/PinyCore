@@ -24,6 +24,8 @@ DJIOldMotor::ConvertFunc DJIOldMotor::selectWorkMode(WorkMode_e _mode)
 int16_t DJIOldMotor::convertTripVolt()
 {
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_ELEC:
         break;
     case MotorCmdType_e::SET_TORQ: {

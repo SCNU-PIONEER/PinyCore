@@ -60,6 +60,8 @@ void DMMotor::convertMitTt()
     msgMIT.Kp = msgMIT.Kd = 0;
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_TORQ:
         break;
     case MotorCmdType_e::SET_VEL: {
@@ -118,6 +120,8 @@ void DMMotor::convertMitVdes()
             float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_VEL:
         break;
     case MotorCmdType_e::SET_POS:
@@ -159,6 +163,8 @@ void DMMotor::convertMitVdesPdes()
             float2uint(this->MITKp_, -status_.MITKpMax, status_.MITKpMax, 12);
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL:
     case MotorCmdType_e::SET_MIT: {
@@ -188,6 +194,8 @@ void DMMotor::convertPdesVdes()
     PDESVDESMsg_s msgPDESVDES = {};
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL: {
         break;
@@ -214,6 +222,8 @@ void DMMotor::convertVdes()
     VDESMsg_s msgVDES = {};
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_VEL:
         break;
     case MotorCmdType_e::SET_POS:
@@ -247,6 +257,8 @@ void DMMotor::convertEmit()
     EMITMsg_s msgEMIT = {};
 
     switch (this->cmd_.curCmdType) {
+    case MotorCmdType_e::OFF:
+    case MotorCmdType_e::ON:
     case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL:
     case MotorCmdType_e::SET_MIT: {
