@@ -19,8 +19,7 @@ public:
         //                                   1);
         // testModule_->testGM6020Motor->cmd(PINYMOTOR::MotorCmdType_e::SET_VEL,
         //                                   0.5f);
-        testModule_->testGM6020Motor->cmd(PINYMOTOR::MotorCmdType_e::SET_TORQ,
-                                          0.3f);
+        testModule_->testGM6020Motor->cmdTorq(0.3f);
     };
     void exit() override { LOG::info("MOTOR_VEL_CTRL", " exit"); }
 

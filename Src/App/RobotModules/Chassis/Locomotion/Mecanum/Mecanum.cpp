@@ -96,7 +96,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        motor_[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
+        motor_[i]->cmdVel(refWSpeed._[i]);
     }
 
     if constexpr (USE_POWERCTRL) {

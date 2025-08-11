@@ -57,7 +57,7 @@ void TripMotorBase::updateMotorMap()
 
     auto &map = it->groupMap;
 
-    if (map.find(getGroupId()) == map.end()) {
+    if (!map.contains(getGroupId())) {
         map[getGroupId()] = new TripMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
         map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
@@ -103,7 +103,7 @@ void TripMotorBase::removeMotorFromMap()
     }
     if (it != getMotorMap().end()) {
         auto &map = it->groupMap;
-        if (map.find(getGroupId()) != map.end()) {
+        if (map.contains(getGroupId())) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("TripMotorBase", "Motor %s: remove from group %hx",

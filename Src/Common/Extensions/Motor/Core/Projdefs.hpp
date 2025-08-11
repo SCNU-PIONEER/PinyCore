@@ -14,6 +14,7 @@ enum class MotorCmdType_e : uint8_t {
     SET_MIT,
     SET_POS,
     SET_VEL,
+    SET_POSVEL,
     SET_TORQ,
     SET_ELEC,
     ON,
@@ -37,21 +38,25 @@ enum class GlobalState_e : uint8_t { UNREGISTER, OFFLINE, ONLINE, ERROR };
 
 enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
-struct RxBus_s {
-    struct CANRxBuf_s {
-        uint8_t data[8];
+struct CmdBus_s {
+    // Basic command structure
+    struct {
+        MotorCmdType_e cmdType;
+        float posCmd;
+        float velCmd;
+        float torqCmd;
+        float elecCmd;
     };
-    struct RS485RxBuf_s {
-        uint8_t data[8];
+    // auxiliary command structure
+    struct {
+        // default -1.f means no limit
+        float velMax = -1.f;
+        // default posMax and posMin are 0.f, which means no limit
+        float posMin = 0.f;
+        float posMax = 0.f;
     };
 };
 
-struct CmdBus_s {
-    MotorCmdType_e cmdType;
-    float cmdVal1;
-    float cmdVal2;
-    float cmdVal3;
-};
 struct InitConfig_s {
     uint32_t *pComHandle;
     ComType_e comType;
@@ -117,5 +122,19 @@ struct Cmd_s {
             prevSW = _sw;
         }
     }
+};
+
+struct RxBus_s {
+    template <uint8_t Len> struct CANRxBuf_s {
+        uint8_t data[Len];
+        const uint8_t len = Len;
+    };
+};
+
+struct TxBus_s {
+    template <uint8_t Len> struct CANTxBuf_s {
+        uint8_t data[Len];
+        uint8_t len = Len;
+    };
 };
 } // namespace PINYMOTOR
