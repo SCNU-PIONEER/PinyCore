@@ -29,10 +29,9 @@ Status_s &Status_s::operator=(const Status_s &_other)
 
 DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
-        , convert(selectWorkMode(this->workMode_))
 
 {
-    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>));
+    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
 
 DMMotor::~DMMotor()
@@ -230,8 +229,158 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-
-    (this->*convert)();
+    typedef union {
+        MITMsg_s msgMIT;
+        PDESVDESMsg_s msgPDESVDES;
+        VDESMsg_s msgVDES;
+        EMITMsg_s msgEMIT;
+    } DMMsg_u;
+    DMMsg_u dmMsg = {};
+    uint8_t txBuf[8] = {};
+    uint8_t lenBuf = 0;
+    bool isMIT = false;
+    switch (this->workMode_) {
+    case WorkMode_e::QUAD_CURR: {
+        LOG::error("DMMotor", " %s: QUAD_CURR mode is not supported",
+                   this->name_);
+        break;
+    }
+    case WorkMode_e::QUAD_VOLT: {
+        LOG::error("DMMotor", " %s: QUAD_VOLT mode is not supported",
+                   this->name_);
+        break;
+    }
+    case WorkMode_e::MIT_TT: {
+        dmMsg.msgMIT.Kp = 0;
+        dmMsg.msgMIT.Kd = 0;
+        isMIT = true;
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
+            this->cmd_.torq =
+                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+            if (!(this->cmd_.velMax < 0.f)) {
+                this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
+                                            this->cmd_.velMax);
+            }
+            this->cmd_.torq =
+                    this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        }
+        dmMsg.msgMIT.torqueForward =
+                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+        this->cmd_.elec =
+                this->cmd_.torq /
+                status_.torqConstant; // MIT_TT support return expected current
+        break;
+    }
+    case WorkMode_e::MIT_VDES: {
+        dmMsg.msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax,
+                                     status_.MITKdMax, 12);
+        dmMsg.msgMIT.Kp = 0;
+        // forward torque
+        dmMsg.msgMIT.torqueForward =
+                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+        isMIT = true;
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+        }
+        dmMsg.msgMIT.exptVel =
+                float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // MIT_VDES unsupport return expected current
+        break;
+    }
+    case WorkMode_e::MIT_VDESPDES: {
+        dmMsg.msgMIT.exptScale =
+                float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
+        dmMsg.msgMIT.exptVel =
+                float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+        dmMsg.msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax,
+                                     status_.MITKdMax, 12);
+        dmMsg.msgMIT.Kp = float2uint(this->MITKp_, -status_.MITKpMax,
+                                     status_.MITKpMax, 12);
+        isMIT = true;
+        // forward torque
+        dmMsg.msgMIT.torqueForward =
+                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // MIT_VDESPDES unsupport return expected current
+        break;
+    }
+    case WorkMode_e::PDESVDES: {
+        lenBuf = 8;
+        dmMsg.msgPDESVDES.exptScale = this->cmd_.pos;
+        dmMsg.msgPDESVDES.exptVel = this->cmd_.vel;
+        memcpy(txBuf, &dmMsg.msgPDESVDES.exptScale, 4);
+        memcpy(&txBuf[4], &dmMsg.msgPDESVDES.exptVel, 4);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // PDESVDES unsupport return expected current
+        break;
+    }
+    case WorkMode_e::VDES: {
+        lenBuf = 4;
+        if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
+            this->cmd_.vel = this->posPID_->calc(
+                    getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
+                                2.f * PI),
+                    0);
+        }
+        dmMsg.msgVDES.exptVel = this->cmd_.vel;
+        memcpy(txBuf, &dmMsg.msgVDES.exptVel, 4);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // VDES unsupport return expected current
+        break;
+    }
+    case WorkMode_e::EMIT: {
+        lenBuf = 8;
+        dmMsg.msgEMIT.exptScale = this->cmd_.pos;
+        dmMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
+                ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
+                100.f);
+        dmMsg.msgEMIT.imaxX10000 = static_cast<uint16_t>(
+                ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
+                status_.torqConstant / status_.currMax *
+                status_.currTxCodeSpan);
+        float f = dmMsg.msgEMIT.exptScale;
+        memcpy(txBuf, &f, 4);
+        txBuf[4] = static_cast<uint8_t>((dmMsg.msgEMIT.exptVelX100) >> 8);
+        txBuf[5] = static_cast<uint8_t>(dmMsg.msgEMIT.exptVelX100);
+        txBuf[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
+        txBuf[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
+        this->cmd_.elec =
+                this->data_.torq /
+                status_.torqConstant; // EMIT unsupport return expected current
+        break;
+    }
+    default: {
+        LOG::error("DMMotor", " %s: this mode is not supported", this->name_);
+        break;
+    }
+    }
+    if (isMIT) {
+        lenBuf = 8;
+        txBuf[0] = static_cast<uint8_t>((dmMsg.msgMIT.exptScale & 0xFF00) >> 8);
+        txBuf[1] = static_cast<uint8_t>(dmMsg.msgMIT.exptScale & 0x00FF);
+        txBuf[2] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x0FF0) >> 4);
+        txBuf[3] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x000F) << 4 |
+                                        ((dmMsg.msgMIT.Kp & 0x0FF0) >> 8));
+        txBuf[4] = static_cast<uint8_t>(dmMsg.msgMIT.Kp & 0x000F);
+        txBuf[5] = static_cast<uint8_t>((dmMsg.msgMIT.Kd & 0x0FF0) >> 4);
+        txBuf[6] = static_cast<uint8_t>(
+                (dmMsg.msgMIT.Kd & 0x000F) << 4 |
+                ((dmMsg.msgMIT.torqueForward & 0x0F00) >> 8));
+        txBuf[7] = static_cast<uint8_t>(dmMsg.msgMIT.torqueForward & 0x00FF);
+    }
 
     if ((this->cmd_.SW && !this->cmd_.prevSW) ||
         (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
