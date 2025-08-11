@@ -27,6 +27,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 
 DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
+        , convert(selectWorkMode(this->workMode_))
 {
     this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
@@ -170,78 +171,9 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 MotorTypeDef_e DJIOldMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-    int16_t ctrlCmd = 0;
-    switch (this->workMode_) {
-    case WorkMode_e::TRIP_VOLT: {
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_ELEC) {
-            this->cmd_.elec;
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_TORQ) {
-            if (this->torqPID_ != nullptr) {
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIOldMotor", " %s: torqPID is null", this->name_);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
-            if (this->velPID_ != nullptr || this->torqPID_ != nullptr) {
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIOldMotor", " %s: velPID or torqPID is null",
-                           this->name_);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
-                this->torqPID_ != nullptr) {
-                this->cmd_.vel = this->posPID_->calc(
-                        getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                    2.f * PI),
-                        0);
-                if (!(this->cmd_.velMax < 0.f)) {
-                    this->cmd_.vel = std::clamp(this->cmd_.vel,
-                                                -this->cmd_.velMax,
-                                                this->cmd_.velMax);
-                }
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIOldMotor",
-                           " %s: posPID or velPID or torqPID is null",
-                           this->name_);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_MIT) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
-                this->torqPID_ != nullptr) {
-                this->cmd_.torq =
-                        this->posPID_->calc(
-                                getMinorArc(this->cmd_.pos,
-                                            this->data_.singleCirAng, 2.f * PI),
-                                0) +
-                        this->velPID_->calc(this->cmd_.vel,
-                                            this->data_.spdRadps) +
-                        this->cmd_.torq;
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           this->name_);
-            }
-        }
-        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
-                                       this->status_.voltTxCodeSpan);
-        break;
-    }
-    default: {
-        ctrlCmd = 0;
-        LOG::error("DJIOldMotor", " %s: this mode is not supported",
-                   this->name_);
-        break;
-    }
-    }
+
+    int16_t ctrlCmd = (this->*convert)();
+
     if (this->cmd_.SW) {
         this->group_->txBuf[(2 * this->getPosInGroup()) + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
