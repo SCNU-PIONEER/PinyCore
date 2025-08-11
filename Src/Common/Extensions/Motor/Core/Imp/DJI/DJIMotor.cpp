@@ -29,7 +29,7 @@ DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
         , convert(selectWorkMode(this->workMode_))
 {
-    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s<8>));
+    this->rxQueue_ = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
 DJIMotor::~DJIMotor()
 {
@@ -167,9 +167,9 @@ MotorTypeDef_e DJIMotor::ctrl()
     int16_t ctrlCmd = (this->*convert)();
 
     if (this->cmd_.SW) {
-        this->group_->txBuf.data[(2 * this->getPosInGroup()) + 1] =
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
-        this->group_->txBuf.data[2 * this->getPosInGroup()] =
+        this->group_->txBuf[2 * this->getPosInGroup()] =
                 static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
     } else {
         if (this->posPID_ != nullptr)
@@ -178,12 +178,11 @@ MotorTypeDef_e DJIMotor::ctrl()
             this->velPID_->reset();
         if (this->torqPID_ != nullptr)
             this->torqPID_->reset();
-        this->group_->txBuf.data[(2 * this->getPosInGroup()) + 1] = 0;
-        this->group_->txBuf.data[2 * this->getPosInGroup()] = 0;
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
+        this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }
 
-    rslt |= this->send(this->ctrlId_, this->group_->txBuf.data,
-                       this->group_->txBuf.len);
+    rslt |= this->send(this->ctrlId_, this->group_->txBuf, 8);
     return rslt;
 }
 

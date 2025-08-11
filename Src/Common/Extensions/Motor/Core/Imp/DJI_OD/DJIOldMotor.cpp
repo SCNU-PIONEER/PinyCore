@@ -29,7 +29,7 @@ DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
         , convert(selectWorkMode(this->workMode_))
 {
-    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s<8>));
+    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
 
 DJIOldMotor::~DJIOldMotor()
