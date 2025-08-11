@@ -1,12 +1,12 @@
 enhancement:
-  - head-branch: [feat, Feat, FEAT, Feature, feature, enhancement, Enhancement]
+  - head-branch: [^perf/, ^feat/, ^Feat/, ^FEAT/, ^Feature/, ^feature/, perf, feat, Feat, FEAT, Feature, feature]
 
 workflow:
   - changed-files:
     - any-glob-to-any-file: ['.github/**']
 
 bug:
-  - head-branch: [fix, bug, Fix, FIX, Bug, BUG]
+  - head-branch: [^fix/, ^bug/, ^Fix/, ^FIX/, ^Bug/, ^BUG/, fix, bug, Fix, FIX, Bug, BUG]
 
 documentation:
 - changed-files:
