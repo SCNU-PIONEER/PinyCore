@@ -3,11 +3,13 @@ on:
   push:
     branches:
       - develop
+
+permissions:
+      contents: write
+      pull-requests: write
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-          contents: write
     steps:
       - uses: actions/checkout@v4
         with:
