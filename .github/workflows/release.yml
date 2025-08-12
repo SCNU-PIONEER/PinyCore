@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - develop
+      - hotfix/release
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,9 +20,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           default_prerelease_bump: false
-          release_branches: develop
+          release_branches: hotfix/release
           custom_release_rules: "ci:prepatch,refactor:prepatch"
           append_to_pre_release_tag: nightly
+          fetch_all_tags: true
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
