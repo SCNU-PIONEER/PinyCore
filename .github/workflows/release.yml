@@ -6,8 +6,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+          contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+                fetch-depth: '0'
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -17,7 +22,7 @@ jobs:
           default_prerelease_bump: false
           release_branches: develop
           custom_release_rules: "ci:prepatch,refactor:prepatch"
-          append_to_pre_release_tag: rc
+          append_to_pre_release_tag: nightly
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
