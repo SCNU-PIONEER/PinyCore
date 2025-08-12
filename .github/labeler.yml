@@ -6,7 +6,7 @@ workflow:
     - any-glob-to-any-file: ['.github/**']
 
 bug:
-  - head-branch: [^fix/, ^bug/, ^Fix/, ^FIX/, ^Bug/, ^BUG/, fix, bug, Fix, FIX, Bug, BUG]
+  - head-branch: [^fix/, ^hotfix/,^bug/, ^Fix/, ^FIX/, ^Bug/, ^BUG/, fix, hotfix, bug, Fix, FIX, Bug, BUG]
 
 documentation:
 - changed-files:
