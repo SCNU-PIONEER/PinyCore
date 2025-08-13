@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - develop
+      - master
 
 permissions:
       contents: write
@@ -22,7 +22,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           default_prerelease_bump: false
-          release_branches: develop
+          release_branches: master
           custom_release_rules: "ci:prepatch,refactor:prepatch"
           append_to_pre_release_tag: nightly
           fetch_all_tags: true
