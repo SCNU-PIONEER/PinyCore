@@ -4,6 +4,8 @@
 #include "Soc.hpp"
 #include "Crc.hpp"
 
+#include "StmLog.hpp"
+
 #include "../../../Utils/MotorCommonMacros.hpp"
 
 using namespace PINYMOTOR;
@@ -33,6 +35,8 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
         , dmaHandle_(_dmaHandle)
 {
     this->cmd_.clear();
+    // TODO: UTMotor no currently supprorts the Feat(isReverse)
+    LOG::warn("UTMotor", "no currently supprorts the Feat(isReverse)");
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -75,13 +79,13 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
         return 0; //TODO: CRC error
     } else {
         this->status_.error_ = static_cast<ErrorStatus_e>(fb->mode.status);
-        this->data_.rawAngLast = this->data_.rawAng;
+        this->data_.angLast = this->data_.rawAng;
         this->data_.rawAng = 6.2832f * static_cast<float>(fb->fbk.pos) / 32768;
         float del = this->data_.rawAng - this->data_.zeroAng;
         this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) :
                                     del;
         this->data_.multipCirAng +=
-                (this->data_.rawAng - this->data_.rawAngLast) / this->rr();
+                (this->data_.rawAng - this->data_.angLast) / this->rr();
         this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
         this->data_.singleCirAng =
                 rangeMap(this->data_.singleCirAng, 0, 2 * PI);

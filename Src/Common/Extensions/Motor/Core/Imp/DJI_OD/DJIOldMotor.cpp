@@ -123,26 +123,26 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawTorq = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
 
-    this->data_.rawAng =
-            static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-
-    this->data_.torq = static_cast<float>(fb.rawTorq) /
-                       this->status_.torqRxCodeSpan * this->status_.torqMax;
-
-    this->data_.tempture = 0.f; // TODO:
-
-    this->data_.curr = this->data_.torq / status_.torqConstant;
-
+    float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
+    this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
+                                            noumenaAng;
     float del = this->data_.rawAng - this->data_.zeroAng;
     this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-    float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                 2.f * PI)) /
-                    this->rr();
+    float noumenaTorq = static_cast<float>(fb.rawTorq) /
+                        this->status_.torqRxCodeSpan * this->status_.torqMax;
+    this->data_.torq = this->isReverse_ ? -noumenaTorq : noumenaTorq;
+    this->data_.curr = this->data_.torq / status_.torqConstant;
+
+    this->data_.tempture = 0.f; // TODO:
+
+    float angDiff =
+            (getMinorArc(this->data_.rawAng, this->data_.angLast, 2.f * PI)) /
+            this->rr();
 
     if ((this->globalState_ == GlobalState_e::OFFLINE ||
          this->globalState_ == GlobalState_e::UNREGISTER) &&
-        this->data_.rawAngLast != this->data_.rawAng) {
+        this->data_.angLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
         this->data_.multipCirAng =
@@ -154,7 +154,7 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
-    this->data_.rawAngLast = this->data_.rawAng;
+    this->data_.angLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
     this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
@@ -232,6 +232,7 @@ MotorTypeDef_e DJIOldMotor::ctrl()
                            this->name_);
             }
         }
+        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
                                        this->status_.voltTxCodeSpan);
         break;

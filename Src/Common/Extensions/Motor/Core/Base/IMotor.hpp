@@ -37,6 +37,8 @@ protected:
 
     std::unique_ptr<PID> torqPID_; // only VOLT-CTRL motor will need this
 
+    bool isReverse_ = false;
+
     QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
 
     QueueHandle_t cmdQueue_;
