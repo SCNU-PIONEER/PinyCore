@@ -10,21 +10,21 @@
 
 namespace PINYMOTOR {
 
-static inline float getMinorArc(float _cur, float _ref, float _range)
+static inline float getMinorArc(float _ref, float _cur, float _range)
 {
     // float temp =
     //         std::fmod(1.5f * _range, _range) -
     //         (0.5f *
     //          _range); // 实际值：1.5 * range 略小于精确值 → fmod 结果略小于 0.5 * range
 
-    float rslt = std::fmod(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
+    float rslt = std::fmod(((_ref) - (_cur) + ((_range) * 1.5f)), (_range)) -
                  ((_range) * 0.5f);
     return rslt;
 }
 
-static inline float getMinorArc(float _cur, float _ref)
+static inline float getMinorArc(float _ref, float _cur)
 {
-    return getMinorArc(_cur, _ref, 2 * PI);
+    return getMinorArc(_ref, _cur, 2 * PI);
 }
 
 static inline float clampArc(float _ang, float _min, float _max, float _range)
