@@ -28,7 +28,7 @@ public:
         if (gimbal_->msg.state == State_e::stop)
             return static_cast<uint8_t>(FSMState_e::STOP);
         else if (gimbal_->msg.state == State_e::run)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return static_cast<uint8_t>(FSMState_e::LAUNCH);
         else
             return 0;
     }

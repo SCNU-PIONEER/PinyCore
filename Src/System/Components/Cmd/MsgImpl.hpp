@@ -14,7 +14,7 @@ struct chassisMsg : public Msg {
 };
 
 struct gimbalMsg : public Msg {
-    float pitch, yaw;
+    float wPitch, wYaw, wRoll;
 };
 
 struct armMsg : public Msg {

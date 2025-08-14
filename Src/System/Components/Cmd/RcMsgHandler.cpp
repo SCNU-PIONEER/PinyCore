@@ -1,7 +1,10 @@
 #include "RcMsgHandler.hpp"
 #include <algorithm>
 #include "sdkconfig.h"
+
 #include "Chassis.hpp"
+#include "Gimbal.hpp"
+
 #include "Smooth.hpp"
 
 #include <cstring>
@@ -45,21 +48,35 @@ void RcMsgHandler::handle()
 
     if (rcData.rc.switchRight == RC_SW_DOWN) {
         cmsg.state = State_e::stop;
+        gmsg.state = State_e::stop;
     } else if (rcData.rc.switchRight == RC_SW_MID) {
         cmsg.state = State_e::run;
         cmsg.vx = s_curve(Chassis::MAX_VX_SPEED, rcMsg_.ry); // Scale to m/s
         cmsg.vy = s_curve(Chassis::MAX_VY_SPEED, rcMsg_.rx); // Scale to m/s
         cmsg.wz = s_curve(Chassis::MAX_WZ_SPEED, rcMsg_.lx); // Scale to m/s
+
+        gmsg.state = State_e::run;
+        gmsg.wPitch =
+                s_curve(Gimbal::MAX_WPITCH_SPEED, -rcMsg_.ly); // Scale to rad/s
+        gmsg.wYaw =
+                s_curve(Gimbal::MAX_WYAW_SPEED, -rcMsg_.lx); // Scale to rad/s
+
     } else {
         cmsg.state = State_e::stop;
         cmsg.vx = 0.f;
         cmsg.vy = 0.f;
         cmsg.wz = 0.f;
+
+        gmsg.state = State_e::stop;
+        gmsg.wPitch = 0.f;
+        gmsg.wYaw = 0.f;
     }
 
     memcpy(&rcMsgPrev_, &rcMsg_, sizeof(rcMsg_));
 
     notify(&cmsg, msgBus_->chassisQueue);
+
+    notify(&gmsg, msgBus_->gimbalQueue);
 }
 
 
