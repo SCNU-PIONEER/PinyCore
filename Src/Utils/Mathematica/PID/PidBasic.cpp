@@ -51,7 +51,7 @@ void incrementalPid::reset()
 
 positonalPid::positonalPid(float _Kp, float _Ki, float _Kd, float _dt,
                            float _iMax, float _outMax, float _deadband)
-        : kp(_Kp), ki(_Ki), kd(_Kd), dt(_dt), iMax(_iMax), outMax(_outMax)
+        : kp(_Kp), ki(_Ki), kd(_Kd), dt(_dt), iMax(_iMax), outMax(_outMax),deadband(_deadband)
 {
     /* Reset state to zero */
     memset(err, 0, 2U * sizeof(float_t));
