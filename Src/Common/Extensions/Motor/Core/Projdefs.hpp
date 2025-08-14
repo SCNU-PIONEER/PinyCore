@@ -64,9 +64,9 @@ struct InitConfig_s {
     uint8_t offsetId;
     float txFreq;
 
-    std::unique_ptr<PID> posPID;
-    std::unique_ptr<PID> velPID;
-    std::unique_ptr<PID> torqPID;
+    PID *posPID;
+    PID *velPID;
+    PID *torqPID;
 
     bool isReverse = false;
 };
