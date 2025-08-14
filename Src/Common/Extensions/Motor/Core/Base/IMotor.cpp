@@ -19,6 +19,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
         , posPID_(std::move(_config.posPID))
         , velPID_(std::move(_config.velPID))
         , torqPID_(std::move(_config.torqPID))
+        , isReverse_(_config.isReverse)
         , cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
 {
     strcpy(this->name_, _name);
@@ -249,10 +250,9 @@ const Data_s &IMotor::data() const { return data_; }
 
 void IMotor::setZeroAng()
 {
+    // TODO: setZeroAng need a semaphore to protect
     data_.zeroAng = data_.rawAng;
-    float del = this->data_.rawAng - this->data_.zeroAng;
-    this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) : del;
-    data_.multipCirAng = data_.singleCirAng = 0;
+    data_.multipCirAng = data_.singleCirAng = this->data_.ang = 0;
 }
 
 float IMotor::getCmdCurr()

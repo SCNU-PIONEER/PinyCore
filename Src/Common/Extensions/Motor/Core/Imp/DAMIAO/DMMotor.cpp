@@ -182,38 +182,41 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         errorCode_ = fb.errorCode;
 
-        this->data_.rawAng =
+        float noumenaAng =
                 static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
+        this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
+                                                noumenaAng;
+        float del = this->data_.rawAng - this->data_.zeroAng;
+        this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-        this->data_.spdRadps =
+        float noumenaVel =
                 uint2float(fb.rawVel, -status_.VMax, status_.VMax, 12) /
                 this->rr();
+        this->data_.spdRadps = this->isReverse_ ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
-        this->data_.torq =
+
+        float noumenaTorq =
                 uint2float(fb.torque, -status_.TMax, status_.TMax, 12) *
                 this->rr();
-
+        this->data_.torq = this->isReverse_ ? -noumenaTorq : noumenaTorq;
         this->data_.curr = this->data_.torq / status_.torqConstant;
 
         this->data_.tempture = fb.mosTemperature;
 
-        float del = this->data_.rawAng - this->data_.zeroAng;
-        this->data_.ang = del < 0 ? del + (2.f * PI) : del;
-
-        float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                     2.f * PI)) /
-                        this->rr();
+        float angDiff =
+                (getMinorArc(this->data_.ang, this->data_.angLast, 2.f * PI)) /
+                this->rr();
 
         if ((this->globalState_ == GlobalState_e::OFFLINE ||
              this->globalState_ == GlobalState_e::UNREGISTER) &&
-            this->data_.rawAngLast != this->data_.rawAng) {
+            this->data_.angLast != this->data_.rawAng) {
             this->globalState_ = GlobalState_e::ONLINE;
             angDiff = 0;
             this->data_.multipCirAng =
                     this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
         }
 
-        this->data_.rawAngLast = this->data_.rawAng;
+        this->data_.angLast = this->data_.rawAng;
 
         this->data_.multipCirAng += angDiff;
         this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
@@ -269,20 +272,20 @@ MotorTypeDef_e DMMotor::ctrl()
             this->cmd_.torq =
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         }
+        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+
         this->cmd_.elec =
                 this->cmd_.torq /
                 status_.torqConstant; // MIT_TT support return expected current
+        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
         break;
     }
     case WorkMode_e::MIT_VDES: {
         dmMsg.msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax,
                                      status_.MITKdMax, 12);
         dmMsg.msgMIT.Kp = 0;
-        // forward torque
-        dmMsg.msgMIT.torqueForward =
-                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
         isMIT = true;
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             this->cmd_.vel = this->posPID_->calc(
@@ -290,14 +293,22 @@ MotorTypeDef_e DMMotor::ctrl()
                                 2.f * PI),
                     0);
         }
+        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgMIT.exptVel =
                 float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+        // forward torque
+        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
+        dmMsg.msgMIT.torqueForward =
+                float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+
         this->cmd_.elec =
                 this->data_.torq /
                 status_.torqConstant; // MIT_VDES unsupport return expected current
         break;
     }
     case WorkMode_e::MIT_VDESPDES: {
+        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgMIT.exptScale =
                 float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
         dmMsg.msgMIT.exptVel =
@@ -308,8 +319,10 @@ MotorTypeDef_e DMMotor::ctrl()
                                      status_.MITKpMax, 12);
         isMIT = true;
         // forward torque
+        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+
         this->cmd_.elec =
                 this->data_.torq /
                 status_.torqConstant; // MIT_VDESPDES unsupport return expected current
@@ -317,10 +330,13 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
+        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgPDESVDES.exptScale = this->cmd_.pos;
         dmMsg.msgPDESVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &dmMsg.msgPDESVDES.exptScale, 4);
         memcpy(&txBuf[4], &dmMsg.msgPDESVDES.exptVel, 4);
+
         this->cmd_.elec =
                 this->data_.torq /
                 status_.torqConstant; // PDESVDES unsupport return expected current
@@ -334,6 +350,7 @@ MotorTypeDef_e DMMotor::ctrl()
                                 2.f * PI),
                     0);
         }
+        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf, &dmMsg.msgVDES.exptVel, 4);
         this->cmd_.elec =
@@ -343,6 +360,9 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
+        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgEMIT.exptScale = this->cmd_.pos;
         dmMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
                 ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
@@ -357,6 +377,7 @@ MotorTypeDef_e DMMotor::ctrl()
         txBuf[5] = static_cast<uint8_t>(dmMsg.msgEMIT.exptVelX100);
         txBuf[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
         txBuf[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
+
         this->cmd_.elec =
                 this->data_.torq /
                 status_.torqConstant; // EMIT unsupport return expected current

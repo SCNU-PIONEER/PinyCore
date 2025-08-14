@@ -25,6 +25,7 @@ jobs:
           release_branches: master
           custom_release_rules: "ci:prepatch,refactor:prepatch"
           append_to_pre_release_tag: nightly
+          fetch_all_tags: true
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1

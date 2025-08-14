@@ -4,6 +4,8 @@
 #include "Soc.hpp"
 #include "Crc.hpp"
 
+#include "StmLog.hpp"
+
 #include "../../../Utils/MotorCommonMacros.hpp"
 
 using namespace PINYMOTOR;
@@ -33,6 +35,8 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
         , dmaHandle_(_dmaHandle)
 {
     this->cmd_.clear();
+    // TODO: UTMotor no currently supprorts the Feat(isReverse)
+    LOG::warn("UTMotor", "no currently supprorts the Feat(isReverse)");
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -74,20 +78,24 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
     if (fb->CRC16 != Get_CRC16_Check_Sum((uint8_t *)(fb), 14, 0)) {
         return 0; //TODO: CRC error
     } else {
+        constexpr float B2C = 2 * PI / 32768;
         this->status_.error_ = static_cast<ErrorStatus_e>(fb->mode.status);
-        this->data_.rawAngLast = this->data_.rawAng;
-        this->data_.rawAng = 6.2832f * static_cast<float>(fb->fbk.pos) / 32768;
+        this->data_.angLast = this->data_.rawAng;
+        float noumenaAng = static_cast<float>(fb->fbk.pos) * B2C;
+        this->data_.rawAng = this->isReverse_ ? (2 * PI) - noumenaAng :
+                                                noumenaAng;
         float del = this->data_.rawAng - this->data_.zeroAng;
-        this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) :
-                                    del;
+        this->data_.ang = del < 0 ? del + (2 * std::numbers::pi_v<float>) : del;
         this->data_.multipCirAng +=
-                (this->data_.rawAng - this->data_.rawAngLast) / this->rr();
-        this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
+                (this->data_.rawAng - this->data_.angLast) / this->rr();
+        this->data_.cirNum = this->data_.multipCirAng / (2 * PI);
         this->data_.singleCirAng =
-                rangeMap(this->data_.singleCirAng, 0, 2 * PI);
-        this->data_.spdRadps = ((float)fb->fbk.speed / 256) * 6.2832f;
+                rangeMap(this->data_.singleCirAng, 0, (2 * PI));
+        float noumenaVel = ((float)fb->fbk.speed / 256) * (2 * PI);
+        this->data_.spdRadps = this->isReverse_ ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
-        this->data_.torq = ((float)fb->fbk.torque) / 256;
+        float noumenaTorq = ((float)fb->fbk.torque) / 256;
+        this->data_.torq = this->isReverse_ ? -noumenaTorq : noumenaTorq;
         this->data_.curr = this->data_.torq / status_.Kn;
         this->data_.tempture = fb->fbk.temp;
     }
@@ -101,9 +109,10 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
 
 void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
 {
-    float pDes = cmd_.pos * this->rr();
-    float vDes = cmd_.vel * this->rr();
-    float tFF = cmd_.torq * this->rr();
+    float multiplier = this->isReverse_ ? -1 : 1;
+    float pDes = cmd_.pos * this->rr() * multiplier;
+    float vDes = cmd_.vel * this->rr() * multiplier;
+    float tFF = cmd_.torq * this->rr() * multiplier;
     clamp(tFF, -127.99f, 127.99f);
     clamp(vDes, -804.00f, 804.00f);
     clamp(pDes, -411774.0f, 411774.0f);

@@ -120,33 +120,36 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     fb.current = static_cast<int16_t>((_rxBuf.data[4] << 8) | _rxBuf.data[5]);
     fb.temperature = _rxBuf.data[6];
 
-    this->data_.rawAng =
-            static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-
-    this->data_.curr = static_cast<float>(fb.current) /
-                       this->status_.currRxCodeSpan * this->status_.currMax;
-    this->data_.tempture = fb.temperature;
-
-    this->data_.torq = this->data_.curr * status_.torqConstant;
-    this->data_.spdRpm = static_cast<float>(fb.rawRpm) / this->rr();
-    this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
-
+    float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
+    this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
+                                            noumenaAng;
     float del = this->data_.rawAng - this->data_.zeroAng;
     this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-    float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                 2.f * PI)) /
-                    this->rr();
+    float noumenaCurr = static_cast<float>(fb.current) /
+                        this->status_.currRxCodeSpan * this->status_.currMax;
+    this->data_.curr = this->isReverse_ ? -noumenaCurr : noumenaCurr;
+    this->data_.torq = this->data_.curr * status_.torqConstant;
+
+    float noumenaRpm = static_cast<float>(fb.rawRpm) / this->rr();
+    this->data_.spdRpm = this->isReverse_ ? -noumenaRpm : noumenaRpm;
+    this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
+
+    this->data_.tempture = fb.temperature;
+
+    float angDiff =
+            (getMinorArc(this->data_.rawAng, this->data_.angLast, 2.f * PI)) /
+            this->rr();
 
     if ((this->globalState_ == GlobalState_e::OFFLINE ||
          this->globalState_ == GlobalState_e::UNREGISTER) &&
-        this->data_.rawAngLast != this->data_.rawAng) {
+        this->data_.angLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
         this->data_.multipCirAng =
                 this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
     }
-    this->data_.rawAngLast = this->data_.rawAng;
+    this->data_.angLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
     this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
@@ -211,6 +214,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                            this->name_);
             }
         }
+        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.currMax *
                                        this->status_.currTxCodeSpan);
         break;
@@ -274,6 +278,8 @@ MotorTypeDef_e DJIMotor::ctrl()
                            this->name_);
             }
         }
+
+        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
                                        this->status_.voltTxCodeSpan);
         break;
