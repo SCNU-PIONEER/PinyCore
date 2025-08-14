@@ -1,22 +1,15 @@
 #include "AppManager.hpp"
-
 #include "cmsis_os2.h"
 #include "sdkconfig.h"
-
 #include "MotorManager.hpp"
-
 #include "INS.hpp"
-
 #include "Mecanum.hpp"
 #include "Chassis.hpp"
-
 #include "Cmd.hpp"
-
 #include "Bmi088.hpp"
-
 #include "TestModule.hpp"
-
 #include "Buzzer.hpp"
+#include "UI/App.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -50,7 +43,9 @@ Cmd *cmd;
 CHASSIS::Mecanum *mecanum;
 Chassis *chassis;
 
+UI::App *ui;
 //---------------------------------------------------------------------------------------------------
+
 void ctrlTask(void *_param)
 {
     while (true) {
@@ -132,6 +127,11 @@ void AppManager::createApp()
                 vTaskDelete(nullptr); // 否则会进ExistError
             },
             "buzzer_task", 64, nullptr, osPriorityNormal, nullptr);
+
+    if constexpr (APP_USE_UI) {
+        xTaskCreate([](void *_param) { ui->task(_param); }, "ui_task", 256,
+                    nullptr, osPriorityHigh, nullptr);
+    }
 }
 
 void AppManager::initApp()
@@ -157,6 +157,11 @@ void AppManager::initApp()
     // TestModule
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
+    }
+
+    if constexpr (APP_USE_UI) {
+        extern UART_HandleTypeDef UI_UART;
+        ui = new UI::App(UI_UART, UI_ROBOT_ID);
     }
 
     // Generate threads at the end
