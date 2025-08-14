@@ -87,6 +87,7 @@ public:
     const Data_s &data() const;
 
     void setZeroAng();
+    void setZeroAng(float _zeroAng);
 
     float getCmdCurr();
 

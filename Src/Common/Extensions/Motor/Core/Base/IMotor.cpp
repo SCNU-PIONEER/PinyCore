@@ -252,7 +252,12 @@ void IMotor::setZeroAng()
 {
     // TODO: setZeroAng need a semaphore to protect
     data_.zeroAng = data_.rawAng;
-    data_.multipCirAng = data_.singleCirAng = this->data_.ang = 0;
+}
+
+void IMotor::setZeroAng(float _zeroAng)
+{
+    // TODO: setZeroAng need a semaphore to protect
+    data_.zeroAng = _zeroAng;
 }
 
 float IMotor::getCmdCurr()
