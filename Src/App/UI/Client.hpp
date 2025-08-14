@@ -9,29 +9,23 @@
 
 #pragma once
 
+#include "./Protocol.hpp"
+#include "./Sender.hpp"
+#include "./Builder.hpp"
 #include <cstdint>
-#include "./UIProtocol.hpp"
-#include "./UISender.hpp"
-#include "./UIBuilder.hpp"
 
 namespace UI {
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 用户配置区 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 1920*1080
-static constexpr uint16_t CLIENT_SCREEN_WIDTH = 1920;
-static constexpr uint16_t CLIENT_SCREEN_HEIGHT = 1080;
-static constexpr uint16_t CLIENT_SCREEN_WIDTH_HALF = 960;
-static constexpr uint16_t CLIENT_SCREEN_HEIGHT_HALF = 540;
 /*功能---------------------------------------------------*/
 #define AUTO_UI_NAME_ENABLE // 自动命名
-/*参数---------------------------------------------------*/
-static constexpr uint8_t HIGH_CHAR_PRIORITY_LEVEL =
-        7; // 高优先级字符抢占图形UI的等级
-static constexpr uint8_t MID_CHAR_PRIORITY_LEVEL =
-        5; // 中优先级字符抢占图形UI的等级
 
-// 发送间隔时间(MS) [裁判系统上限是30HZ]
-static constexpr uint8_t SEND_INTERVAL = 250;
+/*参数---------------------------------------------------*/
+// 高优先级字符抢占图形UI的等级
+static constexpr uint8_t HIGH_CHAR_PRIORITY_LEVEL = 7;
+// 中优先级字符抢占图形UI的等级
+static constexpr uint8_t MID_CHAR_PRIORITY_LEVEL = 5;
+
 // 每次初始化的UI次数
 static constexpr uint8_t PER_INIT_UI_TIMES = 1;
 
@@ -104,28 +98,27 @@ enum class Status_e : uint8_t {
  * @brief UI配置信息结构体
  * 
  */
-#pragma pack(1)
 struct Config_s {
     /*******不变配置*********/
     Priority_e priority; // UI优先级(仅动态UI需要配置)
-    Type_e uiType;       // UI内容类型
     char name[3];        // 图形名称
+    Type_e uiType;       // UI内容类型
     /*******通用配置********/
     OperateType_e operateType; // 操作类型
-    uint8_t layer;             // 图层数，0~9
+    uint32_t layer;            // 图层数，0~9
     Color_e color;             // 颜色
-    uint16_t width;            // 线条宽度
-    uint16_t startX;           // 起点 x 坐标
-    uint16_t startY;           // 起点 y 坐标
-    uint16_t endX;             // 终点 x 坐标
-    uint16_t endY;             // 终点 y 坐标
+    uint32_t width;            // 线条宽度
+    uint32_t startX;           // 起点 x 坐标
+    uint32_t startY;           // 起点 y 坐标
+    uint32_t endX;             // 终点 x 坐标
+    uint32_t endY;             // 终点 y 坐标
     /*******特殊配置********/
-    uint16_t radius;     // 圆：半径
-    uint16_t startAngle; // 圆弧：起始角度
-    uint16_t endAngle;   // 圆弧：终止角度
-    uint16_t size;       // 文字数字：字体大小
+    uint32_t radius;     // 圆：半径
+    uint32_t startAngle; // 圆弧：起始角度
+    uint32_t endAngle;   // 圆弧：终止角度
+    uint32_t size;       // 文字数字：字体大小
     float floatNum;      // 浮点数: 显示的数字
-    uint16_t decimal;    // 浮点数：小数位有效个数
+    uint32_t decimal;    // 浮点数：小数位有效个数
     int32_t intNum;      // 整数: 显示的数字
     char text[30];       // 字符串：显示的文字
 };
@@ -138,10 +131,9 @@ struct Info_s {
     uint32_t updateTick;    // 更新消息时的时间戳
     uint16_t priorityValue; // UI的优先级值
     Config_s config;        // 用户配置UI信息
-                            //
+
     bool operator==(const Info_s &_other) const;
 };
-#pragma pack()
 
 /**
  * @brief UI链表节点结构体
@@ -153,6 +145,7 @@ struct Node_s {
 
 class Client {
 public:
+    Client(UART_HandleTypeDef _huart, uint8_t _id);
     /**
     * @brief 初始化UI链表 在外部调用 一定要在Ui_Send之前调用
     */
@@ -168,14 +161,19 @@ public:
     * @brief 发送UI 在外部调用
     *
     */
-    void send();
+    Status_e send();
 
     /**
     * @brief 更新完UI信息后调用此函数将UI设为准备发送状态
     */
     Status_e ready(Info_s *_info);
 
-private:
+    /**
+    * @brief 更新机器人ID
+    */
+    void updateID(uint16_t _id) { sender_.infoUpdate(_id); }
+
+protected:
     /**
     * @brief 计算消息的优先级
     * @param msg
@@ -256,7 +254,6 @@ private:
     SevenGraphicData_s processGraphic2Buffer(Info_s *_info, uint8_t _infoSize,
                                              uint8_t _addOperateEnable);
 
-    Status_e sendNormal();
     /**
     * @brief UI强行发送ADD
     * @note  由于选手端登陆后，每个UI都需要发一次ADD，所以需要强制发送一次ADD

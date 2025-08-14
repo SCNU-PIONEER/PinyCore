@@ -19,7 +19,7 @@
 #include <functional>
 #include "Crc.hpp"
 #include "Bsp_uart.hpp"
-#include "./UIProtocol.hpp"
+#include "./Protocol.hpp"
 
 namespace UI {
 
@@ -30,7 +30,7 @@ public:
     /**
     * @brief 更新红蓝方机器人信息，在裁判系统接受中断中调用
     */
-    void infoUpdate();
+    void infoUpdate(uint16_t _id);
 
     uint8_t sendOneGraphic(OneGraphicData_s _data);
     uint8_t sendTwoGraphic(TwoGraphicData_s _data);
@@ -49,7 +49,7 @@ protected:
     {
         uint8_t buffer[128] = {};
         buildCommonFrame(buffer, _len, _id);
-        memcpy(&buffer[13], _data.grapic, 15 * _graphicCount);
+        memcpy(&buffer[13], _data.data, 15 * _graphicCount);
         uint16_t totalLen = 15 + (15 * _graphicCount);
         Append_CRC16_Check_Sum(buffer, totalLen);
         memcpy(txBuf_, buffer, totalLen);

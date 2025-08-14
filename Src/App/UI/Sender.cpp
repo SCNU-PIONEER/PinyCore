@@ -13,7 +13,7 @@
  */
 
 #include <cstdint>
-#include "./UISender.hpp"
+#include "./Sender.hpp"
 #include "Bsp_dma.hpp"
 
 using namespace UI;
@@ -30,11 +30,10 @@ Sender::Sender(UART_HandleTypeDef _huart, uint8_t _id)
     };
 }
 
-void Sender::infoUpdate()
+void Sender::infoUpdate(uint16_t _id)
 {
-    //TODO: 与裁判系统对接
-    // clientInfo_.robotID = game_robot_status.robot_id;
-    // clientInfo_.clientID = game_robot_status.robot_id + 0x100;
+    clientInfo_.robotID = _id;
+    clientInfo_.clientID = _id + 0x100;
 }
 
 void Sender::buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength,
@@ -82,8 +81,8 @@ uint8_t Sender::sendChar(CharGraphicData_s _data)
 {
     uint8_t buffer[128];
     buildCommonFrame(buffer, IDLen_e::DRAW_CHAR, ID_e::DRAW_CHAR);
-    memcpy(&buffer[13], &_data.grapic, 15);
-    memcpy(&buffer[28], _data.data, 30);
+    memcpy(&buffer[13], &_data.option, 15);
+    memcpy(&buffer[28], _data.string, 30);
     Append_CRC16_Check_Sum(buffer, 60);
     memcpy(txBuf_, buffer, 60);
     return send_(txBuf_, 60);

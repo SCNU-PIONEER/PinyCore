@@ -48,7 +48,7 @@ enum class IDLen_e : uint16_t {
  * @breif 子内容图形操作
  */
 // NOLINTNEXTLINE(performance-enum-size)
-enum class OperateType_e : uint32_t {
+enum OperateType_e {
     NONE,   // 空操作
     ADD,    // 增加图层
     MODIFY, // 修改图层
@@ -93,19 +93,19 @@ enum class Color_e : uint8_t {
  * 如在输入 1234，显示的值将为 1.234。
 */
 struct GraphicData_s {
-    uint8_t graphicName[3];
-    OperateType_e operateTpye : 3;
-    GraphicType_e graphicTpye : 3;
+    uint8_t figure_name[3];
+    uint32_t operate_type : 3;
+    uint32_t figure_type : 3;
     uint32_t layer : 4;
     uint32_t color : 4;
-    uint32_t startAngle : 9;
-    uint32_t endAngle : 9;
+    uint32_t start_angle : 9;
+    uint32_t end_angle : 9;
     uint32_t width : 10;
-    uint32_t startX : 11;
-    uint32_t startY : 11;
+    uint32_t start_x : 11;
+    uint32_t start_y : 11;
     uint32_t radius : 10;
-    uint32_t endX : 11;
-    uint32_t endY : 11;
+    uint32_t end_x : 11;
+    uint32_t end_y : 11;
 };
 
 /*
@@ -120,36 +120,36 @@ struct DeleteGraphicData_s {
  * @breif 子内容ID 0x101
  */
 struct OneGraphicData_s {
-    GraphicData_s grapic[1];
+    GraphicData_s data[1];
 };
 
 /*
  * @breif 子内容ID 0x102
  */
 struct TwoGraphicData_s {
-    GraphicData_s grapic[2];
+    GraphicData_s data[2];
 };
 
 /*
  * @breif 子内容ID 0x102
  */
 struct FiveGraphicData_s {
-    GraphicData_s grapic[5];
+    GraphicData_s data[5];
 };
 
 /*
  * @breif 子内容ID 0x103
  */
 struct SevenGraphicData_s {
-    GraphicData_s grapic[7];
+    GraphicData_s data[7];
 };
 
 /*
  * @breif 子内容ID 0x103
  */
 struct CharGraphicData_s {
-    GraphicData_s grapic;
-    char data[30];
+    GraphicData_s option;
+    char string[30];
 };
 
 struct FrameHeader_s {

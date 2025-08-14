@@ -8,13 +8,16 @@
  */
 
 #include "FreeRTOS.h"
-#include "UIProtocol.hpp"
 #include "task.h"
+#include "./Sender.hpp"
+#include "./Protocol.hpp"
 #include <cstring>
 #include <cstdio>
-#include "./UIClient.hpp"
+#include "./Client.hpp"
 
 using namespace UI;
+
+Client::Client(UART_HandleTypeDef _huart, uint8_t _id) : sender_(_huart, _id) {}
 
 Status_e Client::initList(Info_s *_dynamicInfo, uint8_t _dynamicNum,
                           Info_s *_info, uint8_t _num)
@@ -50,19 +53,6 @@ void Client::sendInit()
             initTimes = 0;
         }
     }
-}
-
-void Client::send()
-{
-    uint32_t currentTick = xTaskGetTickCount();
-    static uint32_t lastTick = 0;
-    if (currentTick - lastTick < SEND_INTERVAL) {
-        return;
-    }
-
-    sendNormal();
-
-    lastTick = xTaskGetTickCount();
 }
 
 Status_e Client::ready(Info_s *_info)
@@ -482,7 +472,7 @@ CharGraphicData_s Client::processCharInfo2Buffer(Info_s _info,
     }
 
     CharGraphicData_s res = {};
-    res.grapic =
+    res.option =
             builder_.create(_info.config.name, operateTpye, _info.config.layer)
                     .color(_info.config.color)
                     .width(_info.config.width)
@@ -490,7 +480,7 @@ CharGraphicData_s Client::processCharInfo2Buffer(Info_s _info,
                                _info.config.startX, _info.config.startY)
                     .build();
 
-    memcpy(&res.data, &_info.config.text, sizeof(_info.config.text));
+    memcpy(&res.string, &_info.config.text, sizeof(_info.config.text));
 
     return res;
 }
@@ -516,57 +506,55 @@ SevenGraphicData_s Client::processGraphic2Buffer(Info_s *_info,
         //判断UI类型配置信息
         switch (ui->config.uiType) {
         case Type_e::LINE:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .line(ui->config.startX, ui->config.startY,
-                                          ui->config.endX, ui->config.endY)
-                                    .build();
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .line(ui->config.startX, ui->config.startY,
+                                        ui->config.endX, ui->config.endY)
+                                  .build();
             break;
         case Type_e::CIRCLE:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .circle(ui->config.startX,
-                                            ui->config.startY,
-                                            ui->config.radius)
-                                    .build();
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .circle(ui->config.startX, ui->config.startY,
+                                          ui->config.radius)
+                                  .build();
             break;
         case Type_e::RECTANGEL:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .rectangle(ui->config.startX,
-                                               ui->config.startY,
-                                               ui->config.endX, ui->config.endY)
-                                    .build();
-            break;
-        case Type_e::ELLIPSE:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .ellipse(ui->config.startX,
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .rectangle(ui->config.startX,
                                              ui->config.startY, ui->config.endX,
                                              ui->config.endY)
-                                    .build();
+                                  .build();
+            break;
+        case Type_e::ELLIPSE:
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .ellipse(ui->config.startX, ui->config.startY,
+                                           ui->config.endX, ui->config.endY)
+                                  .build();
             break;
         case Type_e::ARC:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .arc(ui->config.startAngle,
-                                         ui->config.endAngle, ui->config.startX,
-                                         ui->config.startY, ui->config.endX,
-                                         ui->config.endY)
-                                    .build();
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .arc(ui->config.startAngle,
+                                       ui->config.endAngle, ui->config.startX,
+                                       ui->config.startY, ui->config.endX,
+                                       ui->config.endY)
+                                  .build();
             break;
         case Type_e::FLOAT:
-            res.grapic[i] =
+            res.data[i] =
                     builder_.create(ui->config.name, operateTpye,
                                     ui->config.layer)
                             .color(ui->config.color)
@@ -577,14 +565,13 @@ SevenGraphicData_s Client::processGraphic2Buffer(Info_s *_info,
                             .build();
             break;
         case Type_e::INT:
-            res.grapic[i] = builder_.create(ui->config.name, operateTpye,
-                                            ui->config.layer)
-                                    .color(ui->config.color)
-                                    .width(ui->config.width)
-                                    .intNum(ui->config.startX,
-                                            ui->config.startY, ui->config.size,
-                                            ui->config.intNum)
-                                    .build();
+            res.data[i] = builder_.create(ui->config.name, operateTpye,
+                                          ui->config.layer)
+                                  .color(ui->config.color)
+                                  .width(ui->config.width)
+                                  .intNum(ui->config.startX, ui->config.startY,
+                                          ui->config.size, ui->config.intNum)
+                                  .build();
             break;
         default:
             break;
@@ -598,10 +585,10 @@ SevenGraphicData_s Client::processGraphic2Buffer(Info_s *_info,
  * @brief 正常发送UI
  *
  */
-Status_e Client::sendNormal()
+Status_e Client::send()
 {
-    SevenGraphicData_s graphicTxBuf; // 图像发送缓存
-    CharGraphicData_s charTxBuffer;  // 字符发送缓存
+    SevenGraphicData_s graphicTxBuf = {}; // 图像发送缓存
+    CharGraphicData_s charTxBuffer = {};  // 字符发送缓存
     //对动态UI链表进行排序
     mergeSort(&dynamicListHead_);
     //将优先级最高的UI信息存储到数组中
