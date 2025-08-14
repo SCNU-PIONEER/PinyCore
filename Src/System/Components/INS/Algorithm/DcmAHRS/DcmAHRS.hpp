@@ -4,25 +4,6 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-
-#define DEFAULT_GRAVITY                      (9.80665f) // Standard gravity in m/s^2
-
-#define DEFAULT_Q_DCM2_INIT                  (1.8f * 1.8f)
-#define DEFAULT_Q_BIAS2_INIT                 (0.1f * 0.1f)
-
-#define DEFAULT_R_MEASUREMENT2               (0.003f * 0.003f)
-#define DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN (10.f * 10.f)
-
-#define DEFAULT_Q_DCM2                       (0.0037f * 0.0037f)
-#define DEFAULT_Q_BIAS2                      (2.5e-3f * 2.5e-3f)
-
-
-#define VARIANCE_MIN_LIMIT                   (0.0001f * 0.0001f)
-// set this to a small positive number or 0 to disable the feature.
-#define VARIANCE_SAFETY_INCREMENT            (0.00001f * 0.00001f)
-// set this to a small positive number or 0 to disable the feature.
-
-
 namespace IMU_DCM_AHRS {
 
 struct EData_s {
@@ -35,6 +16,22 @@ class DcmAhrs {
     static constexpr float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = {
         0, 0, 1, 0, 0, 0
     };
+    static constexpr float DEFAULT_GRAVITY =
+            (9.7833f); // Standard gravity in m/s^2
+
+    static constexpr float DEFAULT_Q_DCM2_INIT = (1.8f * 1.8f);
+    static constexpr float DEFAULT_Q_BIAS2_INIT = (0.1f * 0.1f);
+
+    static constexpr float DEFAULT_R_MEASUREMENT2 = (0.003f * 0.003f);
+    static constexpr float DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN = (10.f * 10.f);
+
+    static constexpr float DEFAULT_Q_DCM2 = (0.0037f * 0.0037f);
+    static constexpr float DEFAULT_Q_BIAS2 = (2.5e-3f * 2.5e-3f);
+
+    static constexpr float VARIANCE_MIN_LIMIT = (0.0001f * 0.0001f);
+    // set this to a small positive number or 0 to disable the feature.
+    static constexpr float VARIANCE_SAFETY_INCREMENT = (0.00001f * 0.00001f);
+    // set this to a small positive number or 0 to disable the feature.
 
 public:
     DcmAhrs(float _sampleFrequency,
