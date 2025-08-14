@@ -8,10 +8,10 @@
 namespace GIMBAL {
 
 class LaunchState : public FSMState {
-    static constexpr uint16_t MAX_LAUNCH_TIME = 3000; // 3s
+    static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 3s
 
     static constexpr float PITCH_LAUNCH_ANG = 2.08033204f; // need to be tuned
-    static constexpr float YAW_LAUNCH_ANG = 5.9817214f;    // need to be tuned
+    static constexpr float YAW_LAUNCH_ANG = 4.42377377f;   // need to be tuned
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
     static constexpr float YAW_LAUNCH_ANG_DEADBAND = 0.1f;
@@ -26,6 +26,14 @@ public:
     {
         launchTotalTime_ = 0;
         launchFinishTime_ = 0;
+
+        head_->joint(0)->setZeroAng(PITCH_LAUNCH_ANG);
+        LOG::info("Gimbal", "Pitch zeros have set to %f",
+                  head_->joint(0)->data().zeroAng);
+        head_->joint(1)->setZeroAng(YAW_LAUNCH_ANG);
+        LOG::info("Gimbal", "Yaw zeros have set to %f",
+                  head_->joint(1)->data().zeroAng);
+
         head_->enter();
         LOG::info("GimbalLaunch", "enter");
     }
@@ -35,31 +43,24 @@ public:
         launchTotalTime_++;
 
         float pitchAng = head_->joint(0)->posNorm();
-        float yawAng = head_->joint(0)->posNorm();
+        float yawAng = head_->joint(1)->posNorm();
 
-        if (std::fabs(PINYMOTOR::getMinorArc(PITCH_LAUNCH_ANG, pitchAng)) <
+        if (std::fabs(PINYMOTOR::getMinorArc(0, pitchAng)) <
                     PITCH_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(YAW_LAUNCH_ANG, yawAng)) <
+            std::fabs(PINYMOTOR::getMinorArc(0, yawAng)) <
                     YAW_LAUNCH_ANG_DEADBAND) {
             launchFinishTime_++;
+        } else {
+            launchFinishTime_ = 0;
         }
 
-        head_->joint(0)->cmdPos(PITCH_LAUNCH_ANG, 10, 0, 0);
-        head_->joint(1)->cmdPos(YAW_LAUNCH_ANG, 10, 0, 0);
+        head_->joint(0)->cmdPos(0, 5, 0, 0);
+        head_->joint(1)->cmdPos(0, 5, 0, 0);
     }
 
     void exit() final
     {
         finishLaunching_ = true;
-
-        head_->joint(0)->setZeroAng();
-        LOG::info("Gimbal", "Zero pitch set to %f",
-                  head_->joint(0)->data().zeroAng);
-        head_->joint(1)->setZeroAng();
-        LOG::info("Gimbal", "Zero yaw set to %f",
-                  head_->joint(1)->data().zeroAng);
-
-        // TODO: Reset INS Yaw to 0
 
         LOG::info("GimbalLaunch", "exit");
     }
