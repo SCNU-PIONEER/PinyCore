@@ -112,7 +112,7 @@ void AppManager::createApp()
                 osPriorityRealtime, nullptr);
 
     // Test-Module Continuous Task
-    if constexpr (USE_TEST_MODULES) {
+    if constexpr (APP_USE_TEST) {
         xTaskCreate(
                 [](void *_param) -> void { TestModule::instance()->task(); },
                 "test_task", 256, nullptr, osPriorityNormal, nullptr);
@@ -155,7 +155,7 @@ void AppManager::initApp()
                                        BEEP_APB_FREQ);
 
     // TestModule
-    if constexpr (USE_TEST_MODULES) {
+    if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
     }
 

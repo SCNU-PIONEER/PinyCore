@@ -32,7 +32,7 @@ Mecanum::Mecanum()
         motor_[i - 1] = new DJIMOTOR::M3508("M3508", std::move(m3508Config));
     }
 
-    if constexpr (USE_POWERCTRL) {
+    if constexpr (APP_USE_POWERCTRL) {
         powerCtrl_ = std::make_unique<QuadricycleController>(
                 ChassisType_e::Quadricycle);
     }
@@ -99,7 +99,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
         motor_[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
     }
 
-    if constexpr (USE_POWERCTRL) {
+    if constexpr (APP_USE_POWERCTRL) {
         powerCtrl_->powerCtrl(refWSpeed._);
     }
 }
