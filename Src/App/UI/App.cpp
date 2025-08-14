@@ -20,10 +20,10 @@ void App::init()
     dynamicInfo_[0].config.priority = Priority_e::HIGH;
 
     dynamicInfo_[1] = newConfig(ui_g_dynamic_time);
-    dynamicInfo_[0].config.priority = Priority_e::MID;
+    dynamicInfo_[1].config.priority = Priority_e::MID;
 
     dynamicInfo_[2] = newConfig(ui_g_dynamic_chassis_state);
-    dynamicInfo_[0].config.priority = Priority_e::LOW;
+    dynamicInfo_[2].config.priority = Priority_e::LOW;
 
 
     constInfo_[0] = newConfig(ui_g_static_chassis);
