@@ -66,7 +66,7 @@ void TestModule::init()
         .offsetId = static_cast<uint8_t>(7),
         .txFreq = (100.0f),
         .posPID = nullptr,
-        .velPID = std::unique_ptr<PID>(new positonalPid(
+        .velPID = std::unique_ptr<PID>(new PositonalPid(
                 0.05f, 0.f, 0.f, 0.01, PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX,
                 PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX, 0.f)),
         .torqPID = nullptr
