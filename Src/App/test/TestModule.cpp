@@ -71,8 +71,8 @@ void TestModule::init()
                                    PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX, 0.f),
         .torqPID = nullptr
     };
-    this->testGM6020Motor = std::make_unique<DJIMOTOR::GM6020>(
-            "GM6020", testGM6020Config);
+    this->testGM6020Motor =
+            std::make_unique<DJIMOTOR::GM6020>("GM6020", testGM6020Config);
 }
 
 void TestModule::update()
