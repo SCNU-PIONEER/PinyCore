@@ -5,7 +5,7 @@
 #include <cmath>
 #include <algorithm>
 
-#define DEFAULT_GRAVITY                      (9.80665f) // Standard gravity in m/s^2
+#define DEFAULT_GRAVITY                      (9.7833f) // Standard gravity in m/s^2
 
 #define DEFAULT_Q_DCM2_INIT                  (1.8f * 1.8f)
 #define DEFAULT_Q_BIAS2_INIT                 (0.1f * 0.1f)
