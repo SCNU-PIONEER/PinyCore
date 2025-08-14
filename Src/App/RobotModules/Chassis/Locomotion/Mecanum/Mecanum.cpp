@@ -26,7 +26,7 @@ Mecanum::Mecanum()
             .txFreq = 100.0f,
             .posPID = nullptr,
             .velPID = std::unique_ptr<PID>(
-                    new incrementalPid(0.2f, 0.005f, 0.f, 4.f, 0.f)),
+                    new IncrementalPid(0.2f, 0.005f, 0.f, 4.f, 0.f)),
             .torqPID = nullptr
         };
         motor_[i - 1] = new DJIMOTOR::M3508("M3508", std::move(m3508Config));
