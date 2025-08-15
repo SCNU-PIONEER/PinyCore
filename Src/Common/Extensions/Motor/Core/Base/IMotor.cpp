@@ -16,9 +16,9 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
         , globalState_(GlobalState_e::UNREGISTER)
         , offsetId_(_config.offsetId)
         , txFreq_(_config.txFreq)
-        , posPID_(std::move(_config.posPID))
-        , velPID_(std::move(_config.velPID))
-        , torqPID_(std::move(_config.torqPID))
+        , posPID_(_config.posPID)
+        , velPID_(_config.velPID)
+        , torqPID_(_config.torqPID)
         , isReverse_(_config.isReverse)
         , cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
 {
@@ -252,9 +252,13 @@ void IMotor::setZeroAng()
 {
     // TODO: setZeroAng need a semaphore to protect
     data_.zeroAng = data_.rawAng;
-    data_.multipCirAng = data_.singleCirAng = this->data_.ang = 0;
 }
 
+void IMotor::setZeroAng(float _zeroAng)
+{
+    // TODO: setZeroAng need a semaphore to protect
+    data_.zeroAng = _zeroAng;
+}
 float IMotor::getCmdCurr()
 {
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {

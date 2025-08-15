@@ -32,10 +32,10 @@ protected:
     uint32_t lastRecvTick = 0; // ms
     char name_[16] = "NULL";
 
-    std::unique_ptr<PID> posPID_;
-    std::unique_ptr<PID> velPID_;
+    PID *posPID_;
+    PID *velPID_;
 
-    std::unique_ptr<PID> torqPID_; // only VOLT-CTRL motor will need this
+    PID *torqPID_; // only VOLT-CTRL motor will need this
 
     bool isReverse_ = false;
 
@@ -87,6 +87,7 @@ public:
     const Data_s &data() const;
 
     void setZeroAng();
+    void setZeroAng(float _zeroAng);
 
     float getCmdCurr();
 

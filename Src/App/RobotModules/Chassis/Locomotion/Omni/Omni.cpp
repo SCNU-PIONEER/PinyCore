@@ -21,11 +21,10 @@ Omni::Omni()
             .offsetId = i,
             .txFreq = 500.0f,
             .posPID = nullptr,
-            .velPID = std::unique_ptr<PID>(
-                    new PositonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f)),
+            .velPID = new PositonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f),
             .torqPID = nullptr
         };
-        motor[i - 1] = new DJIMOTOR::M3508("M3508", std::move(m3508Config));
+        motor[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 }
 

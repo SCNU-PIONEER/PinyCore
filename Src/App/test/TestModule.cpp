@@ -42,7 +42,7 @@ void TestModule::init()
         .torqPID = nullptr
     };
     this->testDM4310Motor = std::make_unique<PINYMOTOR::DMMOTOR::DM4310>(
-            "DM4310", std::move(testDM4310Config));
+            "DM4310", testDM4310Config);
 
     // Test GM3510 ----------------------------------------
     PINYMOTOR::InitConfig_s testGM3510Config = {
@@ -56,7 +56,7 @@ void TestModule::init()
         .torqPID = nullptr
     };
     this->testGM3510Motor = std::make_unique<PINYMOTOR::DJI_ODMOTOR::GM3510>(
-            "GM3510", std::move(testGM3510Config));
+            "GM3510", testGM3510Config);
 
     // Test GM6020 ----------------------------------------
     PINYMOTOR::InitConfig_s testGM6020Config = {
@@ -66,13 +66,13 @@ void TestModule::init()
         .offsetId = static_cast<uint8_t>(7),
         .txFreq = (100.0f),
         .posPID = nullptr,
-        .velPID = std::unique_ptr<PID>(new PositonalPid(
-                0.05f, 0.f, 0.f, 0.01, PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX,
-                PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX, 0.f)),
+        .velPID = new PositonalPid(0.05f, 0.f, 0.f, 0.01,
+                                   PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX,
+                                   PINYMOTOR::DJIMOTOR::GM6020::TORQ_MAX, 0.f),
         .torqPID = nullptr
     };
-    this->testGM6020Motor = std::make_unique<DJIMOTOR::GM6020>(
-            "GM6020", std::move(testGM6020Config));
+    this->testGM6020Motor =
+            std::make_unique<DJIMOTOR::GM6020>("GM6020", testGM6020Config);
 }
 
 void TestModule::update()
