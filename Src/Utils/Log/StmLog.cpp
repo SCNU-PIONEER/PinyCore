@@ -1,9 +1,15 @@
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 #include <cstdlib>
 #include "StmLog.hpp"
 
 using namespace LOG;
+
+Logger &Logger::instance()
+{
+    static Logger instance;
+    return instance;
+}
 
 void Logger::clear() { SEGGER_RTT_WriteString(0, "  " RTT_CTRL_CLEAR); }
 
@@ -17,7 +23,7 @@ void Logger::float2Str(char *_str, size_t _buffer_size, float _va)
     float rounded = roundf(_va * 1000) / 1000;
 
     int head = (int)rounded;
-    int point = (int)((rounded - head) * 1000);
+    int point = (((int)rounded - head) * 1000);
 
     // 确保point在0-999范围内
     point = abs(point) % 1000;
