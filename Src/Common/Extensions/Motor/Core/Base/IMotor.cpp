@@ -260,11 +260,6 @@ void IMotor::setZeroAng(float _zeroAng)
     data_.zeroAng = _zeroAng;
 }
 
-void IMotor::setZeroAng(float _zeroAng)
-{
-    // TODO: setZeroAng need a semaphore to protect
-    data_.zeroAng = _zeroAng;
-}
 float IMotor::getCmdCurr()
 {
     if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
