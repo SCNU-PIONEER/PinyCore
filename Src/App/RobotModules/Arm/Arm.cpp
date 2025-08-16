@@ -1,12 +1,3 @@
-/*
- * @File         : Arm.cpp
- * @Brief        : 
- * @Version      : 
- * @Author       : 3687402504@qq.com
- * @LastEditTime : 2025-08-02 15:53:51
- * Copyright 2025 by SCNU-PIONEER (c), All Rights Reserved.
- */
-
 #include "Arm.hpp"
 #include "StmLog.hpp"
 #include <memory>
@@ -18,8 +9,7 @@
 
 using namespace ARM;
 
-Arm::Arm()
-:safety(&motors)
+Arm::Arm() : safety(motors)
 {
     msg_ = armMsg{};
     /* FSM */
@@ -36,8 +26,7 @@ Arm::Arm()
 
 void Arm::update(void *_param)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg_, 0) ==
-        pdTRUE) {
+    if (xQueueReceive((((MsgBus_s *)_param)->armQueue), &msg_, 0) == pdTRUE) {
     };
     motors.update();
     stateFactory_.update();
@@ -46,7 +35,6 @@ void Arm::update(void *_param)
 void Arm::moveOneJoint(Joint7D _target_joints)
 {
     //UT缓启动
-
     if (!safety.speedLimit(1)) {
         LOG::Logger::instance().error(LOCATION, "ARM", "Speed limit exceeded");
         return;
@@ -55,47 +43,69 @@ void Arm::moveOneJoint(Joint7D _target_joints)
         LOG::Logger::instance().error(LOCATION, "ARM", "Angle limit exceeded");
         return;
     }
-//output
-  
+    //output
     motors.ctrl(target_joints);
-    
 }
 
 void Arm::setTargetPose(const JointRoute_s _route)
 {
     target_pose = _route.pose;
     target_point = _route.point;
-    pump = _route.pump;
+    // pump = _route.pump;
 }
-
-
 
 void Arm::moveRoute()
 {
-    // 路径点已全部完成
-    if (point_cnt >= target_point) {
-        point_cnt = 0;
-        LOG::Logger::instance().info(LOCATION, "ARM", "All route points finished");
-        // 切回正常状态
-        return;
-    }
-    // 移动到当前路径点
-    auto result = motors.moveOneGoal(target_pose[point_cnt]);
-    if (result == ARM::Motors::Moveresult_e::FINISHED) {
-        if (target_pose[point_cnt].delay > 0) {
-            LOG::Logger::instance().info(LOCATION, "ARM", "Start move delay");
+    if (motors.moveOneGoal(target_pose[point_cnt]) ==
+        motors.jointStateFlag) { //bug
+        /*为了到达某点后停止一段时间*/
+        if (target_pose[point_cnt].delay != 0) {
+            log.error(LOCATION, "ARM", "Start move delay");
             dwt_delay_ms(target_pose[point_cnt].delay);
-            LOG::Logger::instance().info(LOCATION, "ARM", "Delay finished");
+            log.error(LOCATION, "ARM", "End move delay");
         }
         point_cnt++;
-    } else if (result == ARM::Motors::Moveresult_e::OUTOFRANGE) {
-        LOG::Logger::instance().error(LOCATION, "ARM", "Move goal out of range");
-        // 切回正常状态
-        point_cnt = 0;
+        if (point_cnt == target_point) {
+            point_cnt = 0;
+            log.info(LOCATION, "ARM", "Move all point done");
+            //change state to normal
+        }
     }
 }
 
 void Arm::teach()
 {
-    
+    //     Joint7D goal;
+    // for (uint8_t i = 0; i < 7; i++) {
+    //     goal.j[i] = _tp_data.joint[i];
+    // }
+
+    // /*checkout first*/
+    //     if (!motors.checkGoal(goal)) {
+    //         log.error(LOCATION, "Teach", "Teach goal out of range");
+    //         return;
+    //     }
+
+    //     /*arm reset, can't be interrupt*/
+    //     if (mmove_one_goal(goal) == FINISH_STATE) {
+    //         teach_tag = Arm::TEACHED;
+    //     } else {
+    //         teach_tag == Arm::LAUNCHING;
+    //     }
+
+
+    // /*control,can be interrupt*/
+    //     if (_tp_data.push == 1) {
+    //         pumpCtrl.apply(PUMPCONFIGS::ALL_PUMP_ON);
+    //     } else {
+    //         pumpCtrl.apply(PUMPCONFIGS::ALL_PUMP_OFF);
+    //     }
+
+
+    //     for (uint8_t i = 0; i < 7; i++) {
+    //         target_joints.j[i] = _tp_data.joint[i];
+    //     }
+    //     safety.speedLimit(0.5);
+    //     safety.angleLimit(target_joints);
+    //     motors.ctrl(target_joints); //output
 }

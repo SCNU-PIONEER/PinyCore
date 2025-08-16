@@ -1,10 +1,9 @@
 #pragma once
 
-#include <stdio.h>
+#include <cstdio>
 #include "Soc.hpp"
-#include <stdint.h>
-#include <utility>
-#include <stdarg.h>
+#include <cstdint>
+#include <cstdarg>
 #include HAL_INCLUDE
 
 class Vofa {
@@ -17,17 +16,17 @@ public:
     /*
     * @brief FireWater protocol
     */
-    void FireWater(const char *format, ...);
+    void fireWater(const char *_format, ...);
 
     /**
      * @brief justfloat protocol
      */
-    void JustFloat(float *_data, uint8_t _num);
+    void justFloat(float *_data, uint8_t _num);
 
     /**
      * @brief get vofa instance
      */
-    inline static Vofa &instance()
+    static Vofa &instance()
     {
         static Vofa instance;
         return instance;

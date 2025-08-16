@@ -40,12 +40,12 @@ void RTTMsgHandler::handle()
     gimbalMsg gmsg;
 
 
-    if (strcmp((const char *)data, "run\n") == 0) {
-        cmsg.state = State_e::run;
-    } else if (strcmp((const char *)data, "stop\n") == 0) {
-        cmsg.state = State_e::stop;
+    if (strcmp((const char *)data, "NORMAL\n") == 0) {
+        cmsg.state = State_e::NORMAL;
+    } else if (strcmp((const char *)data, "STOP\n") == 0) {
+        cmsg.state = State_e::STOP;
     } else {
-        cmsg.state = State_e::stop;
+        cmsg.state = State_e::STOP;
     }
 
     notify(&cmsg, msgBus_->chassisQueue);

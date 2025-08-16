@@ -1,5 +1,5 @@
 #include "Vofa.hpp"
-#include <string.h>
+#include <cstring>
 #include "Bsp_dma.hpp"
 
 
@@ -12,13 +12,13 @@ void Vofa::init(UART_HandleTypeDef *_uartHandle,
     // JFBuffer_ = (uint8_t *)Dma::instance().ram_alloc(128);
 }
 
-void Vofa::FireWater(const char *format, ...)
+void Vofa::fireWater(const char *_format, ...)
 {
     uint32_t n;
     va_list args;
-    va_start(args, format);
-    n = vsnprintf((char *)FWBuffer_, 128, format, args);
-    HAL_UART_Transmit_DMA(uartHandle_, (uint8_t *)FWBuffer_, n);
+    va_start(args, _format);
+    n = vsnprintf((char *)FWBuffer_, 128, _format, args);
+    HAL_UART_Transmit_DMA(uartHandle_, FWBuffer_, n);
     va_end(args);
 }
 

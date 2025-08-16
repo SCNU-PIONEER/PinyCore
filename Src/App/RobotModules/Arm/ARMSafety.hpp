@@ -7,9 +7,11 @@
 
 #pragma once
 
-#include "ArmKinematic.hpp"
+
+#include "ArmMotor.hpp"
+
 namespace ARM {
-class Motors; 
+
 
 class Safety {
     static constexpr float DEFAULT_JOINT_SPEED = 0.8f;             // rad/s
@@ -19,16 +21,19 @@ class Safety {
     static constexpr float DEFAULT_JOINT_ACCELERATION_HIGH = 10.f; // 0~100
 
 public:
-    Safety(Motors* _motors) : motors(_motors) {}
+    explicit Safety(Motors &_motors) : motors_(_motors) {}
+
 
     bool angleLimit(const Joint7D &_joints);
 
     bool speedLimit(const float _speed);
 
+    void setJointSpeedLimit(const float _time, const Joint7D _delta_ang);
+
 private:
-    Motors* motors;
+    Motors &motors_; // Reference to motor controller
+
     float jointSpeedRatio = 1;
 };
 
-}// namespace ARM
-
+} // namespace ARM

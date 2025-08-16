@@ -1,17 +1,15 @@
 #pragma once
 
-enum class State_e {
-    stop = 0,
-    run = 1,
-};
+#include <cstdint>
+enum class State_e : uint8_t { STOP = 0, NORMAL, TEACH, PLAN };
 
-enum class msgType_e {
-    chassis = 0,
+enum class MsgType_e : uint8_t {
+    CHASSIS = 0,
 };
 
 class Msg {
 public:
-    msgType_e msgType;
+    MsgType_e msgType;
     State_e state;
     virtual ~Msg() = default;
 };

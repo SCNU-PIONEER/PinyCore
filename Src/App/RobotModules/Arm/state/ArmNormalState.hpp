@@ -23,32 +23,36 @@ public:
 
     void enter() override { LOG::info("Normal", " enter"); }
 
-    void run() override {
+    void run() override
+    {
         arm_.motors.update();
-        if (arm_.msg_.state == State_e::run) {
+        if (arm_.msg_.state == State_e::NORMAL) {
             Joint7D target = { arm_.msg_.j1, arm_.msg_.j2, arm_.msg_.j3,
-                                 arm_.msg_.j4, arm_.msg_.j5, arm_.msg_.j6,
-                                 arm_.msg_.j7 };
+                               arm_.msg_.j4, arm_.msg_.j5, arm_.msg_.j6,
+                               arm_.msg_.j7 };
             arm_.target_joints = target;
             arm_.moveOneJoint(arm_.target_joints);
         }
-
     }
 
     void exit() override { LOG::info("Normal", " exit"); }
 
-    uint8_t checkChange() override 
-    { 
-        if (arm_.msg_.state == State_e::stop)
+    uint8_t checkChange() override //or switch case?
+    {
+        if (arm_.msg_.state == State_e::STOP)
             return static_cast<uint8_t>(FSMState_e::STOP);
-        else if (arm_.msg_.state == State_e::run)
+        else if (arm_.msg_.state == State_e::NORMAL)
             return static_cast<uint8_t>(FSMState_e::RUN);
+        else if (arm_.msg_.state == State_e::TEACH)
+            return static_cast<uint8_t>(FSMState_e::TEACH);
+        else if (arm_.msg_.state == State_e::PLAN)
+            return static_cast<uint8_t>(FSMState_e::PLAN);
         else
             return 0;
-        }
+    }
 
 private:
     Arm &arm_;
 };
 
-}// namespace ARM
+} // namespace ARM

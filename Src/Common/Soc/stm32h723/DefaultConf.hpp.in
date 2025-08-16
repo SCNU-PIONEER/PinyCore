@@ -5,7 +5,12 @@
 #endif
 
 #ifdef BSP_USE_UART
-#define RC_UART huart5
+#define RC_UART      huart5
+#define UNITREE_UART huart2
+#endif
+
+#ifdef BSP_USE_DMA
+#define UNITREE_DMA hdma_usart2_rx
 #endif
 
 #ifdef BSP_USE_TIM
