@@ -44,6 +44,8 @@ public:
 
     void refereeDataUpdate();
 
+    float getMaxPowerLimit() { return maxPower; }
+
 protected:
     ChassisType_e chassisType_;
     uint8_t motorNum_; //电机数量

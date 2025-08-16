@@ -15,7 +15,7 @@ public:
     void enter() final
     {
         chassis_->wheel->stop();
-        LOG::info("stop", " enter");
+        LOG::info("ChassisStop", " enter");
     }
 
     void run() final { chassis_->wheel->stop(); }

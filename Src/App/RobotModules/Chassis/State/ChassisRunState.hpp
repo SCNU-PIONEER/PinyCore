@@ -1,13 +1,14 @@
 #pragma once
 #include "Chassis.hpp"
 #include "FSMState.hpp"
+#include "RcMsg.hpp"
 #include "StmLog.hpp"
 
 namespace CHASSIS {
 
 class RunState : public FSMState {
 public:
-    RunState(const Chassis *_chassis) : chassis_(_chassis)
+    RunState(Chassis *_chassis) : chassis_(_chassis)
     {
         setStateName(static_cast<uint8_t>(FSMState_e::RUN));
     };
@@ -22,6 +23,9 @@ public:
     void run() final
     {
         chassis_->wheel->update();
+
+        chassis_->deltaYaw = 0;
+        chassis_->convertCoordinate();
         if (chassis_->msg.state == State_e::run) {
             Speed_u refState{ .v_x = chassis_->msg.vx,
                               .v_y = chassis_->msg.vy,
@@ -37,13 +41,20 @@ public:
         if (chassis_->msg.state == State_e::stop)
             return static_cast<uint8_t>(FSMState_e::STOP);
         else if (chassis_->msg.state == State_e::run)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            //return static_cast<uint8_t>(FSMState_e::RUN);
+            if (chassis_->rcData.rc.switchRight == RC_SW_MID) {
+                return static_cast<uint8_t>(FSMState_e::FOLLOW);
+            } else if (chassis_->rcData.rc.switchRight == RC_SW_UP) {
+                return static_cast<uint8_t>(FSMState_e::SPIN);
+            } else {
+                return 0;
+            }
         else
             return 0;
     }
 
 private:
-    const Chassis *chassis_;
+    Chassis *chassis_;
 };
 
 } //namespace CHASSIS

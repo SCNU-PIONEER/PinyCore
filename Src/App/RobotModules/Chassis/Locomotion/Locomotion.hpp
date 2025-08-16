@@ -21,6 +21,8 @@ public:
     virtual void ctrl(const Speed_u &_refSpeed) = 0;
     virtual ~Locomotion() = default;
 
+    float getMaxPowerLimit() { return powerCtrl_->getMaxPowerLimit(); }
+
 protected:
     std::unique_ptr<PowerController> powerCtrl_;
     Speed_u refSpeed_;
