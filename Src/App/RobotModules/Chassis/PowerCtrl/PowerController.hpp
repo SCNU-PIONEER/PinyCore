@@ -75,6 +75,6 @@ protected:
     bool capFeedforwardEnable_ = 1;
     float chargeCmdPower = 0.f; //期望电容充电功率
 
-    std::unique_ptr<positonalPid> energyPid_ = nullptr;
-    std::unique_ptr<positonalPid> powerPid_ = nullptr;
+    std::unique_ptr<PositonalPid> energyPid_ = nullptr;
+    std::unique_ptr<PositonalPid> powerPid_ = nullptr;
 };

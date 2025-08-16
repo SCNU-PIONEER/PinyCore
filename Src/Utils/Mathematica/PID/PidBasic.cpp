@@ -3,26 +3,26 @@
 #include <cstring>
 #include <algorithm>
 
-incrementalPid::incrementalPid(float _Kp, float _Ki, float _Kd, float _outMax,
+IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
                                float _deadband)
-        : Kp(_Kp), Ki(_Ki), Kd(_Kd), outMax(_outMax), deadband(_deadband)
+        : kp(_kp), ki(_ki), kd(_kd), outMax(_outMax), deadband(_deadband)
 {
     /* Derived coefficient A0 */
-    A0 = Kp + Ki + Kd;
+    A0 = kp + ki + kd;
 
     /* Derived coefficient A1 */
-    A1 = (-Kp) - ((float_t)2.0f * Kd);
+    A1 = (-kp) - ((float_t)2.0f * kd);
 
     /* Derived coefficient A2 */
-    A2 = Kd;
+    A2 = kd;
 
     /* Reset state to zero, The size will be always 3 samples */
     memset(state, 0, 3U * sizeof(float_t));
 }
 
-float incrementalPid::calc(float ref, float cur)
+float IncrementalPid::calc(float _ref, float _cur)
 {
-    float_t delta = ref - cur;
+    float_t delta = _ref - _cur;
 
     /* Check deadband */
     if (fabs(delta) <= this->deadband) {
@@ -42,36 +42,42 @@ float incrementalPid::calc(float ref, float cur)
     return out;
 }
 
-void incrementalPid::reset()
+void IncrementalPid::reset()
 {
     /* Reset state to zero, The size will be always 3 samples */
     memset(state, 0, 3U * sizeof(float_t));
 }
 
 
-positonalPid::positonalPid(float _Kp, float _Ki, float _Kd, float _dt,
+PositonalPid::PositonalPid(float _kp, float _ki, float _kd, float _dt,
                            float _iMax, float _outMax, float _deadband)
-        : kp(_Kp), ki(_Ki), kd(_Kd), dt(_dt), iMax(_iMax), outMax(_outMax)
+        : iOut(0.0f)
+        , kp(_kp)
+        , ki(_ki)
+        , kd(_kd)
+        , dt(_dt)
+        , iMax(_iMax)
+        , outMax(_outMax)
+        , deadband(_deadband)
 {
     /* Reset state to zero */
     memset(err, 0, 2U * sizeof(float_t));
-    iOut = 0.0f;
 }
 
-float positonalPid::calc(float ref, float cur)
+float PositonalPid::calc(float _ref, float _cur)
 {
     err[1] = err[0];
-    err[0] = ref - cur;
-    if (fabs(err[0]) <= deadband) {
+    err[0] = _ref - _cur;
+    if (fabsf(err[0]) <= deadband) {
         return 0.0f;
     }
     iOut += ki * err[0] * dt;
     iOut = std::clamp(iOut, -iMax, iMax);
-    return std::clamp((kp * err[0] + iOut + kd * (err[0] - err[1]) / dt),
+    return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt),
                       -outMax, outMax);
 }
 
-void positonalPid::reset()
+void PositonalPid::reset()
 {
     /* Reset state to zero */
     memset(err, 0, 2U * sizeof(float_t));
