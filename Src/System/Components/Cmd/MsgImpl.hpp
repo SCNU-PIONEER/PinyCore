@@ -3,20 +3,27 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
+
+namespace CHASSIS {
+enum class FSMState_e : uint8_t;
+}
+
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
     QueueHandle_t armQueue;
 };
 
-struct chassisMsg : public Msg {
+
+struct ChassisMsg_s : public Msg {
+    CHASSIS::FSMState_e state;
     float vx, vy, wz;
 };
 
-struct gimbalMsg : public Msg {
+struct GimbalMsg_s : public Msg {
     float pitch, yaw;
 };
 
-struct armMsg : public Msg {
+struct ArmMsg_s : public Msg {
     float j1, j2, j3, j4, j5, j6;
 };
