@@ -17,17 +17,22 @@
 5. [kconfiglib](https://github.com/ulfalizer/Kconfiglib)
 
 we also suggest to install following software:
-1. [clangd](https://clangd.llvm.org/)
-1. clang-format
+1. [clangd](https://clangd.llvm.org/) >= 20.0
+1. clang-format >= 20.0
 2. commitizen
 
 # 🌟Getting started
 ## 🏗️Build
 
-```
-cmake --build ./build --target menuconfig
+```sh
 cmake -B build -G Ninja
-ninja - build
+ninja -C build
+```
+
+### menuconfig
+
+```sh
+cmake --build ./build --target menuconfig
 ```
 
 ## 🐞Debug
@@ -44,3 +49,8 @@ Contributions are always welcome!
 See [CONTRIBUTING](./.docs/CONTRIBUTING.md) for ways to get started.
 
 Please adhere to this project's [CODE_OF_CONDUCT](./.docs/CODE_OF_CONDUCT.md).
+
+> [!IMPORTANT]
+> PinyCore is still in early development, and is not yet complete. It should be stable enough and we have
+> been daily driving it for quite a while, but expect some bugs and possibly breaking changes to the
+> config file.

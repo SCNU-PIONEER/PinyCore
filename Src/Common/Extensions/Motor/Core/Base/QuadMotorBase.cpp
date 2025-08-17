@@ -12,6 +12,7 @@ QuadMotorGroup_s::QuadMotorGroup_s()
 {
     for (auto &i : motor)
         i = nullptr;
+    memset(txBuf, 0, 8);
 }
 void QuadMotorGroup_s::showMotorInfo()
 {
@@ -43,7 +44,7 @@ void QuadMotorBase::updateMotorMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
@@ -55,10 +56,12 @@ void QuadMotorBase::updateMotorMap()
                 std::unordered_map<uint16_t, QuadMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
+
     // 在找到的pair对象中添加电机组
-    auto &map = it->second;
+    auto &map = it->groupMap;
+
     // 检查pair中是否已经存在电机组
-    if (map.find(getGroupId()) == map.end()) {
+    if (!map.contains(getGroupId())) {
         // 如果不存在，则创建一个电机组
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -77,6 +80,8 @@ void QuadMotorBase::updateMotorMap()
             map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
+    group_ = map[getGroupId()];
+
     // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
     for (auto &i : map[getGroupId()]->motor) {
         if (i != nullptr) {
@@ -97,14 +102,14 @@ void QuadMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
     }
     if (it != getMotorMap().end()) {
-        auto &map = it->second;
-        if (map.find(getGroupId()) != map.end()) {
+        auto &map = it->groupMap;
+        if (map.contains(getGroupId())) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("QuadMotorBase",

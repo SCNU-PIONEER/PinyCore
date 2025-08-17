@@ -25,16 +25,15 @@ Mecanum::Mecanum()
             .offsetId = i,
             .txFreq = 100.0f,
             .posPID = nullptr,
-            .velPID = std::unique_ptr<PID>(
-                    new incrementalPid(0.2f, 0.005f, 0.f, 4.f, 0.f)),
+            .velPID = new IncrementalPid(0.2f, 0.005f, 0.f, 4.f, 0.f),
             .torqPID = nullptr
         };
-        motor_[i - 1] = new DJIMOTOR::M3508("M3508", std::move(m3508Config));
+        motor_[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 
     if constexpr (APP_USE_POWERCTRL) {
         powerCtrl_ = std::make_unique<QuadricycleController>(
-                ChassisType_e::Quadricycle);
+                ChassisType_e::QUADRICYCLE);
     }
 }
 
@@ -96,7 +95,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        motor_[i]->cmd(MotorCmdType_e::SET_VEL, refWSpeed._[i]);
+        motor_[i]->cmdVel(refWSpeed._[i]);
     }
 
     if constexpr (APP_USE_POWERCTRL) {

@@ -54,7 +54,7 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
                         float _az, float _dt)
 {
     dt_ = _dt;
-    float invG0 = (1.f / dt_);
+    float invG0 = (1.f / g_);
     float invG02 = (invG0 * invG0);
     // save last state to memory for rotation estimation
     x_last_[0] = x0_;
@@ -67,7 +67,7 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     // control input (gyroscopes)
     u0 = _gx;
     u1 = _gy;
-    u2 = _gz;
+    u2 = -_gz;
 
     // state prediction
     float x0 = x0_ - (dt_ * (u1 * x2_ - u2 * x1_ + x1_ * x5_ - x2_ * x4_));
@@ -181,7 +181,7 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     // measurements (accelerometers)
     float z0 = _ax * invG0;
     float z1 = _ay * invG0;
-    float z2 = _az * invG0;
+    float z2 = -_az * invG0;
 
     // Kalman innovation
     float y0 = z0 - x0;
@@ -574,7 +574,7 @@ void DcmAhrs::computeAngles()
 
     arm_atan2_f32(sr0_, fr0_, &edata_.yaw);
     arm_atan2_f32(x1_, x2_, &edata_.roll);
-    edata_.pitch = asinf(-x0_);
+    edata_.pitch = asinf(x0_);
 }
 
 void DcmAhrs::update(float _gx, float _gy, float _gz, float _ax, float _ay,

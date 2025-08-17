@@ -4,19 +4,6 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-
-#define GYRO_BIAS_MAX      (1.0f * 0.01745f)
-
-#define BIAS_ALPHA         0.007f
-
-#define STEADY_CNT_MAX     10
-
-#define STEADY_ACCEL_RANGE 0.28f
-
-#define STEADY_GYRO_RANGE  0.03f
-
-#define GYRO_BIAS_MAX_RAW  100.f
-
 typedef struct {
     float gx;
     float gy;
@@ -62,6 +49,13 @@ typedef enum : uint8_t {
 
 
 class IMUCalibration {
+    static constexpr float GYRO_BIAS_MAX = (1.0f * 0.01745f);
+    static constexpr float BIAS_ALPHA = 0.007f;
+    static constexpr float STEADY_CNT_MAX = 10;
+    static constexpr float STEADY_ACCEL_RANGE = 0.28f;
+    static constexpr float STEADY_GYRO_RANGE = 0.03f;
+    static constexpr float GYRO_BIAS_MAX_RAW = 100.f;
+
 public:
     void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali,
               const float _temp = 0.0f);

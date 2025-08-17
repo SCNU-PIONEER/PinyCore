@@ -20,8 +20,8 @@ void RcMsgHandler::handle()
     rc_.parseData();
     RC::RcRawMsg_t rcData = rc_.getData();
 
-    chassisMsg cmsg;
-    gimbalMsg gmsg;
+    ChassisMsg_s cmsg;
+    GimbalMsg_s gmsg;
 
     rcMsg_.rx +=
             std::clamp(((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f) - rcMsg_.rx,
@@ -44,14 +44,14 @@ void RcMsgHandler::handle()
     rcMsg_.zRoller = rcData.mouse.z;
 
     if (rcData.rc.switchRight == RC_SW_DOWN) {
-        cmsg.state = State_e::stop;
+        cmsg.state = CHASSIS::FSMState_e::STOP;
     } else if (rcData.rc.switchRight == RC_SW_MID) {
-        cmsg.state = State_e::run;
+        cmsg.state = CHASSIS::FSMState_e::RUN;
         cmsg.vx = s_curve(Chassis::MAX_VX_SPEED, rcMsg_.ry); // Scale to m/s
         cmsg.vy = s_curve(Chassis::MAX_VY_SPEED, rcMsg_.rx); // Scale to m/s
         cmsg.wz = s_curve(Chassis::MAX_WZ_SPEED, rcMsg_.lx); // Scale to m/s
     } else {
-        cmsg.state = State_e::stop;
+        cmsg.state = CHASSIS::FSMState_e::STOP;
         cmsg.vx = 0.f;
         cmsg.vy = 0.f;
         cmsg.wz = 0.f;

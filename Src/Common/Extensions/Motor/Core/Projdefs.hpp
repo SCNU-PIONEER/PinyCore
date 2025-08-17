@@ -14,6 +14,7 @@ enum class MotorCmdType_e : uint8_t {
     SET_MIT,
     SET_POS,
     SET_VEL,
+    SET_POSVEL,
     SET_TORQ,
     SET_ELEC,
     ON,
@@ -37,21 +38,25 @@ enum class GlobalState_e : uint8_t { UNREGISTER, OFFLINE, ONLINE, ERROR };
 
 enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
-struct RxBus_s {
-    struct CANRxBuf_s {
-        uint8_t data[8];
+struct CmdBus_s {
+    // Basic command structure
+    struct {
+        MotorCmdType_e cmdType;
+        float posCmd;
+        float velCmd;
+        float torqCmd;
+        float elecCmd;
     };
-    struct RS485RxBuf_s {
-        uint8_t data[8];
+    // auxiliary command structure
+    struct {
+        // default -1.f means no limit
+        float velMax = -1.f;
+        // default posMax and posMin are 0.f, which means no limit
+        float posMin = 0.f;
+        float posMax = 0.f;
     };
 };
 
-struct CmdBus_s {
-    MotorCmdType_e cmdType;
-    float cmdVal1;
-    float cmdVal2;
-    float cmdVal3;
-};
 struct InitConfig_s {
     uint32_t *pComHandle;
     ComType_e comType;
@@ -59,9 +64,11 @@ struct InitConfig_s {
     uint8_t offsetId;
     float txFreq;
 
-    std::unique_ptr<PID> posPID;
-    std::unique_ptr<PID> velPID;
-    std::unique_ptr<PID> torqPID;
+    PID *posPID;
+    PID *velPID;
+    PID *torqPID;
+
+    bool isReverse = false;
 };
 
 struct Model_s {
@@ -74,13 +81,15 @@ struct Model_s {
 };
 
 struct Data_s {
-    float rawAng;     // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
-    float rawAngLast; // 上次收到的编码角度的映射 rad
-    float zeroAng;    // 零点角度值 rad
-    float ang;        // 相对零点的角度 rad
+    float rawAng;  // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
+    float zeroAng; // 零点角度值 rad
+    float ang;     // 相对零点的角度 rad
+    float angLast; // 上一时刻的相对零点的角度 rad
 
     float singleCirAng; // 相对零点单圈值 rad
     float multipCirAng; // 设置零点后清空 rad
+
+    float cirNum; // 相对零点的圈数
 
     float spdRadps; // 角速度 rad/s
     float spdRpm;   // 角速度 rpm
@@ -93,6 +102,10 @@ struct Cmd_s {
     bool SW; // enable flag
     bool prevSW;
     MotorCmdType_e curCmdType = MotorCmdType_e::OFF;
+
+    float velMax = -1.f; // rad/s
+    float posMax = 0.f;  // rad
+    float posMin = 0.f;  // rad
     struct {
         float pos;
         float vel;
@@ -111,5 +124,19 @@ struct Cmd_s {
             prevSW = _sw;
         }
     }
+};
+
+struct RxBus_s {
+    template <uint8_t Len> struct CANRxBuf_s {
+        uint8_t data[Len];
+        const uint8_t len = Len;
+    };
+};
+
+struct TxBus_s {
+    template <uint8_t Len> struct CANTxBuf_s {
+        uint8_t data[Len];
+        uint8_t len = Len;
+    };
 };
 } // namespace PINYMOTOR

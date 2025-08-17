@@ -12,6 +12,7 @@ TripMotorGroup_s::TripMotorGroup_s()
 {
     for (auto &i : motor)
         i = nullptr;
+    memset(txBuf, 0, 8);
 }
 void TripMotorGroup_s::showMotorInfo()
 {
@@ -42,7 +43,7 @@ void TripMotorBase::updateMotorMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
@@ -53,8 +54,10 @@ void TripMotorBase::updateMotorMap()
                 std::unordered_map<uint16_t, TripMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
-    auto &map = it->second;
-    if (map.find(getGroupId()) == map.end()) {
+
+    auto &map = it->groupMap;
+
+    if (!map.contains(getGroupId())) {
         map[getGroupId()] = new TripMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
         map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
@@ -72,9 +75,11 @@ void TripMotorBase::updateMotorMap()
             map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         }
     }
-    for (size_t i = 0; i < 3; i++) {
-        if (map[getGroupId()]->motor[i] != nullptr) {
-            if (map[getGroupId()]->motor[i]->txFreq() != this->txFreq()) {
+    group_ = map[getGroupId()];
+
+    for (auto &i : map[getGroupId()]->motor) {
+        if (i != nullptr) {
+            if (i->txFreq() != this->txFreq()) {
                 LOG::warn("TripMotorBase", "Motor %s: txFreq not match",
                           this->name_);
             }
@@ -91,14 +96,14 @@ void TripMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->first == this->pComHandle_) {
+        if (iter->handle == this->pComHandle_) {
             it = iter;
             break;
         }
     }
     if (it != getMotorMap().end()) {
-        auto &map = it->second;
-        if (map.find(getGroupId()) != map.end()) {
+        auto &map = it->groupMap;
+        if (map.contains(getGroupId())) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("TripMotorBase", "Motor %s: remove from group %hx",

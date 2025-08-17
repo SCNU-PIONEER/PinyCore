@@ -2,12 +2,12 @@
 
 #include "Pid.hpp"
 
-class incrementalPid : public PID {
+class IncrementalPid : public PID {
 public:
     /**
     * @brief  init incremental pid parameter
     */
-    incrementalPid(float _Kp, float _Ki, float _Kd, float _outMax,
+    IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
                    float _deadband);
 
     /** @brief  pid reset
@@ -17,7 +17,7 @@ public:
     /**
     * @brief  pid calculation
     */
-    float calc(float ref, float cur) override;
+    float calc(float _ref, float _cur) override;
 
 protected:
     float A0; /**< The derived gain, A0 = Kp + Ki + Kd . */
@@ -26,19 +26,19 @@ protected:
     float state[3];
 
 private:
-    float Kp;       /**< The proportional gain. */
-    float Ki;       /**< The integral gain. */
-    float Kd;       /**< The derivative gain. */
+    float kp;       /**< The proportional gain. */
+    float ki;       /**< The integral gain. */
+    float kd;       /**< The derivative gain. */
     float outMax;   /**< The maximum output value. */
     float deadband; /**< The deadband value. */
 };
 
-class positonalPid : public PID {
+class PositonalPid : public PID {
 public:
     /**
     * @brief  init positonal pid parameter
     */
-    positonalPid(float _Kp, float _Ki, float _Kd, float _dt, float _iMax,
+    PositonalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
                  float _outMax, float _deadband);
 
     /** @brief  pid reset
@@ -48,7 +48,7 @@ public:
     /**
     * @brief  pid calculation
     */
-    float calc(float ref, float cur) override;
+    float calc(float _ref, float _cur) override;
 
 protected:
     float iOut;

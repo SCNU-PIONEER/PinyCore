@@ -19,7 +19,7 @@ void MotorManager::ctrlTask()
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
     for (;;) {
-        for (const auto &motorPair : motors()) {
+        for (const auto &motorPair : motorList_) {
             IMotor *motor = motorPair.second;
             motor->update();
         }

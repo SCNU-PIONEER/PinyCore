@@ -1,8 +1,7 @@
 #include "PowerController.hpp"
 
-
-PowerController::PowerController(ChassisType_e chassisType)
-        : chassisType_(chassisType)
+PowerController::PowerController(ChassisType_e _chassisType)
+        : chassisType_(_chassisType)
 {
     const uint8_t motorNum = static_cast<uint8_t>(chassisType_);
     motorNum_ = motorNum;

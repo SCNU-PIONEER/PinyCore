@@ -1,0 +1,37 @@
+name: release
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+      contents: write
+      pull-requests: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+                fetch-depth: '0'
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: false
+          default_prerelease_bump: false
+          release_branches: master
+          custom_release_rules: "ci:prepatch,refactor:prepatch"
+          append_to_pre_release_tag: nightly
+          fetch_all_tags: true
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          makeLatest: true
+          generateReleaseNotes: true

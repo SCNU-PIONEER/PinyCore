@@ -9,6 +9,9 @@
 
 namespace PINYMOTOR {
 class IMotor {
+private:
+    MotorTypeDef_e cmdProto(CmdBus_s &_cmd);
+
 protected:
     uint8_t id_; // start from 0 to 31, system auto assign
     uint16_t uid_;
@@ -29,10 +32,12 @@ protected:
     uint32_t lastRecvTick = 0; // ms
     char name_[16] = "NULL";
 
-    std::unique_ptr<PID> posPID_;
-    std::unique_ptr<PID> velPID_;
+    PID *posPID_;
+    PID *velPID_;
 
-    std::unique_ptr<PID> torqPID_; // only VOLT-CTRL motor will need this
+    PID *torqPID_; // only VOLT-CTRL motor will need this
+
+    bool isReverse_ = false;
 
     QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
 
@@ -57,14 +62,32 @@ public:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
 
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _pos, float _vel,
-                       float _torq);
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd, float _cmdData);
-    MotorTypeDef_e cmd(MotorCmdType_e _cmd);
+    MotorTypeDef_e cmd(MotorCmdType_e _type);
 
-    Data_s &data();
+    MotorTypeDef_e cmdPos(float _pos, float _velMax = -1.f, float _posMin = 0.f,
+                          float _posMax = 0.f);
+
+    MotorTypeDef_e cmdVel(float _pos, float _velMax = -1.f);
+
+    MotorTypeDef_e cmdTorq(float _torq);
+
+    MotorTypeDef_e cmdElec(float _elec);
+
+    MotorTypeDef_e cmdPosVel(float _pos, float _vel, float _velMax = -1.f,
+                             float _posMin = 0.f, float _posMax = 0.f);
+
+    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq,
+                          float _velMax = -1.f, float _posMin = 0.f,
+                          float _posMax = 0.f);
+
+    void clampVel(float _velMax);
+    void clampPos(float _posMin, float _posMax);
+    void disableClampPos();
+
+    const Data_s &data() const;
 
     void setZeroAng();
+    void setZeroAng(float _zeroAng);
 
     float getCmdCurr();
 
@@ -77,6 +100,13 @@ public:
     float span() const;
     float txFreq() const;
     float rxFreq() const;
+
+    float ang() const;
+    float center() const;
+    float pos() const;
+    float posNorm() const;
+    float vel() const;
+    float torq() const;
 
     void overrideReductionRatio(float _newReductionRatio);
     void overrideMeasureMax(float _newMeasureMax);

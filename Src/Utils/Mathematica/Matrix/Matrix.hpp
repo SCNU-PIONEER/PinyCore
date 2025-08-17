@@ -10,9 +10,9 @@ public:
         arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
     }
 
-    Matrix(float data[_rows * _cols]) : Matrix()
+    Matrix(float _data[_rows * _cols]) : Matrix()
     {
-        memcpy(this->data_, data, _rows * _cols * sizeof(float));
+        memcpy(this->data_, _data, _rows * _cols * sizeof(float));
         arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
     }
 
@@ -20,100 +20,102 @@ public:
      * @brief      Copy Constructor
      * @param mat  The copied matrix
      */
-    Matrix(const Matrix<_rows, _cols> &mat) : Matrix()
+    Matrix(const Matrix<_rows, _cols> &_mat) : Matrix()
     {
-        memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+        memcpy(this->data_, _mat.data_, _rows * _cols * sizeof(float));
         arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
     }
 
-    ~Matrix(void) {}
+    ~Matrix() {}
 
-    uint32_t rows(void) const { return _rows; }
+    uint32_t rows() const { return _rows; }
 
-    uint32_t cols(void) const { return _cols; }
+    uint32_t cols() const { return _cols; }
 
-    float *operator[](const int &row) { return &this->data_[row * _cols]; }
+    float *operator[](const int &_row) { return &this->data_[_row * _cols]; }
 
-    Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> mat)
+    Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
     {
-        memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+        if (this == &_mat)
+            return *this; // 检查自赋值
+        memcpy(this->data_, _mat.data_, _rows * _cols * sizeof(float));
         return *this;
     }
 
-    Matrix<_rows, _cols> &operator+=(const Matrix<_rows, _cols> mat)
+    Matrix<_rows, _cols> &operator+=(const Matrix<_rows, _cols> _mat)
     {
-        arm_mat_add_f32(&this->arm_mat_, &mat.arm_mat_, &this->arm_mat_);
+        arm_mat_add_f32(&this->arm_mat_, &_mat.arm_mat_, &this->arm_mat_);
         return *this;
     }
 
-    Matrix<_rows, _cols> &operator-=(const Matrix<_rows, _cols> mat)
+    Matrix<_rows, _cols> &operator-=(const Matrix<_rows, _cols> _mat)
     {
-        arm_mat_sub_f32(&this->arm_mat_, &mat.arm_mat_, &this->arm_mat_);
+        arm_mat_sub_f32(&this->arm_mat_, &_mat.arm_mat_, &this->arm_mat_);
         return *this;
     }
 
-    Matrix<_rows, _cols> &operator*=(const float &val)
+    Matrix<_rows, _cols> &operator*=(const float &_val)
     {
-        arm_mat_scale_f32(&this->arm_mat_, val, &this->arm_mat_);
+        arm_mat_scale_f32(&this->arm_mat_, _val, &this->arm_mat_);
         return *this;
     }
 
-    Matrix<_rows, _cols> &operator/=(const float &val)
+    Matrix<_rows, _cols> &operator/=(const float &_val)
     {
-        arm_mat_scale_f32(&this->arm_mat_, 1.f / val, &this->arm_mat_);
+        arm_mat_scale_f32(&this->arm_mat_, 1.f / _val, &this->arm_mat_);
         return *this;
     }
 
-    Matrix<_rows, _cols> operator+(const Matrix<_rows, _cols> &mat) const
+    Matrix<_rows, _cols> operator+(const Matrix<_rows, _cols> &_mat) const
     {
         Matrix<_rows, _cols> res;
-        arm_mat_add_f32(&this->arm_mat_, &mat.arm_mat_, &res.arm_mat_);
+        arm_mat_add_f32(&this->arm_mat_, &_mat.arm_mat_, &res.arm_mat_);
         return res;
     }
 
-    Matrix<_rows, _cols> operator-(const Matrix<_rows, _cols> &mat) const
+    Matrix<_rows, _cols> operator-(const Matrix<_rows, _cols> &_mat) const
     {
         Matrix<_rows, _cols> res;
-        arm_mat_sub_f32(&this->arm_mat_, &mat.arm_mat_, &res.arm_mat_);
+        arm_mat_sub_f32(&this->arm_mat_, &_mat.arm_mat_, &res.arm_mat_);
         return res;
     }
 
-    Matrix<_rows, _cols> operator*(const float &val) const
+    Matrix<_rows, _cols> operator*(const float &_val) const
     {
         Matrix<_rows, _cols> res;
-        arm_mat_scale_f32(&this->arm_mat_, val, &res.arm_mat_);
+        arm_mat_scale_f32(&this->arm_mat_, _val, &res.arm_mat_);
         return res;
     }
 
-    friend Matrix<_rows, _cols> operator*(const float &val,
-                                          const Matrix<_rows, _cols> &mat)
+    friend Matrix<_rows, _cols> operator*(const float &_val,
+                                          const Matrix<_rows, _cols> &_mat)
     {
         arm_status s;
         Matrix<_rows, _cols> res;
-        s = arm_mat_scale_f32(&mat.arm_mat_, val, &res.arm_mat_);
+        s = arm_mat_scale_f32(&_mat.arm_mat_, _val, &res.arm_mat_);
         return res;
     }
 
-    Matrix<_rows, _cols> operator/(const float &val) const
+    Matrix<_rows, _cols> operator/(const float &_val) const
     {
         Matrix<_rows, _cols> res;
-        arm_mat_scale_f32(&this->arm_mat_, 1.f / val, &res.arm_mat_);
+        arm_mat_scale_f32(&this->arm_mat_, 1.f / _val, &res.arm_mat_);
         return res;
     }
 
     template <int cols2>
-    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &mat1,
-                                          const Matrix<_cols, cols2> &mat2)
+    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &_mat1,
+                                          const Matrix<_cols, cols2> &_mat2)
     {
         Matrix<_rows, cols2> res;
-        arm_mat_mult_f32(&mat1.arm_mat_, &mat2.arm_mat_, &res.arm_mat_);
+        arm_mat_mult_f32(&_mat1.arm_mat_, &_mat2.arm_mat_, &res.arm_mat_);
         return res;
     }
 
-    bool operator==(const Matrix<_rows, _cols> &mat) const
+    bool operator==(const Matrix<_rows, _cols> &_mat) const
     {
         for (int i = 0; i < _rows * _cols; i++) {
-            if (this->data_[i] != mat.data_[i])
+            if (this->data_[i] != _mat.data_[i])
                 return false;
         }
         return true;
@@ -121,28 +123,28 @@ public:
 
     // Submatrix
     template <int rows, int cols>
-    Matrix<rows, cols> block(const int &start_row, const int &start_col) const
+    Matrix<rows, cols> block(const int &_start_row, const int &_start_col) const
     {
         Matrix<rows, cols> res;
-        for (int row = start_row; row < start_row + rows; row++) {
-            memcpy((float *)res[0] + (row - start_row) * cols,
-                   (float *)this->data_ + row * _cols + start_col,
+        for (int row = _start_row; row < _start_row + rows; row++) {
+            memcpy((float *)res[0] + ((row - _start_row) * cols),
+                   (float *)this->data_ + (row * _cols) + _start_col,
                    cols * sizeof(float));
         }
         return res;
     }
 
-    Matrix<1, _cols> row(const int &row) const
+    Matrix<1, _cols> row(const int &_row) const
     {
-        return block<1, _cols>(row, 0);
+        return block<1, _cols>(_row, 0);
     } //返回指定列
 
-    Matrix<_rows, 1> col(const int &col) const
+    Matrix<_rows, 1> col(const int &_col) const
     {
-        return block<_rows, 1>(0, col);
+        return block<_rows, 1>(0, _col);
     } //返回指定行
 
-    Matrix<_cols, _rows> trans(void) const //转置矩阵
+    Matrix<_cols, _rows> trans() const //转置矩阵
     {
         Matrix<_cols, _rows> res;
         arm_mat_trans_f32(&arm_mat_, &res.arm_mat_);
@@ -150,7 +152,7 @@ public:
     }
 
     // Trace
-    float trace(void) const
+    float trace() const
     {
         float res = 0;
         for (int i = 0; i < fmin(_rows, _cols); i++) {
@@ -159,9 +161,9 @@ public:
         return res;
     }
 
-    float norm(void) const { return sqrtf((this->trans() * *this)[0][0]); }
+    float norm() const { return sqrtf((this->trans() * *this)[0][0]); }
 
-    Matrix<_cols, _rows> inv(void) const //求逆矩阵
+    Matrix<_cols, _rows> inv() const //求逆矩阵
     {
         if (_cols != _rows)
             return Matrix<_cols, _rows>::zeros();
@@ -175,13 +177,13 @@ public:
         return res;
     }
 
-    static Matrix<_rows, _cols> zeros(void)
+    static Matrix<_rows, _cols> zeros()
     {
         float data[_rows * _cols] = { 0 };
         return Matrix<_rows, _cols>(data);
     }
 
-    static Matrix<_rows, _cols> ones(void)
+    static Matrix<_rows, _cols> ones()
     {
         float data[_rows * _cols] = { 0 };
         for (int i = 0; i < _rows * _cols; i++) {
@@ -190,20 +192,20 @@ public:
         return Matrix<_rows, _cols>(data);
     }
 
-    static Matrix<_rows, _cols> eye(void) //unit matrix
+    static Matrix<_rows, _cols> eye() //unit matrix
     {
         float data[_rows * _cols] = { 0 };
         for (int i = 0; i < fmin(_rows, _cols); i++) {
-            data[i * _cols + i] = 1;
+            data[(i * _cols) + i] = 1;
         }
         return Matrix<_rows, _cols>(data);
     }
 
-    static Matrix<_rows, _cols> diag(Matrix<_rows, 1> vec)
+    static Matrix<_rows, _cols> diag(Matrix<_rows, 1> _vec)
     {
         Matrix<_rows, _cols> res = Matrix<_rows, _cols>::zeros();
         for (int i = 0; i < fmin(_rows, _cols); i++) {
-            res[i][i] = vec[i][0];
+            res[i][i] = _vec[i][0];
         }
         return res;
     }

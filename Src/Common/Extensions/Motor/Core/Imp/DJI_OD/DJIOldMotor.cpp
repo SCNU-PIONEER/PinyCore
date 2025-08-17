@@ -28,7 +28,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, std::move(_config))
 {
-    this->rxQueue_ = xQueueCreate(10, sizeof(RxBus_s::CANRxBuf_s));
+    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
 
 DJIOldMotor::~DJIOldMotor()
@@ -94,13 +94,12 @@ MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,
                                  uint8_t _len)
 {
     // send data to CAN
-    TripMotorGroup_s *group = this->findGroup();
-    if (group == nullptr) {
+    if (this->group_ == nullptr) {
         LOG::error("DJIOldMotor", " %s: Can't find group %hx", this->name_,
                    this->getGroupId());
         return 1;
     } else {
-        if (this->checkGroupSend(group)) {
+        if (this->checkGroupSend(this->group_)) {
             // Check this Buffer
             // LOG::warn("DJIOldMotor", " %s: send data to CAN %hx", this->name_,
             //           _sendId);
@@ -118,31 +117,32 @@ MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,
     }
 }
 
-MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
+MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
     Feedback_s fb;
     fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawTorq = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
 
-    this->data_.rawAng = static_cast<float>(fb.rawAng) / this->span() * 2.f *
-                         std::numbers::pi_v<float>;
+    float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
+    this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
+                                            noumenaAng;
+    float del = this->data_.rawAng - this->data_.zeroAng;
+    this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-    this->data_.torq = static_cast<float>(fb.rawTorq) /
-                       this->status_.torqRxCodeSpan * this->status_.torqMax;
+    float noumenaTorq = static_cast<float>(fb.rawTorq) /
+                        this->status_.torqRxCodeSpan * this->status_.torqMax;
+    this->data_.torq = this->isReverse_ ? -noumenaTorq : noumenaTorq;
+    this->data_.curr = this->data_.torq / status_.torqConstant;
 
     this->data_.tempture = 0.f; // TODO:
 
-    this->data_.curr = this->data_.torq / status_.torqConstant;
+    float angDiff =
+            (getMinorArc(this->data_.rawAng, this->data_.angLast, 2.f * PI)) /
+            this->rr();
 
-    float del = this->data_.rawAng - this->data_.zeroAng;
-    this->data_.ang = del < 0 ? del + (2.f * std::numbers::pi_v<float>) : del;
-
-    float angDiff = (getMinorArc(this->data_.rawAng, this->data_.rawAngLast,
-                                 2.f * std::numbers::pi_v<float>)) /
-                    this->rr();
-
-    if (this->globalState_ == GlobalState_e::OFFLINE &&
-        this->data_.rawAngLast != this->data_.rawAng) {
+    if ((this->globalState_ == GlobalState_e::OFFLINE ||
+         this->globalState_ == GlobalState_e::UNREGISTER) &&
+        this->data_.angLast != this->data_.rawAng) {
         this->globalState_ = GlobalState_e::ONLINE;
         angDiff = 0;
         this->data_.multipCirAng =
@@ -154,18 +154,23 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s &_rxBuf)
 
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
-    this->data_.rawAngLast = this->data_.rawAng;
+    this->data_.angLast = this->data_.rawAng;
 
     this->data_.multipCirAng += angDiff;
-    this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0,
-                                        2.f * std::numbers::pi_v<float>);
+    this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
+
+    if (this->rr() == 1)
+        this->data_.singleCirAng = this->data_.ang;
+    else
+        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
+
     return 0;
 }
 
 MotorTypeDef_e DJIOldMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-    uint8_t txBuf[8] = {};
+
     int16_t ctrlCmd = 0;
     switch (this->workMode_) {
     case WorkMode_e::TRIP_VOLT: {
@@ -195,6 +200,11 @@ MotorTypeDef_e DJIOldMotor::ctrl()
                         getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
                                     2.f * PI),
                         0);
+                if (!(this->cmd_.velMax < 0.f)) {
+                    this->cmd_.vel = std::clamp(this->cmd_.vel,
+                                                -this->cmd_.velMax,
+                                                this->cmd_.velMax);
+                }
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
                 this->cmd_.elec =
@@ -222,6 +232,7 @@ MotorTypeDef_e DJIOldMotor::ctrl()
                            this->name_);
             }
         }
+        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
                                        this->status_.voltTxCodeSpan);
         break;
@@ -233,10 +244,11 @@ MotorTypeDef_e DJIOldMotor::ctrl()
         break;
     }
     }
+
     if (this->cmd_.SW) {
-        txBuf[(2 * this->getPosInGroup()) + 1] =
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] =
                 static_cast<uint8_t>(ctrlCmd & 0xFF);
-        txBuf[2 * this->getPosInGroup()] =
+        this->group_->txBuf[2 * this->getPosInGroup()] =
                 static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
     } else {
         if (this->posPID_ != nullptr)
@@ -245,12 +257,12 @@ MotorTypeDef_e DJIOldMotor::ctrl()
             this->velPID_->reset();
         if (this->torqPID_ != nullptr)
             this->torqPID_->reset();
-        txBuf[(2 * this->getPosInGroup()) + 1] = 0;
-        txBuf[2 * this->getPosInGroup()] = 0;
+        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
+        this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }
-    txBuf[6] = txBuf[7] = 0;
+    this->group_->txBuf[6] = this->group_->txBuf[7] = 0;
 
-    rslt |= this->send(this->ctrlId_, txBuf, 8);
+    rslt |= this->send(this->ctrlId_, this->group_->txBuf, 8);
     return rslt;
 }
 
@@ -265,19 +277,4 @@ MotorTypeDef_e DJIOldMotor::update()
     }
     MotorTypeDef_e rslt = ctrl();
     return rslt;
-}
-
-TripMotorGroup_s *DJIOldMotor::findGroup()
-{
-    TripMotorGroup_s *group = nullptr;
-    for (auto &entry : getMotorMap()) {
-        if (entry.first == this->pComHandle_) {
-            auto it = entry.second.find(this->getGroupId()); // it" is a map
-            if (it != entry.second.end()) {
-                group = it->second;
-                break;
-            }
-        }
-    }
-    return group;
 }

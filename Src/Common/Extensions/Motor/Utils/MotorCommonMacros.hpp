@@ -2,24 +2,79 @@
 
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 
 #ifndef PI
-#define PI 3.14159265358979323846f
+#define PI std::numbers::pi_v<float>
 #endif // !PI
 
 namespace PINYMOTOR {
 
-static inline float getMinorArc(float _cur, float _ref, float _range)
+static inline float getMinorArc(float _ref, float _cur, float _range)
 {
-    return (fmodf(((_cur) - (_ref) + ((_range) * 1.5f)), (_range)) -
-            ((_range) / 2.f));
+    // float temp =
+    //         std::fmod(1.5f * _range, _range) -
+    //         (0.5f *
+    //          _range); // 实际值：1.5 * range 略小于精确值 → fmod 结果略小于 0.5 * range
+
+    float rslt = std::fmod(((_ref) - (_cur) + ((_range) * 1.5f)), (_range)) -
+                 ((_range) * 0.5f);
+    return rslt;
+}
+
+static inline float getMinorArc(float _ref, float _cur)
+{
+    return getMinorArc(_ref, _cur, 2 * PI);
+}
+
+static inline float clampArc(float _ang, float _min, float _max, float _range)
+{
+    float rslt = _ang;
+    const float arc = getMinorArc(_min, _max, _range);
+    if (arc < 0) {
+        const float ang1 = getMinorArc(_ang, _min, _range);
+        if (ang1 <= 0)
+            rslt = _min;
+        else {
+            const float ang2 = getMinorArc(_ang, _max, _range);
+            if (ang2 >= 0)
+                rslt = _max;
+        }
+    } else {
+        const float ang2 = getMinorArc(_ang, _max, _range);
+        if (ang2 <= 0)
+            rslt = _max;
+        else {
+            const float ang1 = getMinorArc(_ang, _min, _range);
+            if (ang1 >= 0)
+                rslt = _min;
+        }
+    }
+    return rslt;
+}
+
+static inline float clampArc(float _ang, float _min, float _max)
+{
+    return clampArc(_ang, _min, _max, 2 * PI);
 }
 
 static inline float rangeMap(float _scale, float _min, float _max)
 {
-    return ((_min) > (_max)) ?
-                   (_scale) :
-                   (_min) + fmodf(((_scale) - (_min)), ((_max) - (_min)));
+    const float period = _max - _min;
+    if (period <= 0) {
+        return _min;
+    }
+    float offset = std::fmod(_scale - _min, period);
+    if (offset < 0) {
+        offset += period;
+    }
+    float rslt = offset + _min;
+    return rslt;
+}
+
+static inline float rangeMap(float _scale)
+{
+    return rangeMap(_scale, 0, 2 * PI);
 }
 
 static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
@@ -54,10 +109,7 @@ static inline float radps2rpm(float _radps)
 template <typename T>
 inline T clamp(const T &_value, const T &_min, const T &_max)
 {
-    return (_min > _max)   ? _value :
-           (_value < _min) ? _min :
-           (_value > _max) ? _max :
-                             _value;
+    return std::min(std::max(_value, _min), _max);
 }
 
 } // namespace PINYMOTOR

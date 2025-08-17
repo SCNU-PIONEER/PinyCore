@@ -16,8 +16,7 @@ public:
     void run() override
     {
         testModule_->testGM6020Motor->cmd(PINYMOTOR::MotorCmdType_e::ON);
-        testModule_->testGM6020Motor->cmd(PINYMOTOR::MotorCmdType_e::SET_POS,
-                                          1);
+        testModule_->testGM6020Motor->cmdPos(1);
     };
 
     void exit() override { LOG::info("MOTOR_POS_CTRL", " exit"); }
