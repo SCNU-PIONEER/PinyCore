@@ -27,3 +27,13 @@ struct GimbalMsg_s : public Msg {
 struct ArmMsg_s : public Msg {
     float j1, j2, j3, j4, j5, j6;
 };
+
+struct ChassisTxMsg_s {
+    CHASSIS::FSMState_e state;
+};
+
+struct GimbalTxMsg_s {};
+
+struct ArmTxMsg_s {};
+
+struct RefereeTxMsg_s {};
