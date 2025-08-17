@@ -20,10 +20,10 @@ struct ChassisMsg_s : public Msg {
     float vx, vy, wz;
 };
 
-struct gimbalMsg : public Msg {
+struct GimbalMsg_s : public Msg {
     float pitch, yaw;
 };
 
-struct armMsg : public Msg {
+struct ArmMsg_s : public Msg {
     float j1, j2, j3, j4, j5, j6;
 };

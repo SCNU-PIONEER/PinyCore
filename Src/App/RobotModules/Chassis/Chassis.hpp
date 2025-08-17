@@ -24,7 +24,7 @@ public:
 
     LOG::Logger &log = LOG::Logger::instance();
 
-    chassisMsg msg = {};
+    ChassisMsg_s msg = {};
 
     CHASSIS::Locomotion *wheel;
 };

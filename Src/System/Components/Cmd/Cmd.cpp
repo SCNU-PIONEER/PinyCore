@@ -6,9 +6,9 @@ void Cmd::init()
 {
     eventGroup_ = xEventGroupCreate();
 
-    msgBus_.chassisQueue = xQueueCreate(30, sizeof(chassisMsg));
-    msgBus_.gimbalQueue = xQueueCreate(30, sizeof(gimbalMsg));
-    msgBus_.armQueue = xQueueCreate(30, sizeof(armMsg));
+    msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
+    msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
+    msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
 
     rttHandler_.init(&msgBus_, eventGroup_);
     rcHandler_.init(&msgBus_, eventGroup_);

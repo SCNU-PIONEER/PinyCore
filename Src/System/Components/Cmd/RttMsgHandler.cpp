@@ -1,6 +1,6 @@
 #include "RttMsgHandler.hpp"
+#include "Chassis.hpp"
 #include "SEGGER_RTT.h"
-#include <string.h>
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
@@ -13,7 +13,7 @@ void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
                                         parse              // 回调函数
     );
 
-    if (xTimer != NULL) {
+    if (xTimer != nullptr) {
         xTimerStart(xTimer, 0); // 第二个参数是阻塞时间(ticks)
     }
 }
@@ -36,16 +36,16 @@ void RTTMsgHandler::handle()
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
 
-    chassisMsg cmsg;
-    gimbalMsg gmsg;
+    ChassisMsg_s cmsg;
+    GimbalMsg_s gmsg;
 
 
     if (strcmp((const char *)data, "run\n") == 0) {
-        cmsg.state = State_e::run;
+        cmsg.state = CHASSIS::FSMState_e::RUN;
     } else if (strcmp((const char *)data, "stop\n") == 0) {
-        cmsg.state = State_e::stop;
+        cmsg.state = CHASSIS::FSMState_e::STOP;
     } else {
-        cmsg.state = State_e::stop;
+        cmsg.state = CHASSIS::FSMState_e::STOP;
     }
 
     notify(&cmsg, msgBus_->chassisQueue);
