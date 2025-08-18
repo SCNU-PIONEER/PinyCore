@@ -1,7 +1,7 @@
 #include "TestModule.hpp"
 
 #include "Can/Bsp_can.hpp"
-
+#include "OSnew.hpp"
 #include "PidBasic.hpp"
 #include "FreeRTOS.h"
 #include "task.h"

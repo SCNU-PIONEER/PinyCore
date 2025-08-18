@@ -10,6 +10,7 @@
 #include "TestModule.hpp"
 #include "Buzzer.hpp"
 #include "UI/App.hpp"
+#include "OSnew.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
