@@ -14,17 +14,15 @@ class Logger {
 public:
     static Logger &instance();
 
-    Logger() = default;
-    ~Logger() = default;
 
-    void setModuleLevel(const std::string &_module, Level_e _level)
+    void setTypeLevel(const std::string &_type, Level_e _level)
     {
-        config.moduleControl.setModuleLevel(_module, _level);
+        config.typeControl.setTypeLevel(_type, _level);
     }
 
-    Level_e getModuleLevel(const std::string &_module) const
+    Level_e getTypeLevel(const std::string &_type) const
     {
-        return config.moduleControl.getModuleLevel(_module);
+        return config.typeControl.getTypeLevel(_type);
     }
 
     template <typename... Args> void raw(const char *_format, Args &&..._args)
@@ -32,62 +30,59 @@ public:
         SEGGER_RTT_printf(0, _format, std::forward<Args>(_args)...);
     }
 
-    // 日志接口：新增_module参数（模块标签），保留_type参数
     template <typename... Args>
-    void info(std::source_location _loc, std::string_view _module,
-              std::string_view _type, const char *_format, Args &&..._args)
+    void info(std::source_location _loc, std::string_view _type,
+              const char *_format, Args &&..._args)
     {
         log(LogParams{ .loc = _loc,
                        .type = _type,
-                       .module = _module, // 传入模块标签
                        .format = _format,
                        .level = Level_e::INFO },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void debug(std::source_location _loc, std::string_view _module,
-               std::string_view _type, const char *_format, Args &&..._args)
+    void debug(std::source_location _loc, std::string_view _type,
+               const char *_format, Args &&..._args)
     {
         log(LogParams{ .loc = _loc,
                        .type = _type,
-                       .module = _module,
                        .format = _format,
                        .level = Level_e::DEBUGGING },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void warn(std::source_location _loc, std::string_view _module,
-              std::string_view _type, const char *_format, Args &&..._args)
+    void warn(std::source_location _loc, std::string_view _type,
+              const char *_format, Args &&..._args)
     {
         log(LogParams{ .loc = _loc,
                        .type = _type,
-                       .module = _module,
                        .format = _format,
                        .level = Level_e::WARN },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void error(std::source_location _loc, std::string_view _module,
-               std::string_view _type, const char *_format, Args &&..._args)
+    void error(std::source_location _loc, std::string_view _type,
+               const char *_format, Args &&..._args)
     {
         log(LogParams{ .loc = _loc,
                        .type = _type,
-                       .module = _module,
                        .format = _format,
                        .level = Level_e::ERROR },
             std::forward<Args>(_args)...);
     }
 
+    /**
+    * @brief 完美转发检验错误
+    */
     template <typename Func>
     void check(std::source_location _loc, Func &&_operation)
     {
         stm_err_t err = std::forward<Func>(_operation)();
         if (unlikely(err != 0)) {
-            // 模块标签设为"CHECK"，保留原有type逻辑
-            error(_loc, "CHECK", "error", "error code: %d", err);
+            error(_loc, "check", "error code: %d", err);
             while (1) {
             }
         }
@@ -107,8 +102,14 @@ public:
         }
     }
 
+    /**
+    * @brief 清屏
+    */
     void clear();
 
+    /**
+    * @brief 浮点数转字符串
+    */
     void float2Str(char *_str, size_t _buffer_size, float _va);
 
     void disable() { config.enable = false; }
@@ -127,19 +128,24 @@ public:
 
     void setConfig(const Config &_config) { config = _config; }
 
+    /**
+    * @brief 完美转发打印函数,自带换行
+    */
     template <typename... Args>
     void log(const LogParams &_params, Args &&..._args)
     {
         if (!config.enable)
             return;
 
-        // 基于模块标签（_params.module）进行级别过滤
-        Level_e moduleLevel =
-                config.moduleControl.getModuleLevel(_params.module);
-        if (moduleLevel == Level_e::NONE) {
+        // 获取模块级别和全局级别
+        Level_e typeLevel = config.typeControl.getTypeLevel(_params.type);
+        Level_e effectiveLevel = std::min(typeLevel, config.level);
+
+        // 应用更严格的级别过滤
+        if (effectiveLevel == Level_e::NONE) {
             return;
         }
-        if (_params.level > moduleLevel) {
+        if (_params.level > effectiveLevel) {
             return;
         }
 
@@ -168,20 +174,11 @@ public:
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
-        // 输出模块标签（新增）
+        // 输出类型（现在表示模块）
         size_t len = snprintf(ptr, end - ptr, "[%.*s] ",
-                              static_cast<int>(_params.module.size()),
-                              _params.module.data());
+                              static_cast<int>(_params.type.size()),
+                              _params.type.data());
         ptr += std::min(len, static_cast<size_t>(end - ptr));
-
-        // 保留原有type输出
-        len = std::min(_params.type.size(), static_cast<size_t>(end - ptr));
-        memcpy(ptr, _params.type.data(), len);
-        ptr += len;
-
-        len = std::min(sizeof(": ") - 1, static_cast<size_t>(end - ptr));
-        memcpy(ptr, ": ", len);
-        ptr += len;
 
         len = snprintf(ptr, end - ptr, _params.format,
                        std::forward<Args>(_args)...);
@@ -201,6 +198,7 @@ public:
 protected:
     Logger(const Logger &);
     Logger &operator=(const Logger &);
+    Logger() = default;
 
 private:
     Config config;
@@ -208,73 +206,66 @@ private:
 };
 
 
-// 预设日志构造器（新增_module参数）
-template <typename... Args> struct Info_s {
-    constexpr
-    Info_s(std::string_view _module, std::string_view _type,
-           const char *_format, Args &&..._args,
-           std::source_location _loc = std::source_location::current())
-    {
-        auto &logger = Logger::instance();
-        if (logger.getModuleLevel(std::string(_module)) <= Level_e::INFO) {
-            Logger::instance().log(LogParams{ .loc = _loc,
-                                              .type = _type,
-                                              .module = _module, // 传入模块标签
-                                              .format = _format,
-                                              .level = Level_e::INFO },
-                                   std::forward<Args>(_args)...);
-        }
-    }
-};
-template <typename... Args>
-Info_s(std::string_view _module, std::string_view _type, const char *_format,
-       Args &&..._args) -> Info_s<Args...>;
-
-template <typename... Args> struct Warn_s {
-    constexpr
-    Warn_s(std::string_view _module, std::string_view _type,
-           const char *_format, Args &&..._args,
-           std::source_location _loc = std::source_location::current())
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ some preset ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NOLINTBEGIN
+template <typename... Args> struct info {
+    constexpr info(std::string_view _type, const char *_format, Args &&..._args,
+                   std::source_location _loc = std::source_location::current())
     {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
-                                          .module = _module,
+                                          .format = _format,
+                                          .level = Level_e::INFO },
+                               std::forward<Args>(_args)...);
+    }
+};
+template <typename... Args>
+info(std::string_view _type, const char *_format, Args &&..._args)
+        -> info<Args...>;
+
+template <typename... Args> struct warn {
+    constexpr warn(std::string_view _type, const char *_format, Args &&..._args,
+                   std::source_location _loc = std::source_location::current())
+    {
+        Logger::instance().log(LogParams{ .loc = _loc,
+                                          .type = _type,
                                           .format = _format,
                                           .level = Level_e::WARN },
                                std::forward<Args>(_args)...);
     }
 };
 template <typename... Args>
-Warn_s(std::string_view _module, std::string_view _type, const char *_format,
-       Args &&..._args) -> Warn_s<Args...>;
+warn(std::string_view _type, const char *_format, Args &&..._args)
+        -> warn<Args...>;
 
-template <typename... Args> struct Error_s {
-    constexpr
-    Error_s(std::string_view _module, std::string_view _type,
-            const char *_format, Args &&..._args,
-            std::source_location _loc = std::source_location::current())
+template <typename... Args> struct error {
+    constexpr error(std::string_view _type, const char *_format,
+                    Args &&..._args,
+                    std::source_location _loc = std::source_location::current())
     {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
-                                          .module = _module,
                                           .format = _format,
                                           .level = Level_e::ERROR },
                                std::forward<Args>(_args)...);
     }
 };
 template <typename... Args>
-Error_s(std::string_view _module, std::string_view _type, const char *_format,
-        Args &&..._args) -> Error_s<Args...>;
+error(std::string_view _type, const char *_format, Args &&..._args)
+        -> error<Args...>;
 
 
 template <typename T> void CHECK(T &&_condition)
 {
     if constexpr (std::is_invocable_v<T>) {
+        /* 处理可调用对象 */
         Logger::instance().check(LOCATION, std::forward<T>(_condition));
     } else {
+        /* 处理原始值 */
         Logger::instance().check(LOCATION,
                                  [&] { return static_cast<bool>(_condition); });
     }
 }
+// NOLINTEND
 
 } // namespace LOG

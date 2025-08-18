@@ -50,7 +50,7 @@ static constexpr size_t COLOR_WARNING = 4; // yellow
 static constexpr size_t COLOR_ERROR = 2;   // red
 static constexpr size_t COLOR_FATAL = 9;   // bright red
 static constexpr size_t COLOR_STEP = 5;    // blue
-//
+
 enum class Level_e : uint8_t {
     NONE,      // 完全禁用日志 (0)
     ERROR,     // 关键错误，系统无法自行恢复 (1)
@@ -69,28 +69,28 @@ enum class Proto_e : uint8_t {
     // LOG_USB,  // INFO: waiting for design
 };
 
-class ModuleControl {
+class TypeControl {
 public:
-    ModuleControl() = default;
-    ~ModuleControl() = default;
+    TypeControl() = default;
+    ~TypeControl() = default;
 
-    void setModuleLevel(std::string_view _module, Level_e _level)
+    void setTypeLevel(std::string_view _type, Level_e _level)
     {
-        module_levels_[std::string(_module)] = _level;
+        type_levels_[std::string(_type)] = _level;
     }
 
-    Level_e getModuleLevel(std::string_view _module) const
+    Level_e getTypeLevel(std::string_view _type) const
     {
-        auto it = module_levels_.find(std::string(_module));
-        return (it != module_levels_.end()) ? it->second : global_level_;
+        auto it = type_levels_.find(std::string(_type));
+        return (it != type_levels_.end()) ? it->second : global_level_;
     }
 
     // 设置全局级别
     void setGlobalLevel(Level_e _level) { global_level_ = _level; }
 
 private:
-    std::unordered_map<std::string, Level_e> module_levels_; // 模块级别映射表
-    Level_e global_level_ = Level_e::INFO;                   // 全局默认日志级别
+    std::unordered_map<std::string, Level_e> type_levels_; // 类型级别映射表
+    Level_e global_level_ = Level_e::INFO;                 // 全局默认日志级别
 };
 
 class Config {
@@ -102,15 +102,14 @@ public:
     bool showlocation{ true };      // show full file paths in logs
     bool enable{ true };            // Enable or disable logging
     uint8_t bufNum{ 0 };            // Buffer number
-    ModuleControl moduleControl;    // 模块级别控制器
+    TypeControl typeControl;        // 类型级别控制器
     bool vofaEnabled{ false };      // 是否启用VOFA协议
 };
 
 class LogParams {
 public:
     std::source_location loc = std::source_location::current();
-    std::string_view type;
-    std::string_view module; // 新增模块标签
+    std::string_view type; // 现在type表示模块名称
     const char *format;
     Level_e level{ Level_e::INFO };
 };
