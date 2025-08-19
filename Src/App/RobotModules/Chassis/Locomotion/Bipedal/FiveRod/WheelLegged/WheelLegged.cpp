@@ -67,8 +67,7 @@ float WheelLegged::minL(float _phi)
 
 void WheelLegged::setL(float _l)
 {
-    std::clamp(_l, minL(legState_.phi0), MAX_L);
-    setL_ = _l;
+    setL_ = std::clamp(_l, minL(legState_.phi0), MAX_L);
 }
 
 void WheelLegged::setFd(float _fd) { fd_ = _fd; }
