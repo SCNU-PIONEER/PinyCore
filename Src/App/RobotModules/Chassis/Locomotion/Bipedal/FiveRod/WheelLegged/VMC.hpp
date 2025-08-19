@@ -15,11 +15,15 @@ struct LegState_s {
     float phi2, phi3; // derived angle
 
     // derived's derivative
-    float tp;     // end's tangential torqe
-    float fd;     // end's radial torqe
-    float vp, vd; // end's tangential and radial velocity
-    float phi0;   // end's angle
-    float L0;     // end's distance
+    float tp;          // end's tangential torqe
+    float fd;          // end's radial torqe
+    float vp, vd;      // end's tangential and radial velocity
+    float phi0, dphi0; // end's angle
+    float L0;          // end's distance
+
+    // other
+    float ap, ad, ax;     // end's acceleration
+    float vpPrev, vdPrev; // end's previous velocity
 };
 
 struct VMCConfig_s {
@@ -49,7 +53,7 @@ public:
     VMC(const VMCConfig_s &_config);
     ~VMC() = default;
 
-    void update(LegState_s &_curLegState);
+    void update(LegState_s &_curLegState, float _dt);
 
     void inverse(LegState_s &_curLegState);
 

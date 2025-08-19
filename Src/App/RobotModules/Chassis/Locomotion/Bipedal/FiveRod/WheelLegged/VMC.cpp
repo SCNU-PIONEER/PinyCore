@@ -14,7 +14,7 @@ VMC::VMC(const VMCConfig_s &_config)
 {
 }
 
-void VMC::update(LegState_s &_legState)
+void VMC::update(LegState_s &_legState, float _dt)
 {
     // temporary I
     float sin1 = arm_sin_f32(_legState.phi1);
@@ -93,6 +93,9 @@ void VMC::update(LegState_s &_legState)
     M_inv_ = M_.inv();
 
     // update derivatives
+    _legState.vpPrev = _legState.vp;
+    _legState.vdPrev = _legState.vd;
+
     Matrix<2, 1> curTqFd = inverseTorq(_legState.tau1, _legState.tau4);
     _legState.tp = curTqFd[0][0];
     _legState.fd = curTqFd[1][0];
@@ -100,6 +103,13 @@ void VMC::update(LegState_s &_legState)
     Matrix<2, 1> curVqVd = inverseVel(_legState.dphi1, _legState.dphi4);
     _legState.vp = curVqVd[0][0];
     _legState.vd = curVqVd[1][0];
+
+    _legState.dphi0 = _legState.vp / _legState.L0;
+
+    _legState.ap = (_legState.vp - _legState.vpPrev) / _dt;
+    _legState.ad = (_legState.vd - _legState.vdPrev) / _dt;
+    _legState.ax = arm_cos_f32(_legState.phi0) * _legState.ap +
+                   arm_sin_f32(_legState.phi0) * _legState.ad;
 }
 
 Matrix<2, 1> VMC::forwardTorq(float _tp, float _fd)

@@ -1,12 +1,12 @@
-#include "BalanceController.hpp"
+#include "WLController.hpp"
 
 #include <cmath>
 
 using namespace CHASSIS::BIPEDAL;
 
-BalanceController::BalanceController() = default;
+WLController::WLController() = default;
 
-void BalanceController::load(const States_u &_refX, const States_u &_curX)
+void WLController::load(const States_u &_refX, const States_u &_curX)
 {
     for (uint8_t i = 0; i < 6; i++) {
         refX_[i][0] = _refX._[i];
@@ -14,7 +14,7 @@ void BalanceController::load(const States_u &_refX, const States_u &_curX)
     }
 }
 
-const Matrix<2, 1> &BalanceController::solve(float _l)
+const Matrix<2, 1> &WLController::solve(float _l, bool _isFloating)
 {
     float x = _l;
     float arrayK[2 * 6] = {
@@ -52,8 +52,16 @@ const Matrix<2, 1> &BalanceController::solve(float _l)
         (17.044181459266411593f * x) - (48.94129365914702845f * powf(x, 2)) +
                 (56.141270587723688834f * powf(x, 3)) + (1.6030780407930091958f)
     };
+
     Matrix<6, 1> err = refX_ - curX_;
     Matrix<2, 6> k(arrayK);
-    u_ = k * err; // err = ref - cur
+
+    if (_isFloating) {
+        u_[0][0] = 0;
+        u_[1][0] = err[0][0] * k[1][0] + err[0][1] * k[1][1];
+    } else {
+        u_ = k * err; // err = ref - cur
+    }
+
     return u_;
 }

@@ -1,12 +1,12 @@
-#include "BalanceControllerEX.hpp"
+#include "WBRController.hpp"
 
 #include <cmath>
 
 using namespace CHASSIS::BIPEDAL;
 
-BalanceControllerEX::BalanceControllerEX() = default;
+WBRController::WBRController() = default;
 
-void BalanceControllerEX::load(const StatesEX_u &_refX, const StatesEX_u &_curX)
+void WBRController::load(const States_u &_refX, const States_u &_curX)
 {
     for (uint8_t i = 0; i < 10; i++) {
         refX_[i][0] = _refX._[i];
@@ -14,11 +14,11 @@ void BalanceControllerEX::load(const StatesEX_u &_refX, const StatesEX_u &_curX)
     }
 }
 
-const Matrix<4, 1> &BalanceControllerEX::solve(StatesEX_u _err, float _ll,
-                                               float _lr)
+const Matrix<4, 1> &WBRController::solve(float _lL, float _lR,
+                                         bool _isFloatingL, bool _isFloatingR)
 {
-    float x1 = _ll;
-    float x2 = _lr;
+    float x1 = _lL;
+    float x2 = _lR;
     float arrayK[4 * 10] = {
         (0.06668140863f * x1) - (8.545294167f * x2) + (4.057258685f * x1 * x2) -
                 (13.79293066f * x1 * powf(x2, 2)) +
@@ -259,8 +259,18 @@ const Matrix<4, 1> &BalanceControllerEX::solve(StatesEX_u _err, float _ll,
                 (6.773286433f * powf(x2, 2)) - (1.309465476f * powf(x2, 3)) -
                 (0.4717722847f)
     };
-    Matrix<10, 1> err(_err._);
+    Matrix<10, 1> err = refX_ - curX_;
     Matrix<4, 10> k(arrayK);
     u_ = k * err;
+
+    if (_isFloatingL) {
+        u_[0][0] = 0;
+        u_[2][0] = err[4][0] * k[2][4] + err[5][0] * k[2][5];
+    }
+    if (_isFloatingR) {
+        u_[1][0] = 0;
+        u_[3][0] = err[6][0] * k[3][6] + err[7][0] * k[3][7];
+    }
+
     return u_;
 }
