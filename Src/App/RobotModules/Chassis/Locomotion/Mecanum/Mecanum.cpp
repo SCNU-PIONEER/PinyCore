@@ -1,5 +1,5 @@
 #include <cstdint>
-#include "Filter.hpp"
+#include "IIR.hpp"
 #include "Mecanum.hpp"
 #include "M3508.hpp"
 #include "sdkconfig.h"
@@ -7,6 +7,7 @@
 #include "PidBasic.hpp"
 #include <numbers>
 #include "QuadricycleController.hpp"
+#include "OSnew.hpp"
 
 extern canHandle HCAN1;
 
@@ -31,7 +32,7 @@ Mecanum::Mecanum()
         motor_[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 
-    if constexpr (USE_POWERCTRL) {
+    if constexpr (APP_USE_POWERCTRL) {
         powerCtrl_ = std::make_unique<QuadricycleController>(
                 ChassisType_e::QUADRICYCLE);
     }
@@ -98,7 +99,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
         motor_[i]->cmdVel(refWSpeed._[i]);
     }
 
-    if constexpr (USE_POWERCTRL) {
+    if constexpr (APP_USE_POWERCTRL) {
         powerCtrl_->powerCtrl(refWSpeed._);
     }
 }

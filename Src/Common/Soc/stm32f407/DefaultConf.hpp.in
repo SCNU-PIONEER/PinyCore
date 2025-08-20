@@ -16,3 +16,7 @@
 #ifdef BSP_USE_SPI
 #define IMU_SPI hspi1
 #endif
+
+#ifdef APP_USE_UI
+#define UI_UART huart6
+#endif

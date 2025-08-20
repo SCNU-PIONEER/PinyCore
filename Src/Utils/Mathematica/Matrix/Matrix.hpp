@@ -169,7 +169,7 @@ public:
             return Matrix<_cols, _rows>::zeros();
 
         Matrix<_cols, _rows> res;
-        arm_status status = arm_mat_inverse_f32(&this->arm_mat_, &res);
+        arm_status status = arm_mat_inverse_f32(&this->arm_mat_, &res.arm_mat_);
 
         if (status == ARM_MATH_SINGULAR)
             return Matrix<_cols, _rows>::zeros();

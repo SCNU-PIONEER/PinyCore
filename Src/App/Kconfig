@@ -1,11 +1,18 @@
 menu "app config"
 
-    config USE_POWERCTRL
+    config APP_USE_POWERCTRL
     bool "power control"
     default y
 
-    config USE_TEST_MODULES
+    config APP_USE_TEST
     bool "test modules"
     default n
+
+    config APP_USE_UI
+    bool "UI"
+    default n
+
+    source "Src/App/UI/Kconfig"
+
 
 endmenu

@@ -2,8 +2,9 @@ mainmenu "Piny Development Framework Configuration"
 
 source "Src/Common/Soc/Kconfig"
 
+source "Src/App/Kconfig"
+
 source "Src/Common/Bsp/Kconfig"
 
 source "Src/Utils/Kconfig"
 
-source "Src/App/Kconfig"

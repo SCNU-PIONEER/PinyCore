@@ -22,7 +22,7 @@ public:
     void run() final
     {
         chassis_->wheel->update();
-        if (chassis_->msg.state == State_e::run) {
+        if (chassis_->msg.state == FSMState_e::RUN) {
             Speed_u refState{ .v_x = chassis_->msg.vx,
                               .v_y = chassis_->msg.vy,
                               .w_z = chassis_->msg.wz };
@@ -34,9 +34,9 @@ public:
 
     uint8_t checkChange() final
     {
-        if (chassis_->msg.state == State_e::stop)
+        if (chassis_->msg.state == FSMState_e::STOP)
             return static_cast<uint8_t>(FSMState_e::STOP);
-        else if (chassis_->msg.state == State_e::run)
+        else if (chassis_->msg.state == FSMState_e::RUN)
             return static_cast<uint8_t>(FSMState_e::RUN);
         else
             return 0;

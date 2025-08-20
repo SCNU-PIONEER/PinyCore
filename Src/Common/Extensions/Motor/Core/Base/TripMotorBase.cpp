@@ -1,6 +1,7 @@
 #include "./MotorBase.hpp"
 
 #include "StmLog.hpp"
+#include "OSnew.hpp"
 
 using namespace PINYMOTOR;
 

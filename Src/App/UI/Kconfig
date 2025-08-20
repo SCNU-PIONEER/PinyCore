@@ -1,0 +1,61 @@
+menu "UI config"
+    choice
+        prompt "robot id"
+        default RED_HERO
+        depends on APP_USE_UI
+
+        config RED_HERO
+            bool "red hero"
+        config RED_ENGINEER
+            bool "red engineer"
+        config RED_INFANTRY_3
+            bool "red infantry 3"
+        config RED_INFANTRY_4
+            bool "red infantry 4"
+        config RED_INFANTRY_5
+            bool "red infantry 5"
+        config RED_AERIAL
+            bool "red aerial"
+        config RED_SENTRY
+            bool "red sentry"
+        config RED_DART
+            bool "red dart"
+        config BLUE_HERO
+            bool "blue hero"
+        config BLUE_ENGINEER
+            bool "blue engineer"
+        config BLUE_INFANTRY_3
+            bool "blue infantry 3"
+        config BLUE_INFANTRY_4
+            bool "blue infantry 4"
+        config BLUE_INFANTRY_5
+            bool "blue infantry 5"
+        config BLUE_AERIAL
+            bool "blue aerial"
+        config BLUE_SENTRY
+            bool "blue sentry"
+        config BLUE_DART
+            bool "blue dart"
+    endchoice
+
+    config UI_ROBOT_ID
+        int
+        default 1 if RED_HERO
+        default 2 if RED_ENGINEER
+        default 3 if RED_INFANTRY_3
+        default 4 if RED_INFANTRY_4
+        default 5 if RED_INFANTRY_5
+        default 6 if RED_AERIAL
+        default 7 if RED_SENTRY
+        default 8 if RED_DART
+        default 101 if BLUE_HERO
+        default 102 if BLUE_ENGINEER
+        default 103 if BLUE_INFANTRY_3
+        default 104 if BLUE_INFANTRY_4
+        default 105 if BLUE_INFANTRY_5
+        default 106 if BLUE_AERIAL
+        default 107 if BLUE_SENTRY
+        default 108 if BLUE_DART
+        default 0 if !APP_USE_UI
+
+endmenu

@@ -1,0 +1,5 @@
+Diagnostics:
+  UnusedIncludes: Strict
+  Includes:
+    IgnoreHeader:
+      - ".*FreeRTOS\\.h"
