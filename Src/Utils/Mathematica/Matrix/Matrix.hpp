@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dsp/matrix_functions.h"
+#include <initializer_list>
 
 
 template <int _rows, int _cols> class Matrix {
@@ -13,7 +14,24 @@ public:
     Matrix(float _data[_rows * _cols]) : Matrix()
     {
         memcpy(this->data_, _data, _rows * _cols * sizeof(float));
-        arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
+    }
+
+    Matrix(std::initializer_list<std::initializer_list<float> > _initList)
+            : Matrix()
+    {
+        int row = 0;
+        for (const auto &rowList : _initList) {
+            if (row >= _rows)
+                break;
+            int col = 0;
+            for (float value : rowList) {
+                if (col >= _cols)
+                    break;
+                this->data_[(row * _cols) + col] = value;
+                col++;
+            }
+            row++;
+        }
     }
 
     /**
@@ -155,7 +173,7 @@ public:
     float trace() const
     {
         float res = 0;
-        for (int i = 0; i < fmin(_rows, _cols); i++) {
+        for (int i = 0; i < std::min(_rows, _cols); i++) {
             res += (*this)[i][i];
         }
         return res;
@@ -195,7 +213,7 @@ public:
     static Matrix<_rows, _cols> eye() //unit matrix
     {
         float data[_rows * _cols] = { 0 };
-        for (int i = 0; i < fmin(_rows, _cols); i++) {
+        for (int i = 0; i < std::min(_rows, _cols); i++) {
             data[(i * _cols) + i] = 1;
         }
         return Matrix<_rows, _cols>(data);
@@ -204,8 +222,17 @@ public:
     static Matrix<_rows, _cols> diag(Matrix<_rows, 1> _vec)
     {
         Matrix<_rows, _cols> res = Matrix<_rows, _cols>::zeros();
-        for (int i = 0; i < fmin(_rows, _cols); i++) {
+        for (int i = 0; i < std::min(_rows, _cols); i++) {
             res[i][i] = _vec[i][0];
+        }
+        return res;
+    }
+
+    static Matrix<_rows, _cols> diag(float _val)
+    {
+        Matrix<_rows, _cols> res = Matrix<_rows, _cols>::zeros();
+        for (int i = 0; i < std::min(_rows, _cols); i++) {
+            res[i][i] = _val;
         }
         return res;
     }
@@ -216,4 +243,79 @@ public:
 protected:
     int rows_, cols_;
     float data_[_rows * _cols];
+
+public:
+    class RowProxy {
+    public:
+        RowProxy(Matrix<_rows, _cols> &_mat, int _row)
+                : matrix_(_mat), row_(_row)
+        {
+        }
+
+        RowProxy &operator<<(float _val)
+        {
+            if (colIndex_ < _cols) {
+                matrix_[row_][colIndex_] = _val;
+                colIndex_++;
+            }
+            return *this;
+        }
+
+        void reset() { colIndex_ = 0; }
+
+    private:
+        Matrix<_rows, _cols> &matrix_;
+        int row_;
+        int colIndex_{ 0 };
+    };
+
+    RowProxy row(const int &_row) { return RowProxy(*this, _row); }
+
+    class ColProxy {
+    public:
+        ColProxy(Matrix<_rows, _cols> &_mat, int _col)
+                : matrix_(_mat), col_(_col)
+        {
+        }
+
+        ColProxy &operator<<(float _val)
+        {
+            if (rowIndex_ < _rows) {
+                matrix_[rowIndex_][col_] = _val;
+                rowIndex_++;
+            }
+            return *this;
+        }
+
+        void reset() { rowIndex_ = 0; }
+
+    private:
+        Matrix<_rows, _cols> &matrix_;
+        int col_;
+        int rowIndex_{ 0 };
+    };
+
+    ColProxy col(const int &_col) { return ColProxy(*this, _col); }
+
+    class DiagonalInserter {
+    public:
+        DiagonalInserter(Matrix<_rows, _cols> &_mat) : matrix_(_mat) {}
+
+        DiagonalInserter &operator<<(float _val)
+        {
+            if (index_ < std::min(_rows, _cols)) {
+                matrix_[index_][index_] = _val;
+                index_++;
+            }
+            return *this;
+        }
+
+        void reset() { index_ = 0; }
+
+    private:
+        Matrix<_rows, _cols> &matrix_;
+        int index_{};
+    };
+
+    DiagonalInserter diag() { return DiagonalInserter(*this); }
 };
