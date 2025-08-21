@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Matrix.hpp"
-#include <algorithm>
 
 template <int stateDim, int measDim, int ctrlDim = 1> class KF {
     static constexpr float MIN_P_DIAG = 1e-5f;
@@ -26,6 +25,8 @@ public:
     {
         KF(_sF, _sH, _sQ, _sR);
     }
+
+    KF() = default;
 
     void process()
     {
@@ -64,7 +65,7 @@ public:
     Matrix<ctrlDim, 1> u{ Matrix<ctrlDim, 1>::zeros() };
     Matrix<measDim, 1> z{ Matrix<measDim, 1>::zeros() };
 
-    const Matrix<stateDim, 1> &x() const { return x_; }
+    const float &x(int _i) const { return x_[0][_i]; }
 
     Matrix<stateDim, stateDim> F{
         Matrix<stateDim, stateDim>::zeros()
@@ -75,15 +76,15 @@ public:
     }; // control matrix
 
     Matrix<stateDim, measDim> H{
-        Matrix<stateDim, ctrlDim>::zeros()
+        Matrix<stateDim, measDim>::zeros()
     }; // measurement matrix
 
     Matrix<stateDim, stateDim> Q{
-        Matrix<stateDim, ctrlDim>::zeros()
+        Matrix<stateDim, stateDim>::zeros()
     }; // process noise covariance
 
     Matrix<measDim, measDim> R{
-        Matrix<stateDim, ctrlDim>::zeros()
+        Matrix<stateDim, measDim>::zeros()
     }; // measurement noise covariance
 
 protected:

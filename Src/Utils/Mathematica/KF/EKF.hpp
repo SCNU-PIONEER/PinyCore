@@ -31,6 +31,9 @@ public:
     {
     }
 
+    EKF() = default;
+
+
     void process()
     {
         prioriEstimation();
@@ -43,10 +46,10 @@ public:
     }
 
 private:
-    StateFunc f;       // nonlinear state transition function
-    StateJacFunc jacF; // state transition Jacobian function
-    MeasFunc h;        // nonlinear measurement function
-    MeasJacFunc jacH;  // measurement Jacobian function
+    StateFunc f = nullptr;       // nonlinear state transition function
+    StateJacFunc jacF = nullptr; // state transition Jacobian function
+    MeasFunc h = nullptr;        // nonlinear measurement function
+    MeasJacFunc jacH = nullptr;  // measurement Jacobian function
 
     void linearizeStateModel() { this->A = jacF(this->x_, this->u); }
     void linearizeMeasurementModel() { this->H = jacH(this->x_); }
