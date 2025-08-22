@@ -51,6 +51,11 @@ public:
     uint32_t cols() const { return _cols; }
 
     float *operator[](const int &_row) { return &this->data_[_row * _cols]; }
+    const float *operator[](const int &_row) const
+    {
+        return &this->data_[_row * _cols];
+    }
+
 
     Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
     {
