@@ -26,12 +26,7 @@ void WheelLegged::stateUpdate(float _dt)
     vmc_.update(legState_, _dt);
 }
 
-bool WheelLegged::detectFloating(const INS_SYS::INSData_s &_ins)
-{
-    return detectFloating(_ins.earth.az);
-}
-
-bool WheelLegged::detectFloating(float _az)
+float WheelLegged::calcFn(float _az)
 {
     float cosPhi0 = arm_cos_f32(legState_.phi0);
     float sinPhi0 = arm_sin_f32(legState_.phi0);
@@ -42,10 +37,7 @@ bool WheelLegged::detectFloating(float _az)
                     (legState_.L0 * -legState_.ap * -sinPhi0) +
                     (legState_.L0 * powf(legState_.dphi0, 2) * cosPhi0);
     float fn = ((azWheel + GRAVITY) * MASS_WHEEL) + fp;
-    // TODO: filter
-    // TODO: threshold
-
-    return isFloating;
+    return fn_ = fnLPF_.process(fn);
 }
 
 void WheelLegged::ctrl()

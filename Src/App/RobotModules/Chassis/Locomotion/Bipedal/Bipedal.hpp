@@ -2,9 +2,12 @@
 #include "Locomotion.hpp"
 
 #include "WheelLegged.hpp"
+
 #include "WLController.hpp"
 #include "WBRController.hpp"
 #include "STController.hpp"
+
+#include "./FiveRod/Detector/Detector.hpp"
 
 namespace CHASSIS::BIPEDAL {
 
@@ -63,6 +66,8 @@ private:
 
     INS_SYS::INSData_s insData_ = {};
     Subscriber<INS_SYS::INSData_s> *insSub_;
+
+    Detector detector_;
 
     PositonalPid rollAngPid_{ 0, 0, 0, 0, 0, 0, 0 };
     PositonalPid rollVelPid_{ 0, 0, 0, 0, 0, 0, 0 };

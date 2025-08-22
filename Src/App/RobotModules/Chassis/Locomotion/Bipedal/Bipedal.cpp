@@ -124,22 +124,23 @@ void Bipedal::update()
     float cosPitch = arm_cos_f32(insData_.pitch);
     float cosRoll = arm_cos_f32(insData_.roll);
 
-    float g = WheelLegged::GRAVITY;
-    float axFromX = (insData_.body.ax - (g * -sinPitch)) * cosPitch;
-    float axFromZ =
-            (insData_.body.az - (g * cosPitch * cosRoll)) * sinPitch * cosRoll;
-    ax_ = axFromX + axFromZ;
+    // float g = WheelLegged::GRAVITY;
+    // float axFromX = (insData_.body.ax - (g * -sinPitch)) * cosPitch;
+    // float axFromZ =
+    //         (insData_.body.az - (g * cosPitch * cosRoll)) * sinPitch * cosRoll;
+    // ax_ = axFromX + axFromZ;
 
-    float azFromX = (insData_.body.ax - (g * -sinPitch)) * -sinPitch;
-    float azFromZ =
-            (insData_.body.az - (g * cosPitch * cosRoll)) * cosPitch * cosRoll;
-    az_ = azFromX + azFromZ;
+    // float azFromX = (insData_.body.ax - (g * -sinPitch)) * -sinPitch;
+    // float azFromZ =
+    //         (insData_.body.az - (g * cosPitch * cosRoll)) * cosPitch * cosRoll;
+    // az_ = azFromX + azFromZ;
 
     legL_.stateUpdate(0.001f);
     legR_.stateUpdate(0.001f);
 
-    legL_.detectFloating(az_);
-    legR_.detectFloating(az_);
+    // TODO: update az
+    legL_.isFloating = detector_.isFloating(legL_.calcFn(az_));
+    legR_.isFloating = detector_.isFloating(legR_.calcFn(az_));
 }
 
 void Bipedal::setRoll(float _roll)

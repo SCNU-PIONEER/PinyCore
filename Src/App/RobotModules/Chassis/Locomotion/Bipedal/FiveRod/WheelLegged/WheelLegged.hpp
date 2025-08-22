@@ -2,19 +2,15 @@
 
 #include "VMC.hpp"
 #include "IMotor.hpp"
-#include "INS.hpp"
 #include "PidBasic.hpp"
+#include "LPF.hpp"
 
 namespace CHASSIS::BIPEDAL {
 
 class WheelLegged {
 public:
     static constexpr float GRAVITY = 9.7833f;
-
     static constexpr float MASS_WHEEL = 0.880f + 0.500f;
-
-    static constexpr float FN_THRESHOLD = MASS_WHEEL * GRAVITY;
-
     static constexpr float MAX_L = 0.3f;
 
     static constexpr VMCConfig_s VMC_CONFIG = { .L1 = 0.15f,
@@ -28,14 +24,13 @@ public:
 
     void stateUpdate(float _dt);
 
-    bool detectFloating(const INS_SYS::INSData_s &_ins);
-    bool detectFloating(float _az);
-
     void setL(float _l);
 
     void setFd(float _fd);
     void setTp(float _tp);
     void setTw(float _tw);
+
+    float calcFn(float _az);
 
     void ctrl();
 
@@ -51,6 +46,7 @@ private:
     float tw_ = 0.f;
 
     float fn_ = 0.f;
+    LPF fnLPF_{ 1000.f, 5.f };
 
     VMC vmc_ = VMC(VMC_CONFIG);
 
