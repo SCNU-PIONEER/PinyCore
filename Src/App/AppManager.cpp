@@ -52,7 +52,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        // bipedal->update(_param);
+        bipedal->update(_param);
         vTaskDelay(1);
     }
 }

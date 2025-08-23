@@ -56,7 +56,7 @@ Bipedal::Bipedal()
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
-        .offsetId = 1,
+        .offsetId = 2,
         .txFreq = 500.f,
         .posPID = nullptr,
         .velPID = nullptr,
