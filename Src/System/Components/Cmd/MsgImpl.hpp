@@ -5,7 +5,11 @@
 
 
 namespace CHASSIS {
-enum class FSMState_e : uint8_t;
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, NO_FOLLOW, SPIN };
+}
+
+namespace GIMBAL {
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, PATROL };
 }
 
 struct MsgBus_s {
@@ -17,11 +21,12 @@ struct MsgBus_s {
 
 struct ChassisMsg_s : public Msg {
     CHASSIS::FSMState_e state;
-    float vx, vy, wz;
+    float vx, vy, yaw;
 };
 
 struct GimbalMsg_s : public Msg {
-    float pitch, yaw;
+    GIMBAL::FSMState_e state;
+    float roll, pitch, yaw;
 };
 
 struct ArmMsg_s : public Msg {

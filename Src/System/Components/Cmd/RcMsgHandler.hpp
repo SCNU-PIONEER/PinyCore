@@ -3,6 +3,12 @@
 #include "Handler.hpp"
 
 class RcMsgHandler : public Handler {
+    static constexpr float ROCKER_VX_GAIN = 2.f;
+    static constexpr float ROCKER_VY_GAIN = 2.f;
+    static constexpr float ROCKER_WZ_GAIN = 0.06f;
+
+    static constexpr float ROCKER_PITCH_GAIN = 0.7f;
+    static constexpr float ROCKER_YAW_GAIN = 0.7f;
     typedef struct {
         struct {
             float rx;
@@ -33,6 +39,12 @@ public:
 private:
     static constexpr float S_CURVE_ACC = 2.0f;
     static constexpr uint8_t T_ACC_CNT = 100;
+
+    void chassisHandle();
+    void gimbalHandle();
+
+    GimbalMsg_s gmsg_{};
+    ChassisMsg_s cmsg_{};
 
     RC::Rc &rc_ = RC::Rc::instance();
 
