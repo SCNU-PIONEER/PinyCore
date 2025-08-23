@@ -1,8 +1,9 @@
 #include "RcMsgHandler.hpp"
 #include <algorithm>
 #include "sdkconfig.h"
-#include "Chassis.hpp"
 #include "Smooth.hpp"
+
+#include <cmath>
 
 #include <cstring>
 

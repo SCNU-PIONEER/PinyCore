@@ -1,12 +1,14 @@
-#include <cstdint>
-#include "IIR.hpp"
 #include "Mecanum.hpp"
-#include "M3508.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
 #include <numbers>
+
+#include "M3508.hpp"
+
 #include "QuadricycleController.hpp"
+#include "IIR.hpp"
+
 #include "OSnew.hpp"
 
 #include "./State/StopState.hpp"
@@ -61,12 +63,19 @@ void Mecanum::enter()
     }
 }
 
-void Mecanum::update()
+void Mecanum::update(void *_param)
 {
+    // update msg
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) ==
+        pdTRUE) {
+    };
+
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = iir_filter_3(motors_._[i]->data().spdRpm, i);
     }
     this->curSpeed_ = forward(wSpeed_);
+
+    // TODO: yaw
 
     this->stateFactory.update();
 }
@@ -114,3 +123,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
         // TODO:
     }
 }
+
+void Mecanum::setYawZero(float _yawZero) { yawZero_ = _yawZero; }
+
+float Mecanum::yaw() const { return yaw_; }

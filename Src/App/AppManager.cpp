@@ -11,8 +11,8 @@
 #include "Buzzer.hpp"
 #include "UI/App.hpp"
 
-#include "Bipedal.hpp"
-#include "Chassis.hpp"
+#include "Mecanum.hpp"
+// #include "Bipedal.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -43,8 +43,8 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::BIPEDAL::Bipedal *bipedal;
-Chassis *chassis;
+// CHASSIS::BIPEDAL::Bipedal *chassis;
+CHASSIS::MECANUM::Mecanum *chassis;
 
 UI::App *ui;
 //---------------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        bipedal->update(_param);
+        chassis->update(_param);
         vTaskDelay(1);
     }
 }
@@ -150,7 +150,8 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    bipedal = new CHASSIS::BIPEDAL::Bipedal();
+    // chassis = new CHASSIS::BIPEDAL::Bipedal();
+    chassis = new CHASSIS::MECANUM::Mecanum();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,

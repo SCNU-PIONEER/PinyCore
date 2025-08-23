@@ -43,9 +43,10 @@ public:
 
     void stop();
     void enter();
-    void update();
+    void update(void *_param);
     void ctrl(const Speed_u &_speed);
 
+    void setYawZero(float _yawZero);
     float yaw() const;
 
 protected:
@@ -68,6 +69,7 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
+    float yawZero_ = 0.f;
     float yaw_ = 0.f;
 };
 
