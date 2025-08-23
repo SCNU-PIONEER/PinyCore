@@ -1,16 +1,18 @@
 #include "AppManager.hpp"
 #include "cmsis_os2.h"
 #include "sdkconfig.h"
+#include "OSnew.hpp"
+
 #include "MotorManager.hpp"
 #include "INS.hpp"
-#include "Mecanum.hpp"
-#include "Chassis.hpp"
 #include "Cmd.hpp"
 #include "Bmi088.hpp"
 #include "TestModule.hpp"
 #include "Buzzer.hpp"
 #include "UI/App.hpp"
-#include "OSnew.hpp"
+
+#include "Bipedal.hpp"
+#include "Chassis.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -41,7 +43,7 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::Mecanum *mecanum;
+CHASSIS::BIPEDAL::Bipedal *bipedal;
 Chassis *chassis;
 
 UI::App *ui;
@@ -50,7 +52,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        chassis->update(_param);
+        // bipedal->update(_param);
         vTaskDelay(1);
     }
 }
@@ -97,14 +99,14 @@ void INSTask(void *_param)
 void AppManager::createApp()
 {
     // INS Continuous Task
-    xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal, nullptr);
+    xTaskCreate(INSTask, "ins_task", 512, nullptr, osPriorityNormal, nullptr);
 
     // Cmd-Polling Continuous Task
     xTaskCreate([](void *_param) { cmd->task(); }, "cmd_task", 256,
                 (void *)cmd->getMsgBus(), osPriorityNormal, nullptr);
 
     // Robot-Ctrl Continuous Task
-    xTaskCreate(ctrlTask, "ctrl_task", 256, (void *)cmd->getMsgBus(),
+    xTaskCreate(ctrlTask, "ctrl_task", 512, (void *)cmd->getMsgBus(),
                 osPriorityRealtime, nullptr);
 
     // Test-Module Continuous Task
@@ -119,7 +121,7 @@ void AppManager::createApp()
             [](void *_param) -> void {
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
-            "motor_task", 256, nullptr, osPriorityRealtime, nullptr);
+            "motor_task", 512, nullptr, osPriorityRealtime, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
@@ -148,8 +150,7 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    mecanum = new CHASSIS::Mecanum;
-    chassis = new Chassis(mecanum);
+    bipedal = new CHASSIS::BIPEDAL::Bipedal();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,

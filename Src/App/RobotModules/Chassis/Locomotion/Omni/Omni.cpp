@@ -1,16 +1,23 @@
-#include <stdint.h>
+#include <cstdint>
 #include "IIR.hpp"
-#include "PidBasic.hpp"
 #include "Omni.hpp"
+#include "M3508.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
-#include "M3508.hpp"
+#include "PidBasic.hpp"
+#include <numbers>
+#include "QuadricycleController.hpp"
 #include "OSnew.hpp"
+
+#include "./State/StopState.hpp"
+#include "./State/RunState.hpp"
 
 extern canHandle HCAN1;
 
-using namespace CHASSIS;
+using namespace CHASSIS::OMNI;
 using namespace PINYMOTOR;
+
+constexpr float F_PI = std::numbers::pi_v<float>;
 
 Omni::Omni()
 {
@@ -20,48 +27,74 @@ Omni::Omni()
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
-            .txFreq = 500.0f,
+            .txFreq = 100.0f,
             .posPID = nullptr,
-            .velPID = new PositonalPid(0.1f, 0.f, 0.f, 0.002f, 1.f, 4.f, 0.f),
+            .velPID = new IncrementalPid(0.2f, 0.005f, 0.f, 4.f, 0.f),
             .torqPID = nullptr
         };
-        motor[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
+        motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
+    }
+
+    stateFactory.addState(static_cast<uint8_t>(FSMState_e::RUN),
+                          std::make_unique<RunState>(this));
+    stateFactory.addState(static_cast<uint8_t>(FSMState_e::STOP),
+                          std::make_unique<StopState>(this));
+    stateFactory.init(
+            stateFactory.getNextState(static_cast<uint8_t>(FSMState_e::STOP)));
+
+    if constexpr (APP_USE_POWERCTRL) {
+        // TODO:
     }
 }
 
 void Omni::stop()
 {
-    for (float &i : refSpeed_._) {
-        i = 0;
+    for (auto &i : motors_._) {
+        i->cmd(MotorCmdType_e::OFF);
     }
+}
 
-    for (uint8_t i = 0; i < 4; i++) {
-        wSpeed_._[i] = 0;
-        motor[i]->cmd(MotorCmdType_e::OFF);
+void Omni::enter()
+{
+    for (auto &i : motors_._) {
+        i->cmd(MotorCmdType_e::ON);
     }
 }
 
 void Omni::update()
 {
     for (uint8_t i = 0; i < 4; i++) {
-        wSpeed_._[i] = iir_filter_3(motor[i]->data().spdRpm, i);
+        wSpeed_._[i] = iir_filter_3(motors_._[i]->data().spdRpm, i);
     }
+    this->curSpeed_ = forward(wSpeed_);
+
+    this->stateFactory.update();
 }
 
-// Speed_u Omni::forward(const wheelsSpeed_u &_wSpeed) {} //TODO: waiting to set
-
-
-// wheelsSpeed_u Omni::reverse(const Speed_u &_speed) {} //TODO: waiting to set
-
-void Omni::ctrl(const Speed_u &_speed)
+Speed_u Omni::forward(const WheelsSpeed_u &_wSpeed)
 {
-    WheelsSpeed_u refWSpeed = reverse(_speed);
+    Speed_u speed{};
+    // TODO:
+    return speed;
+}
+
+
+WheelsSpeed_u Omni::reverse(const Speed_u &_speed)
+{
+    WheelsSpeed_u refWheels{};
+    // TODO:
+    return refWheels;
+}
+
+void Omni::ctrl(const Speed_u &_refSpeed)
+{
+    WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        motor[i]->cmdVel(refWSpeed._[i]);
+        motors_._[i]->cmdVel(refWSpeed._[i]);
     }
 
-#ifdef USE_POWERCTRL
-    powerCtrl_->powerCtrl(refWSpeed._);
-#endif
+    if constexpr (APP_USE_POWERCTRL) {
+        // TODO:
+    }
 }

@@ -11,6 +11,23 @@ WheelLegged::WheelLegged(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
 {
 }
 
+void WheelLegged::stop()
+{
+    tp_ = fd_ = tw_ = 0.f;
+    lengthAngPid_.reset();
+    lengthVelPid_.reset();
+    hip1_->cmd(MotorCmdType_e::OFF);
+    hip4_->cmd(MotorCmdType_e::OFF);
+    wheel_->cmd(MotorCmdType_e::OFF);
+}
+
+void WheelLegged::enter()
+{
+    hip1_->cmd(MotorCmdType_e::ON);
+    hip4_->cmd(MotorCmdType_e::ON);
+    wheel_->cmd(MotorCmdType_e::ON);
+}
+
 void WheelLegged::stateUpdate(float _dt)
 {
     // TODO: maybe need a filter to smooth data
@@ -42,8 +59,8 @@ float WheelLegged::calcFn(float _az)
 
 void WheelLegged::ctrl()
 {
-    float setVd = LengthAngPid_.calc(setL_, legState_.L0);
-    fd_ = LengthVelPid_.calc(setVd, legState_.vd);
+    float setVd = lengthAngPid_.calc(setL_, legState_.L0);
+    fd_ = lengthVelPid_.calc(setVd, legState_.vd);
 
     Matrix<2, 1> u = vmc_.forwardTorq(tp_, fd_);
     hip1_->cmdTorq(u[0][0]);
@@ -59,8 +76,9 @@ float WheelLegged::minL(float _phi)
 
 void WheelLegged::setL(float _l)
 {
-    setL_ = std::clamp(_l, minL(legState_.phi0), MAX_L);
+    setL_ = fmin(fmax(_l, minL(legState_.phi0)), MAX_L);
 }
+
 
 void WheelLegged::setFd(float _fd) { fd_ = _fd; }
 void WheelLegged::setTp(float _tp) { tp_ = _tp; }

@@ -22,6 +22,9 @@ public:
     WheelLegged(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
                 PINYMOTOR::IMotor *_wheel);
 
+    void stop();
+    void enter();
+
     void stateUpdate(float _dt);
 
     void setL(float _l);
@@ -52,8 +55,8 @@ private:
 
     float setL_;
 
-    PositonalPid LengthAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
-    PositonalPid LengthVelPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
+    PositonalPid lengthAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
+    PositonalPid lengthVelPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
 
     PINYMOTOR::IMotor *hip1_;
     PINYMOTOR::IMotor *hip4_;

@@ -1,35 +1,52 @@
 #pragma once
 
-#include <cmath>
-#include "Locomotion.hpp"
-#include <cstdint>
+#include "Chassis.hpp"
 
-namespace CHASSIS {
+#include "IMotor.hpp"
+#include "dsp/fast_math_functions.h"
+namespace CHASSIS::OMNI {
 
+union Speed_u {
+    struct {
+        float vx; // m/s
+        float vy; // m/s
+        float wz; // rad/s
+    };
+    float _[3];
+};
 union WheelsSpeed_u {
     struct {
-        float M_RF; ///< motor of the right front 0
-        float M_LF; ///< motor of the left front 1
-        float M_LB; ///< motor of the left back 2
-        float M_RB; ///< motor of the right back 3
+        float M_RF; // motor of the right front
+        float M_LF; // motor of the left front
+        float M_LB; // motor of the left back
+        float M_RB; // motor of the right back
     };
     float _[4]; // rpm
 };
 
-enum class Mode_e : uint8_t { OMNI_X = 0, OMNI_H = 1 };
+union Motors_u {
+    struct {
+        PINYMOTOR::IMotor *RF;
+        PINYMOTOR::IMotor *LF;
+        PINYMOTOR::IMotor *LB;
+        PINYMOTOR::IMotor *RB;
+    };
+    PINYMOTOR::IMotor *_[4];
+};
 
-class Omni : public Locomotion {
+class Omni : public Chassis {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
-    static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
-    static constexpr float FRONT_R = 0.354f;
-    static constexpr float BACK_R = 0.354f;
-
+    static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
+    static constexpr float CHASSIS_R = 0.354f;
     Omni();
 
-    void stop() override;
-    void update() override;
-    void ctrl(const Speed_u &_speed) override;
+    void stop();
+    void enter();
+    void update();
+    void ctrl(const Speed_u &_speed);
+
+    float yaw() const;
 
 protected:
     /*
@@ -47,10 +64,11 @@ protected:
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    Mode_e mode = Mode_e::OMNI_X;
-
-    PINYMOTOR::IMotor *motor[4];
+    Motors_u motors_;
     WheelsSpeed_u wSpeed_;
+    Speed_u curSpeed_;
+
+    float yaw_ = 0.f;
 };
 
-} // namespace CHASSIS
+} //namespace CHASSIS::OMNI
