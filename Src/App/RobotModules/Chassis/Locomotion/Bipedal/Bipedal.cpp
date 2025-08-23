@@ -107,6 +107,9 @@ Bipedal::Bipedal()
     motors_.HipLB = new DMMOTOR::DM8009("HipLB", lbDM8009Config);
     motors_.HipLB->setZeroAng(LB_HIP_ZERO_ANG);
 
+    legL_.init(motors_.HipLF, motors_.HipLB, motors_.WheelL);
+    legR_.init(motors_.HipRF, motors_.HipRB, motors_.WheelR);
+
     stateFactory.addState(static_cast<uint8_t>(FSMState_e::RUN),
                           std::make_unique<RunState>(this));
     stateFactory.addState(static_cast<uint8_t>(FSMState_e::LAUNCH),

@@ -5,10 +5,12 @@
 using namespace CHASSIS::BIPEDAL;
 using namespace PINYMOTOR;
 
-WheelLegged::WheelLegged(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
-                         PINYMOTOR::IMotor *_wheel)
-        : hip1_(_hip1), hip4_(_hip4), wheel_(_wheel)
+void WheelLegged::init(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
+                       PINYMOTOR::IMotor *_wheel)
 {
+    hip1_ = _hip1;
+    hip4_ = _hip4;
+    wheel_ = _wheel;
 }
 
 void WheelLegged::stop()

@@ -18,10 +18,8 @@ public:
                                                 .L3 = 0.25f,
                                                 .L4 = 0.15f,
                                                 .L5 = 0.12f };
-
-    WheelLegged(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
-                PINYMOTOR::IMotor *_wheel);
-
+    void init(PINYMOTOR::IMotor *_hip1, PINYMOTOR::IMotor *_hip4,
+              PINYMOTOR::IMotor *_wheel);
     void stop();
     void enter();
 

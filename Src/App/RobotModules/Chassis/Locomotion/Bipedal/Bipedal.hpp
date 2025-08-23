@@ -83,8 +83,8 @@ private:
     STController balSTCtrl_;
     WBRController balWBRCtrl_;
 
-    WheelLegged legL_{ motors_.HipLF, motors_.HipLB, motors_.WheelL };
-    WheelLegged legR_{ motors_.HipRF, motors_.HipRB, motors_.WheelR };
+    WheelLegged legL_;
+    WheelLegged legR_;
 
     INS_SYS::INSData_s insData_ = {};
     Subscriber<INS_SYS::INSData_s> *insSub_;
