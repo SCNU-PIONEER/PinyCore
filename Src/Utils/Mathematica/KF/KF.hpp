@@ -65,7 +65,7 @@ public:
     Matrix<ctrlDim, 1> u{ Matrix<ctrlDim, 1>::zeros() };
     Matrix<measDim, 1> z{ Matrix<measDim, 1>::zeros() };
 
-    const float &x(int _i) const { return x_[0][_i]; }
+    const float &x(int _i) const { return x_[_i][0]; }
 
     Matrix<stateDim, stateDim> F{
         Matrix<stateDim, stateDim>::zeros()

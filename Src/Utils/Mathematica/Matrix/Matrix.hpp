@@ -52,6 +52,11 @@ public:
 
     float *operator[](const int &_row) { return &this->data_[_row * _cols]; }
 
+    const float *operator[](const int &_row) const
+    {
+        return &this->data_[_row * _cols];
+    }
+
     Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
     {
         if (this == &_mat)
