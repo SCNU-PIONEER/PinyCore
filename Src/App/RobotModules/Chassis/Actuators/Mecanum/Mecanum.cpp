@@ -9,8 +9,6 @@
 #include "QuadricycleController.hpp"
 #include "IIR.hpp"
 
-#include "OSnew.hpp"
-
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
 

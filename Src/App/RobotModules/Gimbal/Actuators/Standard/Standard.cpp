@@ -9,8 +9,6 @@
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 
-#include "OSnew.hpp"
-
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
 #include "./State/RunState.hpp"

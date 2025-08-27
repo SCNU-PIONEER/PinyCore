@@ -3,7 +3,6 @@
 #include "sdkconfig.h"
 
 #include "cmsis_os2.h"
-#include "OSnew.hpp"
 
 #include "MotorManager.hpp"
 
@@ -15,8 +14,6 @@
 #include "Buzzer.hpp"
 
 #include "UI/App.hpp"
-
-#include "TestModule.hpp"
 
 #include "Mecanum.hpp"
 #include "Standard.hpp"
@@ -127,9 +124,9 @@ void AppManager::createApp()
 
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
-        xTaskCreate(
-                [](void *_param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, nullptr, osPriorityNormal, nullptr);
+        // xTaskCreate(
+        //         [](void *_param) -> void { TestModule::instance()->task(); },
+        //         "test_task", 256, nullptr, osPriorityNormal, nullptr);
     }
 
     // Motor-Sending Continuous Task
@@ -177,7 +174,7 @@ void AppManager::initApp()
 
     // TestModule
     if constexpr (APP_USE_TEST) {
-        TestModule::instance()->init();
+        // TestModule::instance()->init();
     }
 
     if constexpr (APP_USE_UI) {
