@@ -68,9 +68,6 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
-    float yawZero_ = 0.f;
-    float yaw_ = 0.f;
-
     friend class Chassis<Mecanum>;
 };
 

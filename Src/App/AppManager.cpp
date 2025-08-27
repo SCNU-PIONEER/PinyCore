@@ -61,6 +61,13 @@ void ctrlTask(void *_param)
 {
     while (true) {
         gimbal->Gimbal<GIMBAL::STANDARD::Standard>::update(_param);
+
+        // TODO: This line is temporarily used to pass values
+        chassis->loadDeltaYaw(
+                fmod(gimbal->endYawAng() - gimbal->baseYawAng() + (3 * PI),
+                     2 * PI) -
+                PI);
+
         chassis->Chassis<CHASSIS::MECANUM::Mecanum>::update(_param);
         vTaskDelay(1);
     }

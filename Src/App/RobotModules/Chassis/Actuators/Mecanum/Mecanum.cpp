@@ -76,8 +76,8 @@ Speed_u Mecanum::forward(const WheelsSpeed_u &_wSpeed)
                (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) /
                4.f / 60.f;
     speed.vy = W_CIRCUMFERENCE *
-               (BACK_R * _wSpeed.M_RF + BACK_R * _wSpeed.M_LF -
-                FRONT_R * _wSpeed.M_LB - FRONT_R * _wSpeed.M_RB) /
+               (BACK_R * -_wSpeed.M_RF - BACK_R * _wSpeed.M_LF +
+                FRONT_R * _wSpeed.M_LB + FRONT_R * _wSpeed.M_RB) /
                (2.f * (BACK_R + FRONT_R)) / 60.f;
     speed.wz = (W_DIAMETER / 2.f) *
                (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) /
@@ -89,20 +89,27 @@ Speed_u Mecanum::forward(const WheelsSpeed_u &_wSpeed)
 WheelsSpeed_u Mecanum::reverse(const Speed_u &_speed)
 {
     WheelsSpeed_u refWheels;
-    refWheels.M_RF = (60.f / W_CIRCUMFERENCE) * (-_speed.vx + _speed.vy) +
+    refWheels.M_RF = (60.f / W_CIRCUMFERENCE) * (-_speed.vx - _speed.vy) +
                      FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_LF = (60.f / W_CIRCUMFERENCE) * (_speed.vx + _speed.vy) +
+    refWheels.M_LF = (60.f / W_CIRCUMFERENCE) * (_speed.vx - _speed.vy) +
                      FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_LB = (60.f / W_CIRCUMFERENCE) * (_speed.vx - _speed.vy) +
+    refWheels.M_LB = (60.f / W_CIRCUMFERENCE) * (_speed.vx + _speed.vy) +
                      BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_RB = (60.f / W_CIRCUMFERENCE) * (-_speed.vx - _speed.vy) +
+    refWheels.M_RB = (60.f / W_CIRCUMFERENCE) * (-_speed.vx + _speed.vy) +
                      BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
     return refWheels;
 }
 
 void Mecanum::ctrl(const Speed_u &_refSpeed)
 {
-    WheelsSpeed_u refWSpeed = reverse(_refSpeed);
+    float cosYaw = arm_cos_f32(deltaYaw_);
+    float sinYaw = arm_sin_f32(deltaYaw_);
+    Speed_u refSpeed = {
+        .vx = (_refSpeed.vx * cosYaw) - (_refSpeed.vy * sinYaw),
+        .vy = (_refSpeed.vy * cosYaw) + (_refSpeed.vx * sinYaw),
+        .wz = _refSpeed.wz
+    };
+    WheelsSpeed_u refWSpeed = reverse(refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
         motors_._[i]->cmdVel(refWSpeed._[i]);

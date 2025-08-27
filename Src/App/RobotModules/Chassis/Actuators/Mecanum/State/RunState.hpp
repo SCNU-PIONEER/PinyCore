@@ -24,6 +24,7 @@ public:
     void run() final
     {
         Speed_u ref;
+
         ref.vx = chassis_->msg.vx;
         ref.vy = chassis_->msg.vy;
         // ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_->msg.yaw,

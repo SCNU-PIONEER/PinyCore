@@ -41,17 +41,17 @@ public:
         this->stateFactory_.update();
     }
 
+    void loadDeltaYaw(float _val)
+    {
+        this->deltaYaw_ = _val;
+    }; // TODO: temp function
 
     ChassisMsg_s msg = {};
-
-    float yawAng() const { return yawAng_; }
-    void setYawZero(float _zero) { yawZero_ = _zero; }
 
 protected:
     StateFactory stateFactory_;
 
-    float yawAng_ = 0.f;
-    float yawZero_ = 0.f;
+    float deltaYaw_ = 0.f;
 
 private:
     Actuator *actuator_ = static_cast<Actuator *>(this);

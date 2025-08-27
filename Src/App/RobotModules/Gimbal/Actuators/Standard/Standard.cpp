@@ -48,7 +48,7 @@ Standard::Standard()
         .posPID =
                 new PositonalPid(50.0f, 0.f, 0.f, 1.f / 500.f, 0.f, 35.f, 0.f),
         .velPID = new PositonalPid(0.03f, 0.05f, 0.000001f, 1.f / 500.f, 0.3f,
-                                   0.1f, 0.f),
+                                   1.2f, 0.f),
         .torqPID = nullptr,
         .isReverse = YAW_REVERSE,
     };

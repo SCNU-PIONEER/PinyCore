@@ -26,7 +26,7 @@ public:
     static constexpr float YAW_LAUNCH_ANG = 4.42377377f;
 
     static constexpr bool PITCH_REVERSE = false;
-    static constexpr bool YAW_REVERSE = true;
+    static constexpr bool YAW_REVERSE = false;
 
     Standard();
 
