@@ -7,7 +7,6 @@
 #include "PidBasic.hpp"
 #include <numbers>
 #include "QuadricycleController.hpp"
-#include "OSnew.hpp"
 
 extern canHandle HCAN1;
 

@@ -5,7 +5,6 @@
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "M3508.hpp"
-#include "OSnew.hpp"
 
 extern canHandle HCAN1;
 
