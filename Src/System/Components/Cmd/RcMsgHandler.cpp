@@ -55,7 +55,7 @@ void RcMsgHandler::chassisHandle()
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
         cmsg_.state = CHASSIS::FSMState_e::RUN;
         cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);   // Scale to m/s
-        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);   // Scale to m/s
+        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);  // Scale to m/s
         float dyaw = s_curve(ROCKER_WZ_GAIN, rcMsg_.lx); // Scale to m/s
         cmsg_.yaw += dyaw;
         constexpr float TWO_PI = 2.0f * M_PI;
