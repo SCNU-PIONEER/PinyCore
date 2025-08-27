@@ -1,16 +1,25 @@
 #include "AppManager.hpp"
-#include "cmsis_os2.h"
+
 #include "sdkconfig.h"
-#include "MotorManager.hpp"
-#include "INS.hpp"
-#include "Mecanum.hpp"
-#include "Chassis.hpp"
-#include "Cmd.hpp"
-#include "Bmi088.hpp"
-#include "TestModule.hpp"
-#include "Buzzer.hpp"
-#include "UI/App.hpp"
+
+#include "cmsis_os2.h"
 #include "OSnew.hpp"
+
+#include "MotorManager.hpp"
+
+#include "INS.hpp"
+#include "Bmi088.hpp"
+
+#include "Cmd.hpp"
+
+#include "Buzzer.hpp"
+
+#include "UI/App.hpp"
+
+#include "TestModule.hpp"
+
+#include "Mecanum.hpp"
+// #include "Standard.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -30,9 +39,9 @@ const AccCali_s accCali = {
 };
 const GyroCali_s gyroCali = {
     // default gyroscope calibration
-    .gx_bias = 1.0695599f, .gy_bias = -0.03854797f, .gz_bias = -1.87499213f,
-    .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,        .gy_tco_k = 0.f,
-    .gy_tco_b0 = 0.f,      .gz_tco_k = 0.f,         .gz_tco_b0 = 0.f
+    .gx_bias = -1.93095636f, .gy_bias = -5.93262482f, .gz_bias = 0.222163752f,
+    .gx_tco_k = 0.f,         .gx_tco_b0 = 0.f,        .gy_tco_k = 0.f,
+    .gy_tco_b0 = 0.f,        .gz_tco_k = 0.f,         .gz_tco_b0 = 0.f
 };
 
 //---------------------------------------------------------------------------------------------------
@@ -41,8 +50,9 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::Mecanum *mecanum;
-Chassis *chassis;
+CHASSIS::MECANUM::Mecanum *chassis;
+// GIMBAL::STANDARD::Standard *gimbal;
+
 
 UI::App *ui;
 //---------------------------------------------------------------------------------------------------
@@ -50,7 +60,8 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        chassis->update(_param);
+        // gimbal->Gimbal<GIMBAL::STANDARD::Standard>::update(_param);
+        chassis->Chassis<CHASSIS::MECANUM::Mecanum>::update(_param);
         vTaskDelay(1);
     }
 }
@@ -77,11 +88,11 @@ void INSTask(void *_param)
         INS_SYS::IMUSensorRawData_s data = {
             .a = { .x = bmi088->getRawAccelX(),
                    .y = bmi088->getRawAccelY(),
-                   .z = bmi088->getRawAccelZ(),
+                   .z = static_cast<int16_t>(-bmi088->getRawAccelZ()),
                    .transK = bmi088->getAccelMappingVaule() },
             .g = { .x = bmi088->getRawGyroX(),
                    .y = bmi088->getRawGyroY(),
-                   .z = bmi088->getRawGyroZ(),
+                   .z = static_cast<int16_t>(-bmi088->getRawGyroZ()),
                    .transK = bmi088->getGyroMappingVaule() },
             // .m = NULL TODO:
         };
@@ -119,7 +130,7 @@ void AppManager::createApp()
             [](void *_param) -> void {
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
-            "motor_task", 256, nullptr, osPriorityRealtime, nullptr);
+            "motor_task", 512, nullptr, osPriorityRealtime, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
@@ -148,8 +159,10 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    mecanum = new CHASSIS::Mecanum;
-    chassis = new Chassis(mecanum);
+    chassis = new CHASSIS::MECANUM::Mecanum();
+
+    // Gimbal
+    // gimbal = new GIMBAL::STANDARD::Standard();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,

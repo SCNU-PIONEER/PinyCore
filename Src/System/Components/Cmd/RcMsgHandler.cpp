@@ -1,10 +1,20 @@
 #include "RcMsgHandler.hpp"
 #include <algorithm>
 #include "sdkconfig.h"
+
 #include "Chassis.hpp"
+// #include "Gimbal.hpp"
+
 #include "Smooth.hpp"
 
+#include <cmath>
 #include <cstring>
+
+void RcMsgHandler::updateRocker(float &_target, float _channel)
+{
+    float delta = (_channel * T_ACC_CNT / 660.0f) - _target;
+    _target += std::fmax(-S_CURVE_ACC, std::fmin(S_CURVE_ACC, delta));
+}
 
 void RcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
@@ -20,21 +30,10 @@ void RcMsgHandler::handle()
     rc_.parseData();
     RC::RcRawMsg_t rcData = rc_.getData();
 
-    ChassisMsg_s cmsg;
-    GimbalMsg_s gmsg;
-
-    rcMsg_.rx +=
-            std::clamp(((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f) - rcMsg_.rx,
-                       -S_CURVE_ACC, S_CURVE_ACC);
-    rcMsg_.ry +=
-            std::clamp(((float)rcData.rc.ch1 * T_ACC_CNT / 660.0f) - rcMsg_.ry,
-                       -S_CURVE_ACC, S_CURVE_ACC);
-    rcMsg_.lx +=
-            std::clamp(((float)rcData.rc.ch2 * T_ACC_CNT / 660.0f) - rcMsg_.lx,
-                       -S_CURVE_ACC, S_CURVE_ACC);
-    rcMsg_.ly +=
-            std::clamp(((float)rcData.rc.ch3 * T_ACC_CNT / 660.0f) - rcMsg_.ly,
-                       -S_CURVE_ACC, S_CURVE_ACC);
+    updateRocker(rcMsg_.rx, (float)rcData.rc.ch0);
+    updateRocker(rcMsg_.ry, (float)rcData.rc.ch1);
+    updateRocker(rcMsg_.lx, (float)rcData.rc.ch2);
+    updateRocker(rcMsg_.ly, (float)rcData.rc.ch3);
 
     rcMsg_.rSwitch = rcData.rc.switchRight;
     rcMsg_.lSwitch = rcData.rc.switchLeft;
@@ -43,25 +42,72 @@ void RcMsgHandler::handle()
     rcMsg_.yMove = rcData.mouse.y;
     rcMsg_.zRoller = rcData.mouse.z;
 
-    if (rcData.rc.switchRight == RC_SW_DOWN) {
-        cmsg.state = CHASSIS::FSMState_e::STOP;
-    } else if (rcData.rc.switchRight == RC_SW_MID) {
-        cmsg.state = CHASSIS::FSMState_e::RUN;
-        cmsg.vx = s_curve(Chassis::MAX_VX_SPEED, rcMsg_.ry); // Scale to m/s
-        cmsg.vy = s_curve(Chassis::MAX_VY_SPEED, rcMsg_.rx); // Scale to m/s
-        cmsg.wz = s_curve(Chassis::MAX_WZ_SPEED, rcMsg_.lx); // Scale to m/s
-    } else {
-        cmsg.state = CHASSIS::FSMState_e::STOP;
-        cmsg.vx = 0.f;
-        cmsg.vy = 0.f;
-        cmsg.wz = 0.f;
-    }
-
-    memcpy(&rcMsgPrev_, &rcMsg_, sizeof(rcMsg_));
-
-    notify(&cmsg, msgBus_->chassisQueue);
+    masterHandle();
 }
 
+void RcMsgHandler::chassisHandle()
+{
+    if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        cmsg_.state = CHASSIS::FSMState_e::STOP;
+        cmsg_.vx = 0.f;
+        cmsg_.vy = 0.f;
+        cmsg_.yaw = 0.f;
+    } else if (rcMsg_.rSwitch == RC_SW_MID) {
+        cmsg_.state = CHASSIS::FSMState_e::RUN;
+        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);   // Scale to m/s
+        cmsg_.vy = s_curve(ROCKER_VY_GAIN, rcMsg_.rx);   // Scale to m/s
+        float dyaw = s_curve(ROCKER_WZ_GAIN, rcMsg_.lx); // Scale to m/s
+        cmsg_.yaw += dyaw;
+        constexpr float TWO_PI = 2.0f * M_PI;
+        if (cmsg_.yaw > M_PI) {
+            cmsg_.yaw -= TWO_PI;
+        } else if (cmsg_.yaw < -M_PI) {
+            cmsg_.yaw += TWO_PI;
+        }
+    } else {
+        return;
+    }
+    notify(&cmsg_, msgBus_->chassisQueue);
+}
+
+void RcMsgHandler::masterHandle()
+{
+    if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        // gimbal
+        gmsg_.state = GIMBAL::FSMState_e::STOP;
+        gmsg_.pitch = gmsg_.yaw = 0.f;
+        // chassis
+        cmsg_.state = CHASSIS::FSMState_e::STOP;
+        cmsg_.vx = cmsg_.vy = cmsg_.yaw = 0.f;
+    } else if (rcMsg_.rSwitch == RC_SW_MID) {
+        // gimbal
+        gmsg_.state = GIMBAL::FSMState_e::RUN;
+        float dpitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
+        float dyaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
+        gmsg_.pitch += dpitch;
+        gmsg_.yaw += dyaw;
+        constexpr float TWO_PI = 2.0f * M_PI;
+        if (gmsg_.pitch > M_PI) {
+            gmsg_.pitch -= TWO_PI;
+        } else if (gmsg_.pitch < -M_PI) {
+            gmsg_.pitch += TWO_PI;
+        }
+        if (gmsg_.yaw > M_PI) {
+            gmsg_.yaw -= TWO_PI;
+        } else if (gmsg_.yaw < -M_PI) {
+            gmsg_.yaw += TWO_PI;
+        }
+        // chassis
+        cmsg_.state = CHASSIS::FSMState_e::RUN;
+        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
+        cmsg_.vy = s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
+        cmsg_.yaw = gmsg_.yaw;
+    } else {
+        return;
+    }
+    notify(&cmsg_, msgBus_->chassisQueue);
+    notify(&gmsg_, msgBus_->gimbalQueue);
+}
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
