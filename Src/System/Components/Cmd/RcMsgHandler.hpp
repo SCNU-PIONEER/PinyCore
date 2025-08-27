@@ -1,9 +1,7 @@
 #pragma once
 #include "Rc.hpp"
 #include "Handler.hpp"
-namespace GIMBAL {
-enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
-}
+
 class RcMsgHandler : public Handler {
     static constexpr float ROCKER_VX_GAIN = 2.f;
     static constexpr float ROCKER_VY_GAIN = 2.f;

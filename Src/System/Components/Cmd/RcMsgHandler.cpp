@@ -3,7 +3,7 @@
 #include "sdkconfig.h"
 
 #include "Chassis.hpp"
-// #include "Gimbal.hpp"
+#include "Gimbal.hpp"
 
 #include "Smooth.hpp"
 

@@ -19,7 +19,7 @@
 #include "TestModule.hpp"
 
 #include "Mecanum.hpp"
-// #include "Standard.hpp"
+#include "Standard.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -51,7 +51,7 @@ Cmd *cmd;
 //---------------------------------------------------------------------------------------------------
 // Ctrl
 CHASSIS::MECANUM::Mecanum *chassis;
-// GIMBAL::STANDARD::Standard *gimbal;
+GIMBAL::STANDARD::Standard *gimbal;
 
 
 UI::App *ui;
@@ -60,7 +60,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        // gimbal->Gimbal<GIMBAL::STANDARD::Standard>::update(_param);
+        gimbal->Gimbal<GIMBAL::STANDARD::Standard>::update(_param);
         chassis->Chassis<CHASSIS::MECANUM::Mecanum>::update(_param);
         vTaskDelay(1);
     }
@@ -162,7 +162,7 @@ void AppManager::initApp()
     chassis = new CHASSIS::MECANUM::Mecanum();
 
     // Gimbal
-    // gimbal = new GIMBAL::STANDARD::Standard();
+    gimbal = new GIMBAL::STANDARD::Standard();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
