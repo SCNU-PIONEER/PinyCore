@@ -19,10 +19,11 @@ void Cmd::parseMsg()
 {
     EventBits_t xBits = xEventGroupWaitBits(eventGroup_, EVENT_MASK, pdTRUE,
                                             pdFALSE, portMAX_DELAY);
+    if (xBits & RC_READY_EVENT) {
+        rcHandler_.handle();
+    }
     if (xBits & RTT_READY_EVENT) {
         rttHandler_.handle();
-    } else if (xBits & RC_READY_EVENT) {
-        rcHandler_.handle();
     }
 }
 

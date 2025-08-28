@@ -14,6 +14,7 @@ if(USE_ALGORITHM)
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/RLS
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Matrix
     ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/LQR
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/KF
   )
 endif()
 
