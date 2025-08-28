@@ -1,7 +1,5 @@
 #include "Standard.hpp"
 
-#include "TopicRouter.hpp"
-
 #include "PidBasic.hpp"
 
 #include "GM6020.hpp"
@@ -54,9 +52,6 @@ Standard::Standard()
     motors_.yaw->setZeroAng(YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Yaw zeros has set to %f", motors_.yaw->data().zeroAng);
 
-    this->insSub_ = new Subscriber<INS_SYS::INSData_s>(
-            4, &TopicRouter::instance().insTopic, &insData_);
-
     this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::RUN),
                                  std::make_unique<RunState>(this));
     this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::LAUNCH),
@@ -84,17 +79,18 @@ void Standard::updateSelf()
 
 void Standard::updateEndYaw()
 {
-    if (this->isConfirmYawZero) {
-        this->endYawAng_ = getMinorArc(this->insData_.yaw, -this->yawDeltaArc);
+    if (this->isConfirmYawZero_) {
+        this->endYawAng_ =
+                getMinorArc(this->insData_.yaw, -this->constDeltaYawArc_);
     } else {
         // confirm zero
         if (motors_.yaw->posNorm() != 0.f) { // TODO: prefer to globalState
-            this->yawDeltaArc =
+            this->constDeltaYawArc_ =
                     YAW_REVERSE ? getMinorArc(0.f, motors_.yaw->posNorm()) :
                                   getMinorArc(motors_.yaw->posNorm(), 0.f);
-            this->isConfirmYawZero = true;
+            this->isConfirmYawZero_ = true;
         } else {
-            this->isConfirmYawZero = false;
+            this->isConfirmYawZero_ = false;
         }
     }
 }

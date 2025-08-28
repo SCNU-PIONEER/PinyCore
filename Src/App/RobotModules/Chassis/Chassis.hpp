@@ -2,7 +2,7 @@
 
 #include "FSMState.hpp"
 #include "StmLog.hpp"
-#include "MsgImpl.hpp"
+#include "TopicRouter.hpp"
 
 #include "IMotor.hpp"
 
@@ -15,6 +15,12 @@ public:
     static constexpr float MAX_VY_SPEED = 2.f;
     static constexpr float MAX_WZ_SPEED = 3.f;
     static constexpr float MOUSE_CAL = 200.f;
+
+    Chassis()
+            : deltaYawSub_(new Subscriber<DeltaYawMsg_s>(
+                      1, &TopicRouter::instance().deltaYawTopic, &deltaYawMsg_))
+    {
+    }
 
     void stop()
     {
@@ -37,19 +43,30 @@ public:
         if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) ==
             pdTRUE) {
         };
+
+        loadDeltaYaw();
+
         actuator_->updateSelf();
+
         this->stateFactory_.update();
     }
 
-    void loadDeltaYaw(float _val)
+    void loadDeltaYaw()
     {
-        this->deltaYaw_ = _val;
-    }; // TODO: temp function
+        // Master Board method
+        if (deltaYawSub_->receive()) {
+            deltaYaw_ = deltaYawMsg_.deltaYaw;
+        }
+        // TODO: Slave Board method
+    };
 
     ChassisMsg_s msg = {};
 
 protected:
     StateFactory stateFactory_;
+
+    DeltaYawMsg_s deltaYawMsg_;
+    Subscriber<DeltaYawMsg_s> *deltaYawSub_;
 
     float deltaYaw_ = 0.f;
 
