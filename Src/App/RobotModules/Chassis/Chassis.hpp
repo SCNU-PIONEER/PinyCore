@@ -21,7 +21,7 @@ public:
         for (auto &i : actuator_->motors_._) {
             i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
         }
-        actuator_->stop();
+        actuator_->stopSelf();
     }
 
     void enter()
@@ -29,7 +29,7 @@ public:
         for (auto &i : actuator_->motors_._) {
             i->cmd(PINYMOTOR::MotorCmdType_e::ON);
         }
-        actuator_->enter();
+        actuator_->enterSelf();
     }
 
     void update(void *_param)
@@ -37,7 +37,7 @@ public:
         if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) ==
             pdTRUE) {
         };
-        actuator_->update();
+        actuator_->updateSelf();
         this->stateFactory_.update();
     }
 

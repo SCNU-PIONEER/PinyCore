@@ -25,7 +25,7 @@ public:
         launchTotalTime_ = 0;
         launchFinishTime_ = 0;
 
-        gimbal_->Gimbal<Standard>::enter();
+        gimbal_->enter();
         LOG::info("GimbalLaunch", "enter");
     }
 

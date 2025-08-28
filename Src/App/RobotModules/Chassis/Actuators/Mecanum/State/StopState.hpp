@@ -13,11 +13,11 @@ public:
 
     void enter() final
     {
-        chassis_->Chassis<Mecanum>::stop();
+        chassis_->stop();
         LOG::info("ChassisStop", " enter");
     }
 
-    void run() final { chassis_->Chassis<Mecanum>::stop(); }
+    void run() final { chassis_->stop(); }
 
     void exit() final { LOG::info("ChassisStop", " exit"); }
 

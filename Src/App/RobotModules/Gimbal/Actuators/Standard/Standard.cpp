@@ -67,17 +67,17 @@ Standard::Standard()
             static_cast<uint8_t>(FSMState_e::STOP)));
 }
 
-void Standard::stop()
+void Standard::stopSelf()
 {
     // TODO:
 }
 
-void Standard::enter()
+void Standard::enterSelf()
 {
     // TODO:
 }
 
-void Standard::update()
+void Standard::updateSelf()
 {
     // TODO:
 }

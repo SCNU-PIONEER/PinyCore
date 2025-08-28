@@ -34,9 +34,9 @@ public:
     PINYMOTOR::IMotor *yaw() const;
 
 private:
-    void stop();
-    void enter();
-    void update();
+    void stopSelf();
+    void enterSelf();
+    void updateSelf();
 
     void updateEndYaw();
     void updateBaseYaw();

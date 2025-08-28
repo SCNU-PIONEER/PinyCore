@@ -23,7 +23,7 @@ public:
         cmdMotorPitch_.pos = gimbal_->pitch()->posNorm();
         cmdMotorYaw_.pos = gimbal_->yaw()->posNorm();
 
-        gimbal_->Gimbal<Standard>::enter();
+        gimbal_->enter();
 
         LOG::info("GimbalMotorRun", "enter");
     }

@@ -47,17 +47,17 @@ Mecanum::Mecanum()
     }
 }
 
-void Mecanum::stop()
+void Mecanum::stopSelf()
 {
     // TODO:
 }
 
-void Mecanum::enter()
+void Mecanum::enterSelf()
 {
     // TODO:
 }
 
-void Mecanum::update()
+void Mecanum::updateSelf()
 {
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = iir_filter_3(motors_._[i]->data().spdRpm, i);

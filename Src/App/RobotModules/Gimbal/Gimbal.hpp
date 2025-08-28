@@ -17,7 +17,7 @@ public:
         for (auto &i : actuator_->motors_._) {
             i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
         }
-        actuator_->stop();
+        actuator_->stopSelf();
     }
 
     void enter()
@@ -25,7 +25,7 @@ public:
         for (auto &i : actuator_->motors_._) {
             i->cmd(PINYMOTOR::MotorCmdType_e::ON);
         }
-        actuator_->enter();
+        actuator_->enterSelf();
     }
 
     void update(void *_param)
@@ -34,15 +34,11 @@ public:
             pdTRUE) {
         };
         this->insSub_->receive();
-        updateEndYaw();
-        updateBaseYaw();
-        actuator_->update();
+        actuator_->updateEndYaw();
+        actuator_->updateBaseYaw();
+        actuator_->updateSelf();
         this->stateFactory_.update();
     }
-
-    void updateEndYaw() { actuator_->updateEndYaw(); }
-
-    void updateBaseYaw() { actuator_->updateBaseYaw(); }
 
     GimbalMsg_s msg = {};
 

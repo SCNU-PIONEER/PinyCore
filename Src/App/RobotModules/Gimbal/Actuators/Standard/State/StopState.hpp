@@ -15,11 +15,11 @@ public:
 
     void enter() final
     {
-        gimbal_->Gimbal<Standard>::stop();
+        gimbal_->stop();
         LOG::info("GimbalStop", "enter");
     }
 
-    void run() final { gimbal_->Gimbal<Standard>::stop(); }
+    void run() final { gimbal_->stop(); }
 
     void exit() final { LOG::info("GimbalStop", "exit"); }
 

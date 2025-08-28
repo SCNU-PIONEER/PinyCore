@@ -60,9 +60,9 @@ protected:
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    void stop();
-    void enter();
-    void update();
+    void stopSelf();
+    void enterSelf();
+    void updateSelf();
 
     Motors_u motors_;
     WheelsSpeed_u wSpeed_;

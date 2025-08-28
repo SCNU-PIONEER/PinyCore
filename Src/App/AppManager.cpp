@@ -57,7 +57,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        gimbal->Gimbal<GIMBAL::STANDARD::Standard>::update(_param);
+        gimbal->update(_param);
 
         // TODO: This line is temporarily used to pass values
         chassis->loadDeltaYaw(
@@ -65,7 +65,7 @@ void ctrlTask(void *_param)
                      2 * PI) -
                 PI);
 
-        chassis->Chassis<CHASSIS::MECANUM::Mecanum>::update(_param);
+        chassis->update(_param);
         vTaskDelay(1);
     }
 }

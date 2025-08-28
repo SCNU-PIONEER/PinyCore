@@ -23,7 +23,7 @@ public:
         // cmdImuPitch_.pos = gimbal_->ins().pitch;
         // cmdImuYaw_.pos = gimbal_->ins().yaw;
 
-        gimbal_->Gimbal<Standard>::enter();
+        gimbal_->enter();
 
         LOG::info("GimbalRun", "enter");
     }
