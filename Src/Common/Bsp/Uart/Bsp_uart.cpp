@@ -1,9 +1,12 @@
 #include "Bsp_uart.hpp"
 #include <stdlib.h>
 
+#include "StmLog.hpp"
+
 void Uart::registerCallback(UART_HandleTypeDef *_huart, callback _pCallback)
 {
     cbTable[_huart] = _pCallback;
+    temp = _pCallback;
 }
 
 HAL_StatusTypeDef Uart::RecvDmaMultiBufInit(UART_HandleTypeDef *_huart,
@@ -37,10 +40,10 @@ HAL_StatusTypeDef Uart::RecvDmaInit(UART_HandleTypeDef *_huart,
 
 void Uart::callbackFromISR(UART_HandleTypeDef *_huart, uint16_t _size)
 {
-    auto it = cbTable.find(_huart);
-    if (it != cbTable.end()) {
-        it->second(_huart, _size);
-    }
+    // if (auto it = cbTable.find(_huart); it != cbTable.end()) {
+    //     it->second(_huart, _size);
+    // }
+    temp(_huart, _size);
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)

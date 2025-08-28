@@ -4,6 +4,8 @@
 
 #include "IMotor.hpp"
 #include "dsp/fast_math_functions.h"
+
+#include "IIR.hpp"
 namespace CHASSIS::MECANUM {
 
 union Speed_u {
@@ -67,6 +69,8 @@ private:
     Motors_u motors_;
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
+
+    FILTER::IIR3 iir3_;
 
     friend class Chassis<Mecanum>;
 };

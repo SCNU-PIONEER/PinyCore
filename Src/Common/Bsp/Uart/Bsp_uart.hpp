@@ -34,4 +34,5 @@ public:
 
 private:
     std::unordered_map<UART_HandleTypeDef *, callback> cbTable;
+    callback temp;
 };
