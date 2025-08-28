@@ -1,10 +1,19 @@
 #pragma once
 
-#include <cmath>
-#include "Locomotion.hpp"
+#include "Chassis.hpp"
 
-namespace CHASSIS {
+#include "IMotor.hpp"
+#include "dsp/fast_math_functions.h"
+namespace CHASSIS::MECANUM {
 
+union Speed_u {
+    struct {
+        float vx; // m/s
+        float vy; // m/s
+        float wz; // rad/s
+    };
+    float _[3];
+};
 union WheelsSpeed_u {
     struct {
         float M_RF; // motor of the right front
@@ -15,18 +24,25 @@ union WheelsSpeed_u {
     float _[4]; // rpm
 };
 
-class Mecanum : public Locomotion {
+union Motors_u {
+    struct {
+        PINYMOTOR::IMotor *RF;
+        PINYMOTOR::IMotor *LF;
+        PINYMOTOR::IMotor *LB;
+        PINYMOTOR::IMotor *RB;
+    };
+    PINYMOTOR::IMotor *_[4];
+};
+
+class Mecanum : public Chassis<Mecanum> {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
-    static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
+    static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
     static constexpr float FRONT_R = 0.354f;
     static constexpr float BACK_R = 0.354f;
     Mecanum();
 
-    void stop() override;
-    void enter() override;
-    void update() override;
-    void ctrl(const Speed_u &_refSpeed) override;
+    void ctrl(const Speed_u &_speed);
 
 protected:
     /*
@@ -44,8 +60,15 @@ protected:
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    PINYMOTOR::IMotor *motor_[4];
+    void stopSelf();
+    void enterSelf();
+    void updateSelf();
+
+    Motors_u motors_;
     WheelsSpeed_u wSpeed_;
+    Speed_u curSpeed_;
+
+    friend class Chassis<Mecanum>;
 };
 
-} //namespace CHASSIS
+} //namespace CHASSIS::MECANUM

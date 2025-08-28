@@ -1,24 +1,23 @@
 #pragma once
-#include "Chassis.hpp"
+#include "Mecanum.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-namespace CHASSIS {
-
+namespace CHASSIS::MECANUM {
 class StopState : public FSMState {
 public:
-    StopState(Chassis *_chassis) : chassis_(_chassis)
+    StopState(Mecanum *_chassis) : chassis_(_chassis)
     {
         setStateName(static_cast<uint8_t>(FSMState_e::STOP));
     }
 
     void enter() final
     {
-        chassis_->wheel->stop();
-        LOG::info("stop", " enter");
+        chassis_->stop();
+        LOG::info("ChassisStop", " enter");
     }
 
-    void run() final { chassis_->wheel->stop(); }
+    void run() final { chassis_->stop(); }
 
     void exit() final { LOG::info("ChassisStop", " exit"); }
 
@@ -34,7 +33,6 @@ public:
     }
 
 private:
-    Chassis *chassis_;
+    Mecanum *chassis_;
 };
-
-} //namespace CHASSIS
+} // namespace CHASSIS::MECANUM
