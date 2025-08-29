@@ -41,4 +41,6 @@ private:
     RcMsg_t rcMsgPrev_;
 
     MsgBus_s *msgBus_;
+
+    bool isTpActivated_ = false; // 初始化为未激活
 };

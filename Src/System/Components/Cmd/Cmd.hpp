@@ -5,9 +5,9 @@
 #include "event_groups.h"
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
+#include "TpMsgHandler.hpp"
 
-#define EVENT_MASK (RTT_READY_EVENT | RC_READY_EVENT)
-
+#define EVENT_MASK (RTT_READY_EVENT | RC_READY_EVENT | TP_READY_EVENT)
 class Cmd {
 public:
     Cmd();
@@ -24,4 +24,5 @@ private:
 
     rcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
+    TpMsgHandler tpHandler_; //new add
 };

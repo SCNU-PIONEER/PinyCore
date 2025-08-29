@@ -24,6 +24,12 @@ void rcMsgHandler::handle()
     gimbalMsg gmsg;
     armMsg amsg;
 
+
+    // 初始化机械臂消息
+    amsg.msgType = MsgType_e::ARM;
+    amsg.source = ControlSource_e::RC;
+    amsg.state = State_e::STOP; // 默认停止
+
     rcMsg_.rx +=
             std::clamp(((float)rcData.rc.ch0 * T_ACC_CNT / 660.0f) - rcMsg_.rx,
                        -S_CURVE_ACC, S_CURVE_ACC);
@@ -61,6 +67,22 @@ void rcMsgHandler::handle()
             amsg.j5 -= static_cast<float>(rcMsg_.zRoller) / 314 / 100;
             amsg.j6 += static_cast<float>(rcMsg_.xMove) / 314 / 100;
             amsg.j7 += static_cast<float>(rcMsg_.yMove) / 314 / 50;
+        } else if (rcData.rc.switchLeft == RC_SW_UP) {
+            if (rcData.rc.ch1 == -660) {
+                amsg.state = State_e::PLAN;
+            } else {
+                if (rcData.rc.ch1 == 660 && !isTpActivated_) {
+                    // 首次激活：右摇杆推满（660）+ 未激活标记→进入TP模式
+                    amsg.state = State_e::TEACH;
+                    isTpActivated_ = true;
+                } else if (isTpActivated_) {
+                    // 再次激活：已激活标记→保持TP模式（无需推满摇杆）
+                    amsg.state = State_e::TEACH;
+                } else {
+                    // 左开关上档但未满足激活条件→停止
+                    amsg.state = State_e::STOP;
+                }
+            }
         }
     } else {
         cmsg.state = State_e::STOP;
@@ -75,7 +97,6 @@ void rcMsgHandler::handle()
     notify(&cmsg, msgBus_->chassisQueue);
     notify(&amsg, msgBus_->armQueue);
 }
-
 
 void rcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
