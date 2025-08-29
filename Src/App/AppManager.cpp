@@ -10,6 +10,8 @@
 #include "Mecanum.hpp"
 #include "Chassis.hpp"
 
+#include "Arm.hpp"
+
 #include "Cmd.hpp"
 
 #include "Bmi088.hpp"
@@ -49,12 +51,15 @@ Cmd *cmd;
 // Ctrl
 CHASSIS::Mecanum *mecanum;
 Chassis *chassis;
+Arm *arm;
+
 
 //---------------------------------------------------------------------------------------------------
 void ctrlTask(void *_param)
 {
     while (true) {
         chassis->update(_param);
+        arm->update(_param);
         vTaskDelay(1);
     }
 }
