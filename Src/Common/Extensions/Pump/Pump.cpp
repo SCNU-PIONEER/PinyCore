@@ -4,6 +4,6 @@
 // 实现初始化函数
 void PUMP::Controller::init()
 {
-    apply(PUMP::CONFIGS::ALL_OFF);
+    apply(PUMP::ALL_OFF);
     LOG::Logger::instance().info(LOCATION, "Pump", "initialized");
 }

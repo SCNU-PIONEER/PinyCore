@@ -42,10 +42,9 @@ void TpMsgHandler::handle()
         armMsg_.j7 = tpData.joint[6];
 
         if (tpData.push == 1) {
-            PUMP::Controller::instance().apply(PUMP::CONFIGS::ALL_ON); // 气泵开
+            PUMP::Controller::instance().apply(PUMP::ALL_ON); // 气泵开
         } else {
-            PUMP::Controller::instance().apply(
-                    PUMP::CONFIGS::ALL_OFF); // 气泵关
+            PUMP::Controller::instance().apply(PUMP::ALL_OFF); // 气泵关
         }
     }
 

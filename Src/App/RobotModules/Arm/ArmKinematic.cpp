@@ -23,4 +23,4 @@ const Joint7D silverLeftStorage[7] = {
 
 const JointRoute_s silverLeftRoute = { .pose = silverLeftStorage,
                                        .point = 7,
-                                       .pump = PUMP::CONFIGS::SILVER_PUMP_TEST };
+                                       .pump = PUMP::SILVER_PUMP_TEST };

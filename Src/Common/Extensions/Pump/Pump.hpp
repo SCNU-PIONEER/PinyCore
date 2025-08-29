@@ -99,7 +99,6 @@ public:
 };
 
 // 预设配置
-namespace CONFIGS {
 constexpr State_e SILVER_PUMP_TEST[] = {
     State_e::ON,  // PUMP_1
     State_e::OFF, // PUMP_2
@@ -122,5 +121,4 @@ constexpr State_e ALL_ON[] = { State_e::ON, State_e::ON, State_e::ON,
 
 constexpr State_e ALL_OFF[] = { State_e::OFF, State_e::OFF, State_e::OFF,
                                 State_e::OFF };
-} // namespace CONFIGS
 } // namespace PUMP
