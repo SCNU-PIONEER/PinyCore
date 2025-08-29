@@ -3,6 +3,8 @@
 #include <cmath>
 #include <numbers>
 
+namespace FILTER {
+
 class LPF {
 public:
     LPF(float _sampleRate, float _cutoffFrequency)
@@ -44,3 +46,5 @@ private:
         alpha_ = std::isnan(alpha_) ? 0.f : alpha_;
     }
 };
+
+} // namespace FILTER
