@@ -58,6 +58,9 @@ public:
     void setKp(const float _kp);
     void setKd(const float _kd);
 
+    float getKp() const { return kp_; }
+    float getKd() const { return kd_; }
+
     MotorTypeDef_e enable();
     MotorTypeDef_e disable();
 };

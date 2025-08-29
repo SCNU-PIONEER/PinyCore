@@ -13,9 +13,10 @@
 
 namespace PINYMOTOR {
 
-// #define LIMIT_MIN_MAX(x, M1, M2) \
-//     (x) = ((M1) < (M2)) ? (((x) <= (M1)) ? (M1) : (((x) >= (M2)) ? (M2) : (x))) \
-//                         : (((x) <= (M2)) ? (M2) : (((x) >= (M1)) ? (M1) : (x)))//copy
+#define LIMIT_MIN_MAX(x, M1, M2)                                          \
+    (x) = ((M1) < (M2)) ?                                                 \
+                  (((x) <= (M1)) ? (M1) : (((x) >= (M2)) ? (M2) : (x))) : \
+                  (((x) <= (M2)) ? (M2) : (((x) >= (M1)) ? (M1) : (x))) //copy
 // You don't need to worry about the size of the input, just use it
 #define IS_WITHIN_RANGE(x, M1, M2)                      \
     ({                                                  \

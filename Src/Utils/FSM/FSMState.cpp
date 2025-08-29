@@ -65,7 +65,7 @@ void StateFactory::update()
         if (currentState_) {
             currentState_->enter();
         }
-        currentState_->setMode(FSMMode_e::NORMAL);
+        // currentState_->setMode(FSMMode_e::NORMAL);
     } else if (currentState_->getMode() == FSMMode_e::PAUSE) {
         // do nothing
     } else {
