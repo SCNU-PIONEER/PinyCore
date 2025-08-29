@@ -2,7 +2,6 @@
 
 namespace FILTER {
 class Mean {
-    
 public:
     float process(float _in)
     {
