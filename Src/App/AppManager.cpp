@@ -15,8 +15,12 @@
 
 #include "UI/App.hpp"
 
+#ifdef CHASSIS_TYPE
 #include CHASSIS_FILE
+#endif
+#ifdef GIMBAL_TYPE
 #include GIMBAL_FILE
+#endif
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -47,8 +51,13 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
+#if APP_USE_CHASSIS
 CHASSIS::CHASSIS_TYPE *chassis;
+#endif
+
+#if APP_USE_GIMBAL
 GIMBAL::GIMBAL_TYPE *gimbal;
+#endif
 
 
 UI::App *ui;
@@ -57,10 +66,12 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        if constexpr (APP_USE_GIMBAL)
-            gimbal->update(_param);
-        if constexpr (APP_USE_CHASSIS)
-            chassis->update(_param);
+#if APP_USE_GIMBAL
+        gimbal->update(_param);
+#endif
+#if APP_USE_CHASSIS
+        chassis->update(_param);
+#endif
         vTaskDelay(1);
     }
 }
@@ -158,13 +169,15 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    if constexpr (APP_USE_CHASSIS)
-        chassis = new CHASSIS::CHASSIS_TYPE();
+#if APP_USE_GIMBAL
+    chassis = new CHASSIS::CHASSIS_TYPE();
+#endif
 
 
     // Gimbal
-    if constexpr (APP_USE_GIMBAL)
-        gimbal = new GIMBAL::GIMBAL_TYPE();
+#if APP_USE_GIMBAL
+    gimbal = new GIMBAL::GIMBAL_TYPE();
+#endif
 
 
     // Buzzer

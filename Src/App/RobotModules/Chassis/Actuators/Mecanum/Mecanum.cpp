@@ -41,9 +41,9 @@ Mecanum::Mecanum()
     this->stateFactory_.init(this->stateFactory_.getNextState(
             static_cast<uint8_t>(FSMState_e::STOP)));
 
-    if constexpr (APP_USE_POWERCTRL) {
-        // TODO:
-    }
+#if APP_USE_POWERCTRL
+    // TODO:
+#endif
 }
 
 void Mecanum::stop()
@@ -120,7 +120,7 @@ void Mecanum::ctrl(const Speed_u &_refSpeed)
         motors_._[i]->cmdVel(refWSpeed._[i]);
     }
 
-    if constexpr (APP_USE_POWERCTRL) {
-        // TODO:
-    }
+#if APP_USE_POWERCTRL
+    // TODO:
+#endif
 }

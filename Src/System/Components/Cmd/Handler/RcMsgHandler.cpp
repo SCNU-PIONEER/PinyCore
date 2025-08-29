@@ -2,8 +2,12 @@
 #include <algorithm>
 #include "sdkconfig.h"
 
+#ifdef CHASSIS_TYPE
 #include CHASSIS_FILE
+#endif
+#ifdef GIMBAL_TYPE
 #include GIMBAL_FILE
+#endif
 
 #include "Smooth.hpp"
 
@@ -47,6 +51,7 @@ void RcMsgHandler::handle()
 
 void RcMsgHandler::chassisHandle()
 {
+#ifdef CHASSIS_TYPE
     if (rcMsg_.rSwitch == RC_SW_DOWN) {
         cmsg_.state = CHASSIS::FSMState_e::STOP;
         cmsg_.vx = 0.f;
@@ -68,10 +73,12 @@ void RcMsgHandler::chassisHandle()
         return;
     }
     notify(&cmsg_, msgBus_->chassisQueue);
+#endif
 }
 
 void RcMsgHandler::masterHandle()
 {
+#ifdef GIMBAL_TYPE
     if (rcMsg_.rSwitch == RC_SW_DOWN) {
         // gimbal
         gmsg_.state = GIMBAL::FSMState_e::STOP;
@@ -107,6 +114,7 @@ void RcMsgHandler::masterHandle()
     }
     notify(&cmsg_, msgBus_->chassisQueue);
     notify(&gmsg_, msgBus_->gimbalQueue);
+#endif
 }
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
