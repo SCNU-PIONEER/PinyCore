@@ -2,6 +2,7 @@
 
 namespace FILTER {
 class Mean {
+    
 public:
     float process(float _in)
     {
@@ -37,4 +38,5 @@ public:
 private:
     float x_[2]{};
 };
+
 }; // namespace FILTER

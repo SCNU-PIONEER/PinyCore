@@ -4,6 +4,7 @@
 #include <numbers>
 
 namespace FILTER {
+
 /**
  * @brief 1-Euro filter implementation for adaptive signal smoothing
  * 
@@ -59,4 +60,5 @@ private:
     float xPrev_ = 0.f;
     float dxPrev_ = 0.f;
 };
+
 } // namespace FILTER

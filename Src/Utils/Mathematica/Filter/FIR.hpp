@@ -1,6 +1,7 @@
 #pragma once
 
 namespace FILTER {
+
 class FIR5 {
     static constexpr float NUM_5[6] = { 0.04964470491f, 0.1659367979f,
                                         0.2844184935f,  0.2844184935f,
@@ -23,4 +24,5 @@ public:
 private:
     float x_[5]{};
 };
+
 } // namespace FILTER

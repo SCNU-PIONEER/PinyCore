@@ -1,6 +1,7 @@
 #pragma once
 
 namespace FILTER {
+
 class IIR2 {
     static constexpr float NUM_2[3] = { 0.02785976604f, 0.05571953207f,
                                         0.02785976604f };
@@ -51,4 +52,5 @@ public:
 private:
     float x_[3]{}, y_[3]{};
 };
+
 } // namespace FILTER
