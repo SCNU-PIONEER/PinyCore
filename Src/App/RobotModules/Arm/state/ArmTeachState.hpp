@@ -7,6 +7,7 @@
 
 #include "Arm.hpp"
 #include "ArmMotor.hpp"
+#include "Pump.hpp"
 #include "StmLog.hpp"
 
 namespace ARM {
@@ -46,6 +47,13 @@ public:
             arm_.safety.setSpeed(0.5);
             arm_.safety.setAllAngleLimit(arm_.target_joints);
             arm_.motors.ctrl(arm_.target_joints); //output
+
+
+            if (arm_.msg_.pumpState == PUMP::State_e::ON) {
+                arm_.pump.set(PUMP::Device_e::VALVE_2, PUMP::State_e::ON);
+            } else {
+                arm_.pump.set(PUMP::Device_e::VALVE_2, PUMP::State_e::OFF);
+            }
 
         } else {
             // 来源不符时，停止运动（安全处理）

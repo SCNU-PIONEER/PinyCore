@@ -5,7 +5,6 @@
 #include "ArmMotor.hpp"
 #include "MsgImpl.hpp"
 #include "Pump.hpp"
-#include "StmLog.hpp"
 
 
 namespace ARM {
@@ -36,8 +35,7 @@ public:
     JointState_e jointStateFlag = JointState_e::FINISH_STATE;
     JointState_e moveOneGoal(const Joint7D &_goal);
 
-    LOG::Logger &log = LOG::Logger::instance();
-    PUMP::Controller &pumpCtrl = PUMP::Controller::instance();
+    PUMP::Controller pump;
 
 
     ARM::Safety safety;

@@ -2,6 +2,7 @@
 
 #include "ArmKinematic.hpp"
 #include "TpMsg.hpp"
+#include "main.h"
 #include <cstdint>
 #include <FreeRTOS.h>
 #include "event_groups.h"

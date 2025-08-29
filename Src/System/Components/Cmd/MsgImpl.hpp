@@ -3,6 +3,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
+#include "Pump.hpp"
+
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
@@ -19,4 +21,5 @@ struct gimbalMsg : public Msg {
 
 struct armMsg : public Msg {
     float j1, j2, j3, j4, j5, j6, j7;
+    PUMP::State_e pumpState;
 };
