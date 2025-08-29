@@ -6,7 +6,7 @@
 
 #include "MotorCommonMacros.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 class LaunchState : public FSMState {
     static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 3s
@@ -74,4 +74,4 @@ private:
     bool finishLaunching_ = false;
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

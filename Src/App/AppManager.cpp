@@ -47,8 +47,8 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::MECANUM::Mecanum *chassis;
-GIMBAL::STANDARD::Standard *gimbal;
+CHASSIS::Mecanum *chassis;
+GIMBAL::Standard *gimbal;
 
 
 UI::App *ui;
@@ -156,10 +156,12 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    chassis = new CHASSIS::MECANUM::Mecanum();
+    chassis = new CHASSIS::Mecanum();
+
 
     // Gimbal
-    gimbal = new GIMBAL::STANDARD::Standard();
+    gimbal = new GIMBAL::Standard();
+
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,

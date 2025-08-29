@@ -14,7 +14,7 @@
 
 extern canHandle HCAN1;
 
-using namespace CHASSIS::MECANUM;
+using namespace CHASSIS;
 using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
@@ -36,9 +36,9 @@ Mecanum::Mecanum()
     }
 
     this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::RUN),
-                                 std::make_unique<RunState>(this));
+                                 std::make_unique<MecanumRunState>(this));
     this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::STOP),
-                                 std::make_unique<StopState>(this));
+                                 std::make_unique<MecanumStopState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(
             static_cast<uint8_t>(FSMState_e::STOP)));
 
@@ -47,24 +47,32 @@ Mecanum::Mecanum()
     }
 }
 
-void Mecanum::stopSelf()
+void Mecanum::stop()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
+    }
 }
 
-void Mecanum::enterSelf()
+void Mecanum::enter()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    }
 }
 
-void Mecanum::updateSelf()
+void Mecanum::update(void *_param)
 {
+    xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0);
+
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = iir_filter_3(motors_._[i]->data().spdRpm, i);
     }
     this->curSpeed_ = forward(wSpeed_);
 
-    // TODO: yaw
+    loadDeltaYaw();
+
+    this->stateFactory_.update();
 }
 
 Speed_u Mecanum::forward(const WheelsSpeed_u &_wSpeed)

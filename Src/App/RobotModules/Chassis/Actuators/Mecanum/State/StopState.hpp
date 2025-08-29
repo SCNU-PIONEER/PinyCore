@@ -3,10 +3,11 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-namespace CHASSIS::MECANUM {
-class StopState : public FSMState {
+namespace CHASSIS {
+
+class MecanumStopState : public FSMState {
 public:
-    StopState(Mecanum *_chassis) : chassis_(_chassis)
+    MecanumStopState(Mecanum *_chassis) : chassis_(_chassis)
     {
         setStateName(static_cast<uint8_t>(FSMState_e::STOP));
     }
@@ -35,4 +36,5 @@ public:
 private:
     Mecanum *chassis_;
 };
-} // namespace CHASSIS::MECANUM
+
+} // namespace CHASSIS

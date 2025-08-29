@@ -3,14 +3,14 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-#include "MotorCommonMacros.hpp"
 
 #include "PidBasic.hpp"
 
-namespace CHASSIS::MECANUM {
-class RunState : public FSMState {
+namespace CHASSIS {
+
+class MecanumRunState : public FSMState {
 public:
-    RunState(Mecanum *_chassis) : chassis_(_chassis)
+    MecanumRunState(Mecanum *_chassis) : chassis_(_chassis)
     {
         setStateName(static_cast<uint8_t>(FSMState_e::RUN));
     }
@@ -54,4 +54,5 @@ private:
     Mecanum *chassis_;
     PositonalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
 };
-} // namespace CHASSIS::MECANUM
+
+} // namespace CHASSIS

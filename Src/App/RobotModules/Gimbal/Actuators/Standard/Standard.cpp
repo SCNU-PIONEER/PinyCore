@@ -13,7 +13,7 @@
 
 extern canHandle HCAN1;
 
-using namespace GIMBAL::STANDARD;
+using namespace GIMBAL;
 using namespace PINYMOTOR;
 
 Standard::Standard()
@@ -62,19 +62,34 @@ Standard::Standard()
             static_cast<uint8_t>(FSMState_e::STOP)));
 }
 
-void Standard::stopSelf()
+void Standard::stop()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
+    }
 }
 
-void Standard::enterSelf()
+void Standard::enter()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    }
 }
 
-void Standard::updateSelf()
+void Standard::update(void *_param)
 {
-    // TODO:
+    if (xQueueReceive((((MsgBus_s *)_param)->gimbalQueue), &msg, 0) == pdTRUE) {
+    };
+    this->insSub_->receive();
+
+    updateEndYaw();
+    updateBaseYaw();
+
+    deltaYawMsg_.deltaYaw = PINYMOTOR::getMinorArc(endYawAng_, baseYawAng_);
+    deltaYawPub_->publish();
+
+
+    this->stateFactory_.update();
 }
 
 void Standard::updateEndYaw()

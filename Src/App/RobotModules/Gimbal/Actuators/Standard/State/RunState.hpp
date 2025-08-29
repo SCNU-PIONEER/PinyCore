@@ -6,7 +6,7 @@
 
 #include "MotorCommonMacros.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 class RunState : public FSMState {
     static constexpr float IMU_PITCH_MIN_ANG = -0.5f;
@@ -74,4 +74,4 @@ private:
     States_u cmdMotorPitch_;
     States_u cmdMotorYaw_;
 };
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

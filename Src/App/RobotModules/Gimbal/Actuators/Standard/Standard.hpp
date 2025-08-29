@@ -1,8 +1,11 @@
 #pragma once
 
+#include "IMotor.hpp"
 #include "Gimbal.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
+
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 
 union Motors_u {
     struct {
@@ -20,7 +23,7 @@ union States_u {
     float _[2];
 };
 
-class Standard : public Gimbal<Standard> {
+class Standard : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 2.08033204f;
     static constexpr float YAW_LAUNCH_ANG = 4.42377377f;
@@ -33,17 +36,15 @@ public:
     PINYMOTOR::IMotor *pitch() const;
     PINYMOTOR::IMotor *yaw() const;
 
-private:
-    void stopSelf();
-    void enterSelf();
-    void updateSelf();
+    void stop();
+    void enter();
+    void update(void *_param);
 
     void updateEndYaw();
     void updateBaseYaw();
 
+private:
     Motors_u motors_;
-
-    friend class Gimbal<Standard>;
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

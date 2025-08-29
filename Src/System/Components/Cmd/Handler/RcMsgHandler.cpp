@@ -2,8 +2,10 @@
 #include <algorithm>
 #include "sdkconfig.h"
 
-#include "Chassis.hpp"
-#include "Gimbal.hpp"
+#include "Mecanum.hpp"
+#include "Standard.hpp"
+#include CHASSIS_FILE
+#include GIMBAL_FILE
 
 #include "Smooth.hpp"
 

@@ -4,7 +4,10 @@
 
 #include "IMotor.hpp"
 #include "dsp/fast_math_functions.h"
-namespace CHASSIS::MECANUM {
+
+namespace CHASSIS {
+
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 
 union Speed_u {
     struct {
@@ -14,6 +17,7 @@ union Speed_u {
     };
     float _[3];
 };
+
 union WheelsSpeed_u {
     struct {
         float M_RF; // motor of the right front
@@ -34,15 +38,19 @@ union Motors_u {
     PINYMOTOR::IMotor *_[4];
 };
 
-class Mecanum : public Chassis<Mecanum> {
+class Mecanum : public Chassis {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
     static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
     static constexpr float FRONT_R = 0.354f;
     static constexpr float BACK_R = 0.354f;
+
     Mecanum();
 
+    void stop();
+    void enter();
     void ctrl(const Speed_u &_speed);
+    void update(void *_param);
 
 protected:
     /*
@@ -60,15 +68,9 @@ protected:
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
 private:
-    void stopSelf();
-    void enterSelf();
-    void updateSelf();
-
     Motors_u motors_;
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
-
-    friend class Chassis<Mecanum>;
 };
 
-} //namespace CHASSIS::MECANUM
+} //namespace CHASSIS

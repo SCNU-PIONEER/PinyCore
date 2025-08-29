@@ -4,7 +4,7 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 class StopState : public FSMState {
 public:
@@ -37,4 +37,4 @@ private:
     Standard *gimbal_;
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL
