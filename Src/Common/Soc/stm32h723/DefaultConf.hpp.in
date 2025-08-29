@@ -5,12 +5,16 @@
 #endif
 
 #ifdef BSP_USE_UART
-#define RC_UART      huart5
-#define UNITREE_UART huart2
+#define RC_UART               huart5
+#define UNITREE_UART          huart2
+#define EXTENSION_UART        UART9
+#define EXTENSION_UART_HANDLE huart9
 #endif
 
 #ifdef BSP_USE_DMA
-#define UNITREE_DMA hdma_usart2_rx
+#define UNITREE_DMA             hdma_usart2_rx
+#define EXTENSION_DMA_TX_HANDLE hdma_uart9_tx
+#define EXTENSION_DMA_RX_HANDLE hdma_uart9_rx
 #endif
 
 #ifdef BSP_USE_TIM
@@ -21,11 +25,4 @@
 
 #ifdef BSP_USE_SPI
 #define IMU_SPI hspi2
-#endif
-
-#ifdef USE_EXTENSION_UART
-#define EXTENSION_UART          UART9
-#define EXTENSION_UART_HANDLE   huart9
-#define EXTENSION_DMA_TX_HANDLE hdma_uart9_tx
-#define EXTENSION_DMA_RX_HANDLE hdma_uart9_rx
 #endif

@@ -2,9 +2,6 @@
 #include "sdkconfig.h"
 #include <cstdint>
 
-
-#if (defined USE_VT_RC_UART || defined USE_EXTENSION_UART)
-
 /**
  * @brief 示教器控制数据结构
  * @details 包含7轴关节数据及状态控制位
@@ -25,5 +22,3 @@ typedef struct {
     TpCtrl_t tpData;    // 示教器控制数据
     uint16_t frameTail; // 整包校验值（CRC16等）
 } VtTpFrame_t;
-
-#endif // USE_VT_RC_UART || USE_EXTENSION_UART
