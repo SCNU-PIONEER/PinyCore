@@ -152,7 +152,8 @@ void AppManager::initApp()
     // INS
     bmi088 = new BMI088;
     ins = new INS_SYS::INS;
-    bmi088->init(&IMU_SPI);
+    while (bmi088->init(&IMU_SPI)) {
+    }
     ins->init(accCali, gyroCali);
 
     // Chassis
