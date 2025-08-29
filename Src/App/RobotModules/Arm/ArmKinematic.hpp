@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include "Pump.hpp"
 
 
 class Joint7D {
@@ -29,14 +30,18 @@ public:
 
 struct JointRoute_s {
     const Joint7D *pose;
-    uint8_t point;
-    // const PumpState_e *pumpState;
+    const uint8_t point;
+    const PUMP::State_e *pump;
 };
 
-typedef struct {
+struct Route_s {
     char *goal;
-    // void (*set_goal)(const Joint7D *_route);
-} route_s;
+    void (*set_goal)(const Joint7D *_route); //TODO:BUG
+};
+
+
+extern const JointRoute_s silverLeftRoute; //TODO:BUG
+extern const Joint7D silverLeftStorage[7]; //  TODO:BUG
 
 
 // 工具函数
@@ -69,14 +74,3 @@ inline float AbsMaxOf5(const Joint7D &_joints)
     }
     return max;
 }
-
-// 路径点与路线声明
-// extern const Joint7D gold_left[];
-
-// extern const Joint7D gold_middle[];
-// extern const Joint7D gold_right[];
-// extern const Joint7D silver_left[1];
-// extern const Joint7D silver_left_storge[7];
-
-// extern const JointRoute_s silver_left_test;
-// extern const JointRoute_s silver_left_route;

@@ -1,4 +1,5 @@
 #include "Arm.hpp"
+#include "ArmMotor.hpp"
 #include "StmLog.hpp"
 #include <memory>
 #include "ArmNormalState.hpp"
@@ -6,6 +7,7 @@
 #include "ArmPlanState.hpp"
 #include "ArmTeachState.hpp"
 #include "Dwt.h"
+#include "MotorCommonMacros.hpp"
 
 using namespace ARM;
 
@@ -15,12 +17,14 @@ Arm::Arm() : safety(motors)
     /* FSM */
     stateFactory_.addState(static_cast<uint8_t>(FSMState_e::STOP),
                            std::make_unique<StopState>(*this));
-    stateFactory_.addState(static_cast<uint8_t>(FSMState_e::RUN),
+    stateFactory_.addState(static_cast<uint8_t>(FSMState_e::NORMAL),
                            std::make_unique<ArmNormalState>(*this));
     stateFactory_.addState(static_cast<uint8_t>(FSMState_e::PLAN),
                            std::make_unique<PlanState>(*this));
     stateFactory_.addState(static_cast<uint8_t>(FSMState_e::TEACH),
                            std::make_unique<ArmTeachState>(*this));
+    stateFactory_.init(stateFactory_.getNextState(
+            static_cast<uint8_t>(FSMState_e::STOP))); //new add
     LOG::info("ARM", "register");
 }
 
@@ -32,80 +36,100 @@ void Arm::update(void *_param)
     stateFactory_.update();
 }
 
-void Arm::moveOneJoint(Joint7D _target_joints)
-{
-    //UT缓启动
-    if (!safety.speedLimit(1)) {
-        LOG::Logger::instance().error(LOCATION, "ARM", "Speed limit exceeded");
-        return;
-    }
-    if (!safety.angleLimit(target_joints)) {
-        LOG::Logger::instance().error(LOCATION, "ARM", "Angle limit exceeded");
-        return;
-    }
-    //output
-    motors.ctrl(target_joints);
-}
-
 void Arm::setTargetPose(const JointRoute_s _route)
 {
-    target_pose = _route.pose;
-    target_point = _route.point;
-    // pump = _route.pump;
+    RouteDta.target_pose = _route.pose;
+    RouteDta.target_point = _route.point;
+    RouteDta.pump = _route.pump;
 }
 
 void Arm::moveRoute()
 {
-    if (motors.moveOneGoal(target_pose[point_cnt]) ==
-        motors.jointStateFlag) { //bug
+    if (moveOneGoal(RouteDta.target_pose[RouteDta.point_cnt]) ==
+        jointStateFlag) { //bug
         /*为了到达某点后停止一段时间*/
-        if (target_pose[point_cnt].delay != 0) {
+        if (RouteDta.target_pose[RouteDta.point_cnt].delay != 0) {
             log.error(LOCATION, "ARM", "Start move delay");
-            dwt_delay_ms(target_pose[point_cnt].delay);
+            dwt_delay_ms(RouteDta.target_pose[RouteDta.point_cnt].delay);
             log.error(LOCATION, "ARM", "End move delay");
         }
-        point_cnt++;
-        if (point_cnt == target_point) {
-            point_cnt = 0;
+        RouteDta.point_cnt++;
+        if (RouteDta.point_cnt == RouteDta.target_point) {
+            RouteDta.point_cnt = 0;
             log.info(LOCATION, "ARM", "Move all point done");
             //change state to normal
+            msg_.state = State_e::NORMAL;
         }
     }
 }
 
-void Arm::teach()
+Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
 {
-    //     Joint7D goal;
-    // for (uint8_t i = 0; i < 7; i++) {
-    //     goal.j[i] = _tp_data.joint[i];
-    // }
+    Joint7D deltaJoints = _goal - motors.current_joints;
+    float maxDeltaAngle = AbsMaxOf7(deltaJoints);
 
-    // /*checkout first*/
-    //     if (!motors.checkGoal(goal)) {
-    //         log.error(LOCATION, "Teach", "Teach goal out of range");
-    //         return;
-    //     }
+    /*第一次进入之后*/
+    if (jointStateFlag == JointState_e::MOVING_STATE) {
+        RouteDta.rateCnt++;
+        float rate = static_cast<float>(RouteDta.rateCnt) / 2000.0f;
+        target_joints.j[0] =
+                PINYMOTOR::s_curve_acc(target_joints.j[0], _goal.j[0], 35, 2);
+        target_joints.j[6] =
+                PINYMOTOR::s_curve_acc(target_joints.j[6], _goal.j[6], 30, 3);
+    }
+    /*第一次进入*/
+    if (jointStateFlag == JointState_e::FINISH_STATE) {
+        /*joint1 - joint2*/
+        for (int i = 0; i < 2; i++) {
+            if (!IS_WITHIN_RANGE(_goal.j[i], motors.jointInfos[i].angle_min,
+                                 motors.jointInfos[i].angle_max)) {
+                return jointStateFlag;
+                log.error(LOCATION, "ARM", "Joint%d move goal error", i + 1);
+            }
+        }
 
-    //     /*arm reset, can't be interrupt*/
-    //     if (mmove_one_goal(goal) == FINISH_STATE) {
-    //         teach_tag = Arm::TEACHED;
-    //     } else {
-    //         teach_tag == Arm::LAUNCHING;
-    //     }
+        /*joint3*/
+        float highTemp = motors.joint3HighPoint(_goal.j[1]);
+        float lowTemp = motors.joint3LowPoint(_goal.j[1]);
+        if (!IS_WITHIN_RANGE(_goal.j[2], highTemp, lowTemp)) {
+            log.error(LOCATION, "ARM", "Joint3 move goal error");
+            return jointStateFlag;
+        }
 
+        /*joint4 - joint7*/
+        for (int i = 3; i < 7; i++) {
+            if (!IS_WITHIN_RANGE(_goal.j[i], motors.jointInfos[i].angle_min,
+                                 motors.jointInfos[i].angle_max)) {
+                log.error(LOCATION, "ARM", "Joint%d move goal error", i + 1);
+                return jointStateFlag;
+            }
+        }
 
-    // /*control,can be interrupt*/
-    //     if (_tp_data.push == 1) {
-    //         pumpCtrl.apply(PUMPCONFIGS::ALL_PUMP_ON);
-    //     } else {
-    //         pumpCtrl.apply(PUMPCONFIGS::ALL_PUMP_OFF);
-    //     }
+        // 初始化目标关节值（除1和6外）
+        for (uint8_t i = 1; i < 6; i++) {
+            target_joints.j[i] = _goal.j[i];
+        }
 
+        target_joints.j[0] = motors.current_joints.j[0];
+        target_joints.j[6] = motors.current_joints.j[6];
 
-    //     for (uint8_t i = 0; i < 7; i++) {
-    //         target_joints.j[i] = _tp_data.joint[i];
-    //     }
-    //     safety.speedLimit(0.5);
-    //     safety.angleLimit(target_joints);
-    //     motors.ctrl(target_joints); //output
+        float maxTime = maxDeltaAngle / DEFAULT_JOINT_SPEED;
+        safety.setJointSpeedLimit(maxTime, deltaJoints);
+        safety.setAllAngleLimit(target_joints);
+
+        pumpCtrl.apply(&RouteDta.pump[RouteDta.point_cnt]);
+
+        jointStateFlag = JointState_e::MOVING_STATE;
+    }
+
+    if (maxDeltaAngle < 0.02f) {
+        RouteDta.rateCnt = 0;
+        jointStateFlag = JointState_e::FINISH_STATE;
+        log.info(LOCATION, "ARM", "Move point%d done", RouteDta.point_cnt);
+    }
+
+    // output
+    motors.ctrl(target_joints);
+
+    return jointStateFlag;
 }

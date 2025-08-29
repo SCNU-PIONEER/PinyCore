@@ -1,8 +1,11 @@
 #pragma once
+#include "DJIMotor.hpp"
 #include "IMotor.hpp"
 #include "ArmKinematic.hpp"
 #include "StmLog.hpp"
-#include <cstdint>
+#include "UTMotor.hpp"
+#include "DMMotor.hpp"
+#include "MotorManager.hpp"
 
 
 namespace ARM {
@@ -17,11 +20,28 @@ union ArmSpeed_u {
         float joint6;
         float joint7;
     };
-    float _[7]; // rpm
+    float _[7]; // rad/s
 };
 
+typedef union {
+    struct {
+        PINYMOTOR::UTMOTOR::UTMotor *utMotor;
+        PINYMOTOR::DMMOTOR::DMMotor *dmMotor1;
+        PINYMOTOR::DMMOTOR::DMMotor *dmMotor2;
+        PINYMOTOR::DMMOTOR::DMMotor *dmMotor3;
+        PINYMOTOR::DMMOTOR::DMMotor *dmMotor4;
+        PINYMOTOR::DMMOTOR::DMMotor *dmMotor5;
+        PINYMOTOR::DJIMOTOR::DJIMotor *djMotor;
+    };
+
+    // 基类指针数组（用于批量操作）
+    PINYMOTOR::IMotor *all_motors[7];
+} MultiTypeMotors_t;
 
 class Motors {
+    static constexpr float UNITREE_KP = 4.8;
+    static constexpr float UNITREE_KD = 0.02;
+
 public:
     Motors();
     void init();
@@ -30,18 +50,7 @@ public:
     void ctrl(const Joint7D &_target_joints);
 
     LOG::Logger &log = LOG::Logger::instance();
-    enum class JointState_e : uint8_t { FINISH_STATE = 0, MOVING_STATE };
-    JointState_e jointStateFlag = JointState_e::FINISH_STATE;
 
-    struct MotionState_s {
-        int16_t rateCnt = 0;        // 速度变化率计数器
-        float unitreeAngleFix = 0;  // 宇树电机角度补偿
-        float unitreeInitAngle = 0; // 宇树电机初始角度
-        float jointSpeed = 0.8f;    // 关节速度限制
-        uint8_t pointCnt = 0;       // 点位计数器
-        Joint7D targetJoints;       // 目标关节位置缓存
-    };
-    Motors::JointState_e moveOneGoal(const Joint7D &_goal);
     struct JointInfo_s {
         float angle_min;
         float angle_max;
@@ -50,20 +59,19 @@ public:
 
     bool homingUT();
     bool checkGoal(Joint7D _goal);
+    void setUTsmoothStart();
 
     ArmSpeed_u ref_speed;
+    Joint7D current_joints;
 
-protected:
     void biasJoint3Angle();
     float joint3HighPoint(float _target);
     float joint3LowPoint(float _target);
 
 private:
-    std::unique_ptr<PINYMOTOR::IMotor> motor[7];
-    Joint7D current_joints;
-    Joint7D target_joints; //two
+    MultiTypeMotors_t motors;
 
-    MotionState_s motionState;
+    float unitreeAngleFix = 0; // 宇树电机角度补偿
 };
 
 } // namespace ARM

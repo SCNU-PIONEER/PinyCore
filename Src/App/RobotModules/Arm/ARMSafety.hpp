@@ -14,7 +14,6 @@ namespace ARM {
 
 
 class Safety {
-    static constexpr float DEFAULT_JOINT_SPEED = 0.8f;             // rad/s
     static constexpr float DEFAULT_JOINT_SPEED_MIN = 0.f;          // rad/s
     static constexpr float DEFAULT_JOINT_SPEED_MAX = 0.4f;         // rad/s
     static constexpr float DEFAULT_JOINT_ACCELERATION_LOW = 0;     // 0~100
@@ -23,12 +22,12 @@ class Safety {
 public:
     explicit Safety(Motors &_motors) : motors_(_motors) {}
 
-
-    bool angleLimit(const Joint7D &_joints);
-
-    bool speedLimit(const float _speed);
+    void setSpeed(const float _speed);
 
     void setJointSpeedLimit(const float _time, const Joint7D _delta_ang);
+
+    void setAllAngleLimit(Joint7D &_targetJoints);
+
 
 private:
     Motors &motors_; // Reference to motor controller

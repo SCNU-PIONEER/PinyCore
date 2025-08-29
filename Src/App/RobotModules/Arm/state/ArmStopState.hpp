@@ -20,16 +20,20 @@ public:
 
     uint8_t checkChange() override
     {
-        if (arm_.msg_.state == State_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
-        else if (arm_.msg_.state == State_e::NORMAL)
-            return static_cast<uint8_t>(FSMState_e::RUN);
-        else if (arm_.msg_.state == State_e::TEACH)
-            return static_cast<uint8_t>(FSMState_e::TEACH);
-        else if (arm_.msg_.state == State_e::PLAN)
+        // 根据指令来源和状态切换
+        if (arm_.msg_.state == State_e::NORMAL) {
+            if (arm_.msg_.source == ControlSource_e::RC) {
+                return static_cast<uint8_t>(
+                        FSMState_e::NORMAL); // 切换到正常状态
+            } else if (arm_.msg_.source == ControlSource_e::TP) {
+                return static_cast<uint8_t>(
+                        FSMState_e::TEACH); // 切换到示教状态
+            }
+        } else if (arm_.msg_.state == State_e::PLAN) {
             return static_cast<uint8_t>(FSMState_e::PLAN);
-        else
-            return 0;
+        }
+        // 否则保持停止状态
+        return static_cast<uint8_t>(FSMState_e::STOP);
     }
 
 

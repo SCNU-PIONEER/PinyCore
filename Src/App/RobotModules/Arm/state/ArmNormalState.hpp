@@ -1,11 +1,3 @@
-/*
- * @File         : ArmNormalState.hpp
- * @Brief        : 
- * @Version      : 
- * @Author       : 3687402504@qq.com
- * @LastEditTime : 2025-08-02 11:16:19
- * Copyright 2025 by SCNU-PIONEER (c), All Rights Reserved.
- */
 /* 
  * @file   armNormalState.hpp
  * #@brief 机械臂正常工作状态，机械臂在此状态下可以通过遥控器执行正常的动作
@@ -25,30 +17,41 @@ public:
 
     void run() override
     {
-        arm_.motors.update();
-        if (arm_.msg_.state == State_e::NORMAL) {
+        if (arm_.msg_.source == ControlSource_e::RC) {
             Joint7D target = { arm_.msg_.j1, arm_.msg_.j2, arm_.msg_.j3,
                                arm_.msg_.j4, arm_.msg_.j5, arm_.msg_.j6,
                                arm_.msg_.j7 };
-            arm_.target_joints = target;
-            arm_.moveOneJoint(arm_.target_joints);
+            //UT缓启动
+            arm_.motors.setUTsmoothStart();
+            arm_.safety.setSpeed(1);
+            arm_.safety.setAllAngleLimit(target);
+            //output
+            arm_.motors.ctrl(target);
+        } else {
+            // 来源不符时，停止运动（安全处理）
+            arm_.motors.stop();
         }
     }
 
     void exit() override { LOG::info("Normal", " exit"); }
 
-    uint8_t checkChange() override //or switch case?
+    uint8_t checkChange() override
     {
-        if (arm_.msg_.state == State_e::STOP)
+        if (arm_.msg_.state == State_e::STOP) {
             return static_cast<uint8_t>(FSMState_e::STOP);
-        else if (arm_.msg_.state == State_e::NORMAL)
-            return static_cast<uint8_t>(FSMState_e::RUN);
-        else if (arm_.msg_.state == State_e::TEACH)
+        }
+        // 若指令来源为示教器且状态正常，切换到示教状态
+        else if (arm_.msg_.state == State_e::TEACH &&
+                 arm_.msg_.source == ControlSource_e::TP) {
             return static_cast<uint8_t>(FSMState_e::TEACH);
-        else if (arm_.msg_.state == State_e::PLAN)
+        } else if (arm_.msg_.state == State_e::PLAN) {
             return static_cast<uint8_t>(FSMState_e::PLAN);
-        else
-            return 0;
+        }
+        // 保持正常状态
+        else if (arm_.msg_.state == State_e::NORMAL) {
+            return static_cast<uint8_t>(FSMState_e::NORMAL);
+        }
+        return 0;
     }
 
 private:
