@@ -35,6 +35,6 @@ public:
     }
 
 private:
-    float x_[2];
+    float x_[2]{};
 };
 }; // namespace FILTER
