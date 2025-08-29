@@ -49,14 +49,14 @@ void Arm::moveRoute()
         jointStateFlag) { //bug
         /*为了到达某点后停止一段时间*/
         if (RouteDta.target_pose[RouteDta.point_cnt].delay != 0) {
-            log.error(LOCATION, "ARM", "Start move delay");
+            LOG::error("ARM", "Start move delay");
             dwt_delay_ms(RouteDta.target_pose[RouteDta.point_cnt].delay);
-            log.error(LOCATION, "ARM", "End move delay");
+            LOG::error("ARM", "End move delay");
         }
         RouteDta.point_cnt++;
         if (RouteDta.point_cnt == RouteDta.target_point) {
             RouteDta.point_cnt = 0;
-            log.info(LOCATION, "ARM", "Move all point done");
+            LOG::info("ARM", "Move all point done");
             //change state to normal
             msg_.state = State_e::NORMAL;
         }
@@ -84,7 +84,7 @@ Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
             if (!IS_WITHIN_RANGE(_goal.j[i], motors.jointInfos[i].angle_min,
                                  motors.jointInfos[i].angle_max)) {
                 return jointStateFlag;
-                log.error(LOCATION, "ARM", "Joint%d move goal error", i + 1);
+                LOG::error("ARM", "Joint%d move goal error", i + 1);
             }
         }
 
@@ -92,7 +92,7 @@ Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
         float highTemp = motors.joint3HighPoint(_goal.j[1]);
         float lowTemp = motors.joint3LowPoint(_goal.j[1]);
         if (!IS_WITHIN_RANGE(_goal.j[2], highTemp, lowTemp)) {
-            log.error(LOCATION, "ARM", "Joint3 move goal error");
+            LOG::error("ARM", "Joint3 move goal error");
             return jointStateFlag;
         }
 
@@ -100,7 +100,7 @@ Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
         for (int i = 3; i < 7; i++) {
             if (!IS_WITHIN_RANGE(_goal.j[i], motors.jointInfos[i].angle_min,
                                  motors.jointInfos[i].angle_max)) {
-                log.error(LOCATION, "ARM", "Joint%d move goal error", i + 1);
+                LOG::error("ARM", "Joint%d move goal error", i + 1);
                 return jointStateFlag;
             }
         }
@@ -117,7 +117,7 @@ Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
         safety.setJointSpeedLimit(maxTime, deltaJoints);
         safety.setAllAngleLimit(target_joints);
 
-        pumpCtrl.apply(&RouteDta.pump[RouteDta.point_cnt]);
+        pump.apply(&RouteDta.pump[RouteDta.point_cnt]);
 
         jointStateFlag = JointState_e::MOVING_STATE;
     }
@@ -125,7 +125,7 @@ Arm::JointState_e Arm::moveOneGoal(const Joint7D &_goal)
     if (maxDeltaAngle < 0.02f) {
         RouteDta.rateCnt = 0;
         jointStateFlag = JointState_e::FINISH_STATE;
-        log.info(LOCATION, "ARM", "Move point%d done", RouteDta.point_cnt);
+        LOG::info("ARM", "Move point%d done", RouteDta.point_cnt);
     }
 
     // output
