@@ -22,3 +22,10 @@
 #ifdef BSP_USE_SPI
 #define IMU_SPI hspi2
 #endif
+
+#ifdef USE_EXTENSION_UART
+#define EXTENSION_UART          UART9
+#define EXTENSION_UART_HANDLE   huart9
+#define EXTENSION_DMA_TX_HANDLE hdma_uart9_tx
+#define EXTENSION_DMA_RX_HANDLE hdma_uart9_rx
+#endif
