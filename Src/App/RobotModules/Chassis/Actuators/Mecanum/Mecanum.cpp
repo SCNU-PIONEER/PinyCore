@@ -7,7 +7,6 @@
 #include "M3508.hpp"
 
 #include "QuadricycleController.hpp"
-#include "IIR.hpp"
 
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
@@ -66,7 +65,7 @@ void Mecanum::update(void *_param)
     xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0);
 
     for (uint8_t i = 0; i < 4; i++) {
-        wSpeed_._[i] = iir_filter_3(motors_._[i]->data().spdRpm, i);
+        wSpeed_._[i] = iir3_.process(motors_._[i]->data().spdRpm);
     }
     this->curSpeed_ = forward(wSpeed_);
 

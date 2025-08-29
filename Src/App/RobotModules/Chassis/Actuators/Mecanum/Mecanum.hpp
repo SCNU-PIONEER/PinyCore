@@ -5,6 +5,8 @@
 #include "IMotor.hpp"
 #include "dsp/fast_math_functions.h"
 
+#include "IIR.hpp"
+
 namespace CHASSIS {
 
 enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
@@ -71,6 +73,8 @@ private:
     Motors_u motors_;
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
+
+    FILTER::IIR3 iir3_;
 };
 
 } //namespace CHASSIS
