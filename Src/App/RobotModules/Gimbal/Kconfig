@@ -1,0 +1,26 @@
+menu "gimbal config"
+    depends on APP_USE_GIMBAL
+
+    choice
+
+        prompt "gimbal type"
+        default APP_USE_STANDARD
+
+        config APP_USE_STANDARD
+            bool "standard"
+        config APP_USE_STACHED
+            bool "stached"
+
+    endchoice
+
+    config GIMBAL_TYPE
+        string
+        default "Standard" if APP_USE_STANDARD
+        default "Stached"  if APP_USE_STACHED
+
+    config GIMBAL_FILE
+        string
+        default '"Standard.hpp"' if APP_USE_MECANUM
+        default '"Stached.hpp"'  if APP_USE_STACHED
+
+endmenu

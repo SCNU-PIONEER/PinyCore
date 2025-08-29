@@ -1,8 +1,16 @@
 menu "app config"
 
-    config APP_USE_POWERCTRL
-    bool "power control"
+    config APP_USE_CHASSIS
+    bool "chassis"
     default y
+
+    source "Src/App/RobotModules/Chassis/Kconfig"
+
+    config APP_USE_GIMBAL
+    bool "gimbal"
+    default n
+
+    source "Src/App/RobotModules/Gimbal/Kconfig"
 
     config APP_USE_TEST
     bool "test modules"

@@ -1,6 +1,5 @@
 #include "RttMsgHandler.hpp"
 #include "sdkconfig.h"
-#include "Mecanum.hpp"
 #include CHASSIS_FILE
 #include "SEGGER_RTT.h"
 

@@ -15,8 +15,8 @@
 
 #include "UI/App.hpp"
 
-#include "Mecanum.hpp"
-#include "Standard.hpp"
+#include CHASSIS_FILE
+#include GIMBAL_FILE
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -47,8 +47,8 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::Mecanum *chassis;
-GIMBAL::Standard *gimbal;
+CHASSIS::CHASSIS_TYPE *chassis;
+GIMBAL::GIMBAL_TYPE *gimbal;
 
 
 UI::App *ui;
@@ -57,8 +57,10 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        gimbal->update(_param);
-        chassis->update(_param);
+        if constexpr (APP_USE_GIMBAL)
+            gimbal->update(_param);
+        if constexpr (APP_USE_CHASSIS)
+            chassis->update(_param);
         vTaskDelay(1);
     }
 }
@@ -156,11 +158,13 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    chassis = new CHASSIS::Mecanum();
+    if constexpr (APP_USE_CHASSIS)
+        chassis = new CHASSIS::CHASSIS_TYPE();
 
 
     // Gimbal
-    gimbal = new GIMBAL::Standard();
+    if constexpr (APP_USE_GIMBAL)
+        gimbal = new GIMBAL::GIMBAL_TYPE();
 
 
     // Buzzer

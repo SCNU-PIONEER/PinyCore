@@ -2,8 +2,6 @@
 #include <algorithm>
 #include "sdkconfig.h"
 
-#include "Mecanum.hpp"
-#include "Standard.hpp"
 #include CHASSIS_FILE
 #include GIMBAL_FILE
 
