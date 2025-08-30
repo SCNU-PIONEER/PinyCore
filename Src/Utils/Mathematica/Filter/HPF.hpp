@@ -10,6 +10,7 @@ public:
     HPF(float _sampleRate, float _cutoffFrequency)
             : sampleRate_(_sampleRate), cutoffFrequency_(_cutoffFrequency)
     {
+        updateAlpha();
     }
 
     float process(float _input)
