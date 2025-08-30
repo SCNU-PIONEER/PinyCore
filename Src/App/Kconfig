@@ -20,6 +20,10 @@ menu "app config"
     bool "UI"
     default n
 
+    config APP_USE_INS
+    bool "ins"
+    default n
+
     source "Src/App/UI/Kconfig"
 
 

@@ -40,22 +40,6 @@ void RTTMsgHandler::handle()
 {
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
-
-    GimbalMsg_s gmsg;
-
-
-#ifdef CHASSIS_TYPE
-    ChassisMsg_s cmsg;
-    if (strcmp((const char *)data, "run\n") == 0) {
-        cmsg.state = CHASSIS::FSMState_e::RUN;
-    } else if (strcmp((const char *)data, "stop\n") == 0) {
-        cmsg.state = CHASSIS::FSMState_e::STOP;
-    } else {
-        cmsg.state = CHASSIS::FSMState_e::STOP;
-    }
-
-    notify(&cmsg, msgBus_->chassisQueue);
-#endif
 }
 
 void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)

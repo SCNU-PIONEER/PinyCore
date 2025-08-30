@@ -14,13 +14,7 @@
 #include "Buzzer.hpp"
 
 #include "UI/App.hpp"
-
-#ifdef CHASSIS_TYPE
-#include CHASSIS_FILE
-#endif
-#ifdef GIMBAL_TYPE
-#include GIMBAL_FILE
-#endif
+#include "test/TestModule.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -51,14 +45,6 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-#if APP_USE_CHASSIS
-CHASSIS::CHASSIS_TYPE *chassis;
-#endif
-
-#if APP_USE_GIMBAL
-GIMBAL::GIMBAL_TYPE *gimbal;
-#endif
-
 
 UI::App *ui;
 //---------------------------------------------------------------------------------------------------
@@ -66,12 +52,6 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-#if APP_USE_GIMBAL
-        gimbal->update(_param);
-#endif
-#if APP_USE_CHASSIS
-        chassis->update(_param);
-#endif
         vTaskDelay(1);
     }
 }
@@ -118,7 +98,9 @@ void INSTask(void *_param)
 void AppManager::createApp()
 {
     // INS Continuous Task
-    xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal, nullptr);
+    if (APP_USE_INS)
+        xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal,
+                    nullptr);
 
     // Cmd-Polling Continuous Task
     xTaskCreate([](void *_param) { cmd->task(); }, "cmd_task", 256,
@@ -130,9 +112,9 @@ void AppManager::createApp()
 
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
-        // xTaskCreate(
-        //         [](void *_param) -> void { TestModule::instance()->task(); },
-        //         "test_task", 256, nullptr, osPriorityNormal, nullptr);
+        xTaskCreate(
+                [](void *_param) -> void { TestModule::instance()->task(); },
+                "test_task", 256, nullptr, osPriorityNormal, nullptr);
     }
 
     // Motor-Sending Continuous Task
@@ -163,22 +145,12 @@ void AppManager::initApp()
     cmd->init();
 
     // INS
-    bmi088 = new BMI088;
-    ins = new INS_SYS::INS;
-    bmi088->init(&IMU_SPI);
-    ins->init(accCali, gyroCali);
-
-    // Chassis
-#if APP_USE_GIMBAL
-    chassis = new CHASSIS::CHASSIS_TYPE();
-#endif
-
-
-    // Gimbal
-#if APP_USE_GIMBAL
-    gimbal = new GIMBAL::GIMBAL_TYPE();
-#endif
-
+    if constexpr (APP_USE_INS) {
+        bmi088 = new BMI088;
+        ins = new INS_SYS::INS;
+        bmi088->init(&IMU_SPI);
+        ins->init(accCali, gyroCali);
+    }
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
@@ -186,7 +158,7 @@ void AppManager::initApp()
 
     // TestModule
     if constexpr (APP_USE_TEST) {
-        // TestModule::instance()->init();
+        TestModule::instance()->init();
     }
 
     if constexpr (APP_USE_UI) {
