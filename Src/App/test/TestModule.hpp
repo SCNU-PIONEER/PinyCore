@@ -23,7 +23,7 @@ public:
 
     RC::RcRawMsg_t rcMsg;
 
-    StateFactory stateFactory_;
+    StateFactory<TEST::FSMState_e> stateFactory_;
 
     /*MOTOR*/
 
