@@ -1,6 +1,4 @@
 import os
-import re
-import subprocess
 
 config_file = ".config"  # Path to your .config file
 cmake_file = "Src/sdkconfig.cmake"  # Path to the generated kconfig.cmake file
@@ -68,7 +66,6 @@ def parse_config_file_header(_config_file):
                 value.startswith("'") and value.endswith("'")
             ):
                 value = value[1:-1]
-            value = re.sub(r'\\"', '"', value)
             # Remove 'CONFIG_' prefix from the key name
             key = key[7:] if key.startswith("CONFIG_") else key
             # Add to list
@@ -128,21 +125,3 @@ convert_config_to_cmake(config_file, cmake_file)
 
 # add default macros to header file
 append_macros_to_header(config_file, header_file)
-
-# clang-format (非强制)
-try:
-    result = subprocess.run(['which', 'clang-format'], 
-                          capture_output=True, text=True)
-    clang_format_exists = result.returncode == 0
-except:
-    clang_format_exists = False
-
-if clang_format_exists and os.path.exists(header_file):
-    subprocess.run([
-        'clang-format',
-        '-i',
-        '-style=file',
-        header_file
-    ], capture_output=True, text=True)
-elif not clang_format_exists:
-    print("clang-format not install，skip format sdkconfig.h")

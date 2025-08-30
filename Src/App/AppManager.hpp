@@ -2,10 +2,10 @@
 
 class AppManager {
 public:
-    static AppManager *instance()
+    inline static AppManager *instance()
     {
-        static AppManager instance;
-        return &instance;
+        static AppManager instance_;
+        return &instance_;
     }
 
     AppManager(const AppManager &) = delete;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdarg.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,10 +16,10 @@ void initPinyCore();
 
 class PinyCore {
 public:
-    static PinyCore *instance()
+    inline static PinyCore *instance()
     {
-        static PinyCore instance;
-        return &instance;
+        static PinyCore instance_;
+        return &instance_;
     }
 
     PinyCore(const PinyCore &) = delete;
