@@ -54,4 +54,5 @@ private:
     void masterHandle();
 
     ChassisMsg_s cmsg_;
+    GimbalMsg_s gmsg_;
 };

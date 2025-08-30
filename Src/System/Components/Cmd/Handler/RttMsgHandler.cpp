@@ -1,11 +1,6 @@
 #include "RttMsgHandler.hpp"
-#include "sdkconfig.h"
-#ifdef CHASSIS_TYPE
-#include CHASSIS_FILE
-#endif
-#include <cstring>
+#include "Chassis.hpp"
 #include "SEGGER_RTT.h"
-
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
@@ -40,6 +35,20 @@ void RTTMsgHandler::handle()
 {
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+
+    ChassisMsg_s cmsg;
+    GimbalMsg_s gmsg;
+
+
+    if (strcmp((const char *)data, "run\n") == 0) {
+        cmsg.state = CHASSIS::FSMState_e::RUN;
+    } else if (strcmp((const char *)data, "stop\n") == 0) {
+        cmsg.state = CHASSIS::FSMState_e::STOP;
+    } else {
+        cmsg.state = CHASSIS::FSMState_e::STOP;
+    }
+
+    notify(&cmsg, msgBus_->chassisQueue);
 }
 
 void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
