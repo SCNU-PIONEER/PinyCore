@@ -14,9 +14,7 @@
 #include "Buzzer.hpp"
 
 #include "UI/App.hpp"
-
-#include "Mecanum.hpp"
-#include "Standard.hpp"
+#include "test/TestModule.hpp"
 
 
 extern SPI_HandleTypeDef IMU_SPI;
@@ -47,9 +45,6 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::MECANUM::Mecanum *chassis;
-GIMBAL::STANDARD::Standard *gimbal;
-
 
 UI::App *ui;
 //---------------------------------------------------------------------------------------------------
@@ -57,8 +52,6 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        gimbal->update(_param);
-        chassis->update(_param);
         vTaskDelay(1);
     }
 }
@@ -105,7 +98,9 @@ void INSTask(void *_param)
 void AppManager::createApp()
 {
     // INS Continuous Task
-    xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal, nullptr);
+    if (APP_USE_INS)
+        xTaskCreate(INSTask, "ins_task", 256, nullptr, osPriorityNormal,
+                    nullptr);
 
     // Cmd-Polling Continuous Task
     xTaskCreate([](void *_param) { cmd->task(); }, "cmd_task", 256,
@@ -117,9 +112,9 @@ void AppManager::createApp()
 
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
-        // xTaskCreate(
-        //         [](void *_param) -> void { TestModule::instance()->task(); },
-        //         "test_task", 256, nullptr, osPriorityNormal, nullptr);
+        xTaskCreate(
+                [](void *_param) -> void { TestModule::instance()->task(); },
+                "test_task", 256, nullptr, osPriorityNormal, nullptr);
     }
 
     // Motor-Sending Continuous Task
@@ -150,17 +145,12 @@ void AppManager::initApp()
     cmd->init();
 
     // INS
-    bmi088 = new BMI088;
-    ins = new INS_SYS::INS;
-    while (bmi088->init(&IMU_SPI)) {
+    if constexpr (APP_USE_INS) {
+        bmi088 = new BMI088;
+        ins = new INS_SYS::INS;
+        bmi088->init(&IMU_SPI);
+        ins->init(accCali, gyroCali);
     }
-    ins->init(accCali, gyroCali);
-
-    // Chassis
-    chassis = new CHASSIS::MECANUM::Mecanum();
-
-    // Gimbal
-    gimbal = new GIMBAL::STANDARD::Standard();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
@@ -168,7 +158,7 @@ void AppManager::initApp()
 
     // TestModule
     if constexpr (APP_USE_TEST) {
-        // TestModule::instance()->init();
+        TestModule::instance()->init();
     }
 
     if constexpr (APP_USE_UI) {
