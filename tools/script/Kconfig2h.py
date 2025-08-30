@@ -25,6 +25,8 @@ def parse_config_file_cmake(_config_file):
             # Handle quotes in the value
             if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
+                # Replace escaped quotes with regular quotes
+                value = value.replace('\\"', '')
             # Add to dictionary
             config_vars[key] = value
     return config_vars
