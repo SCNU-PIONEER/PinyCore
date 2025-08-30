@@ -257,7 +257,8 @@ void IMotor::setZeroAng()
 void IMotor::setZeroAng(float _zeroAng)
 {
     // TODO: setZeroAng need a semaphore to protect
-    data_.zeroAng = this->isReverse_ ? (2.f * PI) - _zeroAng : _zeroAng;
+    // _zeroAng is a rawAng in "current reverse situation"
+    data_.zeroAng = _zeroAng;
 }
 float IMotor::getCmdCurr()
 {
