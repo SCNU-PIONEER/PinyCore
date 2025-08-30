@@ -8,19 +8,19 @@ menu "gimbal config"
 
         config APP_USE_STANDARD
             bool "standard"
-        config APP_USE_STACHED
-            bool "stached"
+        config APP_USE_STACKED
+            bool "stacked"
 
     endchoice
 
     config GIMBAL_TYPE
         string
         default "Standard" if APP_USE_STANDARD
-        default "Stached"  if APP_USE_STACHED
+        default "Stacked"  if APP_USE_STACHED
 
     config GIMBAL_FILE
         string
         default '"Standard.hpp"' if APP_USE_MECANUM
-        default '"Stached.hpp"'  if APP_USE_STACHED
+        default '"Stacked.hpp"'  if APP_USE_STACHED
 
 endmenu
