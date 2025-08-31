@@ -67,7 +67,7 @@ public:
     MotorTypeDef_e cmdPos(float _pos, float _velMax = -1.f, float _posMin = 0.f,
                           float _posMax = 0.f);
 
-    MotorTypeDef_e cmdVel(float _pos, float _velMax = -1.f);
+    MotorTypeDef_e cmdVel(float _vel, float _velMax = -1.f);
 
     MotorTypeDef_e cmdTorq(float _torq);
 
