@@ -1,0 +1,84 @@
+#pragma once
+
+#include "Chassis.hpp"
+
+#include "IMotor.hpp"
+#include "dsp/fast_math_functions.h"
+
+#include "IIR.hpp"
+namespace CHASSIS::OMNI {
+
+union Speed_u {
+    struct {
+        float vx; // m/s
+        float vy; // m/s
+        float wz; // rad/s
+    };
+    float _[3];
+};
+union WheelsSpeed_u {
+    struct {
+        float M_RF; // motor of the right front
+        float M_LF; // motor of the left front
+        float M_LB; // motor of the left back
+        float M_RB; // motor of the right back
+    };
+    float _[4]; // rpm
+};
+
+union Motors_u {
+    struct {
+        PINYMOTOR::IMotor *RF;
+        PINYMOTOR::IMotor *LF;
+        PINYMOTOR::IMotor *LB;
+        PINYMOTOR::IMotor *RB;
+    };
+    PINYMOTOR::IMotor *_[4];
+};
+
+class Omni : public Chassis {
+public:
+    static constexpr float W_DIAMETER = 0.1625f;
+    static constexpr float W_RADIUS = (W_DIAMETER / 2.f);
+    static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
+    static constexpr float CHASSIS_R = 0.24911f;
+
+    static constexpr float MAX_VX_SPEED = 2.f;
+    static constexpr float MAX_VY_SPEED = 2.f;
+    static constexpr float MAX_WZ_SPEED = 3.f;
+
+    Omni();
+
+    void stop();
+    void enter();
+    void update(void *_param);
+    void ctrl(const Speed_u &_speed);
+
+    const Speed_u &getSpeed() const { return curSpeed_; }
+
+protected:
+    /**
+     * @brief : calculate the speed of the chassis
+     * 
+     * @param _wSpeed : rpm of each wheel
+     * @return Speed_u : speed of the chassis in m/s and rad/s
+     */
+    Speed_u forward(const WheelsSpeed_u &_wSpeed);
+
+    /**
+     * @brief : calculate the speed of each wheel
+     * 
+     * @param _speed : speed of the chassis in m/s and rad/s
+     * @return WheelsSpeed_u : radps of each wheel
+     */
+    WheelsSpeed_u reverse(const Speed_u &_speed);
+
+private:
+    Motors_u motors_;
+    WheelsSpeed_u wSpeed_;
+    Speed_u curSpeed_;
+
+    FILTER::IIR3 velFltr_[4];
+};
+
+} //namespace CHASSIS::OMNI

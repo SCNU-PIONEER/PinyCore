@@ -51,7 +51,30 @@ void RcMsgHandler::handle()
 
 void RcMsgHandler::chassisHandle() {}
 
-void RcMsgHandler::masterHandle() {}
+void RcMsgHandler::masterHandle()
+{
+    if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        // gimbal
+        gmsg_.state = GIMBAL::FSMState_e::STOP;
+        gmsg_.wPitch = gmsg_.wYaw = 0.f;
+        // chassis
+        cmsg_.state = CHASSIS::FSMState_e::STOP;
+        cmsg_.vx = cmsg_.vy = 0.f;
+    } else if (rcMsg_.rSwitch == RC_SW_MID) {
+        // gimbal
+        gmsg_.state = GIMBAL::FSMState_e::RUN;
+        gmsg_.wPitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
+        gmsg_.wYaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
+        // chassis
+        cmsg_.state = CHASSIS::FSMState_e::RUN;
+        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
+        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
+    } else {
+        return;
+    }
+    notify(&cmsg_, msgBus_->chassisQueue);
+    notify(&gmsg_, msgBus_->gimbalQueue);
+}
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {

@@ -7,8 +7,8 @@ class RcMsgHandler : public Handler {
     static constexpr float ROCKER_VY_GAIN = 2.f;
     static constexpr float ROCKER_WZ_GAIN = 0.06f;
 
-    static constexpr float ROCKER_PITCH_GAIN = 0.1f;
-    static constexpr float ROCKER_YAW_GAIN = 0.1f;
+    static constexpr float ROCKER_PITCH_GAIN = 7.f;
+    static constexpr float ROCKER_YAW_GAIN = 7.f;
     typedef struct {
         struct {
             float rx;
@@ -54,4 +54,5 @@ private:
     void masterHandle();
 
     ChassisMsg_s cmsg_;
+    GimbalMsg_s gmsg_;
 };

@@ -21,12 +21,12 @@ struct MsgBus_s {
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct ChassisMsg_s : public Msg {
     CHASSIS::FSMState_e state;
-    float vx, vy, yaw;
+    float vx, vy;
 };
 
 struct GimbalMsg_s : public Msg {
     GIMBAL::FSMState_e state;
-    float roll, pitch, yaw;
+    float wRoll, wPitch, wYaw;
 };
 
 struct ArmMsg_s : public Msg {
@@ -34,12 +34,14 @@ struct ArmMsg_s : public Msg {
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct GimbalEularMsg_s : public Msg {
+struct INSEularMsg_s : public Msg {
     float roll, pitch, yaw;
 };
 
-struct DeltaYawMsg_s : public Msg {
-    float deltaYaw;
+struct GimbalYawMsg_s : public Msg {
+    bool isReset;
+    float followYaw;
+    float chassisYaw; // only single core system need it
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

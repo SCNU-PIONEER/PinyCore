@@ -11,7 +11,7 @@ public:
 
     Topic<INS_SYS::INSData_s> insTopic{ "CompleteINSData" };
 
-    Topic<GimbalEularMsg_s> gimbalEularTopic{ "GimbalEular" };
+    Topic<INSEularMsg_s> gimbalEularTopic{ "GimbalEular" };
 
-    Topic<DeltaYawMsg_s> deltaYawTopic{ "DeltaYaw" };
+    Topic<GimbalYawMsg_s> gimbalYawTopic{ "GimbalYaw" };
 };

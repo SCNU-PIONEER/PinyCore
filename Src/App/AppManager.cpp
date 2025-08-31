@@ -16,6 +16,12 @@
 #include "UI/App.hpp"
 #include "test/TestModule.hpp"
 
+#ifdef CHASSIS_TYPE
+#include CHASSIS_FILE
+#endif
+#ifdef GIMBAL_TYPE
+#include GIMBAL_FILE
+#endif
 
 extern SPI_HandleTypeDef IMU_SPI;
 
@@ -45,6 +51,8 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
+CHASSIS::OMNI::Omni *chassis;
+GIMBAL::STANDARD::Standard *gimbal;
 
 UI::App *ui;
 //---------------------------------------------------------------------------------------------------
@@ -52,6 +60,8 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
+        chassis->update(_param);
+        gimbal->update(_param);
         vTaskDelay(1);
     }
 }
@@ -151,6 +161,10 @@ void AppManager::initApp()
         bmi088->init(&IMU_SPI);
         ins->init(accCali, gyroCali);
     }
+
+    // Ctrl
+    chassis = new CHASSIS::OMNI::Omni;
+    gimbal = new GIMBAL::STANDARD::Standard;
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
