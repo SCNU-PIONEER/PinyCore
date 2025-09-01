@@ -203,9 +203,9 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         this->data_.tempture = fb.mosTemperature;
 
-        float angDiff =
-                (getMinorArc(this->data_.ang, this->data_.angLast, 2.f * PI)) /
-                this->rr();
+        float angDiff = (getMinorArc(this->data_.rawAng, this->data_.angLast,
+                                     2.f * PI)) /
+                        this->rr();
 
         if ((this->globalState_ == GlobalState_e::OFFLINE ||
              this->globalState_ == GlobalState_e::UNREGISTER) &&
