@@ -30,7 +30,7 @@ public:
     static constexpr uint16_t TX_SPEED_ID = 0x281U;   // 速度控制发送ID
     static constexpr uint16_t TX_ANGLE_ID = 0x282U;   // 角度控制发送ID
     static constexpr uint16_t TX_MIX_ID = 0x288U;     // 混合控制发送ID
-    static constexpr uint16_t RX_BASE_ID = 0x140U;    // 接收基础ID
+    static constexpr uint16_t RX_BASE_ID = 0x140U;    // 接收基础ID/
     
     // 构造函数和析构函数
     MF9025(const char _name[16], InitConfig_s _config, uint8_t index);

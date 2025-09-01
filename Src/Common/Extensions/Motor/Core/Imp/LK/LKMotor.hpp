@@ -33,7 +33,7 @@ struct Status_s {
     // 转换参数
     float torqueDataMax;  // 扭矩最大编码值
     float torqueMax;      // 扭矩最大值
-    float currentDataMax; // 电流最大编码值
+    float currentDataMax; // 电流最大编码值/
     float currentMax;     // 电流最大值
     float torqueConstant; // 转矩常数
     float reductionRatio; // 减速比

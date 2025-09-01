@@ -275,7 +275,7 @@ MotorTypeDef_e LKMotor::update() {
     return ctrl();
 }
 
-// 挂载电机数据到广播帧
+// 挂载电机数据到广播帧/
 void LKMotor::mountToBroadcastFrame(Transmit_s& broadcastFrame) {
     if (txBuf_.sendFlag) {
         broadcastFrame.data[motorIndex_] = txBuf_.data[motorIndex_];

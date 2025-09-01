@@ -89,6 +89,6 @@ void MF9025::initModelParams() {
         TX_SPEED_ID,      // 速度控制发送ID
         TX_ANGLE_ID,      // 角度控制发送ID
         TX_MIX_ID,        // 混合控制发送ID
-        RX_BASE_ID        // 接收基础ID
+        RX_BASE_ID        // 接收基础ID/
     );
 }
