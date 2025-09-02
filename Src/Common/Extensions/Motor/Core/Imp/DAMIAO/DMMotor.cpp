@@ -28,7 +28,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
-        : Base(_name, std::move(_config))
+        : Base(_name, _config)
 
 {
     this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
@@ -239,7 +239,6 @@ MotorTypeDef_e DMMotor::ctrl()
         EMITMsg_s msgEMIT;
     } DMMsg_u;
     DMMsg_u dmMsg = {};
-    uint8_t txBuf[8] = {};
     uint8_t lenBuf = 0;
     bool isMIT = false;
     switch (this->workMode_) {
@@ -334,8 +333,8 @@ MotorTypeDef_e DMMotor::ctrl()
         this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgPDESVDES.exptScale = this->cmd_.pos;
         dmMsg.msgPDESVDES.exptVel = this->cmd_.vel;
-        memcpy(txBuf, &dmMsg.msgPDESVDES.exptScale, 4);
-        memcpy(&txBuf[4], &dmMsg.msgPDESVDES.exptVel, 4);
+        memcpy(txBuf_.data, &dmMsg.msgPDESVDES.exptScale, 4);
+        memcpy(&txBuf_.data[4], &dmMsg.msgPDESVDES.exptVel, 4);
 
         this->cmd_.elec =
                 this->data_.torq /
@@ -352,7 +351,7 @@ MotorTypeDef_e DMMotor::ctrl()
         }
         this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgVDES.exptVel = this->cmd_.vel;
-        memcpy(txBuf, &dmMsg.msgVDES.exptVel, 4);
+        memcpy(txBuf_.data, &dmMsg.msgVDES.exptVel, 4);
         this->cmd_.elec =
                 this->data_.torq /
                 status_.torqConstant; // VDES unsupport return expected current
@@ -372,11 +371,11 @@ MotorTypeDef_e DMMotor::ctrl()
                 status_.torqConstant / status_.currMax *
                 status_.currTxCodeSpan);
         float f = dmMsg.msgEMIT.exptScale;
-        memcpy(txBuf, &f, 4);
-        txBuf[4] = static_cast<uint8_t>((dmMsg.msgEMIT.exptVelX100) >> 8);
-        txBuf[5] = static_cast<uint8_t>(dmMsg.msgEMIT.exptVelX100);
-        txBuf[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
-        txBuf[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
+        memcpy(txBuf_.data, &f, 4);
+        txBuf_.data[4] = static_cast<uint8_t>((dmMsg.msgEMIT.exptVelX100) >> 8);
+        txBuf_.data[5] = static_cast<uint8_t>(dmMsg.msgEMIT.exptVelX100);
+        txBuf_.data[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
+        txBuf_.data[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
 
         this->cmd_.elec =
                 this->data_.torq /
@@ -390,17 +389,21 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     if (isMIT) {
         lenBuf = 8;
-        txBuf[0] = static_cast<uint8_t>((dmMsg.msgMIT.exptScale & 0xFF00) >> 8);
-        txBuf[1] = static_cast<uint8_t>(dmMsg.msgMIT.exptScale & 0x00FF);
-        txBuf[2] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x0FF0) >> 4);
-        txBuf[3] = static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x000F) << 4 |
-                                        ((dmMsg.msgMIT.Kp & 0x0FF0) >> 8));
-        txBuf[4] = static_cast<uint8_t>(dmMsg.msgMIT.Kp & 0x000F);
-        txBuf[5] = static_cast<uint8_t>((dmMsg.msgMIT.Kd & 0x0FF0) >> 4);
-        txBuf[6] = static_cast<uint8_t>(
+        txBuf_.data[0] =
+                static_cast<uint8_t>((dmMsg.msgMIT.exptScale & 0xFF00) >> 8);
+        txBuf_.data[1] = static_cast<uint8_t>(dmMsg.msgMIT.exptScale & 0x00FF);
+        txBuf_.data[2] =
+                static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x0FF0) >> 4);
+        txBuf_.data[3] =
+                static_cast<uint8_t>((dmMsg.msgMIT.exptVel & 0x000F) << 4 |
+                                     ((dmMsg.msgMIT.Kp & 0x0FF0) >> 8));
+        txBuf_.data[4] = static_cast<uint8_t>(dmMsg.msgMIT.Kp & 0x000F);
+        txBuf_.data[5] = static_cast<uint8_t>((dmMsg.msgMIT.Kd & 0x0FF0) >> 4);
+        txBuf_.data[6] = static_cast<uint8_t>(
                 (dmMsg.msgMIT.Kd & 0x000F) << 4 |
                 ((dmMsg.msgMIT.torqueForward & 0x0F00) >> 8));
-        txBuf[7] = static_cast<uint8_t>(dmMsg.msgMIT.torqueForward & 0x00FF);
+        txBuf_.data[7] =
+                static_cast<uint8_t>(dmMsg.msgMIT.torqueForward & 0x00FF);
     }
 
     if ((this->cmd_.SW && !this->cmd_.prevSW) ||
@@ -436,7 +439,6 @@ MotorTypeDef_e DMMotor::update()
 MotorTypeDef_e DMMotor::enable()
 {
     MotorTypeDef_e rslt = 0;
-    // 定义一个8字节的数组enableCmdPack，用于存储使能命令
     uint8_t enableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC
     };
@@ -448,7 +450,6 @@ MotorTypeDef_e DMMotor::enable()
 MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;
-    // 定义一个8字节的数组disableCmdPack，用于存储禁用命令
     uint8_t disableCmdPack[8] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
     };
