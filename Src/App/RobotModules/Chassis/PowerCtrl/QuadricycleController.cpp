@@ -1,4 +1,5 @@
 #include "QuadricycleController.hpp"
+#include "SuperCap.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -7,90 +8,74 @@ using namespace PINYMOTOR;
 QuadricycleController::QuadricycleController(ChassisType_e _chassisType)
         : PowerController(_chassisType)
 {
-    energyPid_ = std::make_unique<PositonalPid>(0.1f, 0, 0, 0.002f, 0, 0.f, 0);
-    powerPid_ =
-            std::make_unique<PositonalPid>(300.f, 0, 0, 0.002f, 0, 400.f, 0);
 }
 
-void QuadricycleController::cmdPowerCalc(float *_motorSpeed)
+void QuadricycleController::cmdPowerCalc(const float *_motorSpeed,
+                                         PINYMOTOR::IMotor **_motor,
+                                         const float *_cmd)
 {
-    MotorManager *motorManager = MotorManager::instance();
-    auto it = motorManager->motors().begin();
-    float motorCmdRads[4] = { 0 };
+    float motorCmdRads[4] = { 0, 0, 0, 0 };
     float powerSum = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
-        motorCmdRads[i] = (_motorSpeed[i] * it->second->rr()) / 60.f * 2 * PI;
+        motorCmdRads[i] = (_motorSpeed[i] * _motor[i]->rr()) / 60.f * 2 * PI;
         //TODO:elec的转换
-        cmdPower[i] = (M3508.k0 * it->second->getCmdCurr() * motorCmdRads[i] +
+        cmdPower[i] = (M3508.KN * _cmd[i] * motorCmdRads[i] +
                        M3508.MLC * motorCmdRads[i] * motorCmdRads[i] +
-                       M3508.ESR * it->second->getCmdCurr() *
-                               it->second->getCmdCurr() +
-                       M3508.LeakagePower);
+                       M3508.ESR * _cmd[i] * _cmd[i] + M3508.LeakagePower);
         powerSum += cmdPower[i];
-        it++;
     }
     chassisRawPower = powerSum;
 }
 
-void QuadricycleController::relPowerCalc()
+void QuadricycleController::relPowerCalc(PINYMOTOR::IMotor **_motor)
 {
-    MotorManager *motorManager = MotorManager::instance();
     CapData_s capData = cap_.getCapData();
-    auto it = motorManager->motors().begin();
-    float motorRelRads[4] = { 0 };
+    float motorRelRads[4] = { 0, 0, 0, 0 };
     float powerSum = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
-        Data_s motorData = it->second->data();
-        motorRelRads[i] = motorData.spdRadps * it->second->rr();
-
-        relPower[i] = (M3508.k0 * motorData.curr * motorRelRads[i] +
+        Data_s motorData = _motor[i]->data();
+        motorRelRads[i] = motorData.spdRadps * _motor[i]->rr();
+        relPower[i] = (M3508.KN * motorData.curr * motorRelRads[i] +
                        M3508.MLC * motorRelRads[i] * motorRelRads[i] +
                        M3508.ESR * motorData.curr * motorData.curr +
                        M3508.LeakagePower);
         powerSum += relPower[i];
-        it++;
     }
     chassisRealPower = powerSum;
     capFeedbackPower = capData.inputVoltage * capData.outputCurrent;
 }
 
-void QuadricycleController::currentCalc()
+void QuadricycleController::currentCalc(PINYMOTOR::IMotor **_motor)
 {
-    MotorManager *motorManager = MotorManager::instance();
-    auto it = motorManager->motors().begin();
-    float motorRelRads[4] = { 0 };
+    float motorRelRads[4] = { 0, 0, 0, 0 };
     for (uint8_t i = 0; i < motorNum_; i++) {
-        Data_s motorData = it->second->data();
-        motorRelRads[i] = motorData.spdRadps * it->second->rr();
+        Data_s motorData = _motor[i]->data();
+        motorRelRads[i] = motorData.spdRadps * _motor[i]->rr();
 
         float discriminant =
-                (M3508.k0 * M3508.k0 * motorRelRads[i] * motorRelRads[i]) -
+                (M3508.KN * M3508.KN * motorRelRads[i] * motorRelRads[i]) -
                 (4 * M3508.ESR *
                  (M3508.MLC * motorRelRads[i] * motorRelRads[i] +
                   M3508.LeakagePower - setPower[i]));
 
         discriminant = std::max(discriminant, 0.0f);
 
-        float sign = (it->second->getCmdCurr() > 0) ? 1 : -1;
-        setIq[i] = (-M3508.k0 * motorRelRads[i] + sign * sqrt(discriminant)) /
+        float sign = (_motor[i]->getCmdCurr() > 0) ? 1 : -1;
+        setIq[i] = (-M3508.KN * motorRelRads[i] + sign * sqrt(discriminant)) /
                    (2 * M3508.ESR);
-        it++;
     }
 }
 
-void QuadricycleController::rlsUpdate()
+void QuadricycleController::rlsUpdate(PINYMOTOR::IMotor **_motor)
 {
-    MotorManager *motorManager = MotorManager::instance();
-    auto it = motorManager->motors().begin();
-    float motorRelRads[4] = { 0 };
-    float vectorValue[3] = { 0 };
+    float motorRelRads[4] = { 0, 0, 0, 0 };
+    float vectorValue[3] = { 0, 0, 0 };
     for (uint8_t i = 0; i < motorNum_; i++) {
-        Data_s motorData = it->second->data();
-        motorRelRads[i] = motorData.spdRadps * it->second->rr();
+        Data_s motorData = _motor[i]->data();
+        motorRelRads[i] = motorData.spdRadps * _motor[i]->rr();
         vectorValue[0] += motorData.curr * motorRelRads[i];
         vectorValue[1] += motorRelRads[i] * motorRelRads[i];
         vectorValue[2] += motorData.curr * motorData.curr;
-        it++;
     }
 
     Matrix<3, 1> inputVector(vectorValue);
@@ -98,43 +83,28 @@ void QuadricycleController::rlsUpdate()
                      capFeedbackPower - (M3508.LeakagePower * 4.f));
 
     Matrix<3, 1> params = wheelRLS_.getEstVector();
-    M3508.k0 = params[0][0];
-    M3508.MLC = params[1][0];
-    M3508.ESR = params[2][0];
+    M3508.KN = params[0][0];
+    M3508.MLC = params[0][1];
+    M3508.ESR = params[0][2];
 }
 
 
-std::vector<float> QuadricycleController::powerCtrl(float *_motorSpeed)
+std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed,
+                                                    PINYMOTOR::IMotor **_motor,
+                                                    const float *_cmd)
 {
     //TODO: refereeData
     refereeDataUpdate();
+
     CapData_s capData = cap_.getCapData();
 
-    float bufferDP = std::clamp(energyPid_->calc(expPowerBuffer, powerBuffer),
-                                -1.f, 1.f); //动态规划缓冲能量
+    dynamicPower(capData.capVoltage);
 
-    float voltageRange = powf(VCapMAX, 2.f) - powf(VCapMIN, 2.f);
-    capRealRatio =
-            (powf(capData.capVoltage, 2.f) - powf(VCapMIN, 2.f)) / voltageRange;
-
-    float ratioErr = capRealRatio - capCmdRatio;
-    float capExpRatio =
-            std::clamp(capCmdRatio + (ratioErr * bufferDP), 0.f, 1.f);
-
-    offsetPower = powerPid_->calc(capExpRatio, capRealRatio);
-    maxPower = std::clamp(limitPower - offsetPower, limitPower,
-                          (capData.capVoltage * CAPCurrMax) + limitPower);
-
-    cmdPowerCalc(_motorSpeed);
-    if (chassisRawPower > maxPower) {
-#if USELinearityRatio == 1
+    cmdPowerCalc(_motorSpeed, _motor, _cmd);
+    if (chassisRawPower > maxPower) //限制最大输出功率
         powerRatio = maxPower / chassisRawPower;
-#elif USEConfidenceLevel == 1
-        //TODO:fix
-#else
+    else
         powerRatio = 1.f;
-#endif
-    }
 
     float chassisSetPower = 0;
     static float lastSetPower = 0;
@@ -143,13 +113,17 @@ std::vector<float> QuadricycleController::powerCtrl(float *_motorSpeed)
         chassisSetPower += setPower[i];
     }
 
-    currentCalc();
-    relPowerCalc();
-    rlsUpdate();
+    currentCalc(_motor);
+    relPowerCalc(_motor);
+
+    if constexpr (APP_USE_RLS) {
+        rlsUpdate(_motor);
+    }
 
     static uint32_t taskTick = 0;
     float setPowerDot = (chassisSetPower - lastSetPower) /
-                        (xTaskGetTickCount() - taskTick) * 1000.f;
+                        static_cast<float>(xTaskGetTickCount() - taskTick) *
+                        1000.f;
     lastSetPower = chassisSetPower;
     taskTick = xTaskGetTickCount();
     chargeCmdPower =

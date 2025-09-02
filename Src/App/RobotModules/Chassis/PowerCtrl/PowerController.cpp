@@ -1,4 +1,5 @@
 #include "PowerController.hpp"
+#include <cstdint>
 
 PowerController::PowerController(ChassisType_e _chassisType)
         : chassisType_(_chassisType)
@@ -17,6 +18,23 @@ PowerController::PowerController(ChassisType_e _chassisType)
         setIq[i] = 0;
         setPower[i] = 0;
     }
+}
+
+void PowerController::dynamicPower(float _capVoltage)
+{
+    float bufferDP = std::clamp(energyPid_->calc(expPowerBuffer, powerBuffer),
+                                -1.f, 1.f); //动态规划缓冲能量
+    capRealRatio =
+            (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
+
+    float ratioErr = capRealRatio - capCmdRatio;
+    float capExpRatio =
+            std::clamp(capCmdRatio + (ratioErr * bufferDP), 0.f, 1.f);
+
+    offsetPower = powerPid_->calc(capExpRatio, capRealRatio);
+
+    maxPower = std::clamp(limitPower - offsetPower, limitPower,
+                          (_capVoltage * CAPCurrMax) + limitPower);
 }
 
 void PowerController::refereeDataUpdate()
