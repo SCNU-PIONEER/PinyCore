@@ -35,6 +35,14 @@ menu "chassis config"
     bool "power control"
     default n
 
+    menu "power control settings"
+    depends on APP_USE_POWERCTRL
+
+    config APP_USE_RLS
+        bool "rls"
+        default y
+    endmenu
+
     config APP_USE_ODOMETER
     bool "odometer"
     default n
