@@ -27,7 +27,8 @@ protected:
     uint8_t offsetId_;
 
     float txFreq_;
-    float rxFreq_;             // TODO:
+    float rxFreq_; // TODO:
+    uint16_t recvStamp_;
     uint32_t lastSendTick = 0; // ms
     uint32_t lastRecvTick = 0; // ms
     char name_[16] = "NULL";
