@@ -90,7 +90,7 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
                 (this->data_.rawAng - this->data_.angLast) / this->rr();
         this->data_.cirNum = this->data_.multipCirAng / (2 * PI);
         this->data_.singleCirAng =
-                rangeMap(this->data_.singleCirAng, 0, (2 * PI));
+                rangeMap(this->data_.multipCirAng, 0, (2 * PI));
         float noumenaVel = ((float)fb->fbk.speed / 256) * (2 * PI);
         this->data_.spdRadps = this->isReverse_ ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
