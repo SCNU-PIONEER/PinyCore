@@ -149,7 +149,7 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    this->recvStamp_++;
+    this->recvCnt_++;
     // 先处理非常规数据反馈的帧
     if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) &&
         _rxBuf.data[1] == static_cast<uint8_t>(canId() >> 8)) {

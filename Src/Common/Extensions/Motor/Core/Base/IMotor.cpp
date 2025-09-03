@@ -45,9 +45,9 @@ void IMotor::calcRecvFreq()
     if (dt < 1000) {
         return;
     } else {
-        this->rxFreq_ = static_cast<float>(this->recvStamp_) /
+        this->rxFreq_ = static_cast<float>(this->recvCnt_) /
                         (static_cast<float>(dt) / 1000.f);
-        this->recvStamp_ = 0;
+        this->recvCnt_ = 0;
         lastRecvTick = xTaskGetTickCount();
     }
     if (this->rxFreq_ < 1.f) {

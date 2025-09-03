@@ -119,7 +119,7 @@ MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,
 
 MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    this->recvStamp_++;
+    this->recvCnt_++;
     Feedback_s fb;
     fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawTorq = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));

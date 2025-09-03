@@ -27,8 +27,8 @@ protected:
     uint8_t offsetId_;
 
     float txFreq_;
-    float rxFreq_; // TODO:
-    uint16_t recvStamp_;
+    float rxFreq_;
+    uint16_t recvCnt_;
     uint32_t lastSendTick = 0; // ms
     uint32_t lastRecvTick = 0; // ms
     char name_[16] = "NULL";
@@ -40,7 +40,7 @@ protected:
 
     bool isReverse_ = false;
 
-    QueueHandle_t rxQueue_; // TODO: use a queue to store the received data
+    QueueHandle_t rxQueue_;
 
     QueueHandle_t cmdQueue_;
     CmdBus_s cmdBuf_;
