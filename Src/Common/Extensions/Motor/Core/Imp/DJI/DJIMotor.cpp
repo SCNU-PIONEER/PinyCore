@@ -114,7 +114,6 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    this->recvCnt_++;
     Feedback_s fb;
     fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
     fb.rawRpm = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
@@ -315,6 +314,7 @@ MotorTypeDef_e DJIMotor::ctrl()
 MotorTypeDef_e DJIMotor::update()
 {
     if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
+        this->recvCnt_++;
         this->parse(this->rxBuf_);
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {

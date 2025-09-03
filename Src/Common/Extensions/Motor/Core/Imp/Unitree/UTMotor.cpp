@@ -74,7 +74,6 @@ MotorTypeDef_e UTMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
 {
-    this->recvCnt_++;
     Feedback_s *fb = reinterpret_cast<Feedback_s *>(_rxBuf);
     if (fb->CRC16 != Get_CRC16_Check_Sum((uint8_t *)(fb), 14, 0)) {
         return 0; //TODO: CRC error
@@ -144,6 +143,7 @@ MotorTypeDef_e UTMotor::ctrl()
 MotorTypeDef_e UTMotor::update()
 {
     if (xQueueReceive(this->rxQueue_, this->rxBuf_, 0) == pdTRUE) {
+        this->recvCnt_++;
         this->parse(this->rxBuf_);
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
