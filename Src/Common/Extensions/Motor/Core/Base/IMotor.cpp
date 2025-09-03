@@ -41,12 +41,14 @@ bool IMotor::checkSend()
 
 void IMotor::calcRecvFreq()
 {
-    uint32_t dt = xTaskGetTickCount() - lastRecvTick;
-    lastRecvTick = xTaskGetTickCount();
-    if (dt == 0) {
+    uint32_t dt = xTaskGetTickCount() - lastRecvTick; // ms
+    if (dt < 1000) {
         return;
     } else {
-        this->rxFreq_ = 1000.f / static_cast<float>(dt);
+        this->rxFreq_ = static_cast<float>(this->recvCnt_) /
+                        (static_cast<float>(dt) / 1000.f);
+        this->recvCnt_ = 0;
+        lastRecvTick = xTaskGetTickCount();
     }
     if (this->rxFreq_ < 1.f) {
         this->globalState_ = GlobalState_e::OFFLINE;
