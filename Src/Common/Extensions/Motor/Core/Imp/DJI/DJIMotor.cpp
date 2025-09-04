@@ -56,9 +56,7 @@ void DJIMotor::registerRecvCallback()
     Can::instance().registerCallback(
             reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
             [this](const uint8_t *_rxBuf) {
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(this->rxQueue_, _rxBuf,
-                                  &higherPriorityTaskWoken);
+                memcpy(this->rxBuf_.data, _rxBuf, 8);
             });
     LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx", this->name_,
               this->masterId());
@@ -114,11 +112,16 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
+    uint8_t temp[8];
+    taskENTER_CRITICAL();
+    memcpy(temp, _rxBuf.data, 8);
+    taskEXIT_CRITICAL();
+
     Feedback_s fb;
-    fb.rawAng = ((_rxBuf.data[0] << 8) | _rxBuf.data[1]);
-    fb.rawRpm = static_cast<int16_t>(((_rxBuf.data[2] << 8) | _rxBuf.data[3]));
-    fb.current = static_cast<int16_t>((_rxBuf.data[4] << 8) | _rxBuf.data[5]);
-    fb.temperature = _rxBuf.data[6];
+    fb.rawAng = ((temp[0] << 8) | temp[1]);
+    fb.rawRpm = static_cast<int16_t>(((temp[2] << 8) | temp[3]));
+    fb.current = static_cast<int16_t>((temp[4] << 8) | temp[5]);
+    fb.temperature = temp[6];
 
     float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
     this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
@@ -313,10 +316,8 @@ MotorTypeDef_e DJIMotor::ctrl()
 
 MotorTypeDef_e DJIMotor::update()
 {
-    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
-        this->recvCnt_++;
-        this->parse(this->rxBuf_);
-    }
+    this->recvCnt_++; //BUG: wait to fix
+    this->parse(this->rxBuf_);
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
     }
