@@ -1,0 +1,24 @@
+menu "Board config"
+    config BOARD_USE_COMM
+        bool "communication"
+        default y
+
+    menu "Board communication config"
+        depends on BOARD_USE_COMM
+
+        choice
+            prompt "board type"
+            default BOARD_MASTER
+            
+            config BOARD_MASTER
+                bool "master"
+                default y
+
+            config BOARD_SLAVE
+                bool "slave"
+                default n
+
+        endchoice
+    endmenu
+    
+endmenu

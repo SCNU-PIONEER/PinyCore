@@ -8,3 +8,5 @@ source "Src/Common/Bsp/Kconfig"
 
 source "Src/Utils/Kconfig"
 
+source "Src/System/BoardComm/Kconfig"
+
