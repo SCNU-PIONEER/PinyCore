@@ -16,6 +16,8 @@
 #include "UI/App.hpp"
 #include "test/TestModule.hpp"
 
+#include "System/BoardComm/BoardComm.hpp"
+
 
 extern SPI_HandleTypeDef IMU_SPI;
 
@@ -123,6 +125,11 @@ void AppManager::createApp()
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
             "motor_task", 512, nullptr, osPriorityRealtime, nullptr);
+    xTaskCreate(
+            [](void *_param) -> void {
+                BoardManager::instance()->ctrlTask();
+            },
+            "boardComm_task", 512, nullptr, osPriorityRealtime, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
