@@ -1,15 +1,35 @@
 #include "INS.hpp"
-
+#include "sdkconfig.h"
+#include "cmsis_os2.h"
 #include "TopicRouter.hpp"
 
 #define CORRECT_IMU_DATA 1
 
+extern SPI_HandleTypeDef IMU_SPI;
+
 using namespace INS_SYS;
+
+const AccCali_s accCali = {
+    // default accelerometer calibration
+    .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
+                 { 0.001142f, 1.009152f, 0.006399f },
+                 { -0.005477f, 0.002071f, 1.013539f } },
+    .accel_offs = { -34.944336f, -3.310059f, 107.792969f }
+};
+const GyroCali_s gyroCali = {
+    // default gyroscope calibration
+    .gx_bias = -1.93095636f, .gy_bias = -5.93262482f, .gz_bias = 0.222163752f,
+    .gx_tco_k = 0.f,         .gx_tco_b0 = 0.f,        .gy_tco_k = 0.f,
+    .gy_tco_b0 = 0.f,        .gz_tco_k = 0.f,         .gz_tco_b0 = 0.f
+};
 
 INS::INS()
         : insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
                                            &insDat_))
 {
+    xTaskCreate(INS::task, "ins_task", 256, this, osPriorityRealtime7, nullptr);
+
+    LOG::info("INS","task init success");
 }
 
 void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
@@ -29,6 +49,48 @@ void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
 
     // Set initial time interval
     this->dt_ = 0.001f; // default to 1 ms
+}
+
+void INS::task(void *_param)
+{
+    auto instance = static_cast<INS *>(_param);
+    while (instance->bmi088.init(&IMU_SPI))
+        ;
+    instance->init(accCali, gyroCali);
+    while (true) {
+        // read BMI088 data
+        instance->bmi088.readRaw(); // read raw 6 axis data from device
+        instance->bmi088.read();    // serialize data to real format
+
+        // load raw INS needed data, you must transform the raw imu data to correct order
+        // the order of axis is defined as:
+        /*
+                     Z
+                     |
+                     |
+                     |
+                     |     X:HEAD
+                     |   /
+                     | /
+            Y<-------ROBOT 
+        */
+        INS_SYS::IMUSensorRawData_s data = {
+            .a = { .x = instance->bmi088.getRawAccelX(),
+                   .y = instance->bmi088.getRawAccelY(),
+                   .z = static_cast<int16_t>(-instance->bmi088.getRawAccelZ()),
+                   .transK = instance->bmi088.getAccelMappingVaule() },
+            .g = { .x = instance->bmi088.getRawGyroX(),
+                   .y = instance->bmi088.getRawGyroY(),
+                   .z = static_cast<int16_t>(-instance->bmi088.getRawGyroZ()),
+                   .transK = instance->bmi088.getGyroMappingVaule() },
+            // .m = NULL TODO:
+        };
+
+        // update INS
+        instance->update(&data, instance->bmi088.getTimestamp(),
+                         instance->bmi088.getTemperature());
+        vTaskDelay(1);
+    }
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)

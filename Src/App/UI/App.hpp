@@ -22,12 +22,13 @@ struct Msg_s {
     void *pdata;
 };
 
+
 class App {
 public:
-    App(UART_HandleTypeDef _huart, uint8_t _id);
+    App(uint8_t _id);
     void init();
     void update(const Msg_s *_param);
-    void task(void *_param);
+    void task();
 
 protected:
     void updateChassis(const ChassisTxMsg_s *_msg);
@@ -41,6 +42,7 @@ private:
     Info_s *constInfo_;
     QueueHandle_t rxQueue;
     uint8_t queueLen_ = 0;
+    uint32_t updateCnt = 0;
 };
 
 } // namespace UI
