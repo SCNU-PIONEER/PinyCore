@@ -68,7 +68,7 @@ struct INSData_s {
 class INS {
 public:
     INS();
-    
+
     void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali);
 
     static void task(void *_param);

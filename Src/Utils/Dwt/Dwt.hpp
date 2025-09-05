@@ -18,7 +18,7 @@ public:
         static Dwt instance;
         return instance;
     }
-    
+
     /**
     * @brief  读取当前时间戳
     * @param  无
@@ -68,7 +68,3 @@ private:
     */
     Dwt();
 };
-
-
-
-

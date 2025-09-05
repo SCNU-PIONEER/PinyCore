@@ -29,7 +29,7 @@ INS::INS()
 {
     xTaskCreate(INS::task, "ins_task", 256, this, osPriorityRealtime7, nullptr);
 
-    LOG::info("INS","task init success");
+    LOG::info("INS", "task init success");
 }
 
 void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
