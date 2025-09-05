@@ -176,7 +176,7 @@ public:
 protected:
     Logger(const Logger &);
     Logger &operator=(const Logger &);
-    Logger() = default;
+    Logger() { SEGGER_RTT_Init(); }
 
 private:
     Config config;
