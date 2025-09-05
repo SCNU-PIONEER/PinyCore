@@ -8,6 +8,7 @@
 class TopicRouter {
 public:
     static TopicRouter &instance();
+    Topic<ChassisMsg_s> chassisTopic{ "Chassis" };
 
     Topic<INS_SYS::INSData_s> insTopic{ "CompleteINSData" };
 
