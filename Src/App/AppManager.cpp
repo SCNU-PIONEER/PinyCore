@@ -3,7 +3,6 @@
 #include "cmsis_os2.h"
 #include "MotorManager.hpp"
 #include "INS.hpp"
-
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
@@ -32,9 +31,7 @@ UI::App ui(UI_ROBOT_ID);
 
 void AppManager::schedule(std::function<void()> _callback)
 {
-    {
-        tasks.push_back(std::move(_callback));
-    }
+    tasks.push_back(std::move(_callback));
 }
 
 void AppManager::ctrlTask(void *_param)
@@ -84,6 +81,7 @@ void AppManager::initApp()
                                        BEEP_APB_FREQ);
 
 #if APP_USE_UI
+    ui.init();
     schedule([]() { ui.task(); });
 #endif
 
