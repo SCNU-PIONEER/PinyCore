@@ -15,7 +15,8 @@
 
 #include "UI/App.hpp"
 
-#include "Mecanum.hpp"
+// #include "Mecanum.hpp"
+#include "Swerve.hpp"
 #include "Standard.hpp"
 
 
@@ -47,7 +48,8 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 // Ctrl
-CHASSIS::MECANUM::Mecanum *chassis;
+// CHASSIS::MECANUM::Mecanum *chassis;
+CHASSIS::SWERVE::Swerve *chassis;
 GIMBAL::STANDARD::Standard *gimbal;
 
 
@@ -57,7 +59,7 @@ UI::App *ui;
 void ctrlTask(void *_param)
 {
     while (true) {
-        gimbal->update(_param);
+        //gimbal->update(_param);
         chassis->update(_param);
         vTaskDelay(1);
     }
@@ -157,10 +159,11 @@ void AppManager::initApp()
     ins->init(accCali, gyroCali);
 
     // Chassis
-    chassis = new CHASSIS::MECANUM::Mecanum();
+    //chassis = new CHASSIS::MECANUM::Mecanum();
+    chassis = new CHASSIS::SWERVE::Swerve();
 
     // Gimbal
-    gimbal = new GIMBAL::STANDARD::Standard();
+    //gimbal = new GIMBAL::STANDARD::Standard();
 
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
