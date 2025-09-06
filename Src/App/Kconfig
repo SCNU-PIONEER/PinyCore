@@ -24,6 +24,10 @@ menu "app config"
     bool "ins"
     default n
 
+    config APP_USE_DAEMONS
+    bool "daemons"
+    default n
+
     source "Src/App/UI/Kconfig"
 
 

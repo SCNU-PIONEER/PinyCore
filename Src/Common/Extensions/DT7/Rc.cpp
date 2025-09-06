@@ -1,8 +1,10 @@
 #include "Soc.hpp"
-#include <string.h>
+#include <cstring>
 #include "Rc.hpp"
 #include "Bsp_uart.hpp"
 #include "Bsp_dma.hpp"
+#include "task.h"
+
 namespace RC {
 
 Rc::Rc() { memset(&data_, 0, sizeof(data_)); }
@@ -14,43 +16,36 @@ void Rc::init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event)
     rcBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * RC_FRAME_LENGTH);
     Uart::instance().RecvDmaMultiBufInit(_huart, (uint32_t *)&rcBuffer_[0],
                                          2 * RC_FRAME_LENGTH);
-    Uart::instance().registerCallback(_huart, &Rc::RawCallBackFromISR);
+    Uart::instance().registerCallback(_huart, &Rc::rawCallBackFromISR);
 }
 
-void Rc::RawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos)
+void Rc::rawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
 {
-    Rc::instance().callBackFromISR(_huart, _Pos);
+    Rc::instance().callBackFromISR(_huart, _pos);
 }
 
-void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos)
+void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     // if (_huart == uart_) {
     uint16_t size = _huart->RxXferCount;
-    if (((((DMA_Stream_TypeDef *)_huart->hdmarx->Instance)->CR) &
-         DMA_SxCR_CT) == RESET) {
+    if ((((_huart->hdmarx->Instance)->CR) & DMA_SxCR_CT) == RESET) {
         __HAL_DMA_DISABLE(_huart->hdmarx);
-        ((DMA_Stream_TypeDef *)_huart->hdmarx->Instance)->CR |= DMA_SxCR_CT;
+        (_huart->hdmarx->Instance)->CR |= DMA_SxCR_CT;
         __HAL_DMA_SET_COUNTER(_huart->hdmarx, 2 * RC_FRAME_LENGTH);
         if (size == RC_FRAME_LENGTH) {
-            BaseType_t higher_priority_task_woken = pdFALSE;
-            xEventGroupSetBitsFromISR(event_, RC_READY_EVENT,
-                                      &higher_priority_task_woken);
-            portYIELD_FROM_ISR(higher_priority_task_woken);
-            // dt7RxLostCnt_ = 0; BUG: wait for fix
+            xEventGroupSetBitsFromISR(event_, RC_READY_EVENT, nullptr);
+            dt7RxLostCnt_ = 0;
         } else
             dt7RxLostCnt_ = RC_RX_LOST_MAX;
 
     } else {
         __HAL_DMA_DISABLE(_huart->hdmarx);
-        ((DMA_Stream_TypeDef *)_huart->hdmarx->Instance)->CR &= ~(DMA_SxCR_CT);
+        (_huart->hdmarx->Instance)->CR &= ~(DMA_SxCR_CT);
         __HAL_DMA_SET_COUNTER(_huart->hdmarx, 2 * RC_FRAME_LENGTH);
         if (size == RC_FRAME_LENGTH) {
-            BaseType_t higher_priority_task_woken = pdFALSE;
-            xEventGroupSetBitsFromISR(event_, RC_READY_EVENT,
-                                      &higher_priority_task_woken);
-            portYIELD_FROM_ISR(higher_priority_task_woken);
+            xEventGroupSetBitsFromISR(event_, RC_READY_EVENT, nullptr);
         }
     }
     __HAL_DMA_ENABLE(_huart->hdmarx);
@@ -58,9 +53,8 @@ void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos)
 
 uint8_t Rc::parseData()
 {
-    data_.rc.ch0 =
-            (int16_t)((int16_t)rcBuffer_[0] | ((int16_t)rcBuffer_[1] << 8)) &
-            0x07FF;
+    data_.rc.ch0 = ((int16_t)rcBuffer_[0] | ((int16_t)rcBuffer_[1] << 8)) &
+                   0x07FF;
     if (data_.rc.ch0 > RC_CH_VALUE_MAX || data_.rc.ch0 < RC_CH_VALUE_MIN)
         return RC_CH_ERROR;
     data_.rc.ch0 -= RC_CH_VALUE_OFFSET;
@@ -90,21 +84,27 @@ uint8_t Rc::parseData()
     data_.rc.switchLeft = (uint8_t)((uint8_t)(rcBuffer_[5] >> 4) & 0x0C) >> 2;
     data_.rc.switchRight = (uint8_t)((uint8_t)(rcBuffer_[5] >> 4) & 0x03);
 
-    data_.mouse.x = (int16_t)((int16_t)rcBuffer_[6]) |
-                    ((int16_t)rcBuffer_[7] << 8);
-    data_.mouse.y = (int16_t)((int16_t)rcBuffer_[8]) |
-                    ((int16_t)rcBuffer_[9] << 8);
-    data_.mouse.z = (int16_t)((int16_t)rcBuffer_[10]) |
-                    ((int16_t)rcBuffer_[11] << 8);
+    data_.mouse.x = ((int16_t)rcBuffer_[6]) | ((int16_t)rcBuffer_[7] << 8);
+    data_.mouse.y = ((int16_t)rcBuffer_[8]) | ((int16_t)rcBuffer_[9] << 8);
+    data_.mouse.z = ((int16_t)rcBuffer_[10]) | ((int16_t)rcBuffer_[11] << 8);
 
-    data_.mouse.pressLeft = (uint8_t)rcBuffer_[12];
-    data_.mouse.pressRight = (uint8_t)rcBuffer_[13];
+    data_.mouse.pressLeft = rcBuffer_[12];
+    data_.mouse.pressRight = rcBuffer_[13];
 
     data_.keyboard.keyCode =
             (((uint16_t)rcBuffer_[14]) | ((uint16_t)rcBuffer_[15] << 8));
 
-    data_.wheel = (int16_t)((int16_t)rcBuffer_[16]) |
-                  ((int16_t)rcBuffer_[17] << 8);
+    data_.wheel = ((int16_t)rcBuffer_[16]) | ((int16_t)rcBuffer_[17] << 8);
     return RC_NO_ERROR;
 }
+
+bool Rc::isOnline()
+{
+    if (dt7RxLostCnt_ < RC_RX_LOST_MAX) {
+        dt7RxLostCnt_++;
+        return true;
+    } else
+        return false;
 }
+
+} // namespace RC

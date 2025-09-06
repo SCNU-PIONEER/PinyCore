@@ -8,6 +8,10 @@
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
 
+#if APP_USE_DAEMONS
+#include "Daemons/Daemons.hpp"
+#endif
+
 extern TIM_HandleTypeDef BEEP_TIMER;
 
 //---------------------------------------------------------------------------------------------------
@@ -29,20 +33,34 @@ UI::App ui(UI_ROBOT_ID);
 
 //---------------------------------------------------------------------------------------------------
 
+void AppManager::initApp()
+{
+    // Buzzer
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
+                                       BEEP_APB_FREQ);
+
+#if APP_USE_UI
+    ui.init();
+    schedule([]() { ui.task(); });
+#endif
+
+#if APP_USE_DAEMONS
+    schedule([]() { Daemons::instance().update(); });
+#endif
+
+    // TestModule
+    if constexpr (APP_USE_TEST) {
+        TestModule::instance()->init();
+    }
+
+
+    // Generate threads at the end
+    this->createApp();
+}
+
 void AppManager::schedule(std::function<void()> _callback)
 {
     tasks.push_back(std::move(_callback));
-}
-
-void AppManager::ctrlTask(void *_param)
-{
-    auto app = static_cast<AppManager *>(_param);
-    while (true) {
-        for (auto &task : app->tasks) {
-            task();
-        }
-        vTaskDelay(1);
-    }
 }
 
 void AppManager::createApp()
@@ -74,23 +92,13 @@ void AppManager::createApp()
             "buzzer_task", 64, nullptr, osPriorityNormal, nullptr);
 }
 
-void AppManager::initApp()
+void AppManager::ctrlTask(void *_param)
 {
-    // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
-                                       BEEP_APB_FREQ);
-
-#if APP_USE_UI
-    ui.init();
-    schedule([]() { ui.task(); });
-#endif
-
-    // TestModule
-    if constexpr (APP_USE_TEST) {
-        TestModule::instance()->init();
+    auto app = static_cast<AppManager *>(_param);
+    while (true) {
+        for (auto &task : app->tasks) {
+            task();
+        }
+        vTaskDelay(1);
     }
-
-
-    // Generate threads at the end
-    this->createApp();
 }

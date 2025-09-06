@@ -2,16 +2,16 @@
  * @file rc_msg.hpp
  * @brief 遥控器数据集
  *
- * @version Version 1.0.0
+ * @version Version 1.0.1
  * @author yjy
- * @date 2025/3/19
+ * @date 2025/9/8
  *
  * @copyright SCNU-PIONEER (c) 2025-2026
  *
  */
 #pragma once
 
-#include "stdint.h"
+#include <cstdint>
 
 /* --------------- RC Channel Definition-----------------*/
 #define RC_CH_VALUE_MIN         ((uint16_t)364)
@@ -99,4 +99,5 @@ typedef struct {
     } keyboard;
     int16_t wheel;
 } RcRawMsg_t;
-}
+
+} // namespace RC
