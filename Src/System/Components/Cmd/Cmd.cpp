@@ -1,17 +1,21 @@
 #include "Cmd.hpp"
 #include "MsgImpl.hpp"
+#include "StmLog.hpp"
+#include "cmsis_os2.h"
 
 
-void Cmd::init()
+Cmd::Cmd() : eventGroup_(xEventGroupCreate())
 {
-    eventGroup_ = xEventGroupCreate();
-
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
     msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
 
     rttHandler_.init(&msgBus_, eventGroup_);
     rcHandler_.init(&msgBus_, eventGroup_);
+
+    xTaskCreate(Cmd::task, "cmd_task", 256, this, osPriorityNormal, nullptr);
+
+    LOG::info("cmd", "init success");
 }
 
 
@@ -27,9 +31,10 @@ void Cmd::parseMsg()
     }
 }
 
-void Cmd::task()
+void Cmd::task(void *_param)
 {
+    auto instance = static_cast<Cmd *>(_param);
     for (;;) {
-        parseMsg();
+        instance->parseMsg();
     }
 }

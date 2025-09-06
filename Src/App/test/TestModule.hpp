@@ -11,7 +11,11 @@ enum class FSMState_e : uint8_t {};
 
 class TestModule {
 public:
-    static TestModule *instance();
+    static TestModule *instance()
+    {
+        static TestModule instance;
+        return &instance;
+    }
 
     TestModule(const TestModule &) = delete;
 

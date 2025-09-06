@@ -2,7 +2,6 @@
 #include "cmsis_os2.h"
 #include "StmLog.hpp"
 #include "Bsp_can.hpp"
-#include "Dwt.h"
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
@@ -11,8 +10,6 @@
 
 void PinyCore::bspInit()
 {
-    dwt_init();
-
     SEGGER_SYSVIEW_Conf();
 
     extern canHandle HCAN1;

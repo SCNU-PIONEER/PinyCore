@@ -10,8 +10,9 @@
 
 class Cmd {
 public:
-    void init();
-    void task();
+    Cmd();
+
+    static void task(void *_param);
     MsgBus_s *getMsgBus() { return &msgBus_; }
 
 protected:
