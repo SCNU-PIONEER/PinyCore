@@ -1,7 +1,7 @@
 #pragma once
 
-#include "./Protocol.hpp"
-#include "Client.hpp"
+#include "./UIProtocol.hpp"
+#include "./UIClient.hpp"
 #include <cstdint>
 
 #define ui_string_frame_t      UI::CharGraphicData_s

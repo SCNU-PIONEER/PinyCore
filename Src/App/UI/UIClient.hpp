@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include "./Protocol.hpp"
-#include "./Sender.hpp"
-#include "./Builder.hpp"
+#include "./UIProtocol.hpp"
+#include "./UISender.hpp"
+#include "./UIBuilder.hpp"
 #include <cstdint>
 
 namespace UI {

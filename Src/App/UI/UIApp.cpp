@@ -1,10 +1,9 @@
-#include "./App.hpp"
-#include "Client.hpp"
+#include "./UIApp.hpp"
+#include "./UIClient.hpp"
 #include "task.h"
 #include "MsgImpl.hpp"
-#include "./Designer.hpp"
+#include "./UIDesigner.hpp"
 #include "StmLog.hpp"
-#include "cmsis_os2.h"
 #include "sdkconfig.h"
 #include <cstdint>
 
@@ -12,7 +11,7 @@ using namespace UI;
 
 extern UART_HandleTypeDef UI_UART;
 
-App::App(uint8_t _id) : client_(UI_UART, _id) { init(); }
+App::App(uint8_t _id) : client_(UI_UART, _id) {};
 
 void App::init()
 {

@@ -6,7 +6,7 @@
 
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "UI/App.hpp"
+#include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
 
 extern TIM_HandleTypeDef BEEP_TIMER;

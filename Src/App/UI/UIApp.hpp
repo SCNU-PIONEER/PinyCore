@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "MsgImpl.hpp"
-#include "./Client.hpp"
+#include "./UIClient.hpp"
 
 namespace UI {
 

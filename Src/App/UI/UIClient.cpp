@@ -7,13 +7,13 @@
  * Used under MIT License - https://opensource.org/licenses/MIT
  */
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "./Sender.hpp"
-#include "./Protocol.hpp"
 #include <cstring>
 #include <cstdio>
-#include "./Client.hpp"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "./UISender.hpp"
+#include "./UIProtocol.hpp"
+#include "./UIClient.hpp"
 
 using namespace UI;
 

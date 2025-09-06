@@ -19,7 +19,7 @@
 #include <functional>
 #include "Crc.hpp"
 #include "Bsp_uart.hpp"
-#include "./Protocol.hpp"
+#include "./UIProtocol.hpp"
 
 namespace UI {
 

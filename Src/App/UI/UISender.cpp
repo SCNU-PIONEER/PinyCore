@@ -13,7 +13,7 @@
  */
 
 #include <cstdint>
-#include "./Sender.hpp"
+#include "./UISender.hpp"
 #include "Bsp_dma.hpp"
 
 using namespace UI;
