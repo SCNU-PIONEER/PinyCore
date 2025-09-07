@@ -1,6 +1,6 @@
-#include "Dwt.h"
+#include "Dwt.hpp"
 
-void dwt_init()
+Dwt::Dwt()
 {
     /* 使能DWT外设 */
     DEM_CR |= (uint32_t)DEM_CR_TRCENA;
@@ -11,9 +11,9 @@ void dwt_init()
     /* 使能Cortex-M DWT CYCCNT寄存器 */ DWT_CR |= (uint32_t)DWT_CR_CYCCNTENA;
 }
 
-uint32_t dwt_read(void) { return ((uint32_t)DWT_CYCCNT); }
+uint32_t Dwt::read(void) { return ((uint32_t)DWT_CYCCNT); }
 
-void dwt_delay_us(uint32_t us)
+void Dwt::delayUs(uint32_t _us)
 {
     uint32_t ticks;
     uint32_t told, tnow, tcnt = 0;
@@ -24,12 +24,12 @@ void dwt_delay_us(uint32_t us)
     CPU_TS_TmrInit(5);
 #endif
 
-    ticks = us * (HAL_RCC_GetSysClockFreq() / 1000000); /* 需要的节拍数 */
+    ticks = _us * (HAL_RCC_GetSysClockFreq() / 1000000); /* 需要的节拍数 */
     tcnt = 0;
-    told = (uint32_t)dwt_read(); /* 刚进入时的计数器值 */
+    told = (uint32_t)read(); /* 刚进入时的计数器值 */
 
     while (1) {
-        tnow = (uint32_t)dwt_read();
+        tnow = (uint32_t)read();
         if (tnow != told) {
             /* 32位计数器是递增计数器 */
             if (tnow > told) {
@@ -49,22 +49,22 @@ void dwt_delay_us(uint32_t us)
     }
 }
 
-void dwt_delay_ms(uint32_t ms) { dwt_delay_us(ms * 1000); }
+void Dwt::delayMs(uint32_t _ms) { delayUs(_ms * 1000); }
 
-float dwt_get_dt(uint32_t *cnt_last)
+float Dwt::getDt(uint32_t *_cnt_last)
 {
-    volatile uint32_t cnt_now = DWT->CYCCNT;
-    float dt = ((uint32_t)(cnt_now - *cnt_last)) /
+    volatile uint32_t cntNow = DWT->CYCCNT;
+    float dt = ((uint32_t)(cntNow - *_cnt_last)) /
                ((float)(HAL_RCC_GetSysClockFreq()));
-    *cnt_last = cnt_now;
+    *_cnt_last = cntNow;
     return dt;
 }
 
-float dwt_get_freq(uint32_t *cnt_last)
+float Dwt::getFreq(uint32_t *_cnt_last)
 {
-    volatile uint32_t cnt_now = DWT->CYCCNT;
+    volatile uint32_t cntNow = DWT->CYCCNT;
     float freq = ((float)(HAL_RCC_GetSysClockFreq())) /
-                 (uint32_t)(cnt_now - *cnt_last);
-    *cnt_last = cnt_now;
+                 (uint32_t)(cntNow - *_cnt_last);
+    *_cnt_last = cntNow;
     return freq;
 }

@@ -1,13 +1,17 @@
-#include "./App.hpp"
-#include "Client.hpp"
+#include "./UIApp.hpp"
+#include "./UIClient.hpp"
 #include "task.h"
 #include "MsgImpl.hpp"
-#include "./Designer.hpp"
+#include "./UIDesigner.hpp"
 #include "StmLog.hpp"
+#include "sdkconfig.h"
+#include <cstdint>
 
 using namespace UI;
 
-App::App(UART_HandleTypeDef _huart, uint8_t _id) : client_(_huart, _id) {}
+extern UART_HandleTypeDef UI_UART;
+
+App::App(uint8_t _id) : client_(UI_UART, _id) {};
 
 void App::init()
 {
@@ -31,12 +35,16 @@ void App::init()
     // 初始化UI链表
     if (client_.initList(dynamicInfo_, UIdynamicNum, constInfo_, UIconstNum) ==
         Status_e::ERROR) {
-        LOG::error("UI", "链表初始化失败\n");
+        LOG::error("UI", "List init failed");
     } else {
-        LOG::info("UI", "链表初始化成功\n");
+        LOG::info("UI", "List init success");
     }
     rxQueue = xQueueCreate(10, sizeof(Msg_s));
     client_.sendInit();
+
+    // xTaskCreate(App::task, "UiTask", 128, this, osPriorityRealtime1, nullptr);
+
+    LOG::info("UI", "task init success");
 }
 
 void App::update(const Msg_s *_msg)
@@ -82,14 +90,15 @@ void App::updateReferee(const RefereeTxMsg_s *_msg)
     // client_.ready(Event_e::REFEREE);
 }
 
-void App::task(void *_param)
+void App::task()
 {
-    init();
-    while (true) {
-        if (xQueueReceive(rxQueue, _param, portMAX_DELAY) == pdTRUE) {
-            update(static_cast<Msg_s *>(_param));
+    if (xTaskGetTickCount() - updateCnt >= SEND_INTERVAL) {
+        updateCnt = xTaskGetTickCount();
+
+        Msg_s param = {};
+        if (xQueueReceive(rxQueue, &param, 0) == pdTRUE) {
+            update(&param);
             client_.send();
         }
-        vTaskDelay(pdMS_TO_TICKS(SEND_INTERVAL));
     }
 }

@@ -1,7 +1,7 @@
-#include "Client.hpp"
+#include "./UIClient.hpp"
 #include <cstdint>
 #include <cstring>
-#include "./Designer.hpp"
+#include "./UIDesigner.hpp"
 
 using namespace UI;
 

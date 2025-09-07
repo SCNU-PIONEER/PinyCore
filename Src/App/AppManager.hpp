@@ -1,5 +1,8 @@
 #pragma once
 
+#include <list>
+#include <functional>
+
 class AppManager {
 public:
     static AppManager *instance()
@@ -13,7 +16,13 @@ public:
 
     void initApp();
 
+    void schedule(std::function<void()> _callback);
+
+    static void ctrlTask(void *_param);
+
 private:
     AppManager() = default;
     void createApp();
+
+    std::list<std::function<void()> > tasks;
 };
