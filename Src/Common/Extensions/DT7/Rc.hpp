@@ -31,7 +31,7 @@ private:
     RcRawMsg_t data_;
     UART_HandleTypeDef *uart_;
     uint8_t *rcBuffer_;
-    uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
+    volatile uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
     EventGroupHandle_t event_;
     static constexpr uint16_t UPDATE_FREQ = 70;
 

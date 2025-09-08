@@ -26,8 +26,6 @@ void Rc::rawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
 
 void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
     // if (_huart == uart_) {
     uint16_t size = _huart->RxXferCount;
     if ((((_huart->hdmarx->Instance)->CR) & DMA_SxCR_CT) == RESET) {
@@ -36,10 +34,7 @@ void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
         __HAL_DMA_SET_COUNTER(_huart->hdmarx, 2 * RC_FRAME_LENGTH);
         if (size == RC_FRAME_LENGTH) {
             xEventGroupSetBitsFromISR(event_, RC_READY_EVENT, nullptr);
-            dt7RxLostCnt_ = 0;
-        } else
-            dt7RxLostCnt_ = RC_RX_LOST_MAX;
-
+        }
     } else {
         __HAL_DMA_DISABLE(_huart->hdmarx);
         (_huart->hdmarx->Instance)->CR &= ~(DMA_SxCR_CT);
@@ -95,13 +90,16 @@ uint8_t Rc::parseData()
             (((uint16_t)rcBuffer_[14]) | ((uint16_t)rcBuffer_[15] << 8));
 
     data_.wheel = ((int16_t)rcBuffer_[16]) | ((int16_t)rcBuffer_[17] << 8);
+
+    dt7RxLostCnt_ = 0;
+
     return RC_NO_ERROR;
 }
 
 bool Rc::isOnline()
 {
     if (dt7RxLostCnt_ < RC_RX_LOST_MAX) {
-        dt7RxLostCnt_++;
+        dt7RxLostCnt_ = dt7RxLostCnt_ + 1;
         return true;
     } else
         return false;
