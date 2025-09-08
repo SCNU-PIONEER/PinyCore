@@ -29,14 +29,24 @@ Status_s &Status_s::operator=(const Status_s &_other)
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
                  DMA_HandleTypeDef *_dmaHandle)
-        : IMotor(_name, std::move(_config))
-        , txBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s)))
-        , rxBuf_((uint8_t *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
+        : IMotor(_name, _config)
+        , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(
+                  sizeof(TransmitMsg_s)))
+        , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
         , dmaHandle_(_dmaHandle)
 {
     this->cmd_.clear();
-    // TODO: UTMotor no currently supprorts the Feat(isReverse)
-    LOG::warn("UTMotor", "no currently supprorts the Feat(isReverse)");
+
+    this->rxQueue_ = xQueueCreate(4, sizeof(Feedback_s));
+
+    /* send first frame to init dma reception */
+    __HAL_UART_ENABLE_IT(
+            reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
+            UART_IT_IDLE);
+    HAL_UARTEx_ReceiveToIdle_DMA(
+            reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
+            (uint8_t *)rxBuf_, sizeof(Feedback_s));
+    __HAL_DMA_DISABLE_IT(dmaHandle_, DMA_IT_HT);
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -57,24 +67,27 @@ void UTMotor::registerRecvCallback()
             reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
             [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
                 // basic cb
-                this->parse(_huart->pRxBuffPtr);
+                BaseType_t higherPriorityTaskWoken = pdFALSE;
+                xQueueSendFromISR(this->rxQueue_, _huart->pRxBuffPtr,
+                                  &higherPriorityTaskWoken);
             });
 }
 
-MotorTypeDef_e UTMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e UTMotor::send(uint16_t _sendId, TransmitMsg_s *_txBuf,
+                             uint8_t _len)
 {
     SET_485_1_DE_UP();
     memcpy(txBuf_, _txBuf, _len);
     MotorTypeDef_e ret = (MotorTypeDef_e)HAL_UART_Transmit_DMA(
             reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
-            (uint8_t *)&txBuf_, _len);
+            (uint8_t *)txBuf_, _len);
     SET_485_1_DE_DOWN();
     return ret;
 }
 
-MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
+MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
 {
-    Feedback_s *fb = reinterpret_cast<Feedback_s *>(_rxBuf);
+    Feedback_s *fb = _rxBuf;
     if (fb->CRC16 != Get_CRC16_Check_Sum((uint8_t *)(fb), 14, 0)) {
         return 0; //TODO: CRC error
     } else {
@@ -90,7 +103,7 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
                 (this->data_.rawAng - this->data_.angLast) / this->rr();
         this->data_.cirNum = this->data_.multipCirAng / (2 * PI);
         this->data_.singleCirAng =
-                rangeMap(this->data_.singleCirAng, 0, (2 * PI));
+                rangeMap(this->data_.multipCirAng, 0, (2 * PI));
         float noumenaVel = ((float)fb->fbk.speed / 256) * (2 * PI);
         this->data_.spdRadps = this->isReverse_ ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
@@ -102,7 +115,7 @@ MotorTypeDef_e UTMotor::parse(uint8_t *_rxBuf)
 
     (MotorTypeDef_e) HAL_UARTEx_ReceiveToIdle_DMA(
             reinterpret_cast<UART_HandleTypeDef *>(this->pComHandle_),
-            (uint8_t *)&txBuf_, sizeof(TransmitMsg_s));
+            (uint8_t *)txBuf_, sizeof(TransmitMsg_s));
     __HAL_DMA_DISABLE_IT(dmaHandle_, DMA_IT_HT);
     return 0; //TODO: return check
 }
@@ -136,19 +149,19 @@ MotorTypeDef_e UTMotor::ctrl()
 {
     TransmitMsg_s txBuf{};
     convert(txBuf, this->cmd_);
-    return send(this->model_.txBaseId, (uint8_t *)&txBuf,
-                sizeof(TransmitMsg_s));
+    return send(this->model_.txBaseId, &txBuf, sizeof(TransmitMsg_s));
 }
 
 MotorTypeDef_e UTMotor::update()
 {
     if (xQueueReceive(this->rxQueue_, this->rxBuf_, 0) == pdTRUE) {
+        this->recvCnt_++;
         this->parse(this->rxBuf_);
-        this->calcRecvFreq();
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
     }
+    this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;
 }
@@ -162,8 +175,7 @@ MotorTypeDef_e UTMotor::enable()
     TransmitMsg_s txBuf{};
     this->cmd_.updateSW(true);
     convert(txBuf, this->cmd_);
-    return send(ctrlId_, reinterpret_cast<uint8_t *>(&txBuf),
-                sizeof(TransmitMsg_s));
+    return send(ctrlId_, &txBuf, sizeof(TransmitMsg_s));
 }
 
 MotorTypeDef_e UTMotor::disable()
@@ -171,6 +183,5 @@ MotorTypeDef_e UTMotor::disable()
     TransmitMsg_s txBuf{};
     this->cmd_.updateSW(false);
     convert(txBuf, this->cmd_);
-    return send(ctrlId_, reinterpret_cast<uint8_t *>(&txBuf),
-                sizeof(TransmitMsg_s));
+    return send(ctrlId_, &txBuf, sizeof(TransmitMsg_s));
 }

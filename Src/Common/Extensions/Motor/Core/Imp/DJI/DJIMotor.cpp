@@ -314,12 +314,13 @@ MotorTypeDef_e DJIMotor::ctrl()
 MotorTypeDef_e DJIMotor::update()
 {
     if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
+        this->recvCnt_++;
         this->parse(this->rxBuf_);
-        this->calcRecvFreq();
     }
     if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
         this->parseCmd();
     }
+    this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;
 }

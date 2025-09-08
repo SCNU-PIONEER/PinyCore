@@ -23,16 +23,16 @@ struct Status_s {
 
 class UTMotor : public IMotor {
 private:
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
-    MotorTypeDef_e parse(uint8_t *_rxBuf);
+    MotorTypeDef_e send(uint16_t _sendId, TransmitMsg_s *_txBuf, uint8_t _len);
+    MotorTypeDef_e parse(Feedback_s *_rxBuf);
     MotorTypeDef_e ctrl();
 
 protected:
     uint16_t ctrlId_ = 0xFFFF;
     float kp_; //电机内置pid
     float kd_;
-    uint8_t *txBuf_ = nullptr;
-    uint8_t *rxBuf_ = nullptr;
+    TransmitMsg_s *txBuf_ = nullptr;
+    Feedback_s *rxBuf_ = nullptr;
     Status_s status_;
 
     DMA_HandleTypeDef *dmaHandle_;
