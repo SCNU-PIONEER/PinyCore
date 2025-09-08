@@ -11,7 +11,7 @@ template <typename PacketType, int BufferSize> class RxPacket {
 public:
     RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
     {
-        CommManager::instance().registerReceiver([this] { receive(); });
+        initalize();
     }
 
     virtual ~RxPacket() = default;
@@ -41,6 +41,12 @@ public:
     const PacketType &packet() const { return packet_; }
 
 private:
+    void initalize()
+    {
+        registerCallback();
+        CommManager::instance().registerReceiver([this] { receive(); });
+    }
+
     uint32_t lastRecvTick_ = 0;
     uint16_t recvCnt_ = 0;
     float rxFreq_ = 0.f;
