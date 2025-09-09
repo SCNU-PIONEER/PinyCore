@@ -8,6 +8,10 @@
 namespace COMM {
 
 template <typename PacketType, int BufferSize> class RxPacket {
+protected:
+    using Data = typename PacketType::Data_u;
+    using ProtoData = typename PacketType::ProtoData_s;
+
 public:
     RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
     {
@@ -21,7 +25,7 @@ public:
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
             recvCnt_++;
-            memcpy(&this->packet_, &this->rxBuf_, sizeof(PacketType));
+            data_ = PacketType::decompress(this->rxBuf_);
         }
     }
 
@@ -38,7 +42,15 @@ public:
         }
     }
 
-    const PacketType &packet() const { return packet_; }
+    const ProtoData &data() const { return data_; }
+    uint16_t uid() const { return PacketType::ID; }
+
+protected:
+    QueueHandle_t queue_;
+
+    Data rxBuf_{};
+
+    ProtoData data_{};
 
 private:
     void initalize()
@@ -50,10 +62,6 @@ private:
     uint32_t lastRecvTick_ = 0;
     uint16_t recvCnt_ = 0;
     float rxFreq_ = 0.f;
-
-    QueueHandle_t queue_;
-    PacketType rxBuf_{}; // clone buffer
-    PacketType packet_{};
 };
 
 } // namespace COMM

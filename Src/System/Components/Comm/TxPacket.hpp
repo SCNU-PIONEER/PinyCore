@@ -7,30 +7,40 @@
 namespace COMM {
 
 template <typename PacketType> class TxPacket {
+protected:
+    using Data = typename PacketType::Data_u;
+    using ProtoData = typename PacketType::ProtoData_s;
+
 public:
-    TxPacket()
+    TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq)
     {
         CommManager::instance().registerTransmitter([this]() {
-            if (checkSend())
-                this->send();
+            if (checkSend()) {
+                Data txBuf = PacketType::compress(this->data_);
+                this->send(txBuf.bytes, PacketType::LEN);
+            }
         });
     }
 
     virtual ~TxPacket() = default;
-    virtual void send() = 0; // TODO: better protocol abstraction
+    virtual void send(uint8_t *_buf,
+                      uint16_t _len) = 0; // TODO: better protocol abstraction
 
-    void load(PacketType *_packet)
+    void loadFull(ProtoData *_data)
     {
-        memcpy(&this->txBuf_, _packet, sizeof(PacketType));
+        memcpy(&data_, &_data, sizeof(ProtoData));
     }
 
-protected:
-    float txFreq_ = 100.f; // default 100Hz
+    ProtoData &setData() { return data_; }
 
-    PacketType txBuf_{};
+    uint16_t uid() const { return PacketType::ID; }
+
+protected:
+    ProtoData data_{};
 
 private:
     uint32_t lastSendTick_ = 0;
+    float txFreq_;
     bool checkSend()
     {
         if ((xTaskGetTickCount() - lastSendTick_) >=
