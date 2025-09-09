@@ -5,15 +5,27 @@
 #include "Rc.hpp"
 
 
+extern "C" void vApplicationMallocFailedHook()
+{
+    LOG::error("Daemons", "no heap to malloc");
+    __BKPT(0x01);
+}
+
+extern "C" void vApplicationStackOverflowHook()
+{
+    LOG::error("Daemons", "stack overflow");
+    __BKPT(0x01);
+}
+
 Daemons::Daemons()
 {
     /* rc */
     schedule([]() {
         static uint32_t updateCnt = 0;
         if (!RC::Rc::instance().isOnline()) {
-            if (xTaskGetTickCount() - updateCnt >= 1000) {
+            if (xTaskGetTickCount() - updateCnt >= 2000) {
                 updateCnt = xTaskGetTickCount();
-                LOG::error("Daemons", "RC Online");
+                LOG::warn("Daemons", "RC Online");
             }
         }
     });
@@ -22,7 +34,7 @@ Daemons::Daemons()
     schedule([]() {
         static constexpr size_t MINHEAP = 1024;
         static uint32_t updateCnt = 0;
-        if (xTaskGetTickCount() - updateCnt >= 1000) {
+        if (xTaskGetTickCount() - updateCnt >= 2000) {
             updateCnt = xTaskGetTickCount();
             uint32_t heap = xPortGetFreeHeapSize();
             // LOG::info("Daemons", "Free Heap: %u", heap);

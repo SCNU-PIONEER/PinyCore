@@ -90,6 +90,9 @@ void AppManager::createApp()
                 vTaskDelete(nullptr); // 否则会进ExistError
             },
             "buzzer_task", 64, nullptr, osPriorityNormal, nullptr);
+
+    uint32_t freeHeap = xPortGetFreeHeapSize();
+    LOG::info("App", "init complete, Free Heap: %u", freeHeap);
 }
 
 void AppManager::ctrlTask(void *_param)
