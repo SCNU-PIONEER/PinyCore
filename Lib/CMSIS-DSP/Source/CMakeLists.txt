@@ -51,7 +51,7 @@ include(MatrixFunctions/Config.cmake)
 #
 # include(TransformFunctions/Config.cmake)
 #
-# include(CommonTables/Config.cmake)
+include(CommonTables/Config.cmake)
 #
 # include(SVMFunctions/Config.cmake)
 #

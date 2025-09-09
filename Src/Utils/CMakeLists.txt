@@ -19,12 +19,11 @@ if(USE_ALGORITHM)
 endif()
 
 if(USE_DWT)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/Dwt.c)
+  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/Dwt.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
 endif()
 
 if(USE_FSM)
-  target_sources(Utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/FSM/FSMState.cpp)
   target_include_directories(Utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/FSM)
 endif()
 

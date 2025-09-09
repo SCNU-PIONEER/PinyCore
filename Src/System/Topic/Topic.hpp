@@ -87,13 +87,14 @@ private:
 
 template <typename T> class Topic {
 public:
-    explicit Topic(std::string _name) : name_(_name) {}
+    explicit Topic(const char _name[16]) { strcpy(this->name_, _name); }
     std::string name() { return name_; }
     void registerPublisher(Publisher<T> *_publisher)
     {
         publisher_ = _publisher;
         publisher_->topic_ = this;
-        LOG::info("Topic", "%s: register publisher uid:%d", _publisher->uid());
+        LOG::info("Topic", "%s: register publisher uid:%d", this->name_,
+                  _publisher->uid());
     }
     void cancelPublisher()
     {
@@ -104,7 +105,7 @@ public:
     {
         subscribers_.push_back(_subscriber);
         _subscriber->topic_ = this;
-        LOG::info("Topic", "%s: register subscriber uid:%d",
+        LOG::info("Topic", "%s: register subscriber uid:%d", this->name_,
                   _subscriber->uid());
     }
     void cancelSubscriber(Subscriber<T> *_subscriber)
@@ -112,7 +113,7 @@ public:
         subscribers_.erase(std::remove(subscribers_.begin(), subscribers_.end(),
                                        _subscriber),
                            subscribers_.end());
-        LOG::info("Topic", "%s: cancel subscriber uid:%d", _subscriber->uid());
+        LOG::info("Topic", "%s: cancel subscriber", this->name_);
     }
     void publish()
     {
@@ -127,7 +128,7 @@ public:
     }
 
 private:
-    std::string name_;
+    char name_[16] = "NULL";
     Publisher<T> *publisher_ = nullptr;
     std::vector<Subscriber<T> *> subscribers_;
 };

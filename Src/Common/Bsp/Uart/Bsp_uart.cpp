@@ -37,8 +37,7 @@ HAL_StatusTypeDef Uart::RecvDmaInit(UART_HandleTypeDef *_huart,
 
 void Uart::callbackFromISR(UART_HandleTypeDef *_huart, uint16_t _size)
 {
-    auto it = cbTable.find(_huart);
-    if (it != cbTable.end()) {
+    if (auto it = cbTable.find(_huart); it != cbTable.end()) {
         it->second(_huart, _size);
     }
 }
