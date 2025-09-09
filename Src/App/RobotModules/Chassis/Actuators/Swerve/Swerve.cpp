@@ -12,28 +12,30 @@
 
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
+#include "Cmd.hpp"
 
 extern canHandle HCAN1;
 extern canHandle HCAN2;
-// extern canHandle HCAN3;
 
-using namespace CHASSIS::SWERVE;
+extern Cmd cmd;
+
+using namespace CHASSIS;
 using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
 
-//以下数组均可调
+//以下数组均可调，未测试
 static PositonalPid swervePosPid[4] = {
-    PositonalPid(20.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(18.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(20.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(20.f, 0.002f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f)
+    PositonalPid(20.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositonalPid(18.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositonalPid(20.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositonalPid(20.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f)
 };
 static PositonalPid swerveVelPid[4] = {
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0015f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f)
+    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f)
 };
 //此滤波并没有调参
 static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),
@@ -45,7 +47,7 @@ Swerve::Swerve()
 {
     for (uint8_t i = 1; i <= 4; i++) {
         //输出滤波初始化
-        SwerveFilterOutput._[i - 1] = &swerveFilterOutput[i - 1];
+        swerveFilterOutput_._[i - 1] = &swerveFilterOutput[i - 1];
         //舵轮pid初始化
         swervePosPid_._[i - 1] = &swervePosPid[i - 1];
         swerveVelPid_._[i - 1] = &swerveVelPid[i - 1];
@@ -77,39 +79,44 @@ Swerve::Swerve()
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 
-    this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::RUN),
+    this->stateFactory_.addState(FSMState_e::RUN,
                                  std::make_unique<RunState>(this));
-    this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::STOP),
+    this->stateFactory_.addState(FSMState_e::STOP,
                                  std::make_unique<StopState>(this));
-    this->stateFactory_.init(this->stateFactory_.getNextState(
-            static_cast<uint8_t>(FSMState_e::STOP)));
+    this->stateFactory_.init(
+            this->stateFactory_.getNextState(FSMState_e::STOP));
+
 
     if constexpr (APP_USE_POWERCTRL) {
         //
     }
 }
 
-void Swerve::stopSelf()
+void Swerve::stop()
 {
     for (auto &i : motors_._) {
         i->cmd(MotorCmdType_e::OFF);
     }
 }
 
-void Swerve::enterSelf()
+void Swerve::enter()
 {
     for (auto &i : motors_._) {
         i->cmd(MotorCmdType_e::ON);
     }
 }
 
-void Swerve::updateSelf()
+
+void Swerve::update()
 {
+    xQueueReceive(cmd.getMsgBus()->chassisQueue, &msg, 0);
+
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRpm;
         curDir._[i] = motors_._[i + 4]->data().ang;
     }
     this->curSpeed_ = forward(wSpeed_);
+    this->stateFactory_.update();
 }
 
 /**
@@ -244,7 +251,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
-
     for (uint8_t i = 0; i < 4; i++) {
         tempDir._[i] = expDir._[i];
         //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
@@ -264,11 +270,11 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             motors_._[i + 4]->cmdTorq(0);
         } else {
             motors_._[i + 4]->cmdTorq(
-                    SwerveFilterOutput._[i]->process(torq[i]));
+                    swerveFilterOutput_._[i]->process(torq[i]));
         }
         //3508
-        // motors_._[i]->cmdVel(refWSpeed._[i]);
-        motors_._[i]->cmdVel(0); //不动
+        motors_._[i]->cmdVel(refWSpeed._[i]);
+        // motors_._[i]->cmdVel(0); //不动
     }
 
     if constexpr (APP_USE_POWERCTRL) {

@@ -11,10 +11,12 @@
 #include "./State/LaunchState.hpp"
 #include "./State/RunState.hpp"
 
+
 extern canHandle HCAN1;
 
 using namespace GIMBAL::STANDARD;
 using namespace PINYMOTOR;
+
 
 Standard::Standard()
 {
@@ -23,10 +25,9 @@ Standard::Standard()
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::QUAD_CURR,
         .offsetId = 1,
-        .txFreq = 500.0f,
-        .posPID = new PositonalPid(50.f, 0.f, 0.f, 1.f / 500.f, 0.f, 35.f, 0.f),
-        .velPID = new PositonalPid(0.03f, 0.05f, 0.f, 1.f / 500.f, 0.3f, 1.2f,
-                                   0.f),
+        .txFreq = PITCH_MOTOR_FREQ,
+        .posPID = nullptr,
+        .velPID = nullptr,
         .torqPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
@@ -40,11 +41,9 @@ Standard::Standard()
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::QUAD_CURR,
         .offsetId = 2,
-        .txFreq = 500.0f,
-        .posPID =
-                new PositonalPid(50.0f, 0.f, 0.f, 1.f / 500.f, 0.f, 35.f, 0.f),
-        .velPID = new PositonalPid(0.03f, 0.05f, 0.000001f, 1.f / 500.f, 0.3f,
-                                   1.2f, 0.f),
+        .txFreq = YAW_MOTOR_FREQ,
+        .posPID = nullptr,
+        .velPID = nullptr,
         .torqPID = nullptr,
         .isReverse = YAW_REVERSE,
     };
@@ -52,29 +51,44 @@ Standard::Standard()
     motors_.yaw->setZeroAng(YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Yaw zeros has set to %f", motors_.yaw->data().zeroAng);
 
-    this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::RUN),
+    this->stateFactory_.addState(FSMState_e::RUN,
                                  std::make_unique<RunState>(this));
-    this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::LAUNCH),
+    this->stateFactory_.addState(FSMState_e::LAUNCH,
                                  std::make_unique<LaunchState>(this));
-    this->stateFactory_.addState(static_cast<uint8_t>(FSMState_e::STOP),
+    this->stateFactory_.addState(FSMState_e::STOP,
                                  std::make_unique<StopState>(this));
-    this->stateFactory_.init(this->stateFactory_.getNextState(
-            static_cast<uint8_t>(FSMState_e::STOP)));
+    this->stateFactory_.init(
+            this->stateFactory_.getNextState(FSMState_e::STOP));
 }
 
-void Standard::stopSelf()
+void Standard::stop()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
+    }
 }
 
-void Standard::enterSelf()
+void Standard::enter()
 {
-    // TODO:
+    for (auto &i : motors_._) {
+        i->cmd(PINYMOTOR::MotorCmdType_e::ON);
+    }
 }
 
-void Standard::updateSelf()
+void Standard::update(void *_param)
 {
-    // TODO:
+    if (xQueueReceive((((MsgBus_s *)_param)->gimbalQueue), &msg, 0) == pdTRUE) {
+    };
+    this->insSub_->receive();
+
+    updateEndYaw();
+    updateBaseYaw();
+
+    gimbalYawMsg.followYaw = endYawAng_;
+    gimbalYawMsg.chassisYaw = baseYawAng_;
+    gimbalYawPub_->publish();
+
+    this->stateFactory_.update();
 }
 
 void Standard::updateEndYaw()
@@ -105,3 +119,33 @@ void Standard::updateBaseYaw()
 
 PINYMOTOR::IMotor *Standard::pitch() const { return motors_.pitch; }
 PINYMOTOR::IMotor *Standard::yaw() const { return motors_.yaw; }
+
+void Standard::ctrlPitch(PID *_angPID, PID *_velPID, float _pos)
+{
+    float del = getMinorArc(_pos, motors_.pitch->posNorm());
+    float vel = _angPID->calc(del, 0);
+    float torq = _velPID->calc(vel, motors_.pitch->vel());
+    motors_.pitch->cmdTorq(outFilrPitch.process(torq));
+}
+void Standard::ctrlPitch(PID *_angPID, PID *_velPID, float _pos, float _vel)
+{
+    float del = getMinorArc(_pos, motors_.pitch->posNorm());
+    float vel = _angPID->calc(fmax(-_vel, fmin(del, _vel)), 0);
+    float torq = _velPID->calc(vel, motors_.pitch->vel());
+    motors_.pitch->cmdTorq(outFilrPitch.process(torq));
+}
+
+void Standard::ctrlYaw(PID *_angPID, PID *_velPID, float _pos)
+{
+    float del = getMinorArc(_pos, motors_.yaw->posNorm());
+    float vel = _angPID->calc(del, 0);
+    float torq = _velPID->calc(vel, motors_.yaw->vel());
+    motors_.yaw->cmdTorq(outFilrYaw.process(torq));
+}
+void Standard::ctrlYaw(PID *_angPID, PID *_velPID, float _pos, float _vel)
+{
+    float del = getMinorArc(_pos, motors_.yaw->posNorm());
+    float vel = _angPID->calc(fmax(-_vel, fmin(del, _vel)), 0);
+    float torq = _velPID->calc(vel, motors_.yaw->vel());
+    motors_.yaw->cmdTorq(outFilrYaw.process(torq));
+}

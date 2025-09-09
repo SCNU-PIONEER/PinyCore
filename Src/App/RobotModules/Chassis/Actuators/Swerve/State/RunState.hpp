@@ -7,12 +7,12 @@
 
 #include "PidBasic.hpp"
 
-namespace CHASSIS::SWERVE {
-class RunState : public FSMState {
+namespace CHASSIS {
+class RunState : public FSMState<FSMState_e> {
 public:
-    RunState(Swerve *_chassis) : chassis_(_chassis)
+    RunState(Swerve *_chassis)
+            : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::RUN));
     }
 
     void enter() final
@@ -23,7 +23,7 @@ public:
 
     void run() final
     {
-        SWERVE::Speed_u ref;
+        Speed_u ref;
 
         ref.vx = chassis_->msg.vx;
         ref.vy = chassis_->msg.vy;
@@ -40,18 +40,18 @@ public:
     }
 
 
-    uint8_t checkChange() final
+    FSMState_e checkChange() final
     {
         if (chassis_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (chassis_->msg.state == FSMState_e::RUN)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return FSMState_e::RUN;
         else
-            return 0;
+            return FSMState_e::STOP;
     }
 
 private:
     Swerve *chassis_;
     PositonalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
 };
-} // namespace CHASSIS::SWERVE
+} // namespace CHASSIS

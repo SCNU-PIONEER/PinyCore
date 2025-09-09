@@ -3,12 +3,12 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-namespace CHASSIS::SWERVE {
-class StopState : public FSMState {
+namespace CHASSIS {
+class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Swerve *_chassis) : chassis_(_chassis)
+    StopState(Swerve *_chassis)
+            : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::STOP));
     }
 
     void enter() final
@@ -22,17 +22,17 @@ public:
     void exit() final { LOG::info("ChassisStop", " exit"); }
 
 
-    uint8_t checkChange() final
+    FSMState_e checkChange() final
     {
         if (chassis_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (chassis_->msg.state == FSMState_e::RUN)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return FSMState_e::RUN;
         else
-            return 0;
+            return FSMState_e::STOP;
     }
 
 private:
     Swerve *chassis_;
 };
-} // namespace CHASSIS::SWERVE
+} // namespace CHASSIS

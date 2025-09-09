@@ -10,7 +10,7 @@
 
 class Cmd {
 public:
-    Cmd();
+    void init();
 
     static void task(void *_param);
     MsgBus_s *getMsgBus() { return &msgBus_; }

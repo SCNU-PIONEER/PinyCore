@@ -75,33 +75,19 @@ void RcMsgHandler::masterHandle()
     if (rcMsg_.rSwitch == RC_SW_DOWN) {
         // gimbal
         gmsg_.state = GIMBAL::FSMState_e::STOP;
-        gmsg_.pitch = gmsg_.yaw = 0.f;
+        gmsg_.wPitch = gmsg_.wYaw = 0.f;
         // chassis
         cmsg_.state = CHASSIS::FSMState_e::STOP;
-        cmsg_.vx = cmsg_.vy = cmsg_.yaw = 0.f;
+        cmsg_.vx = cmsg_.vy = 0.f;
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
         // gimbal
         gmsg_.state = GIMBAL::FSMState_e::RUN;
-        float dpitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
-        float dyaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
-        gmsg_.pitch += dpitch;
-        gmsg_.yaw += dyaw;
-        constexpr float TWO_PI = 2.0f * M_PI;
-        if (gmsg_.pitch > M_PI) {
-            gmsg_.pitch -= TWO_PI;
-        } else if (gmsg_.pitch < -M_PI) {
-            gmsg_.pitch += TWO_PI;
-        }
-        if (gmsg_.yaw > M_PI) {
-            gmsg_.yaw -= TWO_PI;
-        } else if (gmsg_.yaw < -M_PI) {
-            gmsg_.yaw += TWO_PI;
-        }
+        gmsg_.wPitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
+        gmsg_.wYaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
         // chassis
         cmsg_.state = CHASSIS::FSMState_e::RUN;
         cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
         cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
-        cmsg_.yaw = gmsg_.yaw;
     } else {
         return;
     }

@@ -1,27 +1,49 @@
 #pragma once
 
-#include "Standard.hpp"
 #include "FSMState.hpp"
+#include "Standard.hpp"
 #include "StmLog.hpp"
 
 #include "MotorCommonMacros.hpp"
+#include "PidBasic.hpp"
+
+static PositonalPid gRunPA(130.f, 300.f, 15.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gRunPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositonalPid gRunYA(150.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gRunYV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
 namespace GIMBAL::STANDARD {
 
-class RunState : public FSMState {
+
+class RunState : public FSMState<FSMState_e> {
+    union Pids_u {
+        struct {
+            PositonalPid *pitchAngPid;
+            PositonalPid *pitchVelPid;
+
+            PositonalPid *yawAngPid;
+            PositonalPid *yawVelPid;
+        };
+        PID *_[4];
+    };
+
     static constexpr float IMU_PITCH_MIN_ANG = -0.5f;
     static constexpr float IMU_PITCH_MAX_ANG = 0.3f;
 
 public:
-    RunState(Standard *_gimbal) : gimbal_(_gimbal)
+    RunState(Standard *_gimbal)
+            : FSMState<FSMState_e>(FSMState_e::RUN), gimbal_(_gimbal)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::RUN));
+        pids_.pitchAngPid = &gRunPA;
+        pids_.pitchVelPid = &gRunPV;
+        pids_.yawAngPid = &gRunYA;
+        pids_.yawVelPid = &gRunYV;
     }
 
     void enter() final
     {
-        // cmdImuPitch_.pos = gimbal_->ins().pitch;
-        // cmdImuYaw_.pos = gimbal_->ins().yaw;
+        cmdImuPitchAng_ = gimbal_->ins().pitch;
+        cmdImuYawAng_ = gimbal_->endYawAng();
 
         gimbal_->enter();
 
@@ -30,48 +52,62 @@ public:
 
     void run() final
     {
-        cmdImuPitch_.pos = PINYMOTOR::clampArc(
-                gimbal_->msg.pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        cmdImuYaw_.pos = gimbal_->msg.yaw;
+        cmdImuPitchAng_ = PINYMOTOR::clampArc(
+                cmdImuPitchAng_ + (gimbal_->msg.wPitch * 0.001f),
+                IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        cmdImuYawAng_ += gimbal_->msg.wYaw * 0.001f;
+        cmdImuYawAng_ = cmdImuYawAng_ > PI ? cmdImuYawAng_ - (2 * PI) :
+                                             (cmdImuYawAng_ < -PI ?
+                                                      cmdImuYawAng_ + (2 * PI) :
+                                                      cmdImuYawAng_);
 
         float insPitchDelArc =
-                PINYMOTOR::getMinorArc(cmdImuPitch_.pos, gimbal_->ins().pitch);
+                PINYMOTOR::getMinorArc(cmdImuPitchAng_, gimbal_->ins().pitch);
         float insYawDelArc =
-                PINYMOTOR::getMinorArc(cmdImuYaw_.pos, gimbal_->endYawAng());
+                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->endYawAng());
 
-        cmdMotorPitch_.pos = PINYMOTOR::rangeMap(
-                gimbal_->pitch()->posNorm() + (Standard::PITCH_REVERSE ?
-                                                       -insPitchDelArc :
-                                                       insPitchDelArc),
-                0, 2 * M_PI);
-        cmdMotorYaw_.pos = PINYMOTOR::rangeMap(
+        // joints' target pos
+        cmdMotorPitchAng_ = PINYMOTOR::rangeMap(
+                gimbal_->pitch()->posNorm() +
+                (Standard::PITCH_REVERSE ? -insPitchDelArc : insPitchDelArc));
+        cmdMotorYawAng_ = PINYMOTOR::rangeMap(
                 gimbal_->yaw()->posNorm() +
-                        (Standard::YAW_REVERSE ? -insYawDelArc : insYawDelArc),
-                0, 2 * M_PI);
+                (Standard::YAW_REVERSE ? -insYawDelArc : insYawDelArc));
 
-        gimbal_->pitch()->cmdPos(cmdMotorPitch_.pos);
-        gimbal_->yaw()->cmdPos(cmdMotorYaw_.pos);
+        // ctrl
+        gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
+                           cmdMotorPitchAng_);
+        gimbal_->ctrlYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
     }
 
-    void exit() final { LOG::info("GimbalRun", "exit"); }
+    void exit() final
+    {
+        for (auto &i : pids_._) {
+            i->reset();
+        }
 
-    uint8_t checkChange() final
+        LOG::info("GimbalRun", "exit");
+    }
+
+    FSMState_e checkChange() final
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return FSMState_e::RUN;
         else
-            return 0;
+            return FSMState_e::RUN;
     }
 
 private:
     Standard *gimbal_;
 
-    States_u cmdImuPitch_;
-    States_u cmdImuYaw_;
+    Pids_u pids_;
 
-    States_u cmdMotorPitch_;
-    States_u cmdMotorYaw_;
+    float cmdImuPitchAng_;
+    float cmdImuYawAng_;
+
+    float cmdMotorPitchAng_;
+    float cmdMotorYawAng_;
 };
 } // namespace GIMBAL::STANDARD

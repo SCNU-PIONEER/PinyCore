@@ -9,7 +9,7 @@
 #include "IIR.hpp"
 #include "LPF.hpp"
 
-namespace CHASSIS::SWERVE {
+namespace CHASSIS {
 
 union SwervePid_u {
     struct {
@@ -75,7 +75,7 @@ typedef union {
 } SwerveFilterOutput_u;
 
 //喵板
-class Swerve : public Chassis<Swerve> {
+class Swerve : public Chassis {
 public:
     static constexpr float W_FRONT_REAR = 0.298f; //前后轮距/m
     static constexpr float W_LEFT_RIGHT = 0.298f; //左右轮距
@@ -85,22 +85,12 @@ public:
 
     Swerve();
 
-    void stopSelf();
-    void enterSelf();
-    void updateSelf();
+    void stop();
+    void enter();
+    void update();
     void ctrl(const Speed_u &_refSpeed);
 
 protected:
-    //舵轮零位角度，用于回正方向,rad
-    float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f, 3.03151608f };
-
-    SwervePid_u swervePosPid_; //舵轮位置环
-    SwervePid_u swerveVelPid_; //舵轮速度环
-
-    SwerveDirectionAngle_u curDir; //舵轮当前方向角
-    SwerveDirectionAngle_u expDir; //舵轮期望方向角
-
-    SwerveFilterOutput_u SwerveFilterOutput; //舵轮输出滤波器
     /*
      * @brief: calculate the speed of chassis
      * @param: _wSpeed: speed of each wheel
@@ -120,7 +110,16 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
-    friend class Chassis<Swerve>;
+    //舵轮零位角度，用于回正方向,rad
+    float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f, 3.03151608f };
+
+    SwervePid_u swervePosPid_; //舵轮位置环
+    SwervePid_u swerveVelPid_; //舵轮速度环
+
+    SwerveDirectionAngle_u curDir; //舵轮当前方向角
+    SwerveDirectionAngle_u expDir; //舵轮期望方向角
+
+    SwerveFilterOutput_u swerveFilterOutput_; //舵轮输出滤波器
 };
 
-} // namespace CHASSIS::SWERVE
+} // namespace CHASSIS

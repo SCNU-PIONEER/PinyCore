@@ -5,19 +5,44 @@
 #include "StmLog.hpp"
 
 #include "MotorCommonMacros.hpp"
+#include "PidBasic.hpp"
+#include "IIR.hpp"
+
+static PositonalPid gLauPA(130.f, 300.f, 30.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gLauPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositonalPid gLauYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gLauYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
 namespace GIMBAL::STANDARD {
 
-class LaunchState : public FSMState {
+class LaunchState : public FSMState<FSMState_e> {
+    union Pids_u {
+        struct {
+            PositonalPid *pitchAngPid;
+            PositonalPid *pitchVelPid;
+
+            PositonalPid *yawAngPid;
+            PositonalPid *yawVelPid;
+        };
+        PID *_[4];
+    };
+
     static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 3s
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
     static constexpr float YAW_LAUNCH_ANG_DEADBAND = 0.1f;
 
+    static constexpr float PITCH_LAUNCH_STEP = 0.08f;
+    static constexpr float YAW_LAUNCH_STEP = 0.05f;
+
 public:
-    LaunchState(Standard *_gimbal) : gimbal_(_gimbal)
+    LaunchState(Standard *_gimbal)
+            : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::LAUNCH));
+        pids_.pitchAngPid = &gLauPA;
+        pids_.pitchVelPid = &gLauPV;
+        pids_.yawAngPid = &gLauYA;
+        pids_.yawVelPid = &gLauYV;
     }
 
     void enter() final
@@ -25,12 +50,16 @@ public:
         launchTotalTime_ = 0;
         launchFinishTime_ = 0;
 
+        cmdMotorPitchAng_ = 0.f;
+        cmdMotorYawAng_ = 0.f;
+
         gimbal_->enter();
         LOG::info("GimbalLaunch", "enter");
     }
 
     void run() final
     {
+        // determine if the target position (0) has been reached
         launchTotalTime_++;
 
         float pitchAng = gimbal_->pitch()->posNorm();
@@ -45,29 +74,42 @@ public:
             launchFinishTime_ = 0;
         }
 
-        gimbal_->pitch()->cmdPos(0, 5, 0, 0);
-        gimbal_->yaw()->cmdPos(0, 5, 0, 0);
+        // ctrl (smooth)
+        gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
+                           cmdMotorPitchAng_, PITCH_LAUNCH_STEP);
+        gimbal_->ctrlYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_,
+                         YAW_LAUNCH_STEP);
     }
 
     void exit() final
     {
         finishLaunching_ = true;
+        gimbal_->gimbalYawMsg.isReset = true;
+
+        for (auto &i : pids_._) {
+            i->reset();
+        }
 
         LOG::info("GimbalLaunch", "exit");
     }
 
-    uint8_t checkChange() final
+    FSMState_e checkChange() final
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (launchFinishTime_ > MAX_LAUNCH_TIME)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return FSMState_e::RUN;
         else
-            return 0;
+            return FSMState_e::LAUNCH;
     }
 
 private:
     Standard *gimbal_;
+
+    Pids_u pids_;
+
+    float cmdMotorPitchAng_;
+    float cmdMotorYawAng_;
 
     uint16_t launchTotalTime_ = 0; // ms
     uint16_t launchFinishTime_ = 0;

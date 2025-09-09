@@ -5,23 +5,43 @@
 #include "StmLog.hpp"
 
 #include "MotorCommonMacros.hpp"
+#include "PidBasic.hpp"
+
+static PositonalPid gMotPA(130.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gMotPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositonalPid gMotYA(130.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gMotYV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
 namespace GIMBAL::STANDARD {
 
-class MotorRunState : public FSMState {
+class MotorRunState : public FSMState<FSMState_e> {
+    union Pids_u {
+        struct {
+            PositonalPid *pitchAngPid;
+            PositonalPid *pitchVelPid;
+
+            PositonalPid *yawAngPid;
+            PositonalPid *yawVelPid;
+        };
+        PID *_[4];
+    };
     static constexpr float PITCH_MIN_ANG = 0.f;
     static constexpr float PITCH_MAX_ANG = 0.f;
 
 public:
-    MotorRunState(Standard *_gimbal) : gimbal_(_gimbal)
+    MotorRunState(Standard *_gimbal)
+            : FSMState<FSMState_e>(FSMState_e::RUN), gimbal_(_gimbal)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::RUN));
+        pids_.pitchAngPid = &gMotPA;
+        pids_.pitchVelPid = &gMotPV;
+        pids_.yawAngPid = &gMotYA;
+        pids_.yawVelPid = &gMotYV;
     }
 
     void enter() final
     {
-        cmdMotorPitch_.pos = gimbal_->pitch()->posNorm();
-        cmdMotorYaw_.pos = gimbal_->yaw()->posNorm();
+        cmdMotorPitchAng_ = gimbal_->pitch()->posNorm();
+        cmdMotorYawAng_ = gimbal_->yaw()->posNorm();
 
         gimbal_->enter();
 
@@ -30,34 +50,46 @@ public:
 
     void run() final
     {
-        // cmdMotorPitch_.pos = PINYMOTOR::clampArc(gimbal_->msg.pitch,
-        //                                          PITCH_MIN_ANG, PITCH_MAX_ANG);
-        cmdMotorYaw_.pos = gimbal_->msg.yaw;
+        // cmdMotorPitchAng_ = PINYMOTOR::clampArc(
+        //         cmdMotorPitchAng_ + (gimbal_->msg.wPitch * 0.001f),
+        //         PITCH_MIN_ANG, PITCH_MAX_ANG);
+        cmdMotorYawAng_ += gimbal_->msg.wYaw * 0.001f;
 
-        cmdMotorPitch_.pos =
-                PINYMOTOR::rangeMap(cmdMotorPitch_.pos, 0, 2 * M_PI);
-        cmdMotorYaw_.pos = PINYMOTOR::rangeMap(cmdMotorYaw_.pos, 0, 2 * M_PI);
+        // joints' target pos
+        cmdMotorPitchAng_ = PINYMOTOR::rangeMap(cmdMotorPitchAng_);
+        cmdMotorYawAng_ = PINYMOTOR::rangeMap(cmdMotorYawAng_);
 
-        gimbal_->pitch()->cmdPos(cmdMotorPitch_.pos);
-        gimbal_->yaw()->cmdPos(cmdMotorYaw_.pos);
+        // ctrl
+        gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
+                           cmdMotorPitchAng_);
+        gimbal_->ctrlYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
     }
 
-    void exit() final { LOG::info("GimbalMotorRun", "exit"); }
+    void exit() final
+    {
+        for (auto &i : pids_._) {
+            i->reset();
+        }
 
-    uint8_t checkChange() final
+        LOG::info("GimbalMotorRun", "exit");
+    }
+
+    FSMState_e checkChange() final
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
-            return static_cast<uint8_t>(FSMState_e::RUN);
+            return FSMState_e::RUN;
         else
-            return 0;
+            return FSMState_e::RUN;
     }
 
 private:
     Standard *gimbal_;
 
-    States_u cmdMotorPitch_;
-    States_u cmdMotorYaw_;
+    Pids_u pids_;
+
+    float cmdMotorPitchAng_;
+    float cmdMotorYawAng_;
 };
 } // namespace GIMBAL::STANDARD

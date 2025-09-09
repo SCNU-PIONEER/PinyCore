@@ -36,7 +36,7 @@ union Motors_u {
     PINYMOTOR::IMotor *_[4];
 };
 
-class Mecanum : public Chassis<Mecanum> {
+class Mecanum : public Chassis {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
     static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
@@ -71,8 +71,6 @@ private:
     Speed_u curSpeed_;
 
     FILTER::IIR3 iir3_;
-
-    friend class Chassis<Mecanum>;
 };
 
 } //namespace CHASSIS::MECANUM

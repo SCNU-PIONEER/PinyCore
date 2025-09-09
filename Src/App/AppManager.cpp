@@ -7,6 +7,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
+#include "Swerve.hpp"
 
 extern TIM_HandleTypeDef BEEP_TIMER;
 
@@ -19,6 +20,9 @@ INS_SYS::INS ins;
 //---------------------------------------------------------------------------------------------------
 
 Cmd cmd;
+
+// Ctrl
+CHASSIS::Swerve chassis;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -76,6 +80,8 @@ void AppManager::createApp()
 
 void AppManager::initApp()
 {
+    cmd.init();
+
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
                                        BEEP_APB_FREQ);
@@ -90,6 +96,7 @@ void AppManager::initApp()
         TestModule::instance()->init();
     }
 
+    schedule([]() { chassis.update(); });
 
     // Generate threads at the end
     this->createApp();

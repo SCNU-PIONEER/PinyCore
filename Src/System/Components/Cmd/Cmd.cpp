@@ -4,8 +4,10 @@
 #include "cmsis_os2.h"
 
 
-Cmd::Cmd() : eventGroup_(xEventGroupCreate())
+void Cmd::init()
 {
+    eventGroup_ = xEventGroupCreate();
+
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
     msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));

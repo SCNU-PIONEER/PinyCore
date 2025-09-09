@@ -6,15 +6,18 @@
 
 namespace GIMBAL::STANDARD {
 
-class StopState : public FSMState {
+class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Standard *_gimbal) : gimbal_(_gimbal)
+    StopState(Standard *_gimbal)
+            : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal)
     {
-        setStateName(static_cast<uint8_t>(FSMState_e::STOP));
     }
 
     void enter() final
     {
+        gimbal_->outFilrYaw.reset();
+        gimbal_->outFilrPitch.reset();
+        gimbal_->gimbalYawMsg.isReset = false;
         gimbal_->stop();
         LOG::info("GimbalStop", "enter");
     }
@@ -23,14 +26,14 @@ public:
 
     void exit() final { LOG::info("GimbalStop", "exit"); }
 
-    uint8_t checkChange() final
+    FSMState_e checkChange() final
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
-            return static_cast<uint8_t>(FSMState_e::STOP);
+            return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
-            return static_cast<uint8_t>(FSMState_e::LAUNCH);
+            return FSMState_e::LAUNCH;
         else
-            return 0;
+            return FSMState_e::STOP;
     }
 
 private:
