@@ -6,6 +6,7 @@
 #include "dsp/matrix_functions.h"
 
 #include "Topic.hpp"
+#include "Bmi088.hpp"
 
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
@@ -67,7 +68,11 @@ struct INSData_s {
 class INS {
 public:
     INS();
+
     void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali);
+
+    static void task(void *_param);
+
     void update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature);
     float roll() const { return insDat_.roll; }
     float yaw() const { return insDat_.yaw; }
@@ -99,5 +104,7 @@ private:
     INSData_s insDat_; // data after INS algorithm, body and earth axis system
 
     Publisher<INSData_s> *insPub_;
+
+    BMI088 bmi088;
 };
 } // namespace INS_SYS

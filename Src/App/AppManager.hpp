@@ -1,11 +1,14 @@
 #pragma once
 
+#include <list>
+#include <functional>
+
 class AppManager {
 public:
-    inline static AppManager *instance()
+    static AppManager *instance()
     {
-        static AppManager instance_;
-        return &instance_;
+        static AppManager instance;
+        return &instance;
     }
 
     AppManager(const AppManager &) = delete;
@@ -13,7 +16,13 @@ public:
 
     void initApp();
 
+    void schedule(std::function<void()> _callback);
+
+    static void ctrlTask(void *_param);
+
 private:
     AppManager() = default;
     void createApp();
+
+    std::list<std::function<void()> > tasks;
 };

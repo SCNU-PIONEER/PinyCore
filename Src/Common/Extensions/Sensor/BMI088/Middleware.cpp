@@ -1,5 +1,5 @@
 #include "./Middleware.hpp"
-#include "Dwt.h"
+#include "Dwt.hpp"
 #include "Bsp_spi.hpp"
 
 
@@ -13,7 +13,7 @@ void Middleware::delay_ms(uint16_t ms)
     }
 }
 
-void Middleware::delay_us(uint16_t us) { dwt_delay_us(us); }
+void Middleware::delay_us(uint16_t us) { Dwt::instance().delayUs(us); }
 
 void Middleware::ACCEL_NS_L(void)
 {
