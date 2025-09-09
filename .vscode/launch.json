@@ -6,17 +6,21 @@
       "type": "lldb",
       "request": "attach",
       "preLaunchTask": "jlinkserver",
-      "targetCreateCommands": ["target create ${workspaceFolder}/build/PinyCore.elf"],
-      "processCreateCommands": ["gdb-remote 127.0.0.1:50000",
-                                "target modules load --load .text 0x08000000",
-                                "process plugin packet monitor reset"],
+      "targetCreateCommands": [
+        "target create ${workspaceFolder}/build/PinyCore.elf"
+      ],
+      "processCreateCommands": [
+        "gdb-remote 127.0.0.1:50000",
+        "target modules load --load .text 0x08000000",
+        "process plugin packet monitor reset"
+      ]
     },
 
     {
       "name": "rtt",
-      "type": "node",  //占位
+      "type": "node", //占位
       "request": "launch",
-      "preLaunchTask": "open-RTT",
+      "preLaunchTask": "open-RTT"
     },
 
     {
@@ -34,12 +38,12 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit", 
+        "source ${workspaceRoot}/tools/script/.gdbinit",
         "set p obj on",
         "set p pretty on"
       ],
       "postLaunchCommands": [
-        "b PinyCore::init",
+        "b PinyCore::init"
         // "continue"
       ],
       "rttConfig": {
@@ -53,7 +57,7 @@
             // "iencoding": "utf8",
             "noclear": false,
             "logfile": "${workspaceRoot}/.docs/rtt_log",
-            "port": 0,
+            "port": 0
           }
         ]
       }
@@ -67,13 +71,13 @@
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
-      
+
       "configFiles": [
         //"${workspaceFolder}/tools/openocd/stlink.cfg",
         "${workspaceFolder}/tools/openocd/dap.cfg",
         // "${workspaceFolder}/tools/openocd/jlink.cfg",
-        // "target/stm32h7x.cfg",
-        "target/stm32f4x.cfg"
+        "target/stm32h7x.cfg"
+        //"target/stm32f4x.cfg"
       ],
       "ToolchainPath": "/usr/bin/",
       // "svdFile": "docs/startup/STM32H723.svd",
@@ -89,14 +93,12 @@
       //     "monitor  halt",
       // ],
       // "postDebugTask": "close-RTT",
-      "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
-        "set p obj on",
-        "set p pretty on"
-      ],
-       "postLaunchCommands": [
-        "b PinyCore::init"
-      ],
+      // "preLaunchCommands": [
+      //   "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
+      //   "set p obj on",
+      //   "set p pretty on"
+      // ],
+      "postLaunchCommands": ["b PinyCore::init"],
       "rttConfig": {
         "enabled": true,
         "address": "auto",
@@ -108,9 +110,9 @@
             // "iencoding": "utf8",
             "noclear": false,
             "logfile": "${workspaceRoot}/docs/rtt_log",
-            "port": 0,
-          },
-          // {      
+            "port": 0
+          }
+          // {
           //   "type": "graph",
           //   "label": "data1",
           //   "encoding": "float",
@@ -120,7 +122,7 @@
           //   "scale": 1.0,
           // }
         ]
-      },
+      }
       // "graphConfig": [
       //   {
       //     "label": "Graph 1",
@@ -168,11 +170,10 @@
     }
   ],
   "compounds": [
-  {
-    "name": "remote_lldb",
-    "program": "${workspaceFolder}/build/PinyCore.elf",
-    "configurations": ["rtt","lldb"],
-  }
-  
+    {
+      "name": "remote_lldb",
+      "program": "${workspaceFolder}/build/PinyCore.elf",
+      "configurations": ["rtt", "lldb"]
+    }
   ]
 }

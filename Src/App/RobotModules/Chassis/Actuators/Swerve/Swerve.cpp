@@ -2,6 +2,7 @@
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 #include "GM6020.hpp"
@@ -21,34 +22,33 @@ using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
 
-
 //以下数组均可调
-PositonalPid swervePosPid[4] = {
-    PositonalPid(10.f, 0.f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(10.f, 0.f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(10.f, 0.f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
-    PositonalPid(8.f, 0.f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f)
+static PositonalPid swervePosPid[4] = {
+    PositonalPid(20.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
+    PositonalPid(18.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
+    PositonalPid(20.f, 0.001f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f),
+    PositonalPid(20.f, 0.002f, 0.f, 1.f / 100.f, 0.f, 35.f, 0.f)
 };
-PositonalPid swerveVelPid[4] = {
+static PositonalPid swerveVelPid[4] = {
     PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
     PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
     PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f)
+    PositonalPid(0.01f, 0.0015f, 0.f, 1.f / 100.f, 0.3f, 1.2f, 0.f)
 };
-FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),
-                                   FILTER::LPF(1000.f, 4.f),
-                                   FILTER::LPF(1000.f, 4.f),
-                                   FILTER::LPF(1000.f, 4.f) };
+//此滤波并没有调参
+static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),
+                                          FILTER::LPF(1000.f, 4.f),
+                                          FILTER::LPF(1000.f, 4.f),
+                                          FILTER::LPF(1000.f, 4.f) };
 
 Swerve::Swerve()
 {
     for (uint8_t i = 1; i <= 4; i++) {
         //输出滤波初始化
-        SwerveFilterOutput_._[i - 1] = &swerveFilterOutput[i - 1];
+        SwerveFilterOutput._[i - 1] = &swerveFilterOutput[i - 1];
         //舵轮pid初始化
-        swervePid_._[i - 1] =
-                new SwervePosPid_s{ .posPID = &swervePosPid[i - 1],
-                                    .velPID = &swerveVelPid[i - 1] };
+        swervePosPid_._[i - 1] = &swervePosPid[i - 1];
+        swerveVelPid_._[i - 1] = &swerveVelPid[i - 1];
 
         InitConfig_s gm6020Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -232,6 +232,7 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     SwerveDirectionAngle_u tempDir;
+    float del[4], vel[4], torq[4];
 
     // float cosYaw = arm_cos_f32(deltaYaw_);
     // float sinYaw = arm_sin_f32(deltaYaw_);
@@ -243,29 +244,31 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
-    for (uint8_t i = 0; i < 4; i++) {
-        //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
-        if (expDir._[i] >= F_PI) {
-            refWSpeed._[i + 4] = -refWSpeed._[i + 4];
-            tempDir._[i] -= F_PI; //[0,pi]
-            //TODO:此方法限制6020在180°内，但是考虑30°到-30°用上面的方法有明显缺陷，理当求取劣弧。
-        }
 
-        float del = getMinorArc(expDir._[i], motors_._[i + 4]->posNorm());
-        float vel = swervePid_._[i]->posPID->calc(del, 0);
-        float torq =
-                swervePid_._[i]->velPID->calc(vel, motors_._[i + 4]->vel());
+    for (uint8_t i = 0; i < 4; i++) {
+        tempDir._[i] = expDir._[i];
+        //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
+        if (fabs(getMinorArc(expDir._[i], motors_._[i + 4]->posNorm())) >=
+            F_PI / 2) {
+            refWSpeed._[i] = -refWSpeed._[i];
+            tempDir._[i] -= F_PI; //[0,pi]
+        }
+        tempDir._[i] < 0 ? 0 : tempDir._[i];
+
+        del[i] = getMinorArc(tempDir._[i], motors_._[i + 4]->posNorm());
+        vel[i] = swervePosPid_._[i]->calc(del[i], 0);
+        torq[i] = swerveVelPid_._[i]->calc(vel[i], motors_._[i + 4]->vel());
 
         //6020
         if (_refSpeed.vx == 0 && _refSpeed.vy == 0 && _refSpeed.wz == 0) {
             motors_._[i + 4]->cmdTorq(0);
         } else {
-            motors_._[i + 4]->cmdTorq(SwerveFilterOutput_._[i]->process(torq));
-            // motors_._[i + 4]->cmdPos(tempDir._[i]); //估计会寄
+            motors_._[i + 4]->cmdTorq(
+                    SwerveFilterOutput._[i]->process(torq[i]));
         }
-
         //3508
-        motors_._[i]->cmdVel(refWSpeed._[i]);
+        // motors_._[i]->cmdVel(refWSpeed._[i]);
+        motors_._[i]->cmdVel(0); //不动
     }
 
     if constexpr (APP_USE_POWERCTRL) {

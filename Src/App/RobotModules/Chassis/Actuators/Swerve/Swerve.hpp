@@ -10,6 +10,17 @@
 #include "LPF.hpp"
 
 namespace CHASSIS::SWERVE {
+
+union SwervePid_u {
+    struct {
+        PositonalPid *S_LF;
+        PositonalPid *S_RF;
+        PositonalPid *S_RB;
+        PositonalPid *S_LB;
+    };
+    PID *_[4];
+};
+
 union Speed_u {
     struct {
         float vx; // m/s
@@ -43,20 +54,6 @@ union Motors_u {
     PINYMOTOR::IMotor *_[8];
 };
 
-struct SwervePosPid_s {
-    PID *posPID;
-    PID *velPID;
-};
-union SwervePid_u {
-    struct {
-        SwervePosPid_s *S_LF;
-        SwervePosPid_s *S_RF;
-        SwervePosPid_s *S_RB;
-        SwervePosPid_s *S_LB;
-    };
-    SwervePosPid_s *_[4];
-};
-
 typedef union {
     struct {
         float DirAng_LF; //rad
@@ -66,7 +63,6 @@ typedef union {
     };
     float _[4]; //
 } SwerveDirectionAngle_u;
-
 
 typedef union {
     struct {
@@ -89,25 +85,22 @@ public:
 
     Swerve();
 
-    //LF,RF,RB,LB
-    SwerveFilterOutput_u SwerveFilterOutput_;
-
     void stopSelf();
     void enterSelf();
     void updateSelf();
-
     void ctrl(const Speed_u &_refSpeed);
 
-    SwervePid_u swervePid_;
+protected:
+    //舵轮零位角度，用于回正方向,rad
+    float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f, 3.03151608f };
+
+    SwervePid_u swervePosPid_; //舵轮位置环
+    SwervePid_u swerveVelPid_; //舵轮速度环
 
     SwerveDirectionAngle_u curDir; //舵轮当前方向角
     SwerveDirectionAngle_u expDir; //舵轮期望方向角
 
-
-
-protected:
-    //舵轮零位角度，用于回正方向,rad
-    float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.008f, 3.03151608f };
+    SwerveFilterOutput_u SwerveFilterOutput; //舵轮输出滤波器
     /*
      * @brief: calculate the speed of chassis
      * @param: _wSpeed: speed of each wheel
