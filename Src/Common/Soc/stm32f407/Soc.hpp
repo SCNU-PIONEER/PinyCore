@@ -5,6 +5,8 @@
 // can
 #define SOC_CAN
 #define SOC_CAN_NUM (2)
+#define HCAN1       hcan1
+#define HCAN2       hcan2
 #define canHandle   CAN_HandleTypeDef
 #define canHeader   CAN_RxHeaderTypeDef
 #define RX_FIFO0    CAN_RX_FIFO0

@@ -1,9 +1,3 @@
-#ifdef BSP_USE_CAN
-#define HCAN1 hfdcan1
-#define HCAN2 hfdcan2
-#define HCAN3 hfdcan3
-#endif
-
 #ifdef BSP_USE_UART
 #define RC_UART huart5
 #endif
