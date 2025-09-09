@@ -33,7 +33,7 @@ public:
         d.gimbalReset = _protoData.gimbalReset;
         d.vx = static_cast<int16_t>(_protoData.vx * 1000.f);
         d.vy = static_cast<int16_t>(_protoData.vy * 1000.f);
-        d.gimbalYaw = convertToInt16(_protoData.gimbalYaw * 1000.f);
+        d.gimbalYaw = convertToInt16(_protoData.gimbalYaw);
         d.reversed = 0;
         return data;
     }
@@ -44,7 +44,7 @@ public:
         protoData.gimbalReset = d.gimbalReset;
         protoData.vx = static_cast<float>(d.vx) / 1000.f;
         protoData.vy = static_cast<float>(d.vy) / 1000.f;
-        protoData.gimbalYaw = convertToFloat(d.gimbalYaw) / 1000.f;
+        protoData.gimbalYaw = convertToFloat(d.gimbalYaw);
         return protoData;
     }
 };
