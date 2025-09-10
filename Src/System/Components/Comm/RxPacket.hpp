@@ -15,7 +15,7 @@ protected:
 public:
     RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
     {
-        initalize();
+        CommManager::instance().registerReceiver([this] { receive(); });
     }
 
     virtual ~RxPacket() = default;
@@ -27,6 +27,7 @@ public:
             recvCnt_++;
             data_ = PacketType::decompress(this->rxBuf_);
         }
+        updateRxFreq();
     }
 
     void updateRxFreq()
@@ -53,12 +54,6 @@ protected:
     ProtoData data_{};
 
 private:
-    void initalize()
-    {
-        registerCallback();
-        CommManager::instance().registerReceiver([this] { receive(); });
-    }
-
     uint32_t lastRecvTick_ = 0;
     uint16_t recvCnt_ = 0;
     float rxFreq_ = 0.f;
