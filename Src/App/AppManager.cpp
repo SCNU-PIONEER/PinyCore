@@ -2,6 +2,7 @@
 #include "sdkconfig.h"
 #include "cmsis_os2.h"
 #include "MotorManager.hpp"
+#include "CommManager.hpp"
 #include "INS.hpp"
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
@@ -80,6 +81,10 @@ void AppManager::initApp()
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
                                        BEEP_APB_FREQ);
 
+#if APP_USE_COMM
+    schedule([]() { CommManager::instance().rxTask(); });
+#endif
+
 #if APP_USE_UI
     ui.init();
     schedule([]() { ui.task(); });
@@ -89,6 +94,10 @@ void AppManager::initApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
     }
+
+#if APP_USE_COMM
+    schedule([]() { CommManager::instance().txTask(); });
+#endif
 
 
     // Generate threads at the end
