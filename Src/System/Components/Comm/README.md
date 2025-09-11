@@ -5,7 +5,7 @@
 ## 更新日志
 
 1. 创建本README
-
+2. 接收端的注册回调函数中不再切换到高优先任务
 
 
 ## How to use
@@ -104,9 +104,7 @@ void ChassisCtrlRxPacket::registerCallback()
     // if you want to communicate by CAN1
     Can::instance().registerCallback(
             &HCAN1, uid(), [this](const uint8_t *_rxBuf) {
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(this->queue_, _rxBuf,
-                                  &higherPriorityTaskWoken);
+                xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
             });
 }
 ```
