@@ -1,0 +1,15 @@
+menu "muti-communication config"
+    depends on APP_USE_COMM
+
+    choice
+
+        prompt "core type"
+        default APP_GIMBAL_MASTER
+
+        config APP_GIMBAL_MASTER
+            bool "gimbal master"
+        config APP_CHASSIS_SLAVE
+            bool "chassis slave"
+
+    endchoice
+endmenu
