@@ -1,5 +1,4 @@
 #include "Omni.hpp"
-#include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
 #include <numbers>
@@ -12,6 +11,7 @@
 #include "./State/RunState.hpp"
 
 extern canHandle HCAN1;
+extern canHandle HCAN2;
 
 using namespace CHASSIS::OMNI;
 using namespace PINYMOTOR;
@@ -19,8 +19,25 @@ using namespace PINYMOTOR;
 constexpr float F_PI = std::numbers::pi_v<float>;
 constexpr float SQRT_2 = std::numbers::sqrt2_v<float>;
 
+void ChassisCtrlRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(
+            &HCAN1, uid(), [this](const uint8_t *_rxBuf) {
+                xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+            });
+    LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx \n",
+              uid());
+}
+
 Omni::Omni()
 {
+#if !APP_USE_COMM
+    // NOLINTBEGIN
+    gimbalYawSub_ = new Subscriber<GimbalYawMsg_s>(
+            1, &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg_);
+    // NOLINTEND
+#endif
+
     for (uint8_t i = 1; i <= 4; i++) {
         InitConfig_s m3508Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -131,4 +148,31 @@ void Omni::ctrl(const Speed_u &_refSpeed)
     if constexpr (APP_USE_POWERCTRL) {
         // TODO:
     }
+}
+
+void Omni::loadDeltaYaw()
+{
+// Master Board method
+#if !APP_USE_COMM
+    if (gimbalYawSub_->receive()) {
+        deltaYaw =
+                getMinorArc(gimbalYawMsg_.followYaw, gimbalYawMsg_.chassisYaw);
+    }
+
+#endif
+#ifdef APP_CHASSIS_SLAVE
+    deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().gimbalYaw, 0.f);
+#endif
+    cosYaw_ = arm_cos_f32(deltaYaw);
+    sinYaw_ = arm_sin_f32(deltaYaw);
+};
+
+bool Omni::isGimbalReset() const
+{
+#if !APP_USE_COMM
+    return gimbalYawMsg_.isReset;
+#endif
+#ifdef APP_CHASSIS_SLAVE
+    return chassisCtrlRxPacket_.data().gimbalReset;
+#endif
 }

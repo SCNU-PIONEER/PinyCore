@@ -27,7 +27,7 @@ public:
         if (chassis_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
         else if (chassis_->msg.state == FSMState_e::RUN &&
-                 chassis_->gimbalYawMsg.isReset)
+                 chassis_->isGimbalReset())
             return FSMState_e::RUN;
         else
             return FSMState_e::STOP;

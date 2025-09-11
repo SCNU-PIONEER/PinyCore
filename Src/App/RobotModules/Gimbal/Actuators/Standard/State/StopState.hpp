@@ -17,8 +17,9 @@ public:
     {
         gimbal_->outFilrYaw.reset();
         gimbal_->outFilrPitch.reset();
-        gimbal_->gimbalYawMsg.isReset = false;
         gimbal_->stop();
+        gimbal_->loadResetState(false);
+
         LOG::info("GimbalStop", "enter");
     }
 

@@ -4,7 +4,6 @@
 
 #include "GM6020.hpp"
 
-#include "sdkconfig.h"
 #include "Bsp_can.hpp"
 
 #include "./State/StopState.hpp"
@@ -13,10 +12,15 @@
 
 
 extern canHandle HCAN1;
+extern canHandle HCAN2;
 
 using namespace GIMBAL::STANDARD;
 using namespace PINYMOTOR;
 
+void ChassisCtrlTxPacket::send(uint8_t *_buf, uint16_t _len)
+{
+    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+}
 
 Standard::Standard()
 {
@@ -81,20 +85,32 @@ void Standard::update(void *_param)
     };
     this->insSub_->receive();
 
-    updateEndYaw();
-    updateBaseYaw();
+    updateCtrlYaw();
 
-    gimbalYawMsg.followYaw = endYawAng_;
-    gimbalYawMsg.chassisYaw = baseYawAng_;
+#ifdef APP_GIMBAL_MASTER
+    ChassisMsg_s cmsg{};
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) ==
+        pdTRUE) {
+    };
+    chassisCtrlTxPacket_.setData().vx = cmsg.vx;
+    chassisCtrlTxPacket_.setData().vy = cmsg.vy;
+    chassisCtrlTxPacket_.setData().gimbalYaw = PI / 2.f; // ctrlYawAng_;
+#endif
+
+#if !APP_USE_COMM
+    updateBaseYaw();
+    gimbalYawMsg_.followYaw = ctrlYawAng_;
+    gimbalYawMsg_.chassisYaw = baseYawAng_;
     gimbalYawPub_->publish();
+#endif
 
     this->stateFactory_.update();
 }
 
-void Standard::updateEndYaw()
+void Standard::updateCtrlYaw()
 {
     if (this->isConfirmYawZero_) {
-        this->endYawAng_ =
+        this->ctrlYawAng_ =
                 getMinorArc(this->insData_.yaw, -this->constDeltaYawArc_);
     } else {
         // confirm zero
@@ -111,7 +127,7 @@ void Standard::updateEndYaw()
 
 void Standard::updateBaseYaw()
 {
-    this->baseYawAng_ = getMinorArc(this->endYawAng_,
+    this->baseYawAng_ = getMinorArc(this->ctrlYawAng_,
                                     (motors_.yaw->posNorm() > PI) ?
                                             motors_.yaw->posNorm() - (2 * PI) :
                                             motors_.yaw->posNorm());
@@ -148,4 +164,14 @@ void Standard::ctrlYaw(PID *_angPID, PID *_velPID, float _pos, float _vel)
     float vel = _angPID->calc(fmax(-_vel, fmin(del, _vel)), 0);
     float torq = _velPID->calc(vel, motors_.yaw->vel());
     motors_.yaw->cmdTorq(outFilrYaw.process(torq));
+}
+
+void Standard::loadResetState(bool _state)
+{
+#if !APP_USE_COMM
+    gimbalYawMsg_.isReset = _state;
+#endif
+#ifdef APP_GIMBAL_MASTER
+    chassisCtrlTxPacket_.setData().gimbalReset = _state;
+#endif
 }

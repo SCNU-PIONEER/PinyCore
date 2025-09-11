@@ -2,9 +2,16 @@
 
 #include "Gimbal.hpp"
 
+#include "sdkconfig.h"
+
+#include <functional>
+
 #include "IMotor.hpp"
 
 #include "LPF.hpp"
+
+#include "TxPacket.hpp"
+#include "PacketImpl.hpp"
 
 namespace GIMBAL::STANDARD {
 
@@ -23,6 +30,10 @@ union States_u {
         float torq;
     };
     float _[2];
+};
+
+class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::SamplePacketType> {
+    void send(uint8_t *_buf, uint16_t _len) final;
 };
 
 class Standard : public Gimbal {
@@ -52,14 +63,39 @@ public:
     void enter();
     void update(void *_param);
 
+    float ctrlYawAng() const { return ctrlYawAng_; }
+
+    float baseYawAng() const { return baseYawAng_; }
+
+    void loadResetState(bool _state);
+
     FILTER::LPF outFilrPitch{ PITCH_MOTOR_FREQ, 4.f };
     FILTER::LPF outFilrYaw{ YAW_MOTOR_FREQ, 3.f };
 
 private:
-    void updateEndYaw();
+    void updateCtrlYaw();
     void updateBaseYaw();
 
     Motors_u motors_;
+
+#if !APP_USE_COMM
+    // Master send deltaYaw to chassis
+    GimbalYawMsg_s gimbalYawMsg_{};
+    Publisher<GimbalYawMsg_s> *gimbalYawPub_;
+    std::function<void()> publisherInitLamda_ = [this]() {
+        gimbalYawPub_ = new Publisher<GimbalYawMsg_s>(
+                &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg_);
+    };
+#endif
+#ifdef APP_GIMBAL_MASTER
+    ChassisCtrlTxPacket chassisCtrlTxPacket_;
+#endif
+
+    float ctrlYawAng_ = 0.f;       // be-ctrled-Joint's ang in earth
+    float constDeltaYawArc_ = 0.f; // be-ctrled-Joint to base mapping arc
+    bool isConfirmYawZero_ = false;
+
+    float baseYawAng_ = 0.f; // J0's ang in earth
 };
 
 } // namespace GIMBAL::STANDARD

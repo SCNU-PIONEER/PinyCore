@@ -54,6 +54,7 @@ public:
         cmdMotorYawAng_ = 0.f;
 
         gimbal_->enter();
+
         LOG::info("GimbalLaunch", "enter");
     }
 
@@ -84,7 +85,7 @@ public:
     void exit() final
     {
         finishLaunching_ = true;
-        gimbal_->gimbalYawMsg.isReset = true;
+        gimbal_->loadResetState(true);
 
         for (auto &i : pids_._) {
             i->reset();

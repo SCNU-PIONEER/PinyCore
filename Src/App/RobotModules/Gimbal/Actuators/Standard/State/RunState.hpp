@@ -43,7 +43,7 @@ public:
     void enter() final
     {
         cmdImuPitchAng_ = gimbal_->ins().pitch;
-        cmdImuYawAng_ = gimbal_->endYawAng();
+        cmdImuYawAng_ = gimbal_->ctrlYawAng();
 
         gimbal_->enter();
 
@@ -64,7 +64,7 @@ public:
         float insPitchDelArc =
                 PINYMOTOR::getMinorArc(cmdImuPitchAng_, gimbal_->ins().pitch);
         float insYawDelArc =
-                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->endYawAng());
+                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->ctrlYawAng());
 
         // joints' target pos
         cmdMotorPitchAng_ = PINYMOTOR::rangeMap(
