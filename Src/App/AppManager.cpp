@@ -2,7 +2,9 @@
 #include "sdkconfig.h"
 #include "cmsis_os2.h"
 #include "MotorManager.hpp"
+#if APP_USE_COMM
 #include "CommManager.hpp"
+#endif
 #include "INS.hpp"
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
@@ -19,7 +21,7 @@ INS_SYS::INS ins;
 
 //---------------------------------------------------------------------------------------------------
 
-Cmd cmd;
+Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -99,6 +101,7 @@ void AppManager::initApp()
     schedule([]() { CommManager::instance().txTask(); });
 #endif
 
+    cmd = new Cmd();
 
     // Generate threads at the end
     this->createApp();
