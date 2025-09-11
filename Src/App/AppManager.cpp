@@ -25,6 +25,17 @@ Cmd *cmd;
 
 //---------------------------------------------------------------------------------------------------
 
+#ifdef CHASSIS_TYPE
+#include CHASSIS_FILE
+CHASSIS::OMNI::Omni chassis;
+#endif
+#ifdef GIMBAL_TYPE
+#include GIMBAL_FILE
+GIMBAL::STANDARD::Standard gimbal;
+#endif
+
+//---------------------------------------------------------------------------------------------------
+
 
 #if APP_USE_UI
 UI::App ui(UI_ROBOT_ID);
@@ -96,6 +107,15 @@ void AppManager::initApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
     }
+
+#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+    schedule([]() { chassis.update(cmd->getMsgBus()); });
+#endif
+
+#if !APP_USE_COMM || APP_GIMBAL_MASTER
+    schedule([]() { gimbal.update(cmd->getMsgBus()); });
+#endif
+
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
