@@ -27,11 +27,11 @@ Cmd *cmd;
 
 #ifdef CHASSIS_TYPE
 #include CHASSIS_FILE
-CHASSIS::OMNI::Omni chassis;
+CHASSIS::CHASSIS_TYPE chassis;
 #endif
 #ifdef GIMBAL_TYPE
 #include GIMBAL_FILE
-GIMBAL::STANDARD::Standard gimbal;
+GIMBAL::GIMBAL_TYPE gimbal;
 #endif
 
 //---------------------------------------------------------------------------------------------------

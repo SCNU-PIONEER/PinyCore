@@ -13,7 +13,7 @@
 #include "TxPacket.hpp"
 #include "PacketImpl.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 union Motors_u {
     struct {
@@ -98,4 +98,4 @@ private:
     float baseYawAng_ = 0.f; // J0's ang in earth
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

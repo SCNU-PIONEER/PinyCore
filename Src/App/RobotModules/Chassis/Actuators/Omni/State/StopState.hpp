@@ -3,7 +3,7 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-namespace CHASSIS::OMNI {
+namespace CHASSIS {
 class StopState : public FSMState<FSMState_e> {
 public:
     StopState(Omni *_chassis)
@@ -36,4 +36,4 @@ public:
 private:
     Omni *chassis_;
 };
-} // namespace CHASSIS::OMNI
+} // namespace CHASSIS

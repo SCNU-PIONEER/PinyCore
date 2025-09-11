@@ -12,7 +12,7 @@
 #include "RxPacket.hpp"
 #include "PacketImpl.hpp"
 
-namespace CHASSIS::OMNI {
+namespace CHASSIS {
 
 union Speed_u {
     struct {
@@ -111,4 +111,4 @@ private:
     float sinYaw_ = 0.f;
 };
 
-} //namespace CHASSIS::OMNI
+} //namespace CHASSIS

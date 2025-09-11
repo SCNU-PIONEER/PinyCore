@@ -13,7 +13,7 @@ static PositonalPid gLauPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 static PositonalPid gLauYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
 static PositonalPid gLauYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 class LaunchState : public FSMState<FSMState_e> {
     union Pids_u {
@@ -117,4 +117,4 @@ private:
     bool finishLaunching_ = false;
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

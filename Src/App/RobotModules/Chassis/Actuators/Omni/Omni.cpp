@@ -13,7 +13,7 @@
 extern canHandle HCAN1;
 extern canHandle HCAN2;
 
-using namespace CHASSIS::OMNI;
+using namespace CHASSIS;
 using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;

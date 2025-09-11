@@ -14,7 +14,7 @@
 extern canHandle HCAN1;
 extern canHandle HCAN2;
 
-using namespace GIMBAL::STANDARD;
+using namespace GIMBAL;
 using namespace PINYMOTOR;
 
 void ChassisCtrlTxPacket::send(uint8_t *_buf, uint16_t _len)
@@ -94,7 +94,7 @@ void Standard::update(void *_param)
     };
     chassisCtrlTxPacket_.setData().vx = cmsg.vx;
     chassisCtrlTxPacket_.setData().vy = cmsg.vy;
-    chassisCtrlTxPacket_.setData().gimbalYaw = PI / 2.f; // ctrlYawAng_;
+    chassisCtrlTxPacket_.setData().gimbalYaw = ctrlYawAng_;
 #endif
 
 #if !APP_USE_COMM
