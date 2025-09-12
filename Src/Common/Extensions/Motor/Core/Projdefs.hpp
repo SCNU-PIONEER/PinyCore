@@ -81,7 +81,7 @@ struct Model_s {
 };
 
 struct Data_s {
-    float rawAng;  // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
+    float rawAng; // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
     float zeroAng; // 零点角度值 rad
     float ang;     // 相对零点的角度 rad
     float angLast; // 上一时刻的相对零点的角度 rad

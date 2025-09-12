@@ -51,7 +51,7 @@ protected:
     float limitPower = 0.f; // 最大输入功率（裁判系统读取）
     float maxPower = 0.f;   // 允许最大输出功率（经过动态规划）
     float offsetPower = 0.f;
-    float powerBuffer = 60.f;    // 实际缓冲能量值,从裁判系统读取,亦可软件设定
+    float powerBuffer = 60.f; // 实际缓冲能量值,从裁判系统读取,亦可软件设定
     float expPowerBuffer = 60.f; // 期望缓冲能量值
 
     std::vector<float> cmdPower; // 原闭环控制器所设定的功率

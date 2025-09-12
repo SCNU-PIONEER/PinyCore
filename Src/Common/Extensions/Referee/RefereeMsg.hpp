@@ -15,29 +15,29 @@
 
 #define REFEREE_SYS_VERSION "2024.05.27"
 
-#define LEN_HEADER 5U
-#define LEN_CMDID 2U
-#define LEN_TAIL 2U
+#define LEN_HEADER          5U
+#define LEN_CMDID           2U
+#define LEN_TAIL            2U
 
-#define SOF_BYTE 0xA5U // 帧头
+#define SOF_BYTE            0xA5U // 帧头
 
-#define CMDID_OFFSET 5U
-#define CMDID_H 6U
-#define CMDID_L 5U
+#define CMDID_OFFSET        5U
+#define CMDID_H             6U
+#define CMDID_L             5U
 
-#define CMDID_TABLE_COL 16U
-#define CMDID_TABLE_ROW 4U
+#define CMDID_TABLE_COL     16U
+#define CMDID_TABLE_ROW     4U
 
 /* RFID功能卡 */
-#define CARD_ATTACK ((uint8_t)0x00)
-#define CARD_PROTECT ((uint8_t)0x01)
-#define CARD_BLOOD_RED ((uint8_t)0x02)
-#define CARD_BLOOD_BLUE ((uint8_t)0x03)
-#define CARD_HEAL_RED ((uint8_t)0x04)
-#define CARD_HEAL_BLUE ((uint8_t)0x05)
-#define CARD_COLD_RED ((uint8_t)0x06)
-#define CARD_COLD_BLUE ((uint8_t)0x07)
-#define CARD_FORT ((uint8_t)0x08)
+#define CARD_ATTACK         ((uint8_t)0x00)
+#define CARD_PROTECT        ((uint8_t)0x01)
+#define CARD_BLOOD_RED      ((uint8_t)0x02)
+#define CARD_BLOOD_BLUE     ((uint8_t)0x03)
+#define CARD_HEAL_RED       ((uint8_t)0x04)
+#define CARD_HEAL_BLUE      ((uint8_t)0x05)
+#define CARD_COLD_RED       ((uint8_t)0x06)
+#define CARD_COLD_BLUE      ((uint8_t)0x07)
+#define CARD_FORT           ((uint8_t)0x08)
 
 namespace REFEREE {
 

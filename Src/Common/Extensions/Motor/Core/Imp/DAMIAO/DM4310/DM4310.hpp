@@ -14,7 +14,7 @@ public:
     static constexpr float MIT_KP_MAX = 500.f;
     static constexpr float MIT_KD_MAX = 5.f;
     static constexpr float CURR_TX_CODE_SPAN = 10000.f;
-    
+
     static constexpr float CURR_RATED = 2.5f;
     static constexpr float TORQ_RATED = 3.f;
     static constexpr float CURR_MAX = 7.5f;
