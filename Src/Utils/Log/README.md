@@ -21,6 +21,17 @@
     log.info("Piny", "num i: %d", i);
     log.info("Piny", "str: %s", str.c_str());
 ```
+# RTT命令使用格式
+1. 全局级别控制  log global INFO
+2. 模块级别控制  log set MOTOR WARN 
+3. 查询模块级别  log get MOTOR
+4. 查询所有模块的自定义级别  log get
+5. 将模块从自定义级别映射表中移出  log del MOTOR
+
+# 说明:
+1. 模块和级别是可选项，必须是大写。
+2. .type提示写模块名，比如LOG::info("ARM", "register");中的ARM。
+
 # 特性
 
 ## 安全性

@@ -5,6 +5,7 @@
 #endif
 #include <cstring>
 #include "SEGGER_RTT.h"
+#include "StmLog.hpp"
 
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
@@ -40,6 +41,12 @@ void RTTMsgHandler::handle()
 {
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+    std::string cmd(reinterpret_cast<char *>(data));
+
+    if (cmd.starts_with("log ")) {
+        LOG::handleLogCmd(cmd.substr(4));
+        return;
+    }
 }
 
 void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
