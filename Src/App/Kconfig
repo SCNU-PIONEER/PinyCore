@@ -20,6 +20,8 @@ menu "app config"
     bool "UI"
     default n
 
+    source "Src/App/UI/Kconfig"
+
     config APP_USE_INS
     bool "ins"
     default n
@@ -30,5 +32,10 @@ menu "app config"
 
     source "Src/App/UI/Kconfig"
 
+    config APP_USE_COMM
+    bool "muti communication"
+    default n
+
+    source "Src/System/Components/Comm/Kconfig"
 
 endmenu
