@@ -12,6 +12,10 @@
 #define IMU_SPI hspi1
 #endif
 
+#ifdef APP_USE_REFEREE
+#define REFEREE_UART huart6
+#endif
+
 #ifdef APP_USE_UI
 #define UI_UART huart6
 #endif

@@ -15,9 +15,9 @@
 #include "Bsp_dma.hpp"
 #include "sdkconfig.h"
 #include <cstring>
+#include "Soc.hpp"
 
-
-
+extern UART_HandleTypeDef REFEREE_UART;
 namespace REFEREE {
 
 Referee::Referee() 
@@ -38,7 +38,6 @@ Referee::Referee()
     std::memset(&shootData_, 0, sizeof(shootData_));
     std::memset(&bulletRemaining_, 0, sizeof(bulletRemaining_));
     std::memset(&rfidStatus_, 0, sizeof(rfidStatus_));
-    
     std::memset(txBuffer_, 0, sizeof(txBuffer_));
     std::memset(cmdidRxTable_, 0, sizeof(cmdidRxTable_));
     

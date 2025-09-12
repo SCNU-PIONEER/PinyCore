@@ -1,0 +1,5 @@
+menu "referee config"
+    depends on APP_USE_REFEREE
+
+
+endmenu

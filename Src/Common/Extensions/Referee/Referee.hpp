@@ -86,7 +86,6 @@ public:
 
     /**
      * @brief 初始化裁判系统
-     * @param _huart UART句柄
      */
     void init(UART_HandleTypeDef *_huart);
 

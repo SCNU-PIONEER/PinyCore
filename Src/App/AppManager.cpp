@@ -10,8 +10,10 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
+#include "Referee.hpp"
 
 extern TIM_HandleTypeDef BEEP_TIMER;
+extern UART_HandleTypeDef REFEREE_UART;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -85,6 +87,12 @@ void AppManager::initApp()
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
+#endif
+
+#if APP_USE_REFEREE
+
+    REFEREE::Referee::instance().init(&REFEREE_UART);
+    REFEREE::Referee::instance().clearBuffer();
 #endif
 
 #if APP_USE_UI
