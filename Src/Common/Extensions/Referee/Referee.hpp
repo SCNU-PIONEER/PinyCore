@@ -23,24 +23,24 @@
 
 #define REFEREE_RX_BUFFER_LEN 256U
 #define REFEREE_TX_BUFFER_LEN 128U
-#define REFEREE_SYS_MAX_LOST 5
+#define REFEREE_SYS_MAX_LOST  5
 
 namespace REFEREE {
 
 class Referee {
 private:
     Referee();
-    
+
     // 数据缓冲区
     uint8_t *rxBuffer_;
     uint8_t txBuffer_[REFEREE_TX_BUFFER_LEN];
-    
+
     // UART句柄
     UART_HandleTypeDef *uart_;
-    
+
     // 接收失败计数
     uint16_t rxLostCnt_;
-    
+
     // 数据结构实例
     GameStatus_s gameStatus_;
     GameResult_s gameResult_;
@@ -58,17 +58,17 @@ private:
     ShootData_s shootData_;
     BulletRemaining_s bulletRemaining_;
     RfidStatus_s rfidStatus_;
-    
+
     // 数据指针表
     void *cmdidBufferTable_[CMDID_TABLE_ROW][CMDID_TABLE_COL];
     uint16_t cmdidRxTable_[CMDID_TABLE_ROW];
-    
+
     // 上一次处理的位置
     uint32_t previousOffset_;
-    
+
     // 初始化数据指针表
     void initCmdidTable();
-    
+
     // 数据解析函数
     uint32_t readRefereeData(uint8_t *buf, uint32_t startOffset, uint32_t len);
 
@@ -79,7 +79,8 @@ public:
     /**
      * @brief 获取裁判系统实例
      */
-    inline static Referee &instance() {
+    inline static Referee &instance()
+    {
         static Referee instance_;
         return instance_;
     }
@@ -94,7 +95,7 @@ public:
      * @param _huart UART句柄
      */
     void uartIdleCallback(UART_HandleTypeDef *_huart);
-    
+
     /**
      * @brief 静态UART空闲中断回调函数
      * @param _huart UART句柄
@@ -144,17 +145,41 @@ public:
     inline const GameResult_s &getGameResult() const { return gameResult_; }
     inline const GameRobotHP_s &getGameRobotHP() const { return gameRobotHP_; }
     inline const EventData_s &getEventData() const { return eventData_; }
-    inline const SupplyProjectileAction_s &getSupplyProjectileAction() const { return supplyProjectileAction_; }
-    inline const RefereeWarning_s &getRefereeWarning() const { return refereeWarning_; }
-    inline const DartRemainingTime_s &getDartRemainingTime() const { return dartRemainingTime_; }
-    inline const GameRobotStatus_s &getGameRobotStatus() const { return gameRobotStatus_; }
-    inline const PowerHeatData_s &getPowerHeatData() const { return powerHeatData_; }
-    inline const GameRobotPos_s &getGameRobotPos() const { return gameRobotPos_; }
+    inline const SupplyProjectileAction_s &getSupplyProjectileAction() const
+    {
+        return supplyProjectileAction_;
+    }
+    inline const RefereeWarning_s &getRefereeWarning() const
+    {
+        return refereeWarning_;
+    }
+    inline const DartRemainingTime_s &getDartRemainingTime() const
+    {
+        return dartRemainingTime_;
+    }
+    inline const GameRobotStatus_s &getGameRobotStatus() const
+    {
+        return gameRobotStatus_;
+    }
+    inline const PowerHeatData_s &getPowerHeatData() const
+    {
+        return powerHeatData_;
+    }
+    inline const GameRobotPos_s &getGameRobotPos() const
+    {
+        return gameRobotPos_;
+    }
     inline const Buff_s &getBuff() const { return buff_; }
-    inline const AerialRobotEnergy_s &getAerialRobotEnergy() const { return aerialRobotEnergy_; }
+    inline const AerialRobotEnergy_s &getAerialRobotEnergy() const
+    {
+        return aerialRobotEnergy_;
+    }
     inline const RobotHurt_s &getRobotHurt() const { return robotHurt_; }
     inline const ShootData_s &getShootData() const { return shootData_; }
-    inline const BulletRemaining_s &getBulletRemaining() const { return bulletRemaining_; }
+    inline const BulletRemaining_s &getBulletRemaining() const
+    {
+        return bulletRemaining_;
+    }
     inline const RfidStatus_s &getRfidStatus() const { return rfidStatus_; }
 };
 

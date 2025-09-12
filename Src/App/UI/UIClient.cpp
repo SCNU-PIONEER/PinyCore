@@ -287,7 +287,7 @@ Status_e Client::initTypeLinkedLists(Node_s **_graphicLink, Node_s **_charLink,
                 nullptr) //如果链表为空，将新节点设置为链表的头节点
             {
                 *_charLink = newNode; //将新节点设置为链表的头节点
-            } else                    //如果链表不为空，将新节点添加到链表的末尾
+            } else //如果链表不为空，将新节点添加到链表的末尾
             {
                 charLinkCursor->next = newNode;
             }
