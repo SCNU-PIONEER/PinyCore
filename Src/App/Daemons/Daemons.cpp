@@ -25,7 +25,7 @@ Daemons::Daemons()
         if (!RC::Rc::instance().isOnline()) {
             if (xTaskGetTickCount() - updateCnt >= 2000) {
                 updateCnt = xTaskGetTickCount();
-                LOG::warn("Daemons", "RC Online");
+                LOG::warn("Daemons", "RC offline");
             }
         }
     });
