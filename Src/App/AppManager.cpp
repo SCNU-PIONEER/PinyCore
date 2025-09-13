@@ -11,6 +11,10 @@
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
 
+#if APP_USE_DAEMONS
+#include "Daemons/Daemons.hpp"
+#endif
+
 extern TIM_HandleTypeDef BEEP_TIMER;
 
 //---------------------------------------------------------------------------------------------------
@@ -26,12 +30,16 @@ Cmd *cmd;
 //---------------------------------------------------------------------------------------------------
 
 #ifdef CHASSIS_TYPE
+#if !APP_USE_COMM || APP_CHASSIS_SLAVE
 #include CHASSIS_FILE
 CHASSIS::CHASSIS_TYPE chassis;
 #endif
+#endif
 #ifdef GIMBAL_TYPE
+#if !APP_USE_COMM || APP_GIMBAL_MASTER
 #include GIMBAL_FILE
 GIMBAL::GIMBAL_TYPE gimbal;
+#endif
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -68,14 +76,6 @@ void AppManager::initApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
     }
-
-#if !APP_USE_COMM || APP_CHASSIS_SLAVE
-    schedule([]() { chassis.update(cmd->getMsgBus()); });
-#endif
-
-#if !APP_USE_COMM || APP_GIMBAL_MASTER
-    schedule([]() { gimbal.update(cmd->getMsgBus()); });
-#endif
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
