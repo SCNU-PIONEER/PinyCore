@@ -82,10 +82,6 @@ private:
     // Master send deltaYaw to chassis
     GimbalYawMsg_s gimbalYawMsg_{};
     Publisher<GimbalYawMsg_s> *gimbalYawPub_;
-    std::function<void()> publisherInitLamda_ = [this]() {
-        gimbalYawPub_ = new Publisher<GimbalYawMsg_s>(
-                &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg_);
-    };
 #endif
 #ifdef APP_GIMBAL_MASTER
     ChassisCtrlTxPacket chassisCtrlTxPacket_;

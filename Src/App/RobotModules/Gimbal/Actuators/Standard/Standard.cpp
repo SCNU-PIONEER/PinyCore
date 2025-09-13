@@ -24,6 +24,13 @@ void ChassisCtrlTxPacket::send(uint8_t *_buf, uint16_t _len)
 
 Standard::Standard()
 {
+#if !APP_USE_COMM
+    // NOLINTBEGIN
+    gimbalYawPub_ = new Publisher<GimbalYawMsg_s>(
+            &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg_);
+    // NOLINTEND
+#endif
+
     InitConfig_s pitchGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
