@@ -138,13 +138,17 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
         //           " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
         //           this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
         //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
-
-        return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
-                _txBuf, _len));
-    } else {
-        return 0;
+        if (this->comType_ == ComType_e::FDCAN) {
+            return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                    _txBuf, _len));
+        } else if (this->comType_ == ComType_e::CAN) {
+            return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                    _txBuf, _len));
+        }
     }
+    return 0;
 }
 
 MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
