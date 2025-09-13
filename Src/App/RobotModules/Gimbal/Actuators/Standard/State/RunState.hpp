@@ -67,12 +67,10 @@ public:
                 PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->ctrlYawAng());
 
         // joints' target pos
-        cmdMotorPitchAng_ = PINYMOTOR::rangeMap(
-                gimbal_->pitch()->posNorm() +
-                (Standard::PITCH_REVERSE ? -insPitchDelArc : insPitchDelArc));
-        cmdMotorYawAng_ = PINYMOTOR::rangeMap(
-                gimbal_->yaw()->posNorm() +
-                (Standard::YAW_REVERSE ? -insYawDelArc : insYawDelArc));
+        cmdMotorPitchAng_ = PINYMOTOR::rangeMap(gimbal_->pitch()->posNorm() +
+                                                insPitchDelArc);
+        cmdMotorYawAng_ =
+                PINYMOTOR::rangeMap(gimbal_->yaw()->posNorm() + insYawDelArc);
 
         // ctrl
         gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
