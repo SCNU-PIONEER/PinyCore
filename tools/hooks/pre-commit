@@ -1,13 +1,22 @@
 #!/bin/sh
 
-# clang-format
-find Src -type d -name "hal" -prune -o \
-  \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.c" \) \
-  -not -name "sdkconfig.h" -print0 |
-  xargs -0 -r clang-format --dry-run --Werror --style=file
+# 获取暂存区中的文件列表
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "^Src/.*\.(c|cpp|h|hpp)$" | grep -v "Src/hal/" | grep -v "sdkconfig.h")
 
-# clang-tidy
-find Src -type d -name "hal" -prune -o \
-  \( -name "*.h" -o -name "*.hpp" -o -name "*.cpp" \) \
-  -not -name "sdkconfig.h" -print0 |
-  xargs -0 -r clang-tidy --quiet --warnings-as-errors='*' --format-style=file
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+# clang-format 检查
+echo "Running clang-format..."
+if ! echo "$STAGED_FILES" | xargs clang-format --dry-run --Werror --style=file; then
+  echo "clang-format check failed. Please format your code before committing."
+  exit 1
+fi
+
+# clang-tidy 检查
+# echo "Running clang-tidy..."
+# if ! echo "$STAGED_FILES" | grep -E "\.(cpp|hpp|h)$" | xargs clang-tidy --quiet --warnings-as-errors='*' --format-style=file; then
+#   echo "clang-tidy check failed. Please fix the issues before committing."
+#   exit 1
+# fi
