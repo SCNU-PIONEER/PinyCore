@@ -7,10 +7,10 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositonalPid gMotPA(130.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gMotPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-static PositonalPid gMotYA(130.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gMotYV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositonalPid gMotPA(130.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gMotPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 7.f, 0.f);
+static PositonalPid gMotYA(50.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositonalPid gMotYV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 0.1f, 0.f);
 
 namespace GIMBAL {
 
@@ -53,6 +53,7 @@ public:
         // cmdMotorPitchAng_ = PINYMOTOR::clampArc(
         //         cmdMotorPitchAng_ + (gimbal_->msg.wPitch * 0.001f),
         //         PITCH_MIN_ANG, PITCH_MAX_ANG);
+        cmdMotorPitchAng_ += gimbal_->msg.wPitch * 0.001f;
         cmdMotorYawAng_ += gimbal_->msg.wYaw * 0.001f;
 
         // joints' target pos

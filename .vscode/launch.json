@@ -90,7 +90,7 @@
       // ],
       // "postDebugTask": "close-RTT",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
+        // "source ${workspaceRoot}/tools/script/.gdbinit", // 手动加载.gdbinit文件
         "set p obj on",
         "set p pretty on"
       ],
