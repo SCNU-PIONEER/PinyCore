@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
-
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-
-# Version info
-set(VERSION_MAJOR 0)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
-set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-
 
 # Define the build type
 set(CMAKE_BUILD_TYPE "Release")
@@ -26,13 +18,13 @@ include("tools/cmake/FindInclude.cmake")
 include("tools/cmake/ShowMessage.cmake")
 include("Src/sdkconfig.cmake" OPTIONAL)
 include("tools/cmake/Warning.cmake")
+include("tools/cmake/Version.cmake")
 
 # Core project settings
-project(${CMAKE_PROJECT_NAME} VERSION ${VERSION})
+project(${CMAKE_PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
 # Enable CMake support for ASM and C languages
 enable_language(C CXX ASM)
-
 
 # 启用彩色诊断信息
 add_compile_options($<$<C_COMPILER_ID:GNU>:-fdiagnostics-color=always>)

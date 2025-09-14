@@ -26,6 +26,10 @@ menu "app config"
     bool "ins"
     default n
 
+    config APP_USE_DAEMONS
+    bool "daemons"
+    default n
+
     config APP_USE_COMM
     bool "muti communication"
     default n

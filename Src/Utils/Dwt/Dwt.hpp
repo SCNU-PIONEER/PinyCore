@@ -2,14 +2,20 @@
 
 #include "main.h"
 
-
 #define DWT_CR           *(__IO uint32_t *)0xE0001000
 #define DWT_CYCCNT       *(__IO uint32_t *)0xE0001004
 #define DEM_CR           *(__IO uint32_t *)0xE000EDFC
-
 #define DEM_CR_TRCENA    (1 << 24)
 #define DWT_CR_CYCCNTENA (1 << 0)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void dwtInit();
+uint32_t dwtRead();
+
+#ifdef __cplusplus
 
 class Dwt {
 public:
@@ -68,3 +74,5 @@ private:
     */
     Dwt();
 };
+}
+#endif
