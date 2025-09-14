@@ -11,14 +11,24 @@
 
 namespace CHASSIS {
 
-union SwervePid_u {
+//以下两个模板专为舵向电机使用(控制较为复杂)
+template <typename T> union SwervePtr_u {
     struct {
-        PositonalPid *S_LF;
-        PositonalPid *S_RF;
-        PositonalPid *S_RB;
-        PositonalPid *S_LB;
+        T *S_LF;
+        T *S_RF;
+        T *S_RB;
+        T *S_LB;
     };
-    PID *_[4];
+    T *_[4];
+};
+template <typename T> union Swerve_u {
+    struct {
+        T S_LF;
+        T S_RF;
+        T S_RB;
+        T S_LB;
+    };
+    T _[4];
 };
 
 union Speed_u {
@@ -53,26 +63,6 @@ union Motors_u {
     };
     PINYMOTOR::IMotor *_[8];
 };
-
-typedef union {
-    struct {
-        float DirAng_LF; //rad
-        float DirAng_RF; //rad
-        float DirAng_RB; //rad
-        float DirAng_LB; //rad
-    };
-    float _[4]; //
-} SwerveDirectionAngle_u;
-
-typedef union {
-    struct {
-        FILTER::LPF *LF;
-        FILTER::LPF *RF;
-        FILTER::LPF *RB;
-        FILTER::LPF *LB;
-    };
-    FILTER::LPF *_[4];
-} SwerveFilterOutput_u;
 
 //喵板
 class Swerve : public Chassis {
@@ -113,13 +103,11 @@ private:
     //舵轮零位角度，用于回正方向,rad
     float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f, 3.03151608f };
 
-    SwervePid_u swervePosPid_; //舵轮位置环
-    SwervePid_u swerveVelPid_; //舵轮速度环
-
-    SwerveDirectionAngle_u curDir; //舵轮当前方向角
-    SwerveDirectionAngle_u expDir; //舵轮期望方向角
-
-    SwerveFilterOutput_u swerveFilterOutput_; //舵轮输出滤波器
+    Swerve_u<float> curDir;                       //舵轮当前方向角
+    Swerve_u<float> expDir;                       //舵轮期望方向角
+    SwervePtr_u<PositonalPid> swervePosPid_;      //舵轮位置环
+    SwervePtr_u<PositonalPid> swerveVelPid_;      //舵轮速度环
+    SwervePtr_u<FILTER::LPF> swerveFilterOutput_; //舵轮输出滤波器
 };
 
 } // namespace CHASSIS
