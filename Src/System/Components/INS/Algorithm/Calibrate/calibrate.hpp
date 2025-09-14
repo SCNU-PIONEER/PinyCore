@@ -4,6 +4,11 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+
+#define CORRECT_IMU_DATA 1
+
+namespace INS_SYS {
+
 typedef struct {
     float gx;
     float gy;
@@ -11,13 +16,7 @@ typedef struct {
     float ax;
     float ay;
     float az;
-} imu_data_fp_t;
-
-typedef struct {
-    uint16_t gx, gy, gz;
-    uint16_t ax, ay, az;
-    float temperature;
-} imu_data_raw_t;
+} CaliOutput_s;
 
 typedef struct {
     float accel_T[3][3];
@@ -49,42 +48,43 @@ typedef enum : uint8_t {
 
 
 class IMUCalibration {
-    static constexpr float GYRO_BIAS_MAX = (1.0f * 0.01745f);
     static constexpr float BIAS_ALPHA = 0.007f;
-    static constexpr float STEADY_CNT_MAX = 10;
+    static constexpr uint16_t STEADY_CNT_MAX = 10;
     static constexpr float STEADY_ACCEL_RANGE = 0.28f;
     static constexpr float STEADY_GYRO_RANGE = 0.03f;
     static constexpr float GYRO_BIAS_MAX_RAW = 100.f;
 
+    static constexpr float G =
+            9.7883f; // (GuangZhou) Default gravity constant in m/s^2
+
 public:
     void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali,
-              const float _temp = 0.0f);
+              float _aTransK = 1.0f, float _gTransK = 1.0f);
 
-    imu_data_fp_t correct(float _aTransK, float _gTransK, float _gx, float _gy,
-                          float _gz, float _ax, float _ay, float _az,
-                          float _temperature);
-    imu_data_fp_t correctInt16(float _aTransK, float _gTransK, int16_t _gx,
-                               int16_t _gy, int16_t _gz, int16_t _ax,
-                               int16_t _ay, int16_t _az, float _temperature);
+    void correctA(int16_t _ax, int16_t _ay, int16_t _az);
+    void correctG(int16_t _gx, int16_t _gy, int16_t _gz);
+    void correctM(int16_t _mx, int16_t _my, int16_t _mz);
+
+    const CaliOutput_s &getOutput() const { return corrDat_; }
 
     // Detect steady state for gyro calibration
-    imu_data_fp_t steadyStateDetection();
+    CaliOutput_s steadyStateDetection();
+
+    void updateTemperature(float _temp) { temperature_ = _temp; }
 
 private:
-    template <typename T> T clamp(T _value, T _max)
-    {
-        return std::max(-_max, std::min(_value, _max));
-    }
-
-    float invSqrt(float _x);
-
     AccCali_s acc_cali_;
     GyroCali_s gyro_cali_;
-
-    float g_ = 9.80665f; // Default gravity constant in m/s^2
 
     // steady state detection parameters
     uint16_t staticSteadyStateCnt_ = 0;
 
-    imu_data_fp_t corrDat_; // calibrated output
+    CaliOutput_s corrDat_; // calibrated output
+
+    float temperature_ = 0.0f; // temperature data , unit:degC
+
+    float aTransK_ = 1.0f;
+    float gTransK_ = 1.0f;
 };
+
+} // namespace INS_SYS

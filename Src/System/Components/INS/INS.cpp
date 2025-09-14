@@ -3,8 +3,6 @@
 #include "cmsis_os2.h"
 #include "TopicRouter.hpp"
 
-#define CORRECT_IMU_DATA 1
-
 extern SPI_HandleTypeDef IMU_SPI;
 
 using namespace INS_SYS;
@@ -32,104 +30,76 @@ INS::INS()
     LOG::info("INS", "task init success");
 }
 
-void INS::init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali)
-{
-    // Initialize Rotation Matrix
-    arm_mat_init_f32(&R_, 3, 3, R_data_);
-
-    // Initialize Body and Earth axis system vectors
-    arm_mat_init_f32(&bodyVectorT_, 3, 1, bodyV_data_);
-    arm_mat_init_f32(&earthVectorT_, 3, 1, earthV_data_);
-
-    // Initialize IMU calibration
-    imuCali_.init(_accCali, _gyroCali);
-
-    // Initialize DCM algorithm
-    DCM_.init();
-
-    // Set initial time interval
-    this->dt_ = 0.001f; // default to 1 ms
-}
-
 void INS::task(void *_param)
 {
     auto instance = static_cast<INS *>(_param);
-    while (instance->bmi088.init(&IMU_SPI))
+    auto &bmi088 = instance->bmi088_;
+    auto &cali = instance->imuCali_;
+
+    while (bmi088.init(&IMU_SPI))
+        // wait for ACK from BMI088
         ;
-    instance->init(accCali, gyroCali);
+
+    cali.init(accCali, gyroCali, bmi088.getAccelMappingVaule(),
+              bmi088.getGyroMappingVaule());
+
+    instance->DCM_.init();
+
     while (true) {
         // read BMI088 data
-        instance->bmi088.readRaw(); // read raw 6 axis data from device
-        instance->bmi088.read();    // serialize data to real format
+        bmi088.readRaw(); // read raw 6 axis data from device
+        bmi088.read();    // serialize data to real format
 
-        // load raw INS needed data, you must transform the raw imu data to correct order
+        // update IMU calibration
+        cali.updateTemperature(bmi088.getTemperature());
+        cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(),
+                      bmi088.getRawAccelZ());
+        cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(),
+                      bmi088.getRawGyroZ());
+
         // the order of axis is defined as:
         /*
-                     Z
-                     |
-                     |
-                     |
-                     |     X:HEAD
-                     |   /
-                     | /
-            Y<-------ROBOT 
+                      Z
+                      |
+                      |
+                      |
+                      |     X: IN FRONT OF YOUR HEAD
+                      |   /
+                      | /
+            Y <-------ROBOT 
         */
-        INS_SYS::IMUSensorRawData_s data = {
-            .a = { .x = instance->bmi088.getRawAccelX(),
-                   .y = instance->bmi088.getRawAccelY(),
-                   .z = static_cast<int16_t>(-instance->bmi088.getRawAccelZ()),
-                   .transK = instance->bmi088.getAccelMappingVaule() },
-            .g = { .x = instance->bmi088.getRawGyroX(),
-                   .y = instance->bmi088.getRawGyroY(),
-                   .z = static_cast<int16_t>(-instance->bmi088.getRawGyroZ()),
-                   .transK = instance->bmi088.getGyroMappingVaule() },
-            // .m = NULL TODO:
+        // load raw INS needed data, you must transform the raw imu data to correct order
+        IMUSensorData_s data = {
+            .a = { .x = cali.getOutput().ax,
+                   .y = cali.getOutput().ay,
+                   .z = -cali.getOutput().az },
+            .g = { .x = cali.getOutput().gx,
+                   .y = cali.getOutput().gy,
+                   .z = -cali.getOutput().gz },
         };
 
+        if constexpr (CORRECT_IMU_DATA) {
+            cali.steadyStateDetection();
+        }
+
         // update INS
-        instance->update(&data, instance->bmi088.getTimestamp(),
-                         instance->bmi088.getTemperature());
+        instance->update(&data, instance->bmi088_.getTimestamp());
+
         vTaskDelay(1);
     }
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
+void INS::update(IMUSensorData_s *_sensorDat, float _dt)
 {
     this->dt_ = _dt; // update time interval
-
-    // Update raw IMU data
-    rawDat_.a.x = static_cast<float>(_sensorDat->a.x) * _sensorDat->a.transK;
-    rawDat_.a.y = static_cast<float>(_sensorDat->a.y) * _sensorDat->a.transK;
-    rawDat_.a.z = static_cast<float>(_sensorDat->a.z) * _sensorDat->a.transK;
-    rawDat_.g.x = static_cast<float>(_sensorDat->g.x) * _sensorDat->g.transK;
-    rawDat_.g.y = static_cast<float>(_sensorDat->g.y) * _sensorDat->g.transK;
-    rawDat_.g.z = static_cast<float>(_sensorDat->g.z) * _sensorDat->g.transK;
 
     float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
           z = insDat_.q[3];
 
-    // Update IMU calibration
-    imu_data_fp_t fData;
-#if CORRECT_IMU_DATA
-    fData = imuCali_.correctInt16(_sensorDat->a.transK, _sensorDat->g.transK,
-                                  _sensorDat->g.x, _sensorDat->g.y,
-                                  _sensorDat->g.z, _sensorDat->a.x,
-                                  _sensorDat->a.y, _sensorDat->a.z,
-                                  _temperature);
-    imuCali_.steadyStateDetection();
-#else
-    fData.gx = rawDat_.g.x;
-    fData.gy = rawDat_.g.y;
-    fData.gz = rawDat_.g.z;
-    fData.ax = rawDat_.a.x;
-    fData.ay = rawDat_.a.y;
-    fData.az = rawDat_.a.z;
-#endif
-
     // Update DCM algorithm
-    DCM_.update(fData.gx, fData.gy, fData.gz, fData.ax, fData.ay, fData.az,
-                this->dt_);
+    DCM_.update(_sensorDat->g.x, _sensorDat->g.y, _sensorDat->g.z,
+                _sensorDat->a.x, _sensorDat->a.y, _sensorDat->a.z, this->dt_);
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
@@ -140,63 +110,60 @@ void INS::update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature)
     insDat_.yaw = DCM_.getYaw();
 
     // Update the body axis system data
-    insDat_.body.gx = fData.gx;
-    insDat_.body.gy = fData.gy;
-    insDat_.body.gz = fData.gz;
-    insDat_.body.ax = fData.ax;
-    insDat_.body.ay = fData.ay;
-    insDat_.body.az = fData.az;
+    insDat_.body.gx = _sensorDat->g.x;
+    insDat_.body.gy = _sensorDat->g.y;
+    insDat_.body.gz = _sensorDat->g.z;
+    insDat_.body.ax = _sensorDat->a.x;
+    insDat_.body.ay = _sensorDat->a.y;
+    insDat_.body.az = _sensorDat->a.z;
 
     // Update Rotation Matrix
 #if ROTATION_MATRIX_PITCH_ONLY
-    R_data_[0] = cosf(insDat_.pitch);  // R[0][0]
-    R_data_[1] = 0.0f;                 // R[0][1]
-    R_data_[2] = sinf(insDat_.pitch);  // R[0][2]
-    R_data_[3] = 0.0f;                 // R[1][0]
-    R_data_[4] = 1.0f;                 // R[1][1]
-    R_data_[5] = 0.0f;                 // R[1][2]
-    R_data_[6] = -sinf(insDat_.pitch); // R[2][0]
-    R_data_[7] = 0.0f;                 // R[2][1]
-    R_data_[8] = cosf(insDat_.pitch);  // R[2][2]
+    R_[0][0] = cosf(insDat_.pitch);
+    R_[0][1] = 0.0f;
+    R_[0][2] = sinf(insDat_.pitch);
+    R_[1][0] = 0.0f;
+    R_[1][1] = 1.0f;
+    R_[1][2] = 0.0f;
+    R_[2][0] = -sinf(insDat_.pitch);
+    R_[2][1] = 0.0f;
+    R_[2][2] = cosf(insDat_.pitch);
 #else
-    R_data_[0] = 1.f - 2.f * y * y - 2.f * z * z; // R[0][0] = 1-2y^2-2z^2
-    R_data_[1] = 2.f * x * y - 2.f * w * z;       // R[0][1] = 2xy - 2wz
-    R_data_[2] = 2.f * x * z + 2.f * w * y;       // R[0][2] = 2xz + 2wy
-    R_data_[3] = 2.f * x * y + 2.f * w * z;       // R[1][0] = 2xy + 2wz
-    R_data_[4] = 1.f - 2.f * x * x - 2.f * z * z; // R[1][1] = 1-2x^2-2z^2
-    R_data_[5] = 2.f * y * z - 2.f * w * x;       // R[1][2] = 2yz - 2wx
-    R_data_[6] = 2.f * x * z - 2.f * w * y;       // R[2][0] = 2xz - 2wy
-    R_data_[7] = 2.f * y * z + 2.f * w * x;       // R[2][1] = 2xy + 2wz
-    R_data_[8] = 1.f - 2.f * x * x - 2.f * y * y; // R[2][2] = 1-2x^2-2y^2
+    R_[0][0] = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
+    R_[0][1] = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
+    R_[0][2] = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy
+    R_[1][0] = 2.f * x * y + 2.f * w * z;       // 2xy + 2wz
+    R_[1][1] = 1.f - 2.f * x * x - 2.f * z * z; // 1-2x^2-2z^2
+    R_[1][2] = 2.f * y * z - 2.f * w * x;       // 2yz - 2wx
+    R_[2][0] = 2.f * x * z - 2.f * w * y;       // 2xz - 2wy
+    R_[2][1] = 2.f * y * z + 2.f * w * x;       // 2xy + 2wz
+    R_[2][2] = 1.f - 2.f * x * x - 2.f * y * y; // 1-2x^2-2y^2
 #endif
 
     // Transform body axis data to earth axis system using the rotation matrix
-    bodyV_data_[0] = insDat_.body.ax;
-    bodyV_data_[1] = insDat_.body.ay;
-    bodyV_data_[2] = insDat_.body.az;
-    arm_mat_mult_f32(&R_, &bodyVectorT_, &earthVectorT_);
-    insDat_.earth.ax = earthV_data_[0];
-    insDat_.earth.ay = earthV_data_[1];
-    insDat_.earth.az = earthV_data_[2];
+    bodyVectorT_[0][0] = insDat_.body.ax;
+    bodyVectorT_[1][0] = insDat_.body.ay;
+    bodyVectorT_[2][0] = insDat_.body.az;
+    earthVectorT_ = R_ * bodyVectorT_;
+    insDat_.earth.ax = earthVectorT_[0][0];
+    insDat_.earth.ay = earthVectorT_[1][0];
+    insDat_.earth.az = earthVectorT_[2][0];
 
-    bodyV_data_[0] = insDat_.body.gx;
-    bodyV_data_[1] = insDat_.body.gy;
-    bodyV_data_[2] = insDat_.body.gz;
-    arm_mat_mult_f32(&R_, &bodyVectorT_, &earthVectorT_);
-    insDat_.earth.gx = earthV_data_[0];
-    insDat_.earth.gy = earthV_data_[1];
-    insDat_.earth.gz = earthV_data_[2];
+    bodyVectorT_[0][0] = insDat_.body.gx;
+    bodyVectorT_[1][0] = insDat_.body.gy;
+    bodyVectorT_[2][0] = insDat_.body.gz;
+    earthVectorT_ = R_ * bodyVectorT_;
+    insDat_.earth.gx = earthVectorT_[0][0];
+    insDat_.earth.gy = earthVectorT_[1][0];
+    insDat_.earth.gz = earthVectorT_[2][0];
 
-    bodyV_data_[0] = insDat_.body.mx;
-    bodyV_data_[1] = insDat_.body.my;
-    bodyV_data_[2] = insDat_.body.mz;
-    arm_mat_mult_f32(&R_, &bodyVectorT_, &earthVectorT_);
-    insDat_.earth.mx = earthV_data_[0];
-    insDat_.earth.my = earthV_data_[1];
-    insDat_.earth.mz = earthV_data_[2];
-
-    // temperature data
-    temperature_ = _temperature;
+    // bodyVectorT_[0][0] = insDat_.body.mx;
+    // bodyVectorT_[1][0] = insDat_.body.my;
+    // bodyVectorT_[2][0] = insDat_.body.mz;
+    // earthVectorT_ = R_ * bodyVectorT_;
+    // insDat_.earth.mx = earthVectorT_[0][0];
+    // insDat_.earth.my = earthVectorT_[1][0];
+    // insDat_.earth.mz = earthVectorT_[2][0];
 
     // send queue
     insPub_->publish();

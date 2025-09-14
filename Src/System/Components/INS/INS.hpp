@@ -3,6 +3,7 @@
 #include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
 #include "./Algorithm/Calibrate/calibrate.hpp"
 
+#include "Matrix.hpp"
 #include "dsp/matrix_functions.h"
 
 #include "Topic.hpp"
@@ -25,22 +26,6 @@ struct IMUSensorData_s {
     } m; // magnetometer data , unit:gauss
 
     float temperature; // temperature data , uint:degC
-};
-
-struct IMUSensorRawData_s {
-    struct Accel_s {
-        int16_t x, y, z;
-        float transK;
-    } a; // accelerometer data , unit:m/s^2
-
-    struct Gyro_s {
-        int16_t x, y, z;
-        float transK;
-    } g; // gyroscope data , unit:rad/s
-
-    struct Mag_s {
-        int16_t x, y, z;
-    } m; // magnetometer data , unit:gauss
 };
 
 struct INSData_s {
@@ -69,34 +54,27 @@ class INS {
 public:
     INS();
 
-    void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali);
-
     static void task(void *_param);
 
-    void update(IMUSensorRawData_s *_sensorDat, float _dt, float _temperature);
+    void update(IMUSensorData_s *_sensorDat, float _dt);
     float roll() const { return insDat_.roll; }
     float yaw() const { return insDat_.yaw; }
     float pitch() const { return insDat_.pitch; }
 
 private:
     float dt_ = 0.001f; // default time interval in seconds
-    float temperature_; // temperature data , unit:degC
 
     // 3x3 rotation matrix data
-    float R_data_[9] = { 0.0f };
-    arm_matrix_instance_f32 R_ = { 3, 3, R_data_ };
+    Matrix<3, 3> R_;
     // 3x1 vector
-    float bodyV_data_[3] = { 0.0f };
-    float earthV_data_[3] = { 0.0f };
-    arm_matrix_instance_f32 bodyVectorT_ = { 3, 1, bodyV_data_ };
-    arm_matrix_instance_f32 earthVectorT_ = { 3, 1, earthV_data_ };
+    Matrix<3, 1> bodyVectorT_;
+    Matrix<3, 1> earthVectorT_;
 
     // IMU calibration
-    // IMU Algorithm
     IMUCalibration imuCali_; // IMU calibration object
 
-    IMU_DCM_AHRS::DcmAhrs DCM_ =
-            IMU_DCM_AHRS::DcmAhrs(dt_); // DCM algorithm object
+    // IMU AHRS algorithm
+    IMU_DCM_AHRS::DcmAhrs DCM_{ dt_ }; // DCM algorithm object
 
     // INS data
     IMUSensorData_s rawDat_; // raw data from IMU, body axis system
@@ -105,6 +83,6 @@ private:
 
     Publisher<INSData_s> *insPub_;
 
-    BMI088 bmi088;
+    BMI088 bmi088_;
 };
 } // namespace INS_SYS
