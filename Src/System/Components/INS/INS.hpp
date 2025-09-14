@@ -1,6 +1,7 @@
 #pragma once
 
-#include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
+// #include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
+#include "./Algorithm/DcmAHRSTest/DcmAHRS.hpp"
 #include "./Algorithm/Calibrate/calibrate.hpp"
 
 #include "Matrix.hpp"
@@ -74,7 +75,7 @@ private:
     IMUCalibration imuCali_; // IMU calibration object
 
     // IMU AHRS algorithm
-    IMU_DCM_AHRS::DcmAhrs DCM_{ dt_ }; // DCM algorithm object
+    IMU_DCM_AHRS_TEST::DcmAhrs DCM_{ dt_ }; // DCM algorithm object
 
     // INS data
     IMUSensorData_s rawDat_; // raw data from IMU, body axis system
