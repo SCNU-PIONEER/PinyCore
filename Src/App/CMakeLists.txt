@@ -31,7 +31,7 @@ endif()
 # gimbal type
 if(APP_USE_STANDARD)
   set(GIMBAL_TYPE "Standard")
-elseif(APP_USE_STACKED)
+elseif(APP_USE_DUALSTAGE)
   set(GIMBAL_TYPE "Stacked")
 endif()
 

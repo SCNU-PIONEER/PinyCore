@@ -6,7 +6,7 @@
 
 #include "LPF.hpp"
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 union Motors_u {
     struct {
@@ -56,10 +56,10 @@ public:
     FILTER::LPF outFilrYaw{ YAW_MOTOR_FREQ, 3.f };
 
 private:
-    void updateEndYaw();
+    void updatectrlYawAng();
     void updateBaseYaw();
 
     Motors_u motors_;
 };
 
-} // namespace GIMBAL::STANDARD
+} // namespace GIMBAL

@@ -8,19 +8,19 @@ menu "gimbal config"
 
         config APP_USE_STANDARD
             bool "standard"
-        config APP_USE_STACKED
-            bool "stacked"
+        config APP_USE_DUALSTAGE
+            bool "DualStage"
 
     endchoice
 
     config GIMBAL_TYPE
         string
         default "Standard" if APP_USE_STANDARD
-        default "Stacked"  if APP_USE_STACKED
+        default "DualStage"  if APP_USE_DUALSTAGE
 
     config GIMBAL_FILE
         string
         default '"Standard.hpp"' if APP_USE_STANDARD
-        default '"Stacked.hpp"'  if APP_USE_STACKED
+        default '"DualStage.hpp"'  if APP_USE_DUALSTAGE
 
 endmenu

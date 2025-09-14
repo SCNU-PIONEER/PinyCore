@@ -14,7 +14,7 @@
 
 extern canHandle HCAN1;
 
-using namespace GIMBAL::STANDARD;
+using namespace GIMBAL;
 using namespace PINYMOTOR;
 
 
@@ -81,20 +81,20 @@ void Standard::update(void *_param)
     };
     this->insSub_->receive();
 
-    updateEndYaw();
+    updatectrlYawAng();
     updateBaseYaw();
 
-    gimbalYawMsg.followYaw = endYawAng_;
+    gimbalYawMsg.followYaw = ctrlYawAng_;
     gimbalYawMsg.chassisYaw = baseYawAng_;
     gimbalYawPub_->publish();
 
     this->stateFactory_.update();
 }
 
-void Standard::updateEndYaw()
+void Standard::updatectrlYawAng()
 {
     if (this->isConfirmYawZero_) {
-        this->endYawAng_ =
+        this->ctrlYawAng_ =
                 getMinorArc(this->insData_.yaw, -this->constDeltaYawArc_);
     } else {
         // confirm zero
@@ -111,7 +111,7 @@ void Standard::updateEndYaw()
 
 void Standard::updateBaseYaw()
 {
-    this->baseYawAng_ = getMinorArc(this->endYawAng_,
+    this->baseYawAng_ = getMinorArc(this->ctrlYawAng_,
                                     (motors_.yaw->posNorm() > PI) ?
                                             motors_.yaw->posNorm() - (2 * PI) :
                                             motors_.yaw->posNorm());

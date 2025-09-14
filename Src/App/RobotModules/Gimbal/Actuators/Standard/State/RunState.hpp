@@ -12,7 +12,7 @@ static PositonalPid gRunPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 static PositonalPid gRunYA(150.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
 static PositonalPid gRunYV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
-namespace GIMBAL::STANDARD {
+namespace GIMBAL {
 
 
 class RunState : public FSMState<FSMState_e> {
@@ -43,7 +43,7 @@ public:
     void enter() final
     {
         cmdImuPitchAng_ = gimbal_->ins().pitch;
-        cmdImuYawAng_ = gimbal_->endYawAng();
+        cmdImuYawAng_ = gimbal_->ctrlYawAng();
 
         gimbal_->enter();
 
@@ -64,7 +64,7 @@ public:
         float insPitchDelArc =
                 PINYMOTOR::getMinorArc(cmdImuPitchAng_, gimbal_->ins().pitch);
         float insYawDelArc =
-                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->endYawAng());
+                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->ctrlYawAng());
 
         // joints' target pos
         cmdMotorPitchAng_ = PINYMOTOR::rangeMap(
@@ -110,4 +110,4 @@ private:
     float cmdMotorPitchAng_;
     float cmdMotorYawAng_;
 };
-} // namespace GIMBAL::STANDARD
+}  // namespace GIMBAL

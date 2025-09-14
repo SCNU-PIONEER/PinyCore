@@ -7,7 +7,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
-#include "Swerve.hpp"
+#include CHASSIS_FILE
 
 extern TIM_HandleTypeDef BEEP_TIMER;
 
