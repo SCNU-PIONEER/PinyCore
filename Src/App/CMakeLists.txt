@@ -51,6 +51,12 @@ if(APP_USE_TEST)
   list(APPEND SOURCES ${TEST_SOURCES})
 endif()
 
+# daemons
+if(APP_USE_DAEMONS)
+  file(GLOB_RECURSE DAEMONS_SOURCES CMAKE_CONFIGURE_DEPENDS "Daemons/*.cpp")
+  list(APPEND SOURCES ${DAEMONS_SOURCES})
+endif()
+
 target_sources(App PRIVATE ${SOURCES})
 
 # Include the header directories

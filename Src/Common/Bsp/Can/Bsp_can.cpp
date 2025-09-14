@@ -164,8 +164,8 @@ HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid,
     return result;
 }
 
-HAL_StatusTypeDef transmitBrsData(canHandle *_hcan, uint16_t _stdid,
-                                  uint8_t *_tx_data, uint32_t _len)
+HAL_StatusTypeDef Can::transmitBrsData(canHandle *_hcan, uint16_t _stdid,
+                                       uint8_t *_tx_data, uint32_t _len)
 {
     HAL_StatusTypeDef result = HAL_OK;
     FDCAN_TxHeaderTypeDef txHeader = { 0 };
