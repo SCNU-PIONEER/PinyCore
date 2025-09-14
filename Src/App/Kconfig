@@ -30,8 +30,6 @@ menu "app config"
     bool "daemons"
     default n
 
-    source "Src/App/UI/Kconfig"
-
     config APP_USE_COMM
     bool "muti communication"
     default n
