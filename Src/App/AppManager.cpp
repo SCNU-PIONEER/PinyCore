@@ -72,6 +72,14 @@ void AppManager::initApp()
     schedule([]() { Daemons::instance().update(); });
 #endif
 
+#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+    schedule([]() { chassis.update(cmd->getMsgBus()); });
+#endif
+
+#if !APP_USE_COMM || APP_GIMBAL_MASTER
+    schedule([]() { gimbal.update(cmd->getMsgBus()); });
+#endif
+
     // TestModule
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();
