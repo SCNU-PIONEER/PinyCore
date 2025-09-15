@@ -46,7 +46,9 @@ void AppManager::initApp()
     schedule([]() { CommManager::instance().rxTask(); });
 #endif
 
+#if APP_USE_INS
     ins.init();
+#endif
 
     cmd = new Cmd();
 
