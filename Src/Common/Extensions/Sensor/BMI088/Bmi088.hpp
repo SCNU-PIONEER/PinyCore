@@ -2,21 +2,21 @@
 #include "stdint.h"
 #include "./Middleware.hpp"
 
-#define BMI088_TEMP_FACTOR               0.125f
-#define BMI088_TEMP_OFFSET               23.0f
+#define BMI088_TEMP_FACTOR 0.125f
+#define BMI088_TEMP_OFFSET 23.0f
 
-#define BMI088_WRITE_ACCEL_REG_NUM       6
-#define BMI088_WRITE_GYRO_REG_NUM        6
+#define BMI088_WRITE_ACCEL_REG_NUM 6
+#define BMI088_WRITE_GYRO_REG_NUM  6
 
 #define BMI088_GYRO_DATA_READY_BIT       0
 #define BMI088_ACCEL_DATA_READY_BIT      1
 #define BMI088_ACCEL_TEMP_DATA_READY_BIT 2
 
-#define BMI088_LONG_DELAY_TIME           80
-#define BMI088_COM_WAIT_SENSOR_TIME      150
+#define BMI088_LONG_DELAY_TIME      80
+#define BMI088_COM_WAIT_SENSOR_TIME 150
 
-#define BMI088_ACCEL_IIC_ADDRESSE        (0x18 << 1)
-#define BMI088_GYRO_IIC_ADDRESSE         (0x68 << 1)
+#define BMI088_ACCEL_IIC_ADDRESSE (0x18 << 1)
+#define BMI088_GYRO_IIC_ADDRESSE  (0x68 << 1)
 
 #define BMI088_ACCEL_RANGE_3G
 // #define BMI088_ACCEL_RANGE_6G
@@ -82,6 +82,9 @@ enum {
 };
 
 class BMI088 : public Middleware {
+    static constexpr float BMI088_ACCEL_SEN = BMI088_ACCEL_3G_SEN;
+    static constexpr float BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;
+
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
     bmi088_raw_data_t readRaw(); // read raw data in raw format
@@ -123,8 +126,8 @@ protected:
 
 private:
     // Mapping encoding to international unit parameters
-    float aTransK_;
-    float gTransK_;
+    float aTransK_ = BMI088_ACCEL_SEN;
+    float gTransK_ = BMI088_GYRO_SEN;
 
     bmi088_real_data_t data_;
     bmi088_raw_data_t rawData_;
