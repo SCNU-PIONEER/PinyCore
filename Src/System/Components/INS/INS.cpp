@@ -7,25 +7,28 @@ extern SPI_HandleTypeDef IMU_SPI;
 
 using namespace INS_SYS;
 
-const AccCali_s accCali = {
+static constexpr AccCali_s ACC_CALI = {
     // default accelerometer calibration
     .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
                  { 0.001142f, 1.009152f, 0.006399f },
                  { -0.005477f, 0.002071f, 1.013539f } },
     .accel_offs = { -34.944336f, -3.310059f, 107.792969f }
 };
-const GyroCali_s gyroCali = {
+static constexpr GyroCali_s GYRO_CALI = {
     // default gyroscope calibration
-    .gx_bias = -1.93095636f, .gy_bias = -5.93262482f, .gz_bias = 0.222163752f,
-    .gx_tco_k = 0.f,         .gx_tco_b0 = 0.f,        .gy_tco_k = 0.f,
-    .gy_tco_b0 = 0.f,        .gz_tco_k = 0.f,         .gz_tco_b0 = 0.f
+    .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
+    .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,     .gy_tco_k = 0.f,
+    .gy_tco_b0 = 0.f,      .gz_tco_k = 0.f,      .gz_tco_b0 = 0.f
 };
+
+static constexpr float IMU_OFFSET_X = 0;
+static constexpr float IMU_OFFSET_Y = 0;
 
 INS::INS()
         : insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
                                            &insDat_))
 {
-    xTaskCreate(INS::task, "ins_task", 256, this, osPriorityRealtime7, nullptr);
+    xTaskCreate(INS::task, "ins_task", 384, this, osPriorityRealtime7, nullptr);
 
     LOG::info("INS", "task init success");
 }
@@ -40,7 +43,7 @@ void INS::task(void *_param)
         // wait for ACK from BMI088
         ;
 
-    cali.init(accCali, gyroCali, bmi088.getAccelMappingVaule(),
+    cali.init(ACC_CALI, GYRO_CALI, bmi088.getAccelMappingVaule(),
               bmi088.getGyroMappingVaule());
 
     instance->DCM_.init();
@@ -56,6 +59,9 @@ void INS::task(void *_param)
                       bmi088.getRawAccelZ());
         cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(),
                       bmi088.getRawGyroZ());
+        if constexpr (CORRECT_IMU_DATA) {
+            cali.steadyStateDetection();
+        }
 
         // the order of axis is defined as:
         /*
@@ -69,40 +75,43 @@ void INS::task(void *_param)
             Y <-------ROBOT 
         */
         // load raw INS needed data, you must transform the raw imu data to correct order
-        IMUSensorData_s data = {
+        // Roll: Clockwise increase(+) when looking straight ahead
+        // Pitch: Head up decrease(-)
+        // Yaw: Clockwise decrease(-) when viewed from above
+        auto &data = instance->rawDat_;
+        data = {
             .a = { .x = cali.getOutput().ax,
                    .y = cali.getOutput().ay,
                    .z = -cali.getOutput().az },
-            .g = { .x = cali.getOutput().gx,
-                   .y = cali.getOutput().gy,
+            .g = { .x = -cali.getOutput().gx,
+                   .y = -cali.getOutput().gy,
                    .z = -cali.getOutput().gz },
         };
-
-        if constexpr (CORRECT_IMU_DATA) {
-            cali.steadyStateDetection();
-        }
+        data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y -
+                               data.g.z * data.g.z * IMU_OFFSET_X);
+        data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X -
+                               data.g.x * data.g.z * IMU_OFFSET_Y);
 
         // update INS
-        instance->update(&data, instance->bmi088_.getTimestamp());
+        instance->update(instance->bmi088_.getTimestamp());
 
         vTaskDelay(1);
     }
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void INS::update(IMUSensorData_s *_sensorDat, float _dt)
+void INS::update(float _dt)
 {
     this->dt_ = _dt; // update time interval
 
-    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
-          z = insDat_.q[3];
-
     // Update DCM algorithm
-    DCM_.update(_sensorDat->g.x, _sensorDat->g.y, _sensorDat->g.z,
-                _sensorDat->a.x, _sensorDat->a.y, _sensorDat->a.z, this->dt_);
+    DCM_.update(rawDat_.g.x, rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y,
+                rawDat_.a.z, this->dt_);
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
+    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
+          z = insDat_.q[3];
 
     // Get the Euler angles
     insDat_.roll = DCM_.getRoll();
@@ -110,12 +119,12 @@ void INS::update(IMUSensorData_s *_sensorDat, float _dt)
     insDat_.yaw = DCM_.getYaw();
 
     // Update the body axis system data
-    insDat_.body.gx = _sensorDat->g.x;
-    insDat_.body.gy = _sensorDat->g.y;
-    insDat_.body.gz = _sensorDat->g.z;
-    insDat_.body.ax = _sensorDat->a.x;
-    insDat_.body.ay = _sensorDat->a.y;
-    insDat_.body.az = _sensorDat->a.z;
+    insDat_.body.gx = rawDat_.g.x;
+    insDat_.body.gy = rawDat_.g.y;
+    insDat_.body.gz = rawDat_.g.z;
+    insDat_.body.ax = rawDat_.a.x;
+    insDat_.body.ay = rawDat_.a.y;
+    insDat_.body.az = rawDat_.a.z;
 
     // Update Rotation Matrix
 #if ROTATION_MATRIX_PITCH_ONLY

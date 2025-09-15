@@ -1,11 +1,9 @@
 #pragma once
 
-// #include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
-#include "./Algorithm/DcmAHRSTest/DcmAHRS.hpp"
+#include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
 #include "./Algorithm/Calibrate/calibrate.hpp"
 
 #include "Matrix.hpp"
-#include "dsp/matrix_functions.h"
 
 #include "Topic.hpp"
 #include "Bmi088.hpp"
@@ -57,7 +55,7 @@ public:
 
     static void task(void *_param);
 
-    void update(IMUSensorData_s *_sensorDat, float _dt);
+    void update(float _dt);
     float roll() const { return insDat_.roll; }
     float yaw() const { return insDat_.yaw; }
     float pitch() const { return insDat_.pitch; }
@@ -75,7 +73,7 @@ private:
     IMUCalibration imuCali_; // IMU calibration object
 
     // IMU AHRS algorithm
-    IMU_DCM_AHRS_TEST::DcmAhrs DCM_{ dt_ }; // DCM algorithm object
+    IMU_DCM_AHRS::DcmAhrs DCM_{ dt_ }; // DCM algorithm object
 
     // INS data
     IMUSensorData_s rawDat_; // raw data from IMU, body axis system
