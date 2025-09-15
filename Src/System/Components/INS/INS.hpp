@@ -55,6 +55,8 @@ public:
 
     static void task(void *_param);
 
+    void init();
+
     void update(float _dt);
     float roll() const { return insDat_.roll; }
     float yaw() const { return insDat_.yaw; }

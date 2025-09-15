@@ -33,20 +33,21 @@ INS::INS()
     LOG::info("INS", "task init success");
 }
 
+void INS::init()
+{
+    while (bmi088_.init(&IMU_SPI))
+        // wait for ACK from BMI088
+        ;
+    imuCali_.init(ACC_CALI, GYRO_CALI, bmi088_.getAccelMappingVaule(),
+                  bmi088_.getGyroMappingVaule());
+    DCM_.init();
+}
+
 void INS::task(void *_param)
 {
     auto instance = static_cast<INS *>(_param);
     auto &bmi088 = instance->bmi088_;
     auto &cali = instance->imuCali_;
-
-    while (bmi088.init(&IMU_SPI))
-        // wait for ACK from BMI088
-        ;
-
-    cali.init(ACC_CALI, GYRO_CALI, bmi088.getAccelMappingVaule(),
-              bmi088.getGyroMappingVaule());
-
-    instance->DCM_.init();
 
     while (true) {
         // read BMI088 data
