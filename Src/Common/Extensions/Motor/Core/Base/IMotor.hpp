@@ -5,7 +5,6 @@
 #include "queue.h"
 #include "../Projdefs.hpp"
 #include <cstdarg>
-#include <memory>
 
 namespace PINYMOTOR {
 class IMotor {
@@ -13,39 +12,36 @@ private:
     MotorTypeDef_e cmdProto(CmdBus_s &_cmd);
 
 protected:
-    uint8_t id_; // start from 0 to 31, system auto assign
-    uint16_t uid_;
-
-    Model_s model_;
     Data_s data_;
     Cmd_s cmd_;
-
-    uint32_t *pComHandle_;
-    ComType_e comType_;
-    WorkMode_e workMode_;
-    GlobalState_e globalState_;
-    uint8_t offsetId_;
-
-    float txFreq_;
-    float rxFreq_;
-    uint16_t recvCnt_;
-    uint32_t lastSendTick = 0; // ms
-    uint32_t lastRecvTick = 0; // ms
-    char name_[16] = "NULL";
-
-    PID *posPID_;
-    PID *velPID_;
-
-    PID *torqPID_; // only VOLT-CTRL motor will need this
-
-    bool isReverse_ = false;
-
     QueueHandle_t rxQueue_;
-
     QueueHandle_t cmdQueue_;
     CmdBus_s cmdBuf_;
 
-    bool isMutiple_ = false; // default is not quad encoder
+    struct {
+        uint16_t uid_; // start from 0 to 31, system auto assign
+        uint8_t offsetId_;
+        char name_[16] = "NULL";
+        uint32_t *pComHandle_;
+        Model_s model_;
+        ComType_e comType_;
+        WorkMode_e workMode_;
+        bool isReverse_ = false;
+        bool isMutiple_ = false; // default is not quad encoder
+    }; // registration info
+
+    struct {
+        GlobalState_e globalState_;
+        float txFreq_;
+        float rxFreq_;
+        uint16_t recvCnt_;
+        uint32_t lastSendTick = 0; // ms
+        uint32_t lastRecvTick = 0; // ms
+    }; // AUX info
+
+    PID *posPID_;
+    PID *velPID_;
+    PID *torqPID_; // only VOLT-CTRL motor will need this
 
     bool checkSend();
     void calcRecvFreq();
@@ -57,8 +53,7 @@ public:
 
     virtual MotorTypeDef_e update() = 0;
 
-    virtual uint16_t uid() = 0;
-    uint8_t id() const;
+    uint16_t uid() const;
 
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();

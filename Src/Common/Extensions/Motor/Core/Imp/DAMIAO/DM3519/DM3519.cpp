@@ -33,7 +33,6 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
                              TORQ_CONSTANT      // torqConstant
     );
 
-    this->registerMotor();
     this->registerRecvCallback();
     this->updateCtrlId();
 

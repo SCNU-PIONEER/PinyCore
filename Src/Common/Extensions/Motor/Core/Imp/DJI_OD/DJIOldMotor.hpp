@@ -84,13 +84,6 @@ public:
     uint16_t masterId() const;
 
     /**
-     * @brief Get the unique identifier (UID) of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t uid() final;
-
-    /**
      * @brief Update the motor state
      * 
      * @return MotorTypeDef_e 

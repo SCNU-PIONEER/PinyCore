@@ -48,8 +48,6 @@ uint16_t DJIMotor::masterId() const
     return this->model_.rxBaseId + this->offsetId_;
 }
 
-uint16_t DJIMotor::uid() { return masterId(); }
-
 void DJIMotor::registerRecvCallback()
 {
     // lamda

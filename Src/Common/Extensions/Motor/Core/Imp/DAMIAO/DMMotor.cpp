@@ -59,8 +59,6 @@ uint16_t DMMotor::masterId() const
     return this->model_.rxBaseId + this->offsetId_;
 }
 
-uint16_t DMMotor::uid() { return masterId(); }
-
 void DMMotor::registerRecvCallback()
 {
     // lamda

@@ -59,8 +59,6 @@ uint16_t UTMotor::getSendId() const { return this->model_.txBaseId; }
 
 uint16_t UTMotor::getReceiveId() const { return this->model_.rxBaseId; }
 
-uint16_t UTMotor::uid() { return getReceiveId(); }
-
 void UTMotor::registerRecvCallback()
 {
     Uart::instance().registerCallback(

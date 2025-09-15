@@ -28,7 +28,6 @@ UT80106::UT80106(const char _name[16], InitConfig_s _config,
                               .speedMax = SPEED_MAX,
                               .Kn = KN };
 
-    this->registerMotor();
     this->registerRecvCallback();
 
 

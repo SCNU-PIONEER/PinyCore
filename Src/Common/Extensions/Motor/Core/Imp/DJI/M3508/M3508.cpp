@@ -36,7 +36,6 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
                      TORQ_CONSTANT // torqConstant
             );
 
-    this->registerMotor();
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();

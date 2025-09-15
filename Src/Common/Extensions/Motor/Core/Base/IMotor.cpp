@@ -9,21 +9,21 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : id_(MotorManager::instance()->motorListSize())
+        : cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
+        , uid_(MotorManager::instance()->motorListSize())
+        , offsetId_(_config.offsetId)
         , pComHandle_(_config.pComHandle)
         , comType_(_config.comType)
         , workMode_(_config.workMode)
+        , isReverse_(_config.isReverse)
         , globalState_(GlobalState_e::UNREGISTER)
-        , offsetId_(_config.offsetId)
         , txFreq_(_config.txFreq)
         , posPID_(_config.posPID)
         , velPID_(_config.velPID)
         , torqPID_(_config.torqPID)
-        , isReverse_(_config.isReverse)
-        , cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
 {
+    registerMotor();
     strcpy(this->name_, _name);
-
     this->cmd_.clear();
     memset(&data_, 0, sizeof(Data_s));
 }
@@ -246,7 +246,7 @@ void IMotor::clampPos(float _posMin, float _posMax)
 
 void IMotor::disableClampPos() { clampPos(0.f, 0.f); }
 
-uint8_t IMotor::id() const { return id_; }
+uint16_t IMotor::uid() const { return uid_; }
 
 const Data_s &IMotor::data() const { return data_; }
 

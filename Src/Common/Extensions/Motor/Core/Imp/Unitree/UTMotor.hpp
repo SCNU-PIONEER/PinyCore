@@ -51,8 +51,6 @@ public:
     uint16_t getSendId() const;
     uint16_t getReceiveId() const;
 
-    uint16_t uid() final;
-
     MotorTypeDef_e update() final;
 
     void setKp(const float _kp);
