@@ -41,25 +41,25 @@
 #define BMI088_GYRO_125_SEN  0.000066579027251980956150958662738366f
 
 #pragma pack(1)
-typedef struct BMI088_RAW_DATA {
+typedef struct {
     uint8_t status;
     int16_t accel[3];
     int16_t temperate;
     int16_t gyro[3];
     float time;
-} bmi088_raw_data_t;
+} Bmi088RawData_t;
 #pragma pack()
 
-typedef struct BMI088_REAL_DATA {
+typedef struct {
     uint8_t status;
     float accel[3];
     float temperate;
     float gyro[3];
     float time;
-} bmi088_real_data_t;
+} Bmi088RealData_t;
 
 
-enum {
+enum : uint8_t {
     BMI088_NO_ERROR = 0x00,
     BMI088_ACC_PWR_CTRL_ERROR = 0x01,
     BMI088_ACC_PWR_CONF_ERROR = 0x02,
@@ -87,50 +87,50 @@ class BMI088 : public Middleware {
 
 public:
     uint8_t init(SPI_HandleTypeDef *_spi);
-    bmi088_raw_data_t readRaw(); // read raw data in raw format
-    bmi088_real_data_t read();   // read raw data in expected format
-    inline int16_t getRawTemperature(void) { return rawData_.temperate; }
-    inline int16_t getRawAccelX(void) { return rawData_.accel[0]; }
-    inline int16_t getRawAccelY(void) { return rawData_.accel[1]; }
-    inline int16_t getRawAccelZ(void) { return rawData_.accel[2]; }
-    inline int16_t getRawGyroX(void) { return rawData_.gyro[0]; }
-    inline int16_t getRawGyroY(void) { return rawData_.gyro[1]; }
-    inline int16_t getRawGyroZ(void) { return rawData_.gyro[2]; }
-    inline float getAccelMappingVaule(void) { return aTransK_; }
-    inline float getGyroMappingVaule(void) { return gTransK_; }
-    inline float getTemperature(void) { return data_.temperate; }
-    inline float getAccelX(void) { return data_.accel[0]; }
-    inline float getAccelY(void) { return data_.accel[1]; }
-    inline float getAccelZ(void) { return data_.accel[2]; }
-    inline float getGyroX(void) { return data_.gyro[0]; }
-    inline float getGyroY(void) { return data_.gyro[1]; }
-    inline float getGyroZ(void) { return data_.gyro[2]; }
-    inline float getTimestamp(void) { return data_.time; }
+    Bmi088RawData_t readRaw(); // read raw data in raw format
+    Bmi088RealData_t read();   // read raw data in expected format
+    int16_t getRawTemperature() { return rawData_.temperate; }
+    int16_t getRawAccelX() { return rawData_.accel[0]; }
+    int16_t getRawAccelY() { return rawData_.accel[1]; }
+    int16_t getRawAccelZ() { return rawData_.accel[2]; }
+    int16_t getRawGyroX() { return rawData_.gyro[0]; }
+    int16_t getRawGyroY() { return rawData_.gyro[1]; }
+    int16_t getRawGyroZ() { return rawData_.gyro[2]; }
+    float getAccelMappingVaule() { return aTransK_; }
+    float getGyroMappingVaule() { return gTransK_; }
+    float getTemperature() { return data_.temperate; }
+    float getAccelX() { return data_.accel[0]; }
+    float getAccelY() { return data_.accel[1]; }
+    float getAccelZ() { return data_.accel[2]; }
+    float getGyroX() { return data_.gyro[0]; }
+    float getGyroY() { return data_.gyro[1]; }
+    float getGyroZ() { return data_.gyro[2]; }
+    float getTimestamp() { return data_.time; }
 
 
 protected:
-    uint8_t accelInit(void);
-    uint8_t gyroInit(void);
+    uint8_t accelInit();
+    uint8_t gyroInit();
 
-    void accel_read_single_reg(uint8_t reg, uint8_t &data);
-    void accel_read_muli_reg(uint8_t reg, uint8_t *data, uint8_t len);
-    void accel_write_single_reg(uint8_t reg, uint8_t data);
+    void accelReadSingleReg(uint8_t _reg, uint8_t &_data);
+    void accelReadMuliReg(uint8_t _reg, uint8_t *_data, uint8_t _len);
+    void accelWriteSingleReg(uint8_t _reg, uint8_t _data);
 
-    void gyro_read_single_reg(uint8_t reg, uint8_t &data);
-    void gyro_read_muli_reg(uint8_t reg, uint8_t *data, uint8_t len);
-    void gyro_write_single_reg(uint8_t reg, uint8_t data);
+    void gyroReadSingleReg(uint8_t _reg, uint8_t &_data);
+    void gyroReadMuliReg(uint8_t _reg, uint8_t *_data, uint8_t _len);
+    void gyroWriteSingleReg(uint8_t _reg, uint8_t _data);
 
-    void write_single_reg(uint8_t reg, uint8_t data);
-    void read_single_reg(uint8_t reg, uint8_t *return_data);
-    void read_muli_reg(uint8_t reg, uint8_t *buf, uint8_t len);
+    void writeSingleReg(uint8_t _reg, uint8_t _data);
+    void readSingleReg(uint8_t _reg, uint8_t *_return_data);
+    void readMuliReg(uint8_t _reg, uint8_t *_buf, uint8_t _len);
 
 private:
     // Mapping encoding to international unit parameters
     float aTransK_ = BMI088_ACCEL_SEN;
     float gTransK_ = BMI088_GYRO_SEN;
 
-    bmi088_real_data_t data_;
-    bmi088_raw_data_t rawData_;
+    Bmi088RealData_t data_;
+    Bmi088RawData_t rawData_;
 
     uint32_t sensorTick_ = 0;     // sensor time per 39.0625us
     uint32_t sensorTickLast_ = 0; // last sensor time
