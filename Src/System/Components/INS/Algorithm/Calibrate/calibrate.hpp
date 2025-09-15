@@ -68,7 +68,7 @@ public:
     const CaliOutput_s &getOutput() const { return corrDat_; }
 
     // Detect steady state for gyro calibration
-    CaliOutput_s steadyStateDetection();
+    void steadyStateDetection();
 
     void updateTemperature(float _temp) { temperature_ = _temp; }
 
