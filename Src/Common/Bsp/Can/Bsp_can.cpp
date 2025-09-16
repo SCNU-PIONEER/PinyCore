@@ -142,6 +142,7 @@ HAL_StatusTypeDef Can::initSelf(canHandle *_hcan, uint32_t _fifo)
             FDCAN_REJECT,         // 拒绝所有不匹配的扩展ID数据帧
             FDCAN_FILTER_REMOTE,  //过滤掉所有标准ID远程帧
             FDCAN_FILTER_REMOTE); //过滤掉所有扩展ID远程帧
+    HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_BUS_OFF, 0);
     result = HAL_FDCAN_Start(_hcan);
     return result;
 }
@@ -167,21 +168,41 @@ HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid,
 HAL_StatusTypeDef Can::transmitBrsData(canHandle *_hcan, uint16_t _stdid,
                                        uint8_t *_tx_data, uint32_t _len)
 {
-    HAL_StatusTypeDef result = HAL_OK;
-    FDCAN_TxHeaderTypeDef txHeader = { 0 };
-    txHeader.Identifier = _stdid;
-    txHeader.IdType = FDCAN_STANDARD_ID;
-    txHeader.TxFrameType = FDCAN_DATA_FRAME;
-    txHeader.DataLength = dlc[_len].bytes;
-    txHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    txHeader.BitRateSwitch = FDCAN_BRS_ON;
-    txHeader.FDFormat = FDCAN_FD_CAN;
-    txHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    txHeader.MessageMarker = 0;
-    result = HAL_FDCAN_AddMessageToTxFifoQ(_hcan, &txHeader, _tx_data);
-    return result;
+    if (HAL_FDCAN_GetTxFifoFreeLevel(_hcan) > 0) {
+        HAL_StatusTypeDef result = HAL_OK;
+        FDCAN_TxHeaderTypeDef txHeader = {};
+        txHeader.Identifier = _stdid;
+        txHeader.IdType = FDCAN_STANDARD_ID;
+        txHeader.TxFrameType = FDCAN_DATA_FRAME;
+        txHeader.DataLength = dlc[_len].bytes;
+        txHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+        txHeader.BitRateSwitch = FDCAN_BRS_ON;
+        txHeader.FDFormat = FDCAN_FD_CAN;
+        txHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+        txHeader.MessageMarker = 0;
+        result = HAL_FDCAN_AddMessageToTxFifoQ(_hcan, &txHeader, _tx_data);
+        return result;
+    } else {
+        uint32_t txFifoRequest = HAL_FDCAN_GetLatestTxFifoQRequestBuffer(_hcan);
+        if (HAL_FDCAN_IsTxBufferMessagePending(_hcan, txFifoRequest)) {
+            return HAL_FDCAN_AbortTxRequest(_hcan, txFifoRequest);
+        } else
+            return HAL_ERROR;
+    }
 }
 
+void Can::checkBus(canHandle *_hfdcan)
+{
+    FDCAN_ProtocolStatusTypeDef protocolStatus = {};
+
+    HAL_FDCAN_GetProtocolStatus(_hfdcan, &protocolStatus);
+    if (protocolStatus.BusOff) {
+        CLEAR_BIT(_hfdcan->Instance->CCCR, FDCAN_CCCR_INIT);
+        /* Restart CAN */
+        // HAL_FDCAN_Stop(_hfdcan);
+        // HAL_FDCAN_Start(_hfdcan);
+    }
+}
 
 inline void Can::callbackFromISR(canHandle *_hcan, uint32_t _rxFifo)
 {
@@ -225,6 +246,14 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *_hfdcan,
                                uint32_t _rxFifo1ITs)
 {
     Can::instance().callbackFromISR(_hfdcan, RX_FIFO1);
+}
+
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *_hfdcan,
+                                   uint32_t _errorStatusITs)
+{
+    if ((_errorStatusITs & FDCAN_IT_BUS_OFF) != RESET) {
+        Can::instance().checkBus(_hfdcan);
+    }
 }
 
 #elif defined(SOC_CAN)
