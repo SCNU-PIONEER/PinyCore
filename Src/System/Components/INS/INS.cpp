@@ -30,6 +30,8 @@ INS::INS()
 {
     xTaskCreate(INS::task, "ins_task", 384, this, osPriorityRealtime7, nullptr);
 
+    init();
+
     LOG::info("INS", "task init success");
 }
 

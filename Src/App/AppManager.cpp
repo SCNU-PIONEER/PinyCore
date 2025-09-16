@@ -5,7 +5,6 @@
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
-#include "INS.hpp"
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
@@ -20,7 +19,8 @@ extern TIM_HandleTypeDef BEEP_TIMER;
 //---------------------------------------------------------------------------------------------------
 
 #if APP_USE_INS
-INS_SYS::INS ins;
+#include "INS.hpp"
+INS_SYS::INS *ins;
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ void AppManager::initApp()
 #endif
 
 #if APP_USE_INS
-    ins.init();
+    ins = new INS_SYS::INS();
 #endif
 
     cmd = new Cmd();
