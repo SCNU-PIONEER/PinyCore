@@ -270,9 +270,11 @@ MotorTypeDef_e DJIOldMotor::update()
         this->recvCnt_++;
         this->parse(this->rxBuf_);
     }
-    if (xQueueReceive(this->cmdQueue_, &this->cmdBuf_, 0) == pdTRUE) {
-        this->parseCmd();
-    }
+
+    taskENTER_CRITICAL();
+    this->parseCmd();
+    taskEXIT_CRITICAL();
+    
     this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;

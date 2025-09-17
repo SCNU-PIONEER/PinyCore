@@ -15,7 +15,6 @@ protected:
     Data_s data_;
     Cmd_s cmd_;
     QueueHandle_t rxQueue_;
-    QueueHandle_t cmdQueue_;
     CmdBus_s cmdBuf_;
 
     struct {

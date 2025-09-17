@@ -9,8 +9,7 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : cmdQueue_(xQueueCreate(3, sizeof(CmdBus_s)))
-        , uid_(MotorManager::instance()->motorListSize())
+        : uid_(MotorManager::instance()->motorListSize())
         , offsetId_(_config.offsetId)
         , pComHandle_(_config.pComHandle)
         , comType_(_config.comType)
@@ -83,10 +82,7 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
 {
     if (_type == MotorCmdType_e::ON || _type == MotorCmdType_e::OFF) {
         CmdBus_s cmd = { .cmdType = _type };
-        if (xQueueSend(cmdQueue_, &cmd, 0) != pdPASS) {
-            LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
-            return 1;
-        }
+        memcpy(&this->cmdBuf_, &cmd, sizeof(CmdBus_s));
         return 0;
     } else {
         LOG::error(
@@ -99,10 +95,7 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
 
 MotorTypeDef_e IMotor::cmdProto(CmdBus_s &_cmd)
 {
-    if (xQueueSend(cmdQueue_, &_cmd, 0) != pdPASS) {
-        LOG::warn("IMotor", " %s: cmdQueue send failed", this->name_);
-        return 1;
-    }
+    memcpy(&this->cmdBuf_, &_cmd, sizeof(CmdBus_s));
     return 0;
 }
 
