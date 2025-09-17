@@ -14,9 +14,7 @@ private:
 protected:
     Data_s data_;
     Cmd_s cmd_;
-    QueueHandle_t rxQueue_;
-    CmdBus_s cmdBuf_;
-
+    GlobalState_e globalState_;
     struct {
         uint16_t uid_; // start from 0 to 31, system auto assign
         uint8_t offsetId_;
@@ -29,14 +27,15 @@ protected:
         bool isMutiple_ = false; // default is not quad encoder
     }; // registration info
 
-    struct {
-        GlobalState_e globalState_;
-        float txFreq_;
-        float rxFreq_;
-        uint16_t recvCnt_;
-        uint32_t lastSendTick = 0; // ms
-        uint32_t lastRecvTick = 0; // ms
-    }; // AUX info
+    // struct {
+    QueueHandle_t rxQueue_;
+    CmdBus_s cmdBuf_;
+    float txFreq_;
+    float rxFreq_;
+    uint16_t recvCnt_;
+    uint32_t lastSendTick = 0; // ms
+    uint32_t lastRecvTick = 0; // ms
+    // }; // AUX info
 
     PID *posPID_;
     PID *velPID_;

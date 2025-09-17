@@ -9,13 +9,13 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : uid_(MotorManager::instance()->motorListSize())
+        : globalState_(GlobalState_e::UNREGISTER)
+        , uid_(MotorManager::instance()->motorListSize())
         , offsetId_(_config.offsetId)
         , pComHandle_(_config.pComHandle)
         , comType_(_config.comType)
         , workMode_(_config.workMode)
         , isReverse_(_config.isReverse)
-        , globalState_(GlobalState_e::UNREGISTER)
         , txFreq_(_config.txFreq)
         , posPID_(_config.posPID)
         , velPID_(_config.velPID)
@@ -49,7 +49,7 @@ void IMotor::calcRecvFreq()
         this->recvCnt_ = 0;
         lastRecvTick = xTaskGetTickCount();
     }
-    if (this->rxFreq_ < 1.f) {
+    if (this->rxFreq_ < txFreq_ * 0.5f) {
         this->globalState_ = GlobalState_e::OFFLINE;
     } else {
         this->globalState_ = GlobalState_e::ONLINE;
