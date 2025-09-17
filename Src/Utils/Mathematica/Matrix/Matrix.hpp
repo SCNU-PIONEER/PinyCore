@@ -242,6 +242,24 @@ public:
         return res;
     }
 
+    static auto cross(const Matrix<3, 1> &_a, const Matrix<3, 1> &_b)
+    {
+        Matrix<3, 1> result;
+        result[0][0] = _a[1][0] * _b[2][0] - _a[2][0] * _b[1][0];
+        result[1][0] = _a[2][0] * _b[0][0] - _a[0][0] * _b[2][0];
+        result[2][0] = _a[0][0] * _b[1][0] - _a[1][0] * _b[0][0];
+        return result;
+    }
+    static auto dot(const Matrix<_rows, 1> &_a, const Matrix<_rows, 1> &_b)
+            -> float
+    {
+        float result = 0.0f;
+        for (size_t i = 0; i < _rows; ++i) {
+            result += _a(i, 0) * _b(i, 0);
+        }
+        return result;
+    }
+
 public:
     arm_matrix_instance_f32 arm_mat_; // The arm math instance
 
