@@ -7,8 +7,8 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositonalPid gRunPA(130.f, 300.f, 5.f, 1.f / 500.f, 1.f, 280.f, 0.f);
-static PositonalPid gRunPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 7.f, 0.f);
+static PositonalPid gRunPA(70.f, 300.f, 5.f, 1.f / 500.f, 1.f, 50.f, 0.f);
+static PositonalPid gRunPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 static PositonalPid gRunYA(70.f, 300.f, 8.f, 1.f / 500.f, 1.f, 120.f, 0.f);
 static PositonalPid gRunYV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 

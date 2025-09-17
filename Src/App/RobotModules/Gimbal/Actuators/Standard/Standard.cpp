@@ -118,7 +118,7 @@ void Standard::updateCtrlYaw()
 {
     if (this->isConfirmYawZero_) {
         this->ctrlYawAng_ =
-                getMinorArc(this->insData_.yaw, -this->constDeltaYawArc_);
+                getMinorArc(this->insData_.yaw, this->constDeltaYawArc_);
     } else {
         // confirm zero
         if (motors_.yaw->posNorm() != 0.f) { // TODO: prefer to globalState
