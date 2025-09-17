@@ -10,11 +10,10 @@ using namespace PINYMOTOR;
 using namespace DJI_ODMOTOR;
 
 GM3510::GM3510(const char _name[16], InitConfig_s _config)
-        : DJIOldMotor(_name, std::move(_config))
+        : DJIOldMotor(_name, _config)
 {
     LOG::CHECK(checkBaseConfig());
 
-    strcpy(this->model_.name, "DJI-GM3510");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = 1.f;

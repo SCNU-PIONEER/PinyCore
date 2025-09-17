@@ -6,11 +6,10 @@ using namespace UTMOTOR;
 
 UT80106::UT80106(const char _name[16], InitConfig_s _config,
                  DMA_HandleTypeDef *_dmaHandle)
-        : UTMotor(_name, std::move(_config), _dmaHandle)
+        : UTMotor(_name, _config, _dmaHandle)
 {
     LOG::CHECK(checkBaseConfig());
 
-    strcpy(this->model_.name, "UT8010_6");
     this->model_.measureMax = 0;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = RR;

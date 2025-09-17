@@ -9,11 +9,10 @@
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
 M3508::M3508(const char _name[16], InitConfig_s _config)
-        : DJIMotor(_name, std::move(_config))
+        : DJIMotor(_name, _config)
 {
     LOG::CHECK(checkBaseConfig());
 
-    strcpy(this->model_.name, "DJI-M3508");
     this->model_.measureMax = 8191;
     this->model_.measureMin = 0;
     this->model_.reductionRatio = (3591.f / 187.f);
