@@ -26,9 +26,9 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
-        : Base(_name, std::move(_config))
+        : Base(_name, _config)
 {
-    this->rxQueue_ = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
+    AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
 DJIMotor::~DJIMotor()
 {
@@ -36,50 +36,52 @@ DJIMotor::~DJIMotor()
     this->cancelMotor();
     this->removeMotorFromMap();
     LOG::info("DJIMotor", " %s: An instance of DJIMotor destroyed",
-              this->name_);
+              regInfo_.name);
 }
 
 void DJIMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
-uint16_t DJIMotor::canId() const { return this->model_.txBaseId + 0u; }
+uint16_t DJIMotor::canId() const { return regInfo_.model.txBaseId + 0u; }
 
 uint16_t DJIMotor::masterId() const
 {
-    return this->model_.rxBaseId + this->offsetId_;
+    return regInfo_.model.rxBaseId + regInfo_.offsetId;
 }
 
 void DJIMotor::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
-            [this](const uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+            this->masterId(), [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(this->rxQueue_, _rxBuf,
+                xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
-    LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx", this->name_,
-              this->masterId());
+    LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx",
+              regInfo_.name, this->masterId());
 }
 
 void DJIMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
-    LOG::info("DJIMotor", " %s: Receive cb canceled, masterId:%hx", this->name_,
-              this->masterId());
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+            this->masterId());
+    LOG::info("DJIMotor", " %s: Receive cb canceled, masterId:%hx",
+              regInfo_.name, this->masterId());
 }
 
 void DJIMotor::updateCtrlId()
 {
-    switch (this->workMode_) {
+    switch (regInfo_.workMode) {
     case WorkMode_e::QUAD_CURR:
     case WorkMode_e::QUAD_VOLT: {
         this->ctrlId_ = this->getGroupId() + 0u;
         break;
     }
     default: {
-        LOG::error("DJIMotor", " %s: this mode is not supported", this->name_);
+        LOG::error("DJIMotor", " %s: this mode is not supported",
+                   regInfo_.name);
         break;
     }
     }
@@ -94,15 +96,15 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
     } else {
         if (this->checkGroupSend(this->group_)) {
             // Check this Buffer
-            // LOG::warn("DJIMotor", " %s: send data to CAN %hx", this->name_,
+            // LOG::warn("DJIMotor", " %s: send data to CAN %hx", regInfo_.name,
             //           _sendId);
             // LOG::warn("DJIMotor",
             //           " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-            //           this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+            //           regInfo_.name, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
             //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
                     _txBuf, _len));
         } else {
             return 0;
@@ -119,18 +121,18 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     fb.temperature = _rxBuf.data[6];
 
     float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-    this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
-                                            noumenaAng;
+    this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng :
+                                              noumenaAng;
     float del = this->data_.rawAng - this->data_.zeroAng;
     this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
     float noumenaCurr = static_cast<float>(fb.current) /
                         this->status_.currRxCodeSpan * this->status_.currMax;
-    this->data_.curr = this->isReverse_ ? -noumenaCurr : noumenaCurr;
+    this->data_.curr = regInfo_.isReverse ? -noumenaCurr : noumenaCurr;
     this->data_.torq = this->data_.curr * status_.torqConstant;
 
     float noumenaRpm = static_cast<float>(fb.rawRpm) / this->rr();
-    this->data_.spdRpm = this->isReverse_ ? -noumenaRpm : noumenaRpm;
+    this->data_.spdRpm = regInfo_.isReverse ? -noumenaRpm : noumenaRpm;
     this->data_.spdRadps = rpm2radps(this->data_.spdRpm);
 
     this->data_.tempture = fb.temperature;
@@ -165,7 +167,7 @@ MotorTypeDef_e DJIMotor::ctrl()
     MotorTypeDef_e rslt = 0;
 
     int16_t ctrlCmd = 0;
-    switch (this->workMode_) {
+    switch (regInfo_.workMode) {
     case WorkMode_e::QUAD_CURR: {
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_ELEC) {
             this->cmd_.elec;
@@ -177,7 +179,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                                                       this->data_.spdRadps);
                 this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
             } else {
-                LOG::error("DJIMotor", " %s: velPID is null", this->name_);
+                LOG::error("DJIMotor", " %s: velPID is null", regInfo_.name);
             }
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr) {
@@ -195,7 +197,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                 this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
             } else {
                 LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           this->name_);
+                           regInfo_.name);
             }
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_MIT) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr) {
@@ -209,10 +211,11 @@ MotorTypeDef_e DJIMotor::ctrl()
                         this->cmd_.torq / status_.torqConstant;
             } else {
                 LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           this->name_);
+                           regInfo_.name);
             }
         }
-        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
+        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec :
+                                               this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.currMax *
                                        this->status_.currTxCodeSpan);
         break;
@@ -225,7 +228,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                 this->cmd_.elec =
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
-                LOG::error("DJIMotor", " %s: torqPID is null", this->name_);
+                LOG::error("DJIMotor", " %s: torqPID is null", regInfo_.name);
             }
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
             if (this->velPID_ != nullptr || this->torqPID_ != nullptr) {
@@ -235,7 +238,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
                 LOG::error("DJIMotor", " %s: velPID or torqPID is null",
-                           this->name_);
+                           regInfo_.name);
             }
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
@@ -256,7 +259,7 @@ MotorTypeDef_e DJIMotor::ctrl()
             } else {
                 LOG::error("DJIMotor",
                            " %s: posPID or velPID or torqPID is null",
-                           this->name_);
+                           regInfo_.name);
             }
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_MIT) {
             if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
@@ -273,18 +276,20 @@ MotorTypeDef_e DJIMotor::ctrl()
                         this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
             } else {
                 LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           this->name_);
+                           regInfo_.name);
             }
         }
 
-        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
+        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec :
+                                               this->cmd_.elec;
         ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
                                        this->status_.voltTxCodeSpan);
         break;
     }
     default: {
         ctrlCmd = 0;
-        LOG::error("DJIMotor", " %s: this mode is not supported", this->name_);
+        LOG::error("DJIMotor", " %s: this mode is not supported",
+                   regInfo_.name);
         break;
     }
     }
@@ -311,15 +316,15 @@ MotorTypeDef_e DJIMotor::ctrl()
 
 MotorTypeDef_e DJIMotor::update()
 {
-    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
-        this->recvCnt_++;
+    if (xQueueReceive(AUX_.rxQueue, this->rxBuf_.data, 0) == pdTRUE) {
+        AUX_.recvCnt++;
         this->parse(this->rxBuf_);
     }
 
     taskENTER_CRITICAL();
     this->parseCmd();
     taskEXIT_CRITICAL();
-    
+
     this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;

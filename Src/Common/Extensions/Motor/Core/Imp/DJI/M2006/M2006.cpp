@@ -12,16 +12,16 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
         : DJIMotor(_name, _config)
 {
     LOG::CHECK(checkBaseConfig());
-    
-    this->model_.measureMax = 8191;
-    this->model_.measureMin = 0;
-    this->model_.reductionRatio = 36.f;
-    this->model_.rxBaseId = 0x200;
+
+    regInfo_.model.measureMax = 8191;
+    regInfo_.model.measureMin = 0;
+    regInfo_.model.reductionRatio = 36.f;
+    regInfo_.model.rxBaseId = 0x200;
 
     if (_config.offsetId > 3)
-        this->model_.txBaseId = 0x1FF;
+        regInfo_.model.txBaseId = 0x1FF;
     else
-        this->model_.txBaseId = 0x200;
+        regInfo_.model.txBaseId = 0x200;
 
     this->status_ =
             Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
@@ -40,35 +40,36 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    LOG::info("M2006",
-              " %s: An instance of M2006 created, rxBaseId:%hx, txBaseId:%hx",
-              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    LOG::info(
+            "M2006",
+            " %s: An instance of M2006 created, rxBaseId:0x%hx, txBaseId:0x%hx",
+            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e M2006::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ != ComType_e ::CAN) {
+    if (regInfo_.comType != ComType_e ::CAN) {
         rslt |= 1;
-        LOG::error("M2006", " %s: only support CAN comtype", this->name_);
+        LOG::error("M2006", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (this->workMode_ != WorkMode_e::QUAD_CURR) {
+    if (regInfo_.workMode != WorkMode_e::QUAD_CURR) {
         rslt |= 1;
-        LOG::error("M2006", " %s: WorkMode is not supported", this->name_);
+        LOG::error("M2006", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (this->offsetId_ > 8) {
+    if (regInfo_.offsetId > 8) {
         rslt |= 1;
         LOG::error("M2006", " %s: Max Offset ID is only 8!",
 
-                   this->name_);
+                   regInfo_.name);
     }
 
-    if (this->txFreq_ > 1000) {
+    if (AUX_.txFreq > 1000) {
         rslt |= 1;
-        LOG::error("M2006", " %s: Max TxFreq is only 1000!", this->name_);
+        LOG::error("M2006", " %s: Max TxFreq is only 1000!", regInfo_.name);
     }
 
     return rslt;

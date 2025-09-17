@@ -16,26 +16,26 @@ protected:
     Cmd_s cmd_;
     GlobalState_e globalState_;
     struct {
-        uint16_t uid_; // start from 0 to 31, system auto assign
-        uint8_t offsetId_;
-        char name_[16] = "NULL";
-        uint32_t *pComHandle_;
-        Model_s model_;
-        ComType_e comType_;
-        WorkMode_e workMode_;
-        bool isReverse_ = false;
-        bool isMutiple_ = false; // default is not quad encoder
-    }; // registration info
+        uint16_t uid; // start from 0 to 31, system auto assign
+        uint8_t offsetId;
+        char name[16] = "NULL";
+        uint32_t *pComHandle;
+        Model_s model;
+        ComType_e comType;
+        WorkMode_e workMode;
+        bool isReverse = false;
+        bool isMutiple = false; // default is not quad encoder
+    } regInfo_;                 // registration info
 
-    // struct {
-    QueueHandle_t rxQueue_;
-    CmdBus_s cmdBuf_;
-    float txFreq_;
-    float rxFreq_;
-    uint16_t recvCnt_;
-    uint32_t lastSendTick = 0; // ms
-    uint32_t lastRecvTick = 0; // ms
-    // }; // AUX info
+    struct {
+        QueueHandle_t rxQueue;
+        CmdBus_s cmdBuf;
+        float txFreq;
+        float rxFreq;
+        uint16_t recvCnt;
+        uint32_t lastSendTick = 0; // ms
+        uint32_t lastRecvTick = 0; // ms
+    } AUX_;                        // AUX info
 
     PID *posPID_;
     PID *velPID_;

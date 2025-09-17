@@ -27,9 +27,9 @@ void TripMotorGroup_s::showMotorInfo()
 }
 
 TripMotorBase::TripMotorBase(const char _name[16], InitConfig_s _config)
-        : Base(_name, std::move(_config))
+        : Base(_name, _config)
 {
-    isMutiple_ = true;
+    regInfo_.isMutiple = true;
 }
 
 TripMotorBase::TripMotors &TripMotorBase::getMotorMap()
@@ -43,14 +43,14 @@ void TripMotorBase::updateMotorMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->handle == this->pComHandle_) {
+        if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
         }
     }
     if (it == getMotorMap().end()) {
         getMotorMap().emplace_back(
-                this->pComHandle_,
+                regInfo_.pComHandle,
                 std::unordered_map<uint16_t, TripMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
@@ -62,13 +62,13 @@ void TripMotorBase::updateMotorMap()
         map[getGroupId()]->motor[getPosInGroup()] = this;
         map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         LOG::info("TripMotorBase",
-                  "Motor %s: add to group %hx, pos in group: %d", this->name_,
+                  "Motor %s: add to group %hx, pos in group: %d", regInfo_.name,
                   getGroupId(), getPosInGroup());
     } else {
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
             LOG::error("TripMotorBase",
                        "Motor %s: already exist in group %hx, pos in group: %d",
-                       this->name_, getGroupId(), getPosInGroup());
+                       regInfo_.name, getGroupId(), getPosInGroup());
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -81,7 +81,7 @@ void TripMotorBase::updateMotorMap()
         if (i != nullptr) {
             if (i->txFreq() != this->txFreq()) {
                 LOG::warn("TripMotorBase", "Motor %s: txFreq not match",
-                          this->name_);
+                          regInfo_.name);
             }
         }
         map[getGroupId()]->minTxFreq =
@@ -96,7 +96,7 @@ void TripMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->handle == this->pComHandle_) {
+        if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
         }
@@ -107,21 +107,22 @@ void TripMotorBase::removeMotorFromMap()
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("TripMotorBase", "Motor %s: remove from group %hx",
-                      this->name_, getGroupId());
+                      regInfo_.name, getGroupId());
         } else {
             LOG::error("TripMotorBase", "Motor %s: not in group %hx",
-                       this->name_, getGroupId());
+                       regInfo_.name, getGroupId());
         }
     } else {
-        LOG::error("TripMotorBase", "Motor %s: not in motorMap_", this->name_);
+        LOG::error("TripMotorBase", "Motor %s: not in motorMap_",
+                   regInfo_.name);
     }
 }
 
-uint16_t TripMotorBase::getGroupId() const { return this->model_.txBaseId; }
+uint16_t TripMotorBase::getGroupId() const { return regInfo_.model.txBaseId; }
 
 uint8_t TripMotorBase::getPosInGroup() const
 {
-    return (this->offsetId_ - 1) % 3; // 0,1,2
+    return (regInfo_.offsetId - 1) % 3; // 0,1,2
 }
 
 bool TripMotorBase::checkGroupSend(TripMotorGroup_s *_group)

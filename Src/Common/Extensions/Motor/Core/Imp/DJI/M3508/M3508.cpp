@@ -13,15 +13,15 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
 {
     LOG::CHECK(checkBaseConfig());
 
-    this->model_.measureMax = 8191;
-    this->model_.measureMin = 0;
-    this->model_.reductionRatio = (3591.f / 187.f);
-    this->model_.rxBaseId = 0x200;
+    regInfo_.model.measureMax = 8191;
+    regInfo_.model.measureMin = 0;
+    regInfo_.model.reductionRatio = (3591.f / 187.f);
+    regInfo_.model.rxBaseId = 0x200;
 
     if (_config.offsetId > 4)
-        this->model_.txBaseId = 0x1FF;
+        regInfo_.model.txBaseId = 0x1FF;
     else
-        this->model_.txBaseId = 0x200;
+        regInfo_.model.txBaseId = 0x200;
 
     this->status_ =
             Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
@@ -39,33 +39,34 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    LOG::info("M3508",
-              " %s: An instance of M3508 created, rxBaseId:%hx, txBaseId:%hx",
-              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    LOG::info(
+            "M3508",
+            " %s: An instance of M3508 created, rxBaseId:0x%hx, txBaseId:0x%hx",
+            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e M3508::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ != ComType_e ::CAN) {
+    if (regInfo_.comType != ComType_e ::CAN) {
         rslt |= 1;
-        LOG::error("M3508", " %s: only support CAN comtype", this->name_);
+        LOG::error("M3508", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (this->workMode_ != WorkMode_e::QUAD_CURR) {
+    if (regInfo_.workMode != WorkMode_e::QUAD_CURR) {
         rslt |= 1;
-        LOG::error("M3508", " %s: WorkMode is not supported", this->name_);
+        LOG::error("M3508", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (this->offsetId_ > 8) {
+    if (regInfo_.offsetId > 8) {
         rslt |= 1;
-        LOG::error("M3508", " %s: Max Offset ID is only 8!", this->name_);
+        LOG::error("M3508", " %s: Max Offset ID is only 8!", regInfo_.name);
     }
 
-    if (this->txFreq_ > 1000) {
+    if (AUX_.txFreq > 1000) {
         rslt |= 1;
-        LOG::error("M3508", " %s: Max TxFreq is only 1000!", this->name_);
+        LOG::error("M3508", " %s: Max TxFreq is only 1000!", regInfo_.name);
     }
 
     return rslt;

@@ -33,16 +33,17 @@ DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
         : Base(_name, _config)
 
 {
-    this->rxQueue_ = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
+    AUX_.rxQueue = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
 
 DMMotor::~DMMotor()
 {
     this->cancelRecvCallback();
     this->cancelMotor();
-    LOG::info("DMMotor",
-              " %s: An instance of DMMotor created, rxBaseId:%hx, txBaseId:%hx",
-              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+    LOG::info(
+            "DMMotor",
+            " %s: An instance of DMMotor created, rxBaseId:0x%hx, txBaseId:0x%hx",
+            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 void DMMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
@@ -51,40 +52,41 @@ bool DMMotor::isEnable() const { return this->cmd_.SW; }
 
 uint16_t DMMotor::canId() const
 {
-    return this->model_.txBaseId + this->offsetId_;
+    return regInfo_.model.txBaseId + regInfo_.offsetId;
 }
 
 uint16_t DMMotor::masterId() const
 {
-    return this->model_.rxBaseId + this->offsetId_;
+    return regInfo_.model.rxBaseId + regInfo_.offsetId;
 }
 
 void DMMotor::registerRecvCallback()
 {
     // lamda
     Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId(),
-            [this](const uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+            this->masterId(), [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(this->rxQueue_, _rxBuf,
+                xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
-    LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx", this->name_,
-              this->masterId());
+    LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx",
+              regInfo_.name, this->masterId());
 }
 
 
 void DMMotor::cancelRecvCallback()
 {
     Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(this->pComHandle_), this->masterId());
-    LOG::info("DMMotor", " %s: Receive cb canceled, masterId:%hx", this->name_,
-              this->masterId());
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+            this->masterId());
+    LOG::info("DMMotor", " %s: Receive cb canceled, masterId:%hx",
+              regInfo_.name, this->masterId());
 }
 
 void DMMotor::updateCtrlId()
 {
-    switch (this->workMode_) {
+    switch (regInfo_.workMode) {
     case WorkMode_e::MIT_TT:
     case WorkMode_e::MIT_VDESPDES:
     case WorkMode_e::MIT_VDES: {
@@ -104,7 +106,7 @@ void DMMotor::updateCtrlId()
         break;
     }
     default: {
-        LOG::error("DMMotor", " %s: this mode is not supported", this->name_);
+        LOG::error("DMMotor", " %s: this mode is not supported", regInfo_.name);
         this->ctrlId_ = 0xFFFF;
         break;
     }
@@ -114,7 +116,7 @@ void DMMotor::updateCtrlId()
 void DMMotor::setMITKp(float _kp)
 {
     if (_kp < 0 || _kp > status_.MITKpMax) {
-        LOG::error("DMMotor", " %s: MITKp out of range", this->name_);
+        LOG::error("DMMotor", " %s: MITKp out of range", regInfo_.name);
         return;
     }
     MITKp_ = _kp;
@@ -123,7 +125,7 @@ void DMMotor::setMITKp(float _kp)
 void DMMotor::setMITKd(float _kd)
 {
     if (_kd < 0 || _kd > status_.MITKdMax) {
-        LOG::error("DMMotor", " %s: MITKd out of range", this->name_);
+        LOG::error("DMMotor", " %s: MITKd out of range", regInfo_.name);
         return;
     }
     MITKd_ = _kd;
@@ -133,22 +135,22 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
     if (this->checkSend()) {
         // Check this Buffer
-        // LOG::warn("DMMotor", " %s: send data to CAN %hx", this->name_, _sendId);
+        // LOG::warn("DMMotor", " %s: send data to CAN %hx", regInfo_.name, _sendId);
         // LOG::warn("DMMotor",
         //           " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-        //           this->name_, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
+        //           regInfo_.name, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
         //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 
 #ifdef SOC_FDCAN
-        if (this->comType_ == ComType_e::FDCAN) {
+        if (regInfo_.comType == ComType_e::FDCAN) {
             return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
                     reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
                     _txBuf, _len));
         }
 #endif
-        if (this->comType_ == ComType_e::CAN) {
+        if (regInfo_.comType == ComType_e::CAN) {
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
                     _txBuf, _len));
         }
     }
@@ -175,7 +177,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
             (*it).second->isStorage = true;
         } else {
             LOG::error("DMMotor", " %s: Unknown feedback type, rxBuf[2]:%02X",
-                       this->name_, _rxBuf.data[2]);
+                       regInfo_.name, _rxBuf.data[2]);
             return 1;
         }
     } else {
@@ -192,21 +194,21 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         float noumenaAng =
                 static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-        this->data_.rawAng = this->isReverse_ ? (2.f * PI) - noumenaAng :
-                                                noumenaAng;
+        this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng :
+                                                  noumenaAng;
         float del = this->data_.rawAng - this->data_.zeroAng;
         this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
         float noumenaVel =
                 uint2float(fb.rawVel, -status_.VMax, status_.VMax, 12) /
                 this->rr();
-        this->data_.spdRadps = this->isReverse_ ? -noumenaVel : noumenaVel;
+        this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
         float noumenaTorq =
                 uint2float(fb.torque, -status_.TMax, status_.TMax, 12) *
                 this->rr();
-        this->data_.torq = this->isReverse_ ? -noumenaTorq : noumenaTorq;
+        this->data_.torq = regInfo_.isReverse ? -noumenaTorq : noumenaTorq;
         this->data_.curr = this->data_.torq / status_.torqConstant;
 
         this->data_.tempture = fb.mosTemperature;
@@ -249,15 +251,15 @@ MotorTypeDef_e DMMotor::ctrl()
     DMMsg_u dmMsg = {};
     uint8_t lenBuf = 0;
     bool isMIT = false;
-    switch (this->workMode_) {
+    switch (regInfo_.workMode) {
     case WorkMode_e::QUAD_CURR: {
         LOG::error("DMMotor", " %s: QUAD_CURR mode is not supported",
-                   this->name_);
+                   regInfo_.name);
         break;
     }
     case WorkMode_e::QUAD_VOLT: {
         LOG::error("DMMotor", " %s: QUAD_VOLT mode is not supported",
-                   this->name_);
+                   regInfo_.name);
         break;
     }
     case WorkMode_e::MIT_TT: {
@@ -279,14 +281,14 @@ MotorTypeDef_e DMMotor::ctrl()
             this->cmd_.torq =
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         }
-        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
         this->cmd_.elec =
                 this->cmd_.torq /
                 status_.torqConstant; // MIT_TT support return expected current
-        this->cmd_.elec = this->isReverse_ ? -this->cmd_.elec : this->cmd_.elec;
+        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec : this->cmd_.elec;
         break;
     }
     case WorkMode_e::MIT_VDES: {
@@ -300,11 +302,11 @@ MotorTypeDef_e DMMotor::ctrl()
                                 2.f * PI),
                     0);
         }
-        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgMIT.exptVel =
                 float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
         // forward torque
-        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
@@ -314,8 +316,8 @@ MotorTypeDef_e DMMotor::ctrl()
         break;
     }
     case WorkMode_e::MIT_VDESPDES: {
-        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
-        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgMIT.exptScale =
                 float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
         dmMsg.msgMIT.exptVel =
@@ -326,7 +328,7 @@ MotorTypeDef_e DMMotor::ctrl()
                                      status_.MITKpMax, 12);
         isMIT = true;
         // forward torque
-        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
@@ -337,8 +339,8 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::PDESVDES: {
         lenBuf = 8;
-        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
-        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgPDESVDES.exptScale = this->cmd_.pos;
         dmMsg.msgPDESVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf_.data, &dmMsg.msgPDESVDES.exptScale, 4);
@@ -357,7 +359,7 @@ MotorTypeDef_e DMMotor::ctrl()
                                 2.f * PI),
                     0);
         }
-        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf_.data, &dmMsg.msgVDES.exptVel, 4);
         this->cmd_.elec =
@@ -367,9 +369,9 @@ MotorTypeDef_e DMMotor::ctrl()
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
-        this->cmd_.pos = this->isReverse_ ? -this->cmd_.pos : this->cmd_.pos;
-        this->cmd_.vel = this->isReverse_ ? -this->cmd_.vel : this->cmd_.vel;
-        this->cmd_.torq = this->isReverse_ ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
+        this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
         dmMsg.msgEMIT.exptScale = this->cmd_.pos;
         dmMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
                 ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
@@ -391,7 +393,7 @@ MotorTypeDef_e DMMotor::ctrl()
         break;
     }
     default: {
-        LOG::error("DMMotor", " %s: this mode is not supported", this->name_);
+        LOG::error("DMMotor", " %s: this mode is not supported", regInfo_.name);
         break;
     }
     }
@@ -433,8 +435,8 @@ MotorTypeDef_e DMMotor::ctrl()
 
 MotorTypeDef_e DMMotor::update()
 {
-    if (xQueueReceive(this->rxQueue_, this->rxBuf_.data, 0) == pdTRUE) {
-        this->recvCnt_++;
+    if (xQueueReceive(AUX_.rxQueue, this->rxBuf_.data, 0) == pdTRUE) {
+        AUX_.recvCnt++;
         this->parse(this->rxBuf_);
     }
 

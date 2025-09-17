@@ -13,21 +13,21 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
 {
     LOG::CHECK(checkBaseConfig());
 
-    this->model_.measureMax = 8191;
-    this->model_.measureMin = 0;
-    this->model_.reductionRatio = 1.f;
-    this->model_.rxBaseId = 0x204;
+    regInfo_.model.measureMax = 8191;
+    regInfo_.model.measureMin = 0;
+    regInfo_.model.reductionRatio = 1.f;
+    regInfo_.model.rxBaseId = 0x204;
 
-    if (this->workMode_ == WorkMode_e::QUAD_CURR) {
+    if (regInfo_.workMode == WorkMode_e::QUAD_CURR) {
         if (_config.offsetId > 4)
-            this->model_.txBaseId = 0x2FE;
+            regInfo_.model.txBaseId = 0x2FE;
         else
-            this->model_.txBaseId = 0x1FE;
-    } else if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
+            regInfo_.model.txBaseId = 0x1FE;
+    } else if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
         if (_config.offsetId > 4)
-            this->model_.txBaseId = 0x2FF;
+            regInfo_.model.txBaseId = 0x2FF;
         else
-            this->model_.txBaseId = 0x1FF;
+            regInfo_.model.txBaseId = 0x1FF;
     }
 
     this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
@@ -46,33 +46,33 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->updateCtrlId();
 
     LOG::info("GM6020",
-              " %s: An instance of GM6020 created, rxBaseId:%hx, txBaseId:%hx",
-              this->name_, this->model_.rxBaseId, this->model_.txBaseId);
+              " %s: An instance of GM6020 created, rxBaseId:0x%hx, txBaseId:0x%hx",
+              regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e GM6020::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (this->comType_ != PINYMOTOR::ComType_e ::CAN) {
+    if (regInfo_.comType != PINYMOTOR::ComType_e ::CAN) {
         rslt |= 1;
-        LOG::error("GM6020", " %s: only support CAN comtype", this->name_);
+        LOG::error("GM6020", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (this->workMode_ != WorkMode_e::QUAD_CURR &&
-        this->workMode_ != WorkMode_e::QUAD_VOLT) {
+    if (regInfo_.workMode != WorkMode_e::QUAD_CURR &&
+        regInfo_.workMode != WorkMode_e::QUAD_VOLT) {
         rslt |= 1;
-        LOG::error("GM6020", "%s: WorkMode is not supported", this->name_);
+        LOG::error("GM6020", "%s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (this->offsetId_ > 7) {
+    if (regInfo_.offsetId > 7) {
         rslt |= 1;
-        LOG::error("GM6020", "%s: Max Offset ID is only 7!", this->name_);
+        LOG::error("GM6020", "%s: Max Offset ID is only 7!", regInfo_.name);
     }
 
-    if (this->txFreq_ > 1000) {
+    if (AUX_.txFreq > 1000) {
         rslt |= 1;
-        LOG::error("GM6020", " %s: Max TxFreq is only 1000!", this->name_);
+        LOG::error("GM6020", " %s: Max TxFreq is only 1000!", regInfo_.name);
     }
 
     return rslt;
