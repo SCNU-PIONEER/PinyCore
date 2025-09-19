@@ -31,7 +31,7 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
     );
 
     this->registerRecvCallback();
-    this->updateCtrlId();
+    this->updateCtrlMode();
 
     LOG::info(
             "DM8009",

@@ -31,7 +31,7 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
     );
 
     this->registerRecvCallback();
-    this->updateCtrlId();
+    this->updateCtrlMode();
 
     LOG::info(
             "DM4340",

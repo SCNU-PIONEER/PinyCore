@@ -31,7 +31,7 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     this->updateMotorMap();
     this->registerRecvCallback();
-    this->updateCtrlId();
+    this->updateCtrlMode();
 
     LOG::info(
             "GM3510",

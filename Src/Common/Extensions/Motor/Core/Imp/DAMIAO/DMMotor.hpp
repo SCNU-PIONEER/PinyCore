@@ -123,9 +123,9 @@ struct Status_s {
     float MITKpMax;
     float MITKdMax;
     float currTxCodeSpan;
-    float currMax;   // A
-    float torqMax;   // Nm
-    float Kn;        // Nm/A
+    float currMax; // A
+    float torqMax; // Nm
+    float Kn;      // Nm/A
 
     Status_s &operator=(const Status_s &_other);
 };
@@ -134,13 +134,29 @@ class DMMotor : public IMotor {
     using Base = IMotor;
     using RegMap = std::unordered_map<RegId_e, Reg_s *>;
 
+    using TxBus = TxBus_s::CANTxBuf_s<8>;
+
+    using ConvertFunc = TxBus (DMMotor::*)();
+
 private:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
-    TxBus_s::CANTxBuf_s<8> txBuf_ = {};
+    TxBus txBuf_ = {};
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
+
+    ConvertFunc convert = &DMMotor::convertDefault;
+
+    TxBus convertMitTt();
+    TxBus convertMitVdes();
+    TxBus convertMitVdesPdes();
+    TxBus convertPdesVdes();
+    TxBus convertVdes();
+    TxBus convertEmit();
+    TxBus convertDefault();
+
+    static TxBus serializeMITMsg(MITMsg_s &_msgMIT);
 
     void overrideReductionRatio(float _newReductionRatio) final;
 
@@ -159,7 +175,7 @@ protected:
      * @brief Update the control ID based on the current work mode
      * 
      */
-    void updateCtrlId();
+    void updateCtrlMode();
 
     Status_s status_;
 

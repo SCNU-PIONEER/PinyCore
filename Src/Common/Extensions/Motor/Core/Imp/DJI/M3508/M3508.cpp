@@ -35,7 +35,7 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
 
     this->updateMotorMap();
     this->registerRecvCallback();
-    this->updateCtrlId();
+    this->updateCtrlMode();
 
     LOG::info(
             "M3508",

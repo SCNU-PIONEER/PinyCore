@@ -16,10 +16,10 @@ struct Feedback_s {
 struct Status_s {
     float voltTxCodeSpan;
     float torqRxCodeSpan;
-    float voltMax;   // V
-    float currMax;   // A
-    float torqMax;   // Nm
-    float Kn;        // Nm/A
+    float voltMax; // V
+    float currMax; // A
+    float torqMax; // Nm
+    float Kn;      // Nm/A
 
     Status_s &operator=(const Status_s &_other);
 };
@@ -53,7 +53,7 @@ protected:
      * @brief Update the control ID based on the current work mode
      * 
      */
-    void updateCtrlId();
+    void updateCtrlMode();
 
     Status_s status_;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode

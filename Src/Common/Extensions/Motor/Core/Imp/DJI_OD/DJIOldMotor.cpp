@@ -72,7 +72,7 @@ void DJIOldMotor::cancelRecvCallback()
               regInfo_.name, this->masterId());
 }
 
-void DJIOldMotor::updateCtrlId()
+void DJIOldMotor::updateCtrlMode()
 {
     switch (regInfo_.workMode) {
     case WorkMode_e::TRIP_VOLT: {

@@ -69,7 +69,7 @@ void DJIMotor::cancelRecvCallback()
               regInfo_.name, this->masterId());
 }
 
-void DJIMotor::updateCtrlId()
+void DJIMotor::updateCtrlMode()
 {
     switch (regInfo_.workMode) {
     case WorkMode_e::QUAD_CURR:
