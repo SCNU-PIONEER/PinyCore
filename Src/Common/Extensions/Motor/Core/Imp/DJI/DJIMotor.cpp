@@ -120,8 +120,7 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     this->data_.tempture = fb.temperature;
 
     float angDiff =
-            (getMinorArc(this->data_.rawAng, this->data_.angLast, 2.f * PI)) /
-            this->rr();
+            (getMinorArc(this->data_.rawAng, this->data_.angLast)) / this->rr();
 
     if ((this->globalState_ == GlobalState_e::OFFLINE ||
          this->globalState_ == GlobalState_e::UNREGISTER) &&
