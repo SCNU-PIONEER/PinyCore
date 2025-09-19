@@ -27,13 +27,11 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
             Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
                      CURR_TX_CODE_SPAN, // currTxCodeSpan
                      CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     CURR_RATED,        // currRated
-                     TORQ_RATED,        // torqRated
                      VOLT_MAX,          //voltmax
                      //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
-                     CURR_MAX,     // currMax
-                     TORQ_MAX,     // torqMax
-                     TORQ_CONSTANT // torqConstant
+                     CURR_MAX, // currMax
+                     TORQ_MAX, // torqMax
+                     KN        // Kn
             );
 
     this->updateMotorMap();

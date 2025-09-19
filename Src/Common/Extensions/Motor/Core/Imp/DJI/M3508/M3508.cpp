@@ -27,12 +27,10 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
             Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
                      CURR_TX_CODE_SPAN, // currTxCodeSpan
                      CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     CURR_RATED,        // currRated
-                     TORQ_RATED,        // torqRated
                      VOLT_MAX,          // voltMax
                      20.f,     // currMax BUG: we need C620 MAX_CURRENT value
                      TORQ_MAX, // torqMax
-                     TORQ_CONSTANT // torqConstant
+                     KN        // Kn
             );
 
     this->updateMotorMap();

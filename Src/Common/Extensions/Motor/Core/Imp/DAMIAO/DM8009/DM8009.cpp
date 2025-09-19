@@ -25,11 +25,9 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
                              MIT_KP_MAX,        // MITKpMax
                              MIT_KD_MAX,        // MITKdMax
                              CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             0.f,               // 临时占位，实际需补充真实值
-                             0.f,               // 临时占位，实际需补充真实值
                              CURR_MAX,          // currMax
                              TORQ_MAX,          // torqMax
-                             TORQ_CONSTANT      // torqConstant
+                             KN                 // Kn
     );
 
     this->registerRecvCallback();

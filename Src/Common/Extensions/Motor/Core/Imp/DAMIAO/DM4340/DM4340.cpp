@@ -25,11 +25,9 @@ DM4340::DM4340(const char _name[16], InitConfig_s _config)
                              MIT_KP_MAX,        // MITKpMax
                              MIT_KD_MAX,        // MITKdMax
                              CURR_TX_CODE_SPAN, // currTxCodeSpan
-                             CURR_RATED,        // currRated
-                             TORQ_RATED,        // torqRated
                              CURR_MAX,          // currMax
                              TORQ_MAX,          // torqMax
-                             TORQ_CONSTANT      // torqConstant
+                             KN                 // Kn
     );
 
     this->registerRecvCallback();

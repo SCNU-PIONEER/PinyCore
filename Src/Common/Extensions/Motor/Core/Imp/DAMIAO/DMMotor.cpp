@@ -20,11 +20,9 @@ Status_s &Status_s::operator=(const Status_s &_other)
         MITKpMax = _other.MITKpMax;
         MITKdMax = _other.MITKdMax;
         currTxCodeSpan = _other.currTxCodeSpan;
-        currRated = _other.currRated;
-        torqRated = _other.torqRated;
         currMax = _other.currMax;
         torqMax = _other.torqMax;
-        torqConstant = _other.torqConstant;
+        Kn = _other.Kn;
     }
     return *this;
 }
@@ -209,7 +207,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
                 uint2float(fb.torque, -status_.TMax, status_.TMax, 12) *
                 this->rr();
         this->data_.torq = regInfo_.isReverse ? -noumenaTorq : noumenaTorq;
-        this->data_.curr = this->data_.torq / status_.torqConstant;
+        this->data_.curr = this->data_.torq / status_.Kn;
 
         this->data_.tempture = fb.mosTemperature;
 
@@ -281,14 +279,15 @@ MotorTypeDef_e DMMotor::ctrl()
             this->cmd_.torq =
                     this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         }
-        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq :
+                                               this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
-        this->cmd_.elec =
-                this->cmd_.torq /
-                status_.torqConstant; // MIT_TT support return expected current
-        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec : this->cmd_.elec;
+        this->cmd_.elec = this->cmd_.torq /
+                          status_.Kn; // MIT_TT support return expected current
+        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec :
+                                               this->cmd_.elec;
         break;
     }
     case WorkMode_e::MIT_VDES: {
@@ -306,13 +305,14 @@ MotorTypeDef_e DMMotor::ctrl()
         dmMsg.msgMIT.exptVel =
                 float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
         // forward torque
-        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq :
+                                               this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
         this->cmd_.elec =
                 this->data_.torq /
-                status_.torqConstant; // MIT_VDES unsupport return expected current
+                status_.Kn; // MIT_VDES unsupport return expected current
         break;
     }
     case WorkMode_e::MIT_VDESPDES: {
@@ -328,13 +328,14 @@ MotorTypeDef_e DMMotor::ctrl()
                                      status_.MITKpMax, 12);
         isMIT = true;
         // forward torque
-        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq :
+                                               this->cmd_.torq;
         dmMsg.msgMIT.torqueForward =
                 float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
         this->cmd_.elec =
                 this->data_.torq /
-                status_.torqConstant; // MIT_VDESPDES unsupport return expected current
+                status_.Kn; // MIT_VDESPDES unsupport return expected current
         break;
     }
     case WorkMode_e::PDESVDES: {
@@ -348,7 +349,7 @@ MotorTypeDef_e DMMotor::ctrl()
 
         this->cmd_.elec =
                 this->data_.torq /
-                status_.torqConstant; // PDESVDES unsupport return expected current
+                status_.Kn; // PDESVDES unsupport return expected current
         break;
     }
     case WorkMode_e::VDES: {
@@ -362,24 +363,23 @@ MotorTypeDef_e DMMotor::ctrl()
         this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
         dmMsg.msgVDES.exptVel = this->cmd_.vel;
         memcpy(txBuf_.data, &dmMsg.msgVDES.exptVel, 4);
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // VDES unsupport return expected current
+        this->cmd_.elec = this->data_.torq /
+                          status_.Kn; // VDES unsupport return expected current
         break;
     }
     case WorkMode_e::EMIT: {
         lenBuf = 8;
         this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
         this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
-        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+        this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq :
+                                               this->cmd_.torq;
         dmMsg.msgEMIT.exptScale = this->cmd_.pos;
         dmMsg.msgEMIT.exptVelX100 = static_cast<uint16_t>(
                 ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) *
                 100.f);
         dmMsg.msgEMIT.imaxX10000 = static_cast<uint16_t>(
                 ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
-                status_.torqConstant / status_.currMax *
-                status_.currTxCodeSpan);
+                status_.Kn / status_.currMax * status_.currTxCodeSpan);
         float f = dmMsg.msgEMIT.exptScale;
         memcpy(txBuf_.data, &f, 4);
         txBuf_.data[4] = static_cast<uint8_t>((dmMsg.msgEMIT.exptVelX100) >> 8);
@@ -387,9 +387,8 @@ MotorTypeDef_e DMMotor::ctrl()
         txBuf_.data[6] = static_cast<uint8_t>((dmMsg.msgEMIT.imaxX10000) >> 8);
         txBuf_.data[7] = static_cast<uint8_t>(dmMsg.msgEMIT.imaxX10000);
 
-        this->cmd_.elec =
-                this->data_.torq /
-                status_.torqConstant; // EMIT unsupport return expected current
+        this->cmd_.elec = this->data_.torq /
+                          status_.Kn; // EMIT unsupport return expected current
         break;
     }
     default: {
@@ -479,4 +478,13 @@ MotorTypeDef_e DMMotor::clearError()
     };
     rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
     return rslt;
+}
+
+void DMMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    regInfo_.model.reductionRatio = _newReductionRatio;
+    status_.torqMax *= _newReductionRatio;
+    status_.Kn *= _newReductionRatio;
+    LOG::info("DMMotor", " %s: you have changed reduction ratio to %f",
+              regInfo_.name, _newReductionRatio);
 }

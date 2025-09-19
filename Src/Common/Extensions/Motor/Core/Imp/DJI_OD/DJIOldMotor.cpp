@@ -15,12 +15,10 @@ Status_s &Status_s::operator=(const Status_s &_other)
     if (this != &_other) {
         voltTxCodeSpan = _other.voltTxCodeSpan;
         torqRxCodeSpan = _other.torqRxCodeSpan;
-        currRated = _other.currRated;
-        torqRated = _other.torqRated;
         voltMax = _other.voltMax;
         currMax = _other.currMax;
         torqMax = _other.torqMax;
-        torqConstant = _other.torqConstant;
+        Kn = _other.Kn;
     }
     return *this;
 }
@@ -131,7 +129,7 @@ MotorTypeDef_e DJIOldMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     float noumenaTorq = static_cast<float>(fb.rawTorq) /
                         this->status_.torqRxCodeSpan * this->status_.torqMax;
     this->data_.torq = regInfo_.isReverse ? -noumenaTorq : noumenaTorq;
-    this->data_.curr = this->data_.torq / status_.torqConstant;
+    this->data_.curr = this->data_.torq / status_.Kn;
 
     this->data_.tempture = 0.f; // TODO:
 
@@ -281,4 +279,13 @@ MotorTypeDef_e DJIOldMotor::update()
     this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;
+}
+
+void DJIOldMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    regInfo_.model.reductionRatio = _newReductionRatio;
+    status_.torqMax *= _newReductionRatio;
+    status_.Kn *= _newReductionRatio;
+    LOG::info("DJIOldMotor", " %s: you have changed reduction ratio to %f",
+              regInfo_.name, _newReductionRatio);
 }

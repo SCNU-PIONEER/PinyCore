@@ -150,6 +150,15 @@ MotorTypeDef_e UTMotor::ctrl()
     return send(regInfo_.model.txBaseId, &txBuf, sizeof(TransmitMsg_s));
 }
 
+void UTMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    regInfo_.model.reductionRatio = _newReductionRatio;
+    status_.torqMax *= _newReductionRatio;
+    status_.Kn *= _newReductionRatio;
+    LOG::info("UTMotor", " %s: you have changed reduction ratio to %f",
+              regInfo_.name, _newReductionRatio);
+}
+
 MotorTypeDef_e UTMotor::update()
 {
     if (xQueueReceive(AUX_.rxQueue, this->rxBuf_, 0) == pdTRUE) {

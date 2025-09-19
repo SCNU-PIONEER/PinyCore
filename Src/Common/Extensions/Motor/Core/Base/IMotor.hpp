@@ -102,7 +102,9 @@ public:
     float vel() const;
     float torq() const;
 
-    void overrideReductionRatio(float _newReductionRatio);
+    // Don't call it multiple times!
+    virtual void overrideReductionRatio(float _newReductionRatio);
+
     void overrideMeasureMax(float _newMeasureMax);
     void overrideMeasureMin(float _newMeasureMin);
 

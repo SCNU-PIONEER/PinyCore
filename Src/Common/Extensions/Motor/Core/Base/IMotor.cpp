@@ -306,11 +306,6 @@ float IMotor::vel() const { return data_.spdRadps; }
 
 float IMotor::torq() const { return data_.torq; }
 
-void IMotor::overrideReductionRatio(float _newReductionRatio)
-{
-    regInfo_.model.reductionRatio = _newReductionRatio;
-}
-
 void IMotor::overrideMeasureMax(float _newMeasureMax)
 {
     regInfo_.model.measureMax = static_cast<uint16_t>(_newMeasureMax);

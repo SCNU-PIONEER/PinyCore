@@ -23,12 +23,10 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
 
     this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
                              TORQ_RX_CODE_SPAN, // torqRxCodeSpan
-                             CURR_RATED,        // currRated
-                             TORQ_RATED,        // torqRated
                              VOLT_MAX,          // voltMax
                              CURR_MAX,          // currMax
                              TORQ_MAX,          // torqMax
-                             TORQ_CONSTANT      // torqConstant
+                             KN                 // Kn
     );
 
     this->updateMotorMap();

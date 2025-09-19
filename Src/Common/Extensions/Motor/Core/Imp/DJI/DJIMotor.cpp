@@ -15,12 +15,10 @@ Status_s &Status_s::operator=(const Status_s &_other)
         voltTxCodeSpan = _other.voltTxCodeSpan;
         currTxCodeSpan = _other.currTxCodeSpan;
         currRxCodeSpan = _other.currRxCodeSpan;
-        currRated = _other.currRated;
-        torqRated = _other.torqRated;
         voltMax = _other.voltMax;
         currMax = _other.currMax;
         torqMax = _other.torqMax;
-        torqConstant = _other.torqConstant;
+        Kn = _other.Kn;
     }
     return *this;
 }
@@ -129,7 +127,7 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     float noumenaCurr = static_cast<float>(fb.current) /
                         this->status_.currRxCodeSpan * this->status_.currMax;
     this->data_.curr = regInfo_.isReverse ? -noumenaCurr : noumenaCurr;
-    this->data_.torq = this->data_.curr * status_.torqConstant;
+    this->data_.torq = this->data_.curr * status_.Kn;
 
     float noumenaRpm = static_cast<float>(fb.rawRpm) / this->rr();
     this->data_.spdRpm = regInfo_.isReverse ? -noumenaRpm : noumenaRpm;
@@ -172,12 +170,12 @@ MotorTypeDef_e DJIMotor::ctrl()
         if (this->cmd_.curCmdType == MotorCmdType_e::SET_ELEC) {
             this->cmd_.elec;
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_TORQ) {
-            this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
+            this->cmd_.elec = this->cmd_.torq / status_.Kn;
         } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
             if (this->velPID_ != nullptr) {
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
-                this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
+                this->cmd_.elec = this->cmd_.torq / status_.Kn;
             } else {
                 LOG::error("DJIMotor", " %s: velPID is null", regInfo_.name);
             }
@@ -194,7 +192,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                 }
                 this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
                                                       this->data_.spdRadps);
-                this->cmd_.elec = this->cmd_.torq / status_.torqConstant;
+                this->cmd_.elec = this->cmd_.torq / status_.Kn;
             } else {
                 LOG::error("DJIMotor", " %s: posPID or velPID is null",
                            regInfo_.name);
@@ -208,7 +206,7 @@ MotorTypeDef_e DJIMotor::ctrl()
                                 0) +
                         this->velPID_->calc(this->cmd_.vel,
                                             this->data_.spdRadps) +
-                        this->cmd_.torq / status_.torqConstant;
+                        this->cmd_.torq / status_.Kn;
             } else {
                 LOG::error("DJIMotor", " %s: posPID or velPID is null",
                            regInfo_.name);
@@ -328,4 +326,13 @@ MotorTypeDef_e DJIMotor::update()
     this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
     return rslt;
+}
+
+void DJIMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    regInfo_.model.reductionRatio = _newReductionRatio;
+    status_.torqMax *= _newReductionRatio;
+    status_.Kn *= _newReductionRatio;
+    LOG::info("DJIMotor", " %s: you have changed reduction ratio to %f",
+              regInfo_.name, _newReductionRatio);
 }

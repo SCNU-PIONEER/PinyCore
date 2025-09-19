@@ -33,21 +33,20 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
                              CURR_TX_CODE_SPAN, // currTxCodeSpan
                              CURR_RX_CODE_SPAN, // currRxCodeSpan
-                             CURR_RATED,        // currRated
-                             TORQ_RATED,        // torqRated
                              VOLT_MAX,          // voltMax
                              CURR_MAX,          // currMax
                              TORQ_MAX,          // torqMax
-                             TORQ_CONSTANT      // torqConstant
+                             KN                 // Kn
     );
 
     this->updateMotorMap();
     this->registerRecvCallback();
     this->updateCtrlId();
 
-    LOG::info("GM6020",
-              " %s: An instance of GM6020 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-              regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info(
+            "GM6020",
+            " %s: An instance of GM6020 created, rxBaseId:0x%hx, txBaseId:0x%hx",
+            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e GM6020::checkBaseConfig()
