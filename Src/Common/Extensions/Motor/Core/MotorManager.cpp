@@ -30,10 +30,7 @@ void MotorManager::ctrlTask()
 
 void MotorManager::init() {}
 
-uint8_t MotorManager::motorListSize()
-{
-    return static_cast<uint8_t>(motorList_.size());
-}
+uint8_t MotorManager::assignId() { return registedNum_++; }
 
 void MotorManager::taskCreate()
 {

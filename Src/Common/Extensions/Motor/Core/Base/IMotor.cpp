@@ -11,7 +11,7 @@ using namespace PINYMOTOR;
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
         : globalState_(GlobalState_e::UNREGISTER)
 {
-    regInfo_.uid = MotorManager::instance()->motorListSize();
+    regInfo_.uid = MotorManager::instance()->assignId();
     regInfo_.offsetId = _config.offsetId;
     strncpy(regInfo_.name, _name, 16);
     regInfo_.pComHandle = _config.pComHandle;
@@ -55,23 +55,23 @@ void IMotor::calcRecvFreq()
 
 MotorTypeDef_e IMotor::registerMotor()
 {
-    MotorManager *motorManager = MotorManager::instance();
-    auto it = motorManager->motors().find(uid());
-    if (it != motorManager->motors().end()) {
+    auto *instance = MotorManager::instance();
+    auto it = instance->motors().find(uid());
+    if (it != instance->motors().end()) {
         return false;
     }
-    motorManager->motors().insert({ uid(), this });
+    instance->motors().insert({ uid(), this });
     return 0;
 }
 
 MotorTypeDef_e IMotor::cancelMotor()
 {
-    MotorManager *motorManager = MotorManager::instance();
-    auto it = motorManager->motors().find(uid());
-    if (it == motorManager->motors().end()) {
+    auto *instance = MotorManager::instance();
+    auto it = instance->motors().find(uid());
+    if (it == instance->motors().end()) {
         return false;
     }
-    motorManager->motors().erase(it);
+    instance->motors().erase(it);
     return 0;
 }
 
