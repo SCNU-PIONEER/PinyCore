@@ -206,12 +206,13 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
+    TxBus txBuf;
     if ((this->cmd_.SW && !this->cmd_.prevSW) ||
         (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
         constexpr uint8_t ENABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF,
                                                 0xFF, 0xFF, 0xFF, 0xFC };
-        memcpy(txBuf_.data, ENABLE_CMD_MSG, 8);
-        txBuf_.len = 8;
+        memcpy(txBuf.data, ENABLE_CMD_MSG, 8);
+        txBuf.len = 8;
     } else if (!this->cmd_.SW) {
         if (this->posPID_ != nullptr)
             this->posPID_->reset();
@@ -221,12 +222,12 @@ MotorTypeDef_e DMMotor::ctrl()
             this->torqPID_->reset();
         constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF,
                                                  0xFF, 0xFF, 0xFF, 0xFD };
-        memcpy(txBuf_.data, DISABLE_CMD_MSG, 8);
-        txBuf_.len = 8;
+        memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
+        txBuf.len = 8;
     } else {
-        txBuf_ = (this->*convert)();
+        txBuf = (this->*convert)();
     }
-    rslt |= this->send(this->ctrlId_, txBuf_.data, txBuf_.len);
+    rslt |= this->send(this->ctrlId_, txBuf.data, txBuf.len);
     return rslt;
 }
 
