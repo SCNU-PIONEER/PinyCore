@@ -69,22 +69,6 @@ void DJIMotor::cancelRecvCallback()
               regInfo_.name, this->masterId());
 }
 
-void DJIMotor::updateCtrlMode()
-{
-    switch (regInfo_.workMode) {
-    case WorkMode_e::QUAD_CURR:
-    case WorkMode_e::QUAD_VOLT: {
-        this->ctrlId_ = this->getGroupId() + 0u;
-        break;
-    }
-    default: {
-        LOG::error("DJIMotor", " %s: this mode is not supported",
-                   regInfo_.name);
-        break;
-    }
-    }
-}
-
 MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
     // send data to CAN
@@ -163,140 +147,8 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 MotorTypeDef_e DJIMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
-
-    int16_t ctrlCmd = 0;
-    switch (regInfo_.workMode) {
-    case WorkMode_e::QUAD_CURR: {
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_ELEC) {
-            this->cmd_.elec;
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_TORQ) {
-            this->cmd_.elec = this->cmd_.torq / status_.Kn;
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
-            if (this->velPID_ != nullptr) {
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec = this->cmd_.torq / status_.Kn;
-            } else {
-                LOG::error("DJIMotor", " %s: velPID is null", regInfo_.name);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr) {
-                this->cmd_.vel = this->posPID_->calc(
-                        getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                    2.f * PI),
-                        0);
-                if (!(this->cmd_.velMax < 0.f)) {
-                    this->cmd_.vel = std::clamp(this->cmd_.vel,
-                                                -this->cmd_.velMax,
-                                                this->cmd_.velMax);
-                }
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec = this->cmd_.torq / status_.Kn;
-            } else {
-                LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           regInfo_.name);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_MIT) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr) {
-                this->cmd_.elec =
-                        this->posPID_->calc(
-                                getMinorArc(this->cmd_.pos,
-                                            this->data_.singleCirAng, 2.f * PI),
-                                0) +
-                        this->velPID_->calc(this->cmd_.vel,
-                                            this->data_.spdRadps) +
-                        this->cmd_.torq / status_.Kn;
-            } else {
-                LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           regInfo_.name);
-            }
-        }
-        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec :
-                                               this->cmd_.elec;
-        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.currMax *
-                                       this->status_.currTxCodeSpan);
-        break;
-    }
-    case WorkMode_e::QUAD_VOLT: {
-        if (this->cmd_.curCmdType == MotorCmdType_e::SET_ELEC) {
-            this->cmd_.elec;
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_TORQ) {
-            if (this->torqPID_ != nullptr) {
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIMotor", " %s: torqPID is null", regInfo_.name);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_VEL) {
-            if (this->velPID_ != nullptr || this->torqPID_ != nullptr) {
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIMotor", " %s: velPID or torqPID is null",
-                           regInfo_.name);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_POS) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
-                this->torqPID_ != nullptr) {
-                this->cmd_.vel = this->posPID_->calc(
-                        getMinorArc(this->cmd_.pos, this->data_.singleCirAng,
-                                    2.f * PI),
-                        0);
-                if (!(this->cmd_.velMax < 0.f)) {
-                    this->cmd_.vel = std::clamp(this->cmd_.vel,
-                                                -this->cmd_.velMax,
-                                                this->cmd_.velMax);
-                }
-                this->cmd_.torq = this->velPID_->calc(this->cmd_.vel,
-                                                      this->data_.spdRadps);
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIMotor",
-                           " %s: posPID or velPID or torqPID is null",
-                           regInfo_.name);
-            }
-        } else if (this->cmd_.curCmdType == MotorCmdType_e::SET_MIT) {
-            if (this->posPID_ != nullptr || this->velPID_ != nullptr ||
-                this->torqPID_ != nullptr) {
-                this->cmd_.torq =
-                        this->posPID_->calc(
-                                getMinorArc(this->cmd_.pos,
-                                            this->data_.singleCirAng, 2.f * PI),
-                                0) +
-                        this->velPID_->calc(this->cmd_.vel,
-                                            this->data_.spdRadps) +
-                        this->cmd_.torq;
-                this->cmd_.elec =
-                        this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
-            } else {
-                LOG::error("DJIMotor", " %s: posPID or velPID is null",
-                           regInfo_.name);
-            }
-        }
-
-        this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec :
-                                               this->cmd_.elec;
-        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax *
-                                       this->status_.voltTxCodeSpan);
-        break;
-    }
-    default: {
-        ctrlCmd = 0;
-        LOG::error("DJIMotor", " %s: this mode is not supported",
-                   regInfo_.name);
-        break;
-    }
-    }
-
     if (this->cmd_.SW) {
-        this->group_->txBuf[(2 * this->getPosInGroup()) + 1] =
-                static_cast<uint8_t>(ctrlCmd & 0xFF);
-        this->group_->txBuf[2 * this->getPosInGroup()] =
-                static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
+        (this->*convert)();
     } else {
         if (this->posPID_ != nullptr)
             this->posPID_->reset();
@@ -307,7 +159,6 @@ MotorTypeDef_e DJIMotor::ctrl()
         this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
         this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }
-
     rslt |= this->send(this->ctrlId_, this->group_->txBuf, 8);
     return rslt;
 }
