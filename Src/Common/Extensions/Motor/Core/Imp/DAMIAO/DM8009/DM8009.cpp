@@ -30,7 +30,7 @@ DM8009::DM8009(const char _name[16], InitConfig_s _config)
                              KN                 // Kn
     );
 
-    this->registerRecvCallback();
+    this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
     LOG::info(

@@ -53,12 +53,12 @@ protected:
      * @brief Register the receive callback function
      * 
      */
-    void registerRecvCallback();
+    void registerRecvCallback(uint16_t _rxId);
     /**
      * @brief Cancel the receive callback function
      * 
      */
-    void cancelRecvCallback();
+    void cancelRecvCallback(uint16_t _rxId);
     /**
      * @brief Update the control ID based on the current work mode
      * 

@@ -30,7 +30,7 @@ DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
 }
 DJIMotor::~DJIMotor()
 {
-    this->cancelRecvCallback();
+    this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
     this->removeMotorFromMap();
     LOG::info("DJIMotor", " %s: An instance of DJIMotor destroyed",
@@ -41,32 +41,26 @@ void DJIMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
 uint16_t DJIMotor::canId() const { return regInfo_.model.txBaseId + 0u; }
 
-uint16_t DJIMotor::masterId() const
-{
-    return regInfo_.model.rxBaseId + regInfo_.offsetId;
-}
-
-void DJIMotor::registerRecvCallback()
+void DJIMotor::registerRecvCallback(uint16_t _rxId)
 {
     // lamda
     Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId(), [this](const uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+            [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
                 xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
     LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
-void DJIMotor::cancelRecvCallback()
+void DJIMotor::cancelRecvCallback(uint16_t _rxId)
 {
     Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId());
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
     LOG::info("DJIMotor", " %s: Receive cb canceled, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
 MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)

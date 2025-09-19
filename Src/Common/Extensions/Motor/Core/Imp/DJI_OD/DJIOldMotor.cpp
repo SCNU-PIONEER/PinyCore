@@ -31,7 +31,7 @@ DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config)
 
 DJIOldMotor::~DJIOldMotor()
 {
-    this->cancelRecvCallback();
+    this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
     LOG::info(
             "DJIOldMotor",
@@ -44,32 +44,26 @@ void DJIOldMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
 uint16_t DJIOldMotor::canId() const { return regInfo_.model.txBaseId + 0u; }
 
-uint16_t DJIOldMotor::masterId() const
-{
-    return regInfo_.model.rxBaseId + regInfo_.offsetId;
-}
-
-void DJIOldMotor::registerRecvCallback()
+void DJIOldMotor::registerRecvCallback(uint16_t _rxId)
 {
     // lamda
     Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId(), [this](const uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+            [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
                 xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
     LOG::info("DJIOldMotor", " %s: Receive cb registed, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
-void DJIOldMotor::cancelRecvCallback()
+void DJIOldMotor::cancelRecvCallback(uint16_t _rxId)
 {
     Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId());
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
     LOG::info("DJIOldMotor", " %s: Receive cb canceled, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
 MotorTypeDef_e DJIOldMotor::send(uint16_t _sendId, uint8_t *_txBuf,

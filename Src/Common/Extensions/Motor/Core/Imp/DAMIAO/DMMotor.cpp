@@ -36,7 +36,7 @@ DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
 
 DMMotor::~DMMotor()
 {
-    this->cancelRecvCallback();
+    this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
     LOG::info(
             "DMMotor",
@@ -53,33 +53,27 @@ uint16_t DMMotor::canId() const
     return regInfo_.model.txBaseId + regInfo_.offsetId;
 }
 
-uint16_t DMMotor::masterId() const
-{
-    return regInfo_.model.rxBaseId + regInfo_.offsetId;
-}
-
-void DMMotor::registerRecvCallback()
+void DMMotor::registerRecvCallback(uint16_t _rxId)
 {
     // lamda
     Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId(), [this](const uint8_t *_rxBuf) {
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+            [this](const uint8_t *_rxBuf) {
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
                 xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
                                   &higherPriorityTaskWoken);
             });
     LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
 
-void DMMotor::cancelRecvCallback()
+void DMMotor::cancelRecvCallback(uint16_t _rxId)
 {
     Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle),
-            this->masterId());
+            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
     LOG::info("DMMotor", " %s: Receive cb canceled, masterId:%hx",
-              regInfo_.name, this->masterId());
+              regInfo_.name, _rxId);
 }
 
 void DMMotor::setMITKp(float _kp)

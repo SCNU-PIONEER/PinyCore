@@ -35,7 +35,7 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
             );
 
     this->updateMotorMap();
-    this->registerRecvCallback();
+    this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
     LOG::info(

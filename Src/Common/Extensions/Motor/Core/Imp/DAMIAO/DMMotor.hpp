@@ -164,12 +164,12 @@ protected:
      * @brief Register the receive callback function
      * 
      */
-    void registerRecvCallback();
+    void registerRecvCallback(uint16_t _rxId);
     /**
      * @brief Cancel the receive callback function
      * 
      */
-    void cancelRecvCallback();
+    void cancelRecvCallback(uint16_t _rxId);
     /**
      * @brief Update the control ID based on the current work mode
      * 
@@ -214,13 +214,6 @@ public:
      * @return uint16_t 
      */
     uint16_t canId() const;
-
-    /**
-     * @brief Get the master ID of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t masterId() const;
 
     /**
      * @brief Update the motor state
