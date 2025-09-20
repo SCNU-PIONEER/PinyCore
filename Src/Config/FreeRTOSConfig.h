@@ -114,6 +114,16 @@ header file. */
 #define INCLUDE_pxTaskGetStackStart    1
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
 
+/* vscode rtos-view support */
+#ifdef USE_VSCODE_XRTOS
+extern void dwtInit(void);
+extern uint32_t dwtRead(void);
+#define configGENERATE_RUN_TIME_STATS            1
+#define configRECORD_STACK_HIGH_ADDRESS          1
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() (dwtInit())
+#define portGET_RUN_TIME_COUNTER_VALUE()         (dwtRead())
+#endif
+
 /* Section where parameter definitions can be added (for instance, to override
  * default ones in FreeRTOS.h) */
 /* USER CODE END Defines */
