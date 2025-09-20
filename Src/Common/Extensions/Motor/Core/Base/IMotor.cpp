@@ -10,13 +10,19 @@ using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
         : globalState_(GlobalState_e::UNREGISTER)
+        , posPID_(_config.posPID)
+        , velPID_(_config.velPID)
+        , torqPID_(_config.torqPID)
 {
     regInfo_.uid = MotorManager::instance()->assignId();
-    regInfo_.offsetId = _config.offsetId;
-    strncpy(regInfo_.name, _name, 16);
     regInfo_.pComHandle = _config.pComHandle;
     regInfo_.comType = _config.comType;
     regInfo_.workMode = _config.workMode;
+    regInfo_.offsetId = _config.offsetId;
+    strncpy(regInfo_.name, _name, 16);
+
+    AUX_.txFreq = _config.txFreq;
+
     regInfo_.isReverse = _config.isReverse;
 
     registerMotor();

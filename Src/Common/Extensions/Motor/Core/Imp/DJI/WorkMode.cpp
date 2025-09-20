@@ -77,8 +77,10 @@ void DJIMotor::convertQuadCurr()
         break;
     }
     default:
-        LOG::warn("DJIMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DJIMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
     this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec : this->cmd_.elec;
@@ -131,8 +133,10 @@ void DJIMotor::convertQuadVolt()
         break;
     }
     default:
-        LOG::warn("DJIMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DJIMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
 

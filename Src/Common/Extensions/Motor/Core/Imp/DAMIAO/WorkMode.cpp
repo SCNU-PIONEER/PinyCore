@@ -101,8 +101,10 @@ DMMotor::TxBus DMMotor::convertMitTt()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
 
@@ -140,8 +142,10 @@ DMMotor::TxBus DMMotor::convertMitVdes()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
 
@@ -174,8 +178,10 @@ DMMotor::TxBus DMMotor::convertMitVdesPdes()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
     this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
@@ -204,8 +210,10 @@ DMMotor::TxBus DMMotor::convertPdesVdes()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
 
@@ -242,8 +250,10 @@ DMMotor::TxBus DMMotor::convertVdes()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
 
@@ -270,8 +280,10 @@ DMMotor::TxBus DMMotor::convertEmit()
         break;
     }
     default:
-        LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                  regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
+            this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
+                      regInfo_.name);
         break;
     }
     this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
