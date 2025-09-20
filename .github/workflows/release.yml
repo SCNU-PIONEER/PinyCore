@@ -23,7 +23,7 @@ jobs:
           default_bump: false
           default_prerelease_bump: false
           release_branches: master
-          custom_release_rules: "ci:prepatch,refactor:prepatch"
+          custom_release_rules: "ci:prerelease,refactor:prerelease,chore:prerelease,docs:prepatch,style:prerelease,build:prerelease,test:prerelease"
           append_to_pre_release_tag: nightly
           fetch_all_tags: true
 
