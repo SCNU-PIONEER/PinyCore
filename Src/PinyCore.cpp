@@ -1,10 +1,10 @@
-#include "cmsis_os2.h"
 #include "StmLog.hpp"
 #include "Bsp_can.hpp"
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 
 void PinyCore::bspInit()
 {
@@ -15,13 +15,11 @@ void PinyCore::bspInit()
 
 void PinyCore::coreInit()
 {
-    osKernelInitialize();
-
     AppManager::instance()->initApp();
 
     LOG::info("Piny", "kernal start");
 
-    osKernelStart();
+    vTaskStartScheduler();
 }
 
 void PinyCore::init()
