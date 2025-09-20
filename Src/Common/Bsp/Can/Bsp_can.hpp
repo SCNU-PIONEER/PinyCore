@@ -3,7 +3,6 @@
 #include "BspBase.hpp"
 #include "Soc.hpp"
 #include <functional>
-#include <unordered_map>
 #include <array>
 #include HAL_INCLUDE
 
@@ -42,6 +41,11 @@ public:
     */
     void callbackFromISR(canHandle *_hcan, uint32_t _rxFifo);
 
+    /**
+    * @brief can check bus
+    */
+    void checkBus(canHandle *_hfdcan);
+
 private:
     struct Handler_s {
         uint32_t stdid;
@@ -61,6 +65,4 @@ private:
     uint8_t can3cnt = 0;
     std::array<Handler_s, MAX_RECV_DEVICE> cbTable3;
 #endif
-    // std::unordered_map<canHandle *, std::unordered_map<uint32_t, callback> >
-    //         cbTable;
 };

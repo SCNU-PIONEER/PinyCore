@@ -1,42 +1,46 @@
 #include "DcmAHRS.hpp"
+
+#include <algorithm>
+
+#include <algorithm>
 #include "dsp/fast_math_functions.h"
 
-#define AUTO_STATIC_DETECTTION 1
+#define GYRO_PREDICTION 1
 
 namespace IMU_DCM_AHRS {
 
 void DcmAhrs::init()
 {
     // Initialize the X vector with the initial state
-    x0_ = initState_[0];
-    x1_ = initState_[1];
-    x2_ = initState_[2];
-    x3_ = initState_[3];
-    x4_ = initState_[4];
-    x5_ = initState_[5];
+    x0_ = DEFAULT_IMU_ACCEL_GYRO_STATE[0];
+    x1_ = DEFAULT_IMU_ACCEL_GYRO_STATE[1];
+    x2_ = DEFAULT_IMU_ACCEL_GYRO_STATE[2];
+    x3_ = DEFAULT_IMU_ACCEL_GYRO_STATE[3];
+    x4_ = DEFAULT_IMU_ACCEL_GYRO_STATE[4];
+    x5_ = DEFAULT_IMU_ACCEL_GYRO_STATE[5];
 
     // Initialize the covariance matrix P
-    P00_ = DCMVarianceInit_;
+    P00_ = DEFAULT_Q_DCM2_INIT;
     P01_ = 0;
     P02_ = 0;
     P03_ = 0;
     P04_ = 0;
     P05_ = 0;
-    P11_ = DCMVarianceInit_;
+    P11_ = DEFAULT_Q_DCM2_INIT;
     P12_ = 0;
     P13_ = 0;
     P14_ = 0;
     P15_ = 0;
-    P22_ = DCMVarianceInit_;
+    P22_ = DEFAULT_Q_DCM2_INIT;
     P23_ = 0;
     P24_ = 0;
     P25_ = 0;
-    P33_ = biasVarianceInit_;
+    P33_ = DEFAULT_Q_BIAS2_INIT;
     P34_ = 0;
     P35_ = 0;
-    P44_ = biasVarianceInit_;
+    P44_ = DEFAULT_Q_BIAS2_INIT;
     P45_ = 0;
-    P55_ = biasVarianceInit_;
+    P55_ = DEFAULT_Q_BIAS2_INIT;
 
     // first row for alternative rotation computation
     // default is yaw = 0 which happens when fr = [1, 0, 0]
@@ -54,26 +58,19 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
                         float _az, float _dt)
 {
     dt_ = _dt;
-    float invG0 = (1.f / g_);
-    float invG02 = (invG0 * invG0);
     // save last state to memory for rotation estimation
     x_last_[0] = x0_;
     x_last_[1] = x1_;
     x_last_[2] = x2_;
 
     // control input (gyroscopes)
-    float u0 = 0.0f, u1 = 0.0f, u2 = 0.0f;
-
-    // control input (gyroscopes)
-    u0 = _gx;
-    u1 = _gy;
-    u2 = -_gz;
+    float u0 = -_gx, u1 = -_gy, u2 = -_gz;
 
     // state prediction
     float x0 = x0_ - (dt_ * (u1 * x2_ - u2 * x1_ + x1_ * x5_ - x2_ * x4_));
     float x1 = x1_ + (dt_ * (u0 * x2_ - u2 * x0_ + x0_ * x5_ - x2_ * x3_));
     float x2 = x2_ - (dt_ * (u0 * x1_ - u1 * x0_ + x0_ * x4_ - x1_ * x3_));
-#if AUTO_STATIC_DETECTTION == 0
+#if GYRO_PREDICTION == 0
     float x3 = x3_;
     float x4 = x4_;
     float x5 = x5_;
@@ -179,19 +176,20 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     float mP55 = P55_ + (dt2 * biasVariance_);
 
     // measurements (accelerometers)
-    float z0 = _ax * invG0;
-    float z1 = _ay * invG0;
-    float z2 = -_az * invG0;
+    float z0 = _ax * INV_G;
+    float z1 = _ay * INV_G;
+    float z2 = -_az * INV_G;
 
     // Kalman innovation
     float y0 = z0 - x0;
     float y1 = z1 - x1;
     float y2 = z2 - x2;
 
-    float aLen = sqrtf((y0 * y0) + (y1 * y1) + (y2 * y2)) * g_;
-    float rAdab =
-            (measurementVariance_ + aLen * measurementVarianceVariableGain_) *
-            invG02;
+    float len;
+    arm_sqrt_f32((y0 * y0) + (y1 * y1) + (y2 * y2), &len);
+    float rAdab = (measurementVariance_ +
+                   len * G * measurementVarianceVariableGain_) *
+                  INV_G2;
 
     // innovation covariance
     float mS00 = mP00 + rAdab;
@@ -202,12 +200,9 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     float mS22 = mP22 + rAdab;
 
     // verify that the innovation covariance is large enough
-    if (mS00 < VARIANCE_MIN_LIMIT)
-        mS00 = VARIANCE_MIN_LIMIT;
-    if (mS11 < VARIANCE_MIN_LIMIT)
-        mS11 = VARIANCE_MIN_LIMIT;
-    if (mS22 < VARIANCE_MIN_LIMIT)
-        mS22 = VARIANCE_MIN_LIMIT;
+    mS00 = std::fmax(mS00, VARIANCE_MIN_LIMIT);
+    mS11 = std::fmax(mS11, VARIANCE_MIN_LIMIT);
+    mS22 = std::fmax(mS22, VARIANCE_MIN_LIMIT);
 
     // determinant of S
     float detS = (-mS00 * (mS12 * mS12)) - ((mS02 * mS02) * mS11) -
@@ -296,16 +291,14 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     x1_ = x1 + mK10 * y0 + mK11 * y1 + mK12 * y2;
     x2_ = x2 + mK20 * y0 + mK21 * y1 + mK22 * y2;
 
-#if AUTO_STATIC_DETECTTION == 0
+#if GYRO_PREDICTION == 0
     x3_ = x3 + mK30 * y0 + mK31 * y1 + mK32 * y2;
-    x3_ = clamp(x3_, GYRO_BIAS_MAX);
-    //	//x3_ = clamp((x3 + mK30*y0 + mK31*y1 + mK32*y2), GYRO_BIAS_MAX);
+    x3_ = std::fmax(-GYRO_BIAS_MAX, std::fmin(x3_, GYRO_BIAS_MAX));
     x4_ = x4 + mK40 * y0 + mK41 * y1 + mK42 * y2;
-    x4_ = clamp(x4_, GYRO_BIAS_MAX);
-    //	//x4_ = clamp((x4 + mK40*y0 + mK41*y1 + mK42*y2), GYRO_BIAS_MAX);
+    x4_ = std::fmax(-GYRO_BIAS_MAX, std::fmin(x4_, GYRO_BIAS_MAX));
     x5_ = x5 + mK50 * y0 + mK51 * y1 + mK52 * y2;
-    x5_ = clamp(x5_, GYRO_BIAS_MAX);
-//	//x5_ = clamp((x5 + mK50*y0 + mK51*y1 + mK52*y2), GYRO_BIAS_MAX);
+    x5_ = std::fmax(-GYRO_BIAS_MAX, std::fmin(x5_, GYRO_BIAS_MAX));
+
 #else
     x3_ = 0.0f;
     x4_ = 0.0f;
@@ -511,18 +504,12 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     //	P55_ += VARIANCE_SAFETY_INCREMENT;
 
     // variance is required to be always at least the minimum value
-    if (P00_ < VARIANCE_MIN_LIMIT)
-        P00_ = VARIANCE_MIN_LIMIT;
-    if (P11_ < VARIANCE_MIN_LIMIT)
-        P11_ = VARIANCE_MIN_LIMIT;
-    if (P22_ < VARIANCE_MIN_LIMIT)
-        P22_ = VARIANCE_MIN_LIMIT;
-    if (P33_ < VARIANCE_MIN_LIMIT)
-        P33_ = VARIANCE_MIN_LIMIT;
-    if (P44_ < VARIANCE_MIN_LIMIT)
-        P44_ = VARIANCE_MIN_LIMIT;
-    if (P55_ < VARIANCE_MIN_LIMIT)
-        P55_ = VARIANCE_MIN_LIMIT;
+    P00_ = std::fmax(P00_, VARIANCE_MIN_LIMIT);
+    P11_ = std::fmax(P11_, VARIANCE_MIN_LIMIT);
+    P22_ = std::fmax(P22_, VARIANCE_MIN_LIMIT);
+    P33_ = std::fmax(P33_, VARIANCE_MIN_LIMIT);
+    P44_ = std::fmax(P44_, VARIANCE_MIN_LIMIT);
+    P55_ = std::fmax(P55_, VARIANCE_MIN_LIMIT);
 
     // normalized a posteriori state
     x0_ = x0_ * invLen;
@@ -544,11 +531,6 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     sr2_ = -fr0_ * x_last_[1] + fr1_ * x_last_[0] +
            dt_ * (x_last_[0] * (fr2_ * uNb0 - fr0_ * uNb2) +
                   x_last_[1] * (fr2_ * uNb1 - fr1_ * uNb2));
-
-    // save the estimated non-gravitational acceleration
-    linear_a_[0] = (z0 - x0_) * g_;
-    linear_a_[1] = (z1 - x1_) * g_;
-    linear_a_[2] = (z2 - x2_) * g_;
 }
 
 void DcmAhrs::computeAngles()
