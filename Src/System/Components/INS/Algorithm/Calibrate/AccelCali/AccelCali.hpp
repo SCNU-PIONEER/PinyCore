@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "../CaliParamsDefs.hpp"
+#include <utility>
 
 namespace INS_SYS {
 
 class AccelCali {
     static constexpr float G = 9.7833f;
-    static constexpr uint8_t STATIONART_DETECTION_BUFFER_SIZE = 10;
+    static constexpr uint8_t STATIONART_DETECTION_BUFFER_SIZE = 100;
 
     enum class Orientation_e : uint8_t {
         UNKOWN = 0u,
@@ -21,7 +21,8 @@ class AccelCali {
         Z_DOWN = 6u
     };
 
-    constexpr static const std::pair<uint8_t, std::string> ORIENTATION_STR[] = {
+    constexpr static const std::pair<uint8_t, const char *> ORIENTATION_STR[] = {
+        { static_cast<uint8_t>(Orientation_e::UNKOWN), "UNKNOWN" },
         { static_cast<uint8_t>(Orientation_e::X_UP), "X_UP" },
         { static_cast<uint8_t>(Orientation_e::X_DOWN), "X_DOWN" },
         { static_cast<uint8_t>(Orientation_e::Y_UP), "Y_UP" },
@@ -32,7 +33,7 @@ class AccelCali {
 
 public:
     void update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx, int16_t _gy,
-                int16_t _gz, float _aTransK);
+                int16_t _gz, float _aTransK, float _gTransK);
 
     AccelCali(const AccelCali &) = delete;
     AccelCali &operator=(const AccelCali &) = delete;

@@ -13,10 +13,10 @@ using namespace INS_SYS;
 // default accelerometer calibration
 static constexpr AccCali_s ACC_CALI = {
 
-    .accelT = { { 1.010860f, 0.015129f, -0.001459f },
-                { 0.001142f, 1.009152f, 0.006399f },
-                { -0.005477f, 0.002071f, 1.013539f } },
-    .accelOffs = { -34.944336f, -3.310059f, 107.792969f }
+    .accelT = { { 1.00378931f, -0.00643978501f, 0.00929921027f },
+                { 0.0178677756f, 1.00453115f, -0.000616421574f },
+                { -0.0180354994f, -0.0277505852f, 1.00323439f } },
+    .accelOffs = { 0.0724740028f, -0.0040230751f, -0.0407223701f }
 };
 // default gyroscope calibration
 static constexpr GyroCali_s GYRO_CALI = {
@@ -68,12 +68,11 @@ void INS::task(void *_param)
         bmi088.read();    // serialize data to real format
 
 #if INS_ACCEL_CALIBRATION
-        AccelCali::instance().update(bmi088.getRawAccelX(),
-                                     bmi088.getRawAccelY(),
-                                     bmi088.getRawAccelZ(),
-                                     bmi088.getRawGyroX(), bmi088.getRawGyroY(),
-                                     bmi088.getRawGyroZ(),
-                                     bmi088.getAccelMappingVaule());
+        AccelCali::instance().update(
+                bmi088.getRawAccelX(), bmi088.getRawAccelY(),
+                bmi088.getRawAccelZ(), bmi088.getRawGyroX(),
+                bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
+                bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
 #else
         // update IMU calibration
         cali.updateTemperature(bmi088.getTemperature());
