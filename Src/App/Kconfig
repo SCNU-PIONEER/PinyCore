@@ -36,6 +36,10 @@ menu "app config"
     bool "muti communication"
     default n
 
-    source "Src/System/Components/Comm/Kconfig"
+    source "Src/System/Comm/Kconfig"
+
+    config USE_VSCODE_XRTOS
+    bool "vscode plugin: freertos task analyze"
+    default n
 
 endmenu
