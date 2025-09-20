@@ -1,9 +1,5 @@
 include(${CMAKE_SOURCE_DIR}/tools/cmake/FindInclude.cmake)
 
-# Add the library
-add_library(App STATIC)
-
-# Add the basic files
 file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS "AppManager.cpp")
 
 # chassis type
@@ -57,19 +53,7 @@ if(APP_USE_DAEMONS)
   list(APPEND SOURCES ${DAEMONS_SOURCES})
 endif()
 
-target_sources(App PRIVATE ${SOURCES})
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SOURCES})
 
-# Include the header directories
 find_include_dir(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(App PUBLIC ${HEADERS})
-
-# Link
-target_link_libraries(
-  App
-  PUBLIC System
-         Bsp
-         Extensions
-         stm32cubemx
-         Utils
-         Soc
-         segger)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${HEADERS})
