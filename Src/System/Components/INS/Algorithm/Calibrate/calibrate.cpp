@@ -22,21 +22,21 @@ void IMUCalibration::init(const AccCali_s &_accCali,
 void IMUCalibration::correctA(int16_t _ax, int16_t _ay, int16_t _az)
 {
     if constexpr (CORRECT_IMU_DATA) {
-        float axUb = static_cast<float>(_ax) - acc_cali_.accelOffs[0];
-        float ayUb = static_cast<float>(_ay) - acc_cali_.accelOffs[1];
-        float azUb = static_cast<float>(_az) - acc_cali_.accelOffs[2];
+        float axUb =
+                (static_cast<float>(_ax) * aTransK_) - acc_cali_.accelOffs[0];
+        float ayUb =
+                (static_cast<float>(_ay) * aTransK_) - acc_cali_.accelOffs[1];
+        float azUb =
+                (static_cast<float>(_az) * aTransK_) - acc_cali_.accelOffs[2];
         corrDat_.ax =
                 (acc_cali_.accelT[0][0] * axUb + acc_cali_.accelT[0][1] * ayUb +
-                 acc_cali_.accelT[0][2] * azUb) *
-                aTransK_;
+                 acc_cali_.accelT[0][2] * azUb);
         corrDat_.ay =
                 (acc_cali_.accelT[1][0] * axUb + acc_cali_.accelT[1][1] * ayUb +
-                 acc_cali_.accelT[1][2] * azUb) *
-                aTransK_;
+                 acc_cali_.accelT[1][2] * azUb);
         corrDat_.az =
                 (acc_cali_.accelT[2][0] * axUb + acc_cali_.accelT[2][1] * ayUb +
-                 acc_cali_.accelT[2][2] * azUb) *
-                aTransK_;
+                 acc_cali_.accelT[2][2] * azUb);
     } else {
         corrDat_.ax = static_cast<float>(_ax) * aTransK_;
         corrDat_.ay = static_cast<float>(_ay) * aTransK_;

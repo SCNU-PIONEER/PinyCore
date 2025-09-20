@@ -3,22 +3,33 @@
 #include "cmsis_os2.h"
 #include "TopicRouter.hpp"
 
+#if INS_ACCEL_CALIBRATION
+#include "AccelCali.hpp"
+#endif
+
 extern SPI_HandleTypeDef IMU_SPI;
 
 using namespace INS_SYS;
-
+// default accelerometer calibration
 static constexpr AccCali_s ACC_CALI = {
-    // default accelerometer calibration
+
     .accelT = { { 1.010860f, 0.015129f, -0.001459f },
                 { 0.001142f, 1.009152f, 0.006399f },
                 { -0.005477f, 0.002071f, 1.013539f } },
     .accelOffs = { -34.944336f, -3.310059f, 107.792969f }
 };
+// default gyroscope calibration
 static constexpr GyroCali_s GYRO_CALI = {
-    // default gyroscope calibration
-    .gxBias = -0.898322f, .gyBias = -4.99465f, .gzBias = -0.234681f,
-    .gxTcoK = 0.f,        .gxTcoB0 = 0.f,      .gyTcoK = 0.f,
-    .gyTcoB0 = 0.f,       .gzTcoK = 0.f,       .gzTcoB0 = 0.f
+
+    .gxBias = -0.898322f,
+    .gyBias = -4.99465f,
+    .gzBias = -0.234681f,
+    .gxTcoK = 0.f,
+    .gxTcoB0 = 0.f,
+    .gyTcoK = 0.f,
+    .gyTcoB0 = 0.f,
+    .gzTcoK = 0.f,
+    .gzTcoB0 = 0.f
 };
 
 static constexpr float IMU_OFFSET_X = 0;
@@ -56,6 +67,14 @@ void INS::task(void *_param)
         bmi088.readRaw(); // read raw 6 axis data from device
         bmi088.read();    // serialize data to real format
 
+#if INS_ACCEL_CALIBRATION
+        AccelCali::instance().update(bmi088.getRawAccelX(),
+                                     bmi088.getRawAccelY(),
+                                     bmi088.getRawAccelZ(),
+                                     bmi088.getRawGyroX(), bmi088.getRawGyroY(),
+                                     bmi088.getRawGyroZ(),
+                                     bmi088.getAccelMappingVaule());
+#else
         // update IMU calibration
         cali.updateTemperature(bmi088.getTemperature());
         cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(),
@@ -97,7 +116,7 @@ void INS::task(void *_param)
 
         // update INS
         instance->update(instance->bmi088_.getTimestamp());
-
+#endif
         vTaskDelay(1);
     }
 }

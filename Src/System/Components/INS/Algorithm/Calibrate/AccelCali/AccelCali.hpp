@@ -31,13 +31,16 @@ class AccelCali {
     };
 
 public:
-    AccelCali();
+    void update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx, int16_t _gy,
+                int16_t _gz, float _aTransK);
 
-    void update(float _ax, float _ay, float _az, float _gx, float _gy,
-                float _gz);
+    AccelCali(const AccelCali &) = delete;
+    AccelCali &operator=(const AccelCali &) = delete;
+
+    static AccelCali &instance();
 
 private:
-    static void task(void *_param);
+    AccelCali();
 
     void startCalibration();
 
@@ -58,14 +61,14 @@ private:
     float refData_[6][3]{}; // 6 sides, 3 axis
     uint16_t collectCnt_ = 0;
 
-    struct StationaryData_s{
+    struct StationaryData_s {
         float accelSamples[STATIONART_DETECTION_BUFFER_SIZE][3];
         float gyroSamples[STATIONART_DETECTION_BUFFER_SIZE][3];
         uint8_t index = 0;
         bool isFull = false;
     } stationaryData_{};
 
-    struct IMUDat_s{
+    struct IMUDat_s {
         float ax, ay, az;
         float gx, gy, gz;
     } imuData_{};

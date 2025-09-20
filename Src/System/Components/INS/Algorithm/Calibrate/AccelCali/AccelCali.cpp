@@ -74,7 +74,13 @@ static constexpr float ORIENTATION_THRESHOLD = 0.7f;
 static constexpr float ACCEL_STATIONARY_THRESHOLD = 0.05f;
 static constexpr float GYRO_STATIONARY_THRESHOLD = 0.5f;
 static constexpr uint32_t STATIONARY_CHECK_TIME_MS = 1000;
-constexpr uint16_t SAMPLE_COUNT = 100;
+constexpr uint16_t SAMPLE_COUNT = 2000; // Collect for 2 seconds per side
+
+AccelCali &AccelCali::instance()
+{
+    static AccelCali instance;
+    return instance;
+}
 
 AccelCali::AccelCali() { startCalibration(); }
 
@@ -92,12 +98,12 @@ void AccelCali::startCalibration()
     LOG::info{ "AccelCali", "the needed side is %s", ORIENTATION_STR[side_] };
 }
 
-void AccelCali::update(float _ax, float _ay, float _az, float _gx, float _gy,
-                       float _gz)
+void AccelCali::update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx,
+                       int16_t _gy, int16_t _gz, float _aTransK)
 {
-    imuData_.ax = _ax;
-    imuData_.ay = _ay;
-    imuData_.az = _az;
+    imuData_.ax = static_cast<float>(_ax) * _aTransK;
+    imuData_.ay = static_cast<float>(_ay) * _aTransK;
+    imuData_.az = static_cast<float>(_az) * _aTransK;
     imuData_.gx = _gx;
     imuData_.gy = _gy;
     imuData_.gz = _gz;
@@ -237,12 +243,23 @@ bool AccelCali::collectData()
         refData_[side_ - 1][1] /= SAMPLE_COUNT;
         refData_[side_ - 1][2] /= SAMPLE_COUNT;
         collectCnt_ = 0;
+        LOG::info("AccelCali", "Collected data for side %d done", side_);
         return true;
     } else {
         refData_[side_ - 1][0] += imuData_.ax;
         refData_[side_ - 1][1] += imuData_.ay;
         refData_[side_ - 1][2] += imuData_.az;
         collectCnt_++;
+        if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.25f)) {
+            LOG::info("AccelCali", "Collecting data for side %d, 25%% done",
+                      side_);
+        } else if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.5f)) {
+            LOG::info("AccelCali", "Collecting data for side %d, 50%% done",
+                      side_);
+        } else if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.75f)) {
+            LOG::info("AccelCali", "Collecting data for side %d, 75%% done",
+                      side_);
+        }
         return false;
     }
 }
@@ -279,6 +296,16 @@ void AccelCali::calculateCalibrationParams()
             }
         }
     }
+
+    LOG::info(
+            "AccelCali",
+            "static constexpr AccCali_s ACC_CALI = {\n    .accelT = { { %.6ff, %.6ff, %.6ff },\n                { %.6ff, %.6ff, %.6ff },\n                { %.6ff, %.6ff, %.6ff } },\n    .accelOffs = { %.6ff, %.6ff, %.6ff }\n};",
+            caliParams_.accelT[0][0], caliParams_.accelT[0][1],
+            caliParams_.accelT[0][2], caliParams_.accelT[1][0],
+            caliParams_.accelT[1][1], caliParams_.accelT[1][2],
+            caliParams_.accelT[2][0], caliParams_.accelT[2][1],
+            caliParams_.accelT[2][2], caliParams_.accelOffs[0],
+            caliParams_.accelOffs[1], caliParams_.accelOffs[2]);
 }
 
 void AccelCali::saveCalibrationParams()
