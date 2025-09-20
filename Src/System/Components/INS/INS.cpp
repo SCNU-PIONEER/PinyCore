@@ -9,16 +9,16 @@ using namespace INS_SYS;
 
 static constexpr AccCali_s ACC_CALI = {
     // default accelerometer calibration
-    .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
-                 { 0.001142f, 1.009152f, 0.006399f },
-                 { -0.005477f, 0.002071f, 1.013539f } },
-    .accel_offs = { -34.944336f, -3.310059f, 107.792969f }
+    .accelT = { { 1.010860f, 0.015129f, -0.001459f },
+                { 0.001142f, 1.009152f, 0.006399f },
+                { -0.005477f, 0.002071f, 1.013539f } },
+    .accelOffs = { -34.944336f, -3.310059f, 107.792969f }
 };
 static constexpr GyroCali_s GYRO_CALI = {
     // default gyroscope calibration
-    .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
-    .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,     .gy_tco_k = 0.f,
-    .gy_tco_b0 = 0.f,      .gz_tco_k = 0.f,      .gz_tco_b0 = 0.f
+    .gxBias = -0.898322f, .gyBias = -4.99465f, .gzBias = -0.234681f,
+    .gxTcoK = 0.f,        .gxTcoB0 = 0.f,      .gyTcoK = 0.f,
+    .gyTcoB0 = 0.f,       .gzTcoK = 0.f,       .gzTcoB0 = 0.f
 };
 
 static constexpr float IMU_OFFSET_X = 0;
