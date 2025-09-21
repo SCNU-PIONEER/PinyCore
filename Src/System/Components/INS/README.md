@@ -1,20 +1,24 @@
-# INS (Inertial Navigation System) v1.0.0
+# INS (Inertial Navigation System) v1.1.0
 
 
 
 ## 更新日志
 
 1. 创建本README
+2. 添加加速度计矫正
 
 
 
 ## 如何应用到自己的项目
 
-### 传感器焊接误差矫正
+### 加速度计矫正
 
-使用十二面校准法进行矫正，详细请见
+Kcanfig中设置ins为开启，并在INS config中开启accelerometer calibration
 
-[SCNU-PIONEER/IMUCalibrate](https://github.com/SCNU-PIONEER/IMUCalibrate)
+烧录后系统会直接启动校准程序，此时观察终端的LOG输出，按照提示进行操作即可K
+如出现下列字样：
+`AccelCali: the needed side is X_Up`
+即需要将加速度计放置在X轴正方向朝上的方向
 
 生成矫正矩阵后填写进INS.cpp的ACC_CALI
 
@@ -28,8 +32,6 @@ static constexpr AccCali_s ACC_CALI = {
 };
 ```
 
-注：该工程暂时仅适配于C板，将考虑在未来版本将矫正程序集成进PinyCore中
-
 
 
 ### 静态零漂误差矫正
@@ -42,7 +44,7 @@ static constexpr AccCali_s ACC_CALI = {
 5. 将记录的数值覆盖INS.cpp的GYRO_CALI的bias项
 
 ```cpp
-static constexpr GyroCali_s GYRO_CALI = {
+static constexpr GyroCaliParams_s GYRO_CALI = {
     // default gyroscope calibration
     .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
     .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,     .gy_tco_k = 0.f,
