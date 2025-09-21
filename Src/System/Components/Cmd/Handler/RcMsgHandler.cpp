@@ -1,4 +1,5 @@
 #include "RcMsgHandler.hpp"
+#include "RcMsg.hpp"
 #include <algorithm>
 #include "sdkconfig.h"
 
@@ -88,7 +89,18 @@ void RcMsgHandler::masterHandle()
         cmsg_.state = CHASSIS::FSMState_e::RUN;
         cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
         cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
-    } else {
+    } else if (rcMsg_.rSwitch == RC_SW_UP) {
+        // gimbal
+        gmsg_.state = GIMBAL::FSMState_e::PATROL;
+        gmsg_.wPitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
+        gmsg_.wYaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
+        // chassis
+        cmsg_.state = CHASSIS::FSMState_e::RUN;
+        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
+        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
+    }
+
+    else {
         return;
     }
     notify(&cmsg_, msgBus_->chassisQueue);

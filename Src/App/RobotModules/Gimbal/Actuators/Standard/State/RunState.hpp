@@ -43,7 +43,7 @@ public:
     void enter() final
     {
         cmdImuPitchAng_ = gimbal_->ins().pitch;
-        cmdImuYawAng_ = gimbal_->ctrlYawAng();
+        cmdImuYawAng_ = gimbal_->curYawAng();
 
         gimbal_->enter();
 
@@ -64,7 +64,7 @@ public:
         float insPitchDelArc =
                 PINYMOTOR::getMinorArc(cmdImuPitchAng_, gimbal_->ins().pitch);
         float insYawDelArc =
-                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->ctrlYawAng());
+                PINYMOTOR::getMinorArc(cmdImuYawAng_, gimbal_->curYawAng());
 
         // joints' target pos
         cmdMotorPitchAng_ = PINYMOTOR::rangeMap(
@@ -77,7 +77,7 @@ public:
         // ctrl
         gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
                            cmdMotorPitchAng_);
-        gimbal_->ctrlYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
+        gimbal_->curYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
     }
 
     void exit() final
@@ -110,4 +110,4 @@ private:
     float cmdMotorPitchAng_;
     float cmdMotorYawAng_;
 };
-}  // namespace GIMBAL
+} // namespace GIMBAL

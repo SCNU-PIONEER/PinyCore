@@ -16,7 +16,7 @@ public:
 
     void enter() final
     {
-        for (auto &i : gimbal_->gimbalFilterOutput_._) {
+        for (auto &i : gimbal_->gimbalFilter()->_) {
             i->reset();
         }
         gimbal_->gimbalYawMsg.isReset = false;

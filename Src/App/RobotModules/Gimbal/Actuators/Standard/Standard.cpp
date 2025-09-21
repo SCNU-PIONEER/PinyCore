@@ -81,7 +81,7 @@ void Standard::update(void *_param)
     };
     this->insSub_->receive();
 
-    updatectrlYawAng();
+    updateCtrlYawAng();
     updateBaseYaw();
 
     gimbalYawMsg.followYaw = ctrlYawAng_;
@@ -91,7 +91,7 @@ void Standard::update(void *_param)
     this->stateFactory_.update();
 }
 
-void Standard::updatectrlYawAng()
+void Standard::updateCtrlYawAng()
 {
     if (this->isConfirmYawZero_) {
         this->ctrlYawAng_ =

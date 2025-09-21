@@ -87,9 +87,9 @@ Swerve::Swerve()
             this->stateFactory_.getNextState(FSMState_e::STOP));
 
 
-    if constexpr (APP_USE_POWERCTRL) {
-        //
-    }
+    // if constexpr (APP_USE_POWERCTRL) {
+    //
+    // }
 }
 
 void Swerve::stop()
@@ -277,7 +277,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         // motors_._[i]->cmdVel(0); //不动
     }
 
-    if constexpr (APP_USE_POWERCTRL) {
-        // powerCtrl_->powerCtrl(refWSpeed._);
-    }
+    // if constexpr (APP_USE_POWERCTRL) {
+    // powerCtrl_->powerCtrl(refWSpeed._);
+    // }
 }

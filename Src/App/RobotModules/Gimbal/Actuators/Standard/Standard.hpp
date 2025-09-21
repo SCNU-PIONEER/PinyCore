@@ -56,7 +56,7 @@ public:
     FILTER::LPF outFilrYaw{ YAW_MOTOR_FREQ, 3.f };
 
 private:
-    void updatectrlYawAng();
+    void updateCtrlYawAng();
     void updateBaseYaw();
 
     Motors_u motors_;

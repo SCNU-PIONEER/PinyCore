@@ -22,6 +22,7 @@ public:
     float ctrlYawAng() const { return ctrlYawAng_; }
 
     float baseYawAng() const { return baseYawAng_; }
+    float constDeltaYawArc() const { return constDeltaYawArc_; }
 
     GimbalMsg_s msg = {};
 
@@ -30,15 +31,21 @@ public:
 protected:
     StateFactory<GIMBAL::FSMState_e> stateFactory_;
 
-    INS_SYS::INSData_s insData_ = {};
+    INS_SYS::INSData_s insData_ = {}; //-pi~pi
     Subscriber<INS_SYS::INSData_s> *insSub_;
 
     // Master send deltaYaw to chassis
     Publisher<GimbalYawMsg_s> *gimbalYawPub_;
 
-    float ctrlYawAng_ = 0.f;        // end's ang in earth,主控yaw的角度
-    float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
-    bool isConfirmYawZero_ = false; // 确认是否两系转换完成
+    /**
+    * @brief 双轴云台就是yaw,大小yaw控制大yaw 
+    * @note 上电后云台系与底盘系会有差角,(imu上电即为0,而云台当前角度不一定为0)
+    *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
+    */
+    float ctrlYawAng_ = 0.f; //主控yaw的角度
 
     float baseYawAng_ = 0.f; // 底盘跟随，单板要用，双板直接读取imu
+
+    float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
+    bool isConfirmYawZero_ = false; // 确认是否两系转换完成
 };

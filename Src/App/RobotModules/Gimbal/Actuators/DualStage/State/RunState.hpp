@@ -7,13 +7,16 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositonalPid gRunPA(130.f, 300.f, 30.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gRunPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-static PositonalPid gRunFYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gRunFYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-static PositonalPid gRunSYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gRunSYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-
+static PositonalPid gRunPosPid[3] = {
+    PositonalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositonalPid(20.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositonalPid(14.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+};
+static PositonalPid gRunVelPid[3] = {
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
+};
 namespace GIMBAL {
 
 class RunState : public FSMState<FSMState_e> {
@@ -24,20 +27,14 @@ public:
     RunState(DualStage *_gimbal)
             : FSMState<FSMState_e>(FSMState_e::RUN), gimbal_(_gimbal)
     {
-        posPid_.Pitch = &gRunPA;
-        velPid_.Pitch = &gRunPV;
-        posPid_.FirstYaw = &gRunFYA;
-        velPid_.FirstYaw = &gRunFYV;
-        posPid_.SecondYaw = &gRunSYA;
-        velPid_.SecondYaw = &gRunSYV;
+        for (uint8_t i = 0; i < 3; i++) {
+            runPosPid_._[i] = &gRunPosPid[i];
+            runVelPid_._[i] = &gRunVelPid[i];
+        }
     }
 
     void enter() final
     {
-        cmdImuAng_.Pitch = gimbal_->ins().pitch;
-        cmdImuAng_.FirstYaw = gimbal_->ctrlYawAng();
-        // cmdImuAng_.SecondYaw = 0.f; //此版本小yaw在run模式下不动，并不是失能
-
         gimbal_->enter();
 
         LOG::info("GimbalRun", "enter");
@@ -45,47 +42,35 @@ public:
 
     void run() final
     {
-        cmdImuAng_.Pitch = PINYMOTOR::clampArc(
-                cmdImuAng_.Pitch + (gimbal_->msg.wPitch * 0.001f),
-                IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        DualStage_u<float> delArc;
 
-        cmdImuAng_.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
+        eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA.SecondYaw = 0.f; //run模式下小yaw不改变方向
 
-        cmdImuAng_.FirstYaw = cmdImuAng_.FirstYaw > PI ?
-                                      cmdImuAng_.FirstYaw - (2 * PI) :
-                                      (cmdImuAng_.FirstYaw < -PI ?
-                                               cmdImuAng_.FirstYaw + (2 * PI) :
-                                               cmdImuAng_.FirstYaw);
+        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG,
+                                        IMU_PITCH_MAX_ANG);
+        eIA.FirstYaw = gimbal_->rangeConversion(eIA.FirstYaw);
 
-        float insPitchDelArc =
-                PINYMOTOR::getMinorArc(cmdImuAng_.Pitch, gimbal_->ins().pitch);
+        delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
+        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
 
-        float insYawDelArc = PINYMOTOR::getMinorArc(cmdImuAng_.FirstYaw,
-                                                    gimbal_->ctrlYawAng());
+        eMA.Pitch = PINYMOTOR::rangeMap(cMA.Pitch + delArc.Pitch);
+        eMA.FirstYaw = PINYMOTOR::rangeMap(cMA.FirstYaw + delArc.FirstYaw);
+        eMA.SecondYaw = 0.f;
 
-        //joints' target pos
-        cmdMotorAng_.Pitch = PINYMOTOR::rangeMap(
-                gimbal_->motors()->Pitch->posNorm() +
-                (DualStage::PITCH_REVERSE ? -insPitchDelArc : insPitchDelArc));
-        cmdMotorAng_.FirstYaw = PINYMOTOR::rangeMap(
-                gimbal_->motors()->FirstYaw->posNorm() +
-                (DualStage::FIRST_YAW_REVERSE ? -insYawDelArc : insYawDelArc));
-
-        cmdMotorAng_.SecondYaw = 0.f; //此版本小yaw在run模式下不动，并不是失能
-
-        // ctrl
         for (uint8_t i = 0; i < 3; i++) {
             gimbal_->ctrl(gimbal_->motors()->_[i],
-                          gimbal_->gimbalFilter()->_[i], posPid_._[i],
-                          velPid_._[i], cmdMotorAng_._[i]);
+                          gimbal_->gimbalFilter()->_[i], runPosPid_._[i],
+                          runVelPid_._[i], eMA._[i]);
         }
     }
 
     void exit() final
     {
         for (uint8_t i = 0; i < 3; i++) {
-            posPid_._[i]->reset();
-            velPid_._[i]->reset();
+            runPosPid_._[i]->reset();
+            runVelPid_._[i]->reset();
         }
 
         LOG::info("GimbalRun", "exit");
@@ -104,10 +89,12 @@ public:
 private:
     DualStage *gimbal_;
 
-    DualStagePtr_u<PositonalPid> posPid_;
-    DualStagePtr_u<PositonalPid> velPid_;
+    DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
+    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
+    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
+    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
 
-    DualStage_u<float> cmdImuAng_ = {};   //imu控制量
-    DualStage_u<float> cmdMotorAng_ = {}; //电机控制量
+    DualStagePtr_u<PositonalPid> runPosPid_;
+    DualStagePtr_u<PositonalPid> runVelPid_;
 };
 } // namespace GIMBAL

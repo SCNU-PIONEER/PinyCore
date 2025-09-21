@@ -9,7 +9,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
-#include CHASSIS_FILE
+// #include CHASSIS_FILE
 #include GIMBAL_FILE
 
 #if APP_USE_DAEMONS
@@ -28,7 +28,7 @@ INS_SYS::INS *ins;
 //---------------------------------------------------------------------------------------------------
 
 Cmd *cmd;
-CHASSIS::Swerve *chassis;
+// CHASSIS::Swerve *chassis;
 GIMBAL::DualStage *gimbal;
 
 //---------------------------------------------------------------------------------------------------
@@ -55,7 +55,8 @@ void AppManager::initApp()
 #endif
 
     cmd = new Cmd();
-    schedule([]() { chassis->update(); });
+    // schedule([]() { chassis->update(); });
+    gimbal = new GIMBAL::DualStage();
     schedule([]() { gimbal->update(cmd); });
 
 #if APP_USE_UI

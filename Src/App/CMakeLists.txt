@@ -32,7 +32,7 @@ endif()
 if(APP_USE_STANDARD)
   set(GIMBAL_TYPE "Standard")
 elseif(APP_USE_DUALSTAGE)
-  set(GIMBAL_TYPE "Stacked")
+  set(GIMBAL_TYPE "DualStage")
 endif()
 
 file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS

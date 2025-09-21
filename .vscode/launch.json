@@ -76,8 +76,8 @@
         //"${workspaceFolder}/tools/openocd/stlink.cfg",
         "${workspaceFolder}/tools/openocd/dap.cfg",
         // "${workspaceFolder}/tools/openocd/jlink.cfg",
-        "target/stm32h7x.cfg"
-        //"target/stm32f4x.cfg"
+        // "target/stm32h7x.cfg"
+        "target/stm32f4x.cfg"
       ],
       "ToolchainPath": "/usr/bin/",
       // "svdFile": "docs/startup/STM32H723.svd",

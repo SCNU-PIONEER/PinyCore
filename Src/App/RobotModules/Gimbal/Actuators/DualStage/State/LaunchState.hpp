@@ -10,16 +10,15 @@
 #include <cstdint>
 
 static PositonalPid gLauPosPid[3] = {
-    PositonalPid(130.f, 300.f, 30.f, 1.f / 500.f, 1.f, 120.f, 0.f),
-    PositonalPid(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f),
-    PositonalPid(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f)
+    PositonalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositonalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositonalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
 static PositonalPid gLauVelPid[3] = {
-    PositonalPid(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f)
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
-
 
 namespace GIMBAL {
 
@@ -33,14 +32,13 @@ class LaunchState : public FSMState<FSMState_e> {
     static constexpr float FIRST_YAW_LAUNCH_STEP = 0.05f;
     static constexpr float SECOND_YAW_LAUNCH_STEP = 0.05f;
 
-
 public:
     LaunchState(DualStage *_gimbal)
             : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
     {
-        for (uint8_t i = 0; i <= 3; i++) {
-            posPid_._[i] = &gLauPosPid[i];
-            velPid_._[i] = &gLauVelPid[i];
+        for (uint8_t i = 0; i < 3; i++) {
+            lauPosPid_._[i] = &gLauPosPid[i];
+            lauVelPid_._[i] = &gLauVelPid[i];
         }
         launchStep.Pitch = PITCH_LAUNCH_STEP;
         launchStep.FirstYaw = FIRST_YAW_LAUNCH_STEP;
@@ -52,10 +50,6 @@ public:
         launchTotalTime_ = 0;
         launchFinishTime_ = 0;
 
-        for (auto &i : cmdMotorAng_._) {
-            i = 0.f;
-        }
-
         gimbal_->enter();
         LOG::info("GimbalLaunch", "enter");
     }
@@ -64,17 +58,12 @@ public:
     {
         // determine if the target position (0) has been reached
         launchTotalTime_++;
-        DualStage_u<float> gimbalAng;
 
-        for (uint8_t i = 0; i < 3; i++) {
-            gimbalAng._[i] = gimbal_->motors()->_[i]->posNorm();
-        };
-
-        if (std::fabs(PINYMOTOR::getMinorArc(0, gimbalAng.Pitch)) <
+        if (std::fabs(PINYMOTOR::getMinorArc(0, cMA.Pitch)) <
                     PITCH_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, gimbalAng.FirstYaw)) <
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA.FirstYaw)) <
                     YAW_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, gimbalAng.SecondYaw)) <
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA.SecondYaw)) <
                     YAW_LAUNCH_ANG_DEADBAND) {
             launchFinishTime_++;
         } else {
@@ -84,8 +73,8 @@ public:
         // ctrl (smooth)
         for (uint8_t i = 0; i < 3; i++) {
             gimbal_->ctrl(gimbal_->motors()->_[i],
-                          gimbal_->gimbalFilter()->_[i], posPid_._[i],
-                          velPid_._[i], cmdMotorAng_._[i], launchStep._[i]);
+                          gimbal_->gimbalFilter()->_[i], lauPosPid_._[i],
+                          lauVelPid_._[i], 0.f, launchStep._[i]);
         };
     }
 
@@ -95,8 +84,8 @@ public:
         gimbal_->gimbalYawMsg.isReset = true;
 
         for (uint8_t i = 0; i < 3; i++) {
-            posPid_._[i]->reset();
-            velPid_._[i]->reset();
+            lauPosPid_._[i]->reset();
+            lauVelPid_._[i]->reset();
         }
         LOG::info("GimbalLaunch", "exit");
     }
@@ -116,10 +105,10 @@ private:
 
     DualStage_u<float> launchStep;
 
-    DualStagePtr_u<PositonalPid> posPid_;
-    DualStagePtr_u<PositonalPid> velPid_;
+    DualStagePtr_u<PositonalPid> lauPosPid_;
+    DualStagePtr_u<PositonalPid> lauVelPid_;
 
-    DualStage_u<float> cmdMotorAng_ = {}; //电机控制量
+    DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
 
     uint16_t launchTotalTime_ = 0; // ms
     uint16_t launchFinishTime_ = 0;
