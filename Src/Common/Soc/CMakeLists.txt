@@ -29,8 +29,70 @@ target_include_directories(Soc INTERFACE ${target_folder})
 
 target_link_libraries(Soc INTERFACE stm32cubemx)
 
-if(NOT EXISTS "${target_folder}/hal/Drivers") 
-  message(WARNING "No HAL drivers from ${target_folder}/hal/Drivers")
+include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/.deps)
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS5")
+  FetchContent_Declare(
+    cmsis5
+    URL https://github.com/STMicroelectronics/cmsis-core/archive/refs/tags/v5.9.0.tar.gz
+    URL_HASH
+      SHA256=6cbeb8e53d029f18bae2fbf4be3c33abdce8e8e1a27a2cab69a8550478614fc7
+      DOWNLOAD_EXTRACT_TIMESTAMP TRUE SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS5")
+  FetchContent_MakeAvailable(cmsis5)
+endif()
+
+if(DEFINED TARGET_STM32F407)
+  if(NOT EXISTS "${target_folder}/CMSIS_Device")
+    FetchContent_Declare(
+      cmsis_device_f4
+      GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-f4.git
+      GIT_TAG v2.6.11
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/CMSIS_Device")
+    FetchContent_MakeAvailable(cmsis_device_f4)
+  endif()
+
+  if(NOT EXISTS "${target_folder}/HAL_Driver")
+    FetchContent_Declare(
+      hal_f4
+      GIT_REPOSITORY https://github.com/STMicroelectronics/stm32f4xx-hal-driver.git
+      GIT_TAG v1.8.5
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/HAL_Driver")
+    FetchContent_MakeAvailable(hal_f4)
+  endif()
+
+else(DEFINED TARGET_STM32H723)
+  if(NOT EXISTS "${target_folder}/CMSIS_Device")
+    FetchContent_Declare(
+      cmsis_device_h7
+      GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-h7.git
+      GIT_TAG v1.10.6
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/CMSIS_Device")
+    FetchContent_MakeAvailable(cmsis_device_h7)
+  endif()
+
+  if(NOT EXISTS "${target_folder}/HAL_Driver")
+    FetchContent_Declare(
+      hal_h7
+      GIT_REPOSITORY https://github.com/STMicroelectronics/stm32h7xx-hal-driver.git
+      GIT_TAG v1.11.5
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/HAL_Driver")
+    FetchContent_MakeAvailable(hal_h7)
+  endif()
+endif()
+
+if(NOT EXISTS "${target_folder}/hal/Drivers")
+  message(WARNING "No HAL drivers from ${target_folder}/hal/Drivers, generating...")
   execute_process(
     COMMAND ${target_folder}/genSoc.sh
     RESULT_VARIABLE soc_result

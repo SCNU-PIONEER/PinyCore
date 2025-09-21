@@ -3,9 +3,9 @@
 rm -rf ./hal/Drivers
 
 mkdir -p hal/Drivers/CMSIS/Device/ST/STM32H7xx
-cp -r ../../../../ThirdParty/CMSIS_Device_H7/Include/ hal/Drivers/CMSIS/Device/ST/STM32H7xx
-cp -r ../../../../ThirdParty/STM32H7xx_HAL_Driver/ hal/Drivers
-cp -r ../../../../ThirdParty/CMSIS5/Core/Include/ hal/Drivers/CMSIS/
+cp -r ./CMSIS_Device/Include/ ./hal/Drivers/CMSIS/Device/ST/STM32H7xx/
+cp -r ./HAL_Driver/ ./hal/Drivers/STM32H7xx_HAL_Driver/
+cp -r ../../../../ThirdParty/CMSIS5/Core/Include/ ./hal/Drivers/CMSIS/
 
 MAIN_C_FILE="hal/Core/Src/main.c"
 MAIN_H_FILE="hal/Core/Inc/main.h"

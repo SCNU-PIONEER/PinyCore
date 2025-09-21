@@ -7,10 +7,8 @@ set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/ThirdParty)
 
 message("-------------------- find lib -----------------------")
 
-include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/CMSIS5.cmake")
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/FreeRTOS.cmake")
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/Segger.cmake")
-include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/CMSIS.cmake")
 # include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/CMSIS_DSP.cmake")
 # include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/TinyMPC.cmake")
 
