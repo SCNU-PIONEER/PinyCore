@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./Algorithm/DcmAHRS/DcmAHRS.hpp"
-#include "./Algorithm/Calibrate/Calibrate.hpp"
+#include "./Algorithm/Calibrate/calibrate.hpp"
 
 #include "Matrix.hpp"
 

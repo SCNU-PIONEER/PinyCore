@@ -1,6 +1,6 @@
 #include <cmath>
 #include <cstdint>
-#include "Calibrate.hpp"
+#include "calibrate.hpp"
 
 #include "dsp/fast_math_functions.h"
 
