@@ -55,7 +55,7 @@ private:
     bool isStationary();
     bool collectData();
 
-    AccCali_s caliParams_;
+    AccCaliParams_s caliParams_;
 
     uint8_t side_ = 0;
 

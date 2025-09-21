@@ -30,8 +30,9 @@ class IMUCalibration {
             9.7883f; // (GuangZhou) Default gravity constant in m/s^2
 
 public:
-    void init(const AccCali_s &_accCali, const GyroCali_s &_gyroCali,
-              float _aTransK = 1.0f, float _gTransK = 1.0f);
+    void init(const AccCaliParams_s &_accCali,
+              const GyroCaliParams_s &_gyroCali, float _aTransK = 1.0f,
+              float _gTransK = 1.0f);
 
     void correctA(int16_t _ax, int16_t _ay, int16_t _az);
     void correctG(int16_t _gx, int16_t _gy, int16_t _gz);
@@ -45,8 +46,8 @@ public:
     void updateTemperature(float _temp) { temperature_ = _temp; }
 
 private:
-    AccCali_s acc_cali_;
-    GyroCali_s gyro_cali_;
+    AccCaliParams_s acc_cali_;
+    GyroCaliParams_s gyro_cali_;
 
     // steady state detection parameters
     uint16_t staticSteadyStateCnt_ = 0;

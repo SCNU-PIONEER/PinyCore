@@ -11,7 +11,7 @@ extern SPI_HandleTypeDef IMU_SPI;
 
 using namespace INS_SYS;
 // default accelerometer calibration
-static constexpr AccCali_s ACC_CALI = {
+static constexpr AccCaliParams_s ACC_CALI = {
 
     .accelT = { { 1.00378931f, -0.00643978501f, 0.00929921027f },
                 { 0.0178677756f, 1.00453115f, -0.000616421574f },
@@ -19,7 +19,7 @@ static constexpr AccCali_s ACC_CALI = {
     .accelOffs = { 0.0724740028f, -0.0040230751f, -0.0407223701f }
 };
 // default gyroscope calibration
-static constexpr GyroCali_s GYRO_CALI = {
+static constexpr GyroCaliParams_s GYRO_CALI = {
 
     .gxBias = -0.898322f,
     .gyBias = -4.99465f,

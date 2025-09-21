@@ -42,7 +42,7 @@ static constexpr AccCali_s ACC_CALI = {
 5. 将记录的数值覆盖INS.cpp的GYRO_CALI的bias项
 
 ```cpp
-static constexpr GyroCali_s GYRO_CALI = {
+static constexpr GyroCaliParams_s GYRO_CALI = {
     // default gyroscope calibration
     .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
     .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,     .gy_tco_k = 0.f,

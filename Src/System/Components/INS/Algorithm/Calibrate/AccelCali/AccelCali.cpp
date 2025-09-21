@@ -275,7 +275,7 @@ void AccelCali::calculateCalibrationParams()
     }
     // NOLINTNEXTLINE
     Matrix<3, 3> A;
-    Matrix<3, 1> b;
+    float b[3]{};
 
     for (uint8_t i = 0; i < 3; i++) {
         for (uint8_t j = 0; j < 3; j++) {
@@ -287,14 +287,14 @@ void AccelCali::calculateCalibrationParams()
 
     for (uint8_t i = 0; i < 3; i++) {
         for (uint8_t j = 0; j < 3; j++) {
-            b[j][0] = (j == i) ? G : 0.0f;
+            b[j] = (j == i) ? G : 0.0f;
         }
 
         // x = A^{-1} * b
         for (uint8_t j = 0; j < 3; j++) {
             caliParams_.accelT[i][j] = 0;
             for (uint8_t k = 0; k < 3; k++) {
-                caliParams_.accelT[i][j] += invA[j][k] * b[k][0];
+                caliParams_.accelT[i][j] += invA[j][k] * b[k];
             }
         }
     }

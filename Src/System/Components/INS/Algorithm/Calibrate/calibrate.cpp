@@ -8,8 +8,8 @@
 
 using namespace INS_SYS;
 
-void IMUCalibration::init(const AccCali_s &_accCali,
-                          const GyroCali_s &_gyroCali, float _aTransK,
+void IMUCalibration::init(const AccCaliParams_s &_accCali,
+                          const GyroCaliParams_s &_gyroCali, float _aTransK,
                           float _gTransK)
 {
     acc_cali_ = _accCali;
