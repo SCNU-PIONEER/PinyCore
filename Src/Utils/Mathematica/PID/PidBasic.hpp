@@ -33,12 +33,12 @@ private:
     float deadband; /**< The deadband value. */
 };
 
-class PositonalPid : public PID {
+class PositionalPid : public PID {
 public:
     /**
     * @brief  init positonal pid parameter
     */
-    PositonalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
+    PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
                  float _outMax, float _deadband);
 
     /** @brief  pid reset
