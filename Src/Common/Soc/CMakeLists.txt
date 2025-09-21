@@ -29,7 +29,7 @@ target_include_directories(Soc INTERFACE ${target_folder})
 
 target_link_libraries(Soc INTERFACE stm32cubemx)
 
-if(NOT EXISTS "${target_folder}/hal/Drivers")
+if(NOT EXISTS "${target_folder}/hal/Drivers") 
   message(WARNING "No HAL drivers from ${target_folder}/hal/Drivers")
   execute_process(
     COMMAND ${target_folder}/genSoc.sh
