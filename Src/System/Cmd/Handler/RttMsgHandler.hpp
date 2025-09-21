@@ -3,8 +3,8 @@
 #include "Handler.hpp"
 #include "MsgImpl.hpp"
 
-#define RTT_NO_ERROR    0
-#define RTT_MSG_ERR     0xFE
+#define RTT_NO_ERROR 0
+#define RTT_MSG_ERR  0xFE
 
 #define RTT_READY_EVENT (1 << 0)
 
