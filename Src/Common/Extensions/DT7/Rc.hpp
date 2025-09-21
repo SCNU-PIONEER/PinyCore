@@ -2,12 +2,12 @@
  * @file rc.hpp
  * @brief 遥控器
  *
- * @version Version 1.0.0
+ * @version Version 1.0.1
  * @author yjy
- * @date 2025/3/19
+ * @date 2025/9/8
  *
  * note 1.遥控器接受频率大概为70hz
- *      2.架构使用饿汉式单例模式，保证线程安全
+ *      2.架构使用饿汉式单例
  *
  * @copyright SCNU-PIONEER (c) 2025-2026
  *
@@ -31,8 +31,9 @@ private:
     RcRawMsg_t data_;
     UART_HandleTypeDef *uart_;
     uint8_t *rcBuffer_;
-    uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
+    volatile uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
     EventGroupHandle_t event_;
+    static constexpr uint16_t UPDATE_FREQ = 70;
 
 public:
     Rc(const Rc &) = delete;
@@ -40,17 +41,19 @@ public:
 
     void init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event);
 
-    inline RcRawMsg_t &getData() { return data_; }
+    RcRawMsg_t &getData() { return data_; }
 
-    inline static Rc &instance()
+    static Rc &instance()
     {
-        static Rc instance_;
-        return instance_;
+        static Rc instance;
+        return instance;
     }
 
-    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos);
-    static void RawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _Pos);
+    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos);
+    static void rawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos);
     uint8_t parseData();
+
+    bool isOnline();
 };
 
-}
+} // namespace RC

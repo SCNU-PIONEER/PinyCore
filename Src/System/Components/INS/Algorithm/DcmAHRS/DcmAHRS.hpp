@@ -16,8 +16,10 @@ class DcmAhrs {
     static constexpr float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = {
         0, 0, 1, 0, 0, 0
     };
-    static constexpr float DEFAULT_GRAVITY =
-            (9.7833f); // Standard gravity in m/s^2
+
+    static constexpr float G = (9.7833f); // GuangZhou gravity in m/s^2
+    static constexpr float INV_G = (1.f / G);
+    static constexpr float INV_G2 = (1.f / (G * G));
 
     static constexpr float DEFAULT_Q_DCM2_INIT = (1.8f * 1.8f);
     static constexpr float DEFAULT_Q_BIAS2_INIT = (0.1f * 0.1f);
@@ -34,17 +36,12 @@ class DcmAhrs {
     // set this to a small positive number or 0 to disable the feature.
 
 public:
-    DcmAhrs(float _sampleFrequency,
-            float _dcmVarianceInit = DEFAULT_Q_DCM2_INIT,
-            float _dcmVariance = DEFAULT_Q_DCM2,
-            float _biasVarianceInit = DEFAULT_Q_BIAS2_INIT,
+    DcmAhrs(float _sampleFrequency, float _dcmVariance = DEFAULT_Q_DCM2,
             float _biasVariance = DEFAULT_Q_BIAS2,
             float _measurementVariance = DEFAULT_R_MEASUREMENT2,
             float _measurementVarianceVariableGain =
                     DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN)
             : dt_(_sampleFrequency)
-            , DCMVarianceInit_(_dcmVarianceInit)
-            , biasVarianceInit_(_biasVarianceInit)
             , DCMVariance_(_dcmVariance)
             , biasVariance_(_biasVariance)
             , measurementVariance_(_measurementVariance)
@@ -72,26 +69,13 @@ protected:
     void computeAngles();
 
 private:
-    template <typename T> T clamp(T _value, T _max)
-    {
-        return std::max(-_max, std::min(_value, _max));
-    }
-
     EData_s edata_; // Euler angles data
 
     uint16_t staticStateCnt_ = 0;
 
-    float g_ = DEFAULT_GRAVITY;
-
-    float linear_a_[3];
-
     float dt_; // Sample time
 
-    const float *initState_ = DEFAULT_IMU_ACCEL_GYRO_STATE;
-
     // DCM parameters
-    float DCMVarianceInit_;
-    float biasVarianceInit_;
     float DCMVariance_; // a variance for DCM state update, Q(0,0), Q(1,1), and Q(2,2)
     float biasVariance_; // a variance for bias state update, Q(3,3), Q(4,4), and Q(5,5)
     float measurementVariance_; // variance of calibrated accelerometer (g-component)

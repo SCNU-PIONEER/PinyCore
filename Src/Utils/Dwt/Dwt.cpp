@@ -1,5 +1,9 @@
 #include "Dwt.hpp"
 
+void dwtInit() { Dwt::instance(); }
+
+uint32_t dwtRead() { return Dwt::instance().read(); }
+
 Dwt::Dwt()
 {
     /* 使能DWT外设 */
@@ -11,7 +15,7 @@ Dwt::Dwt()
     /* 使能Cortex-M DWT CYCCNT寄存器 */ DWT_CR |= (uint32_t)DWT_CR_CYCCNTENA;
 }
 
-uint32_t Dwt::read(void) { return ((uint32_t)DWT_CYCCNT); }
+uint32_t Dwt::read() { return ((uint32_t)DWT_CYCCNT); }
 
 void Dwt::delayUs(uint32_t _us)
 {
@@ -26,10 +30,10 @@ void Dwt::delayUs(uint32_t _us)
 
     ticks = _us * (HAL_RCC_GetSysClockFreq() / 1000000); /* 需要的节拍数 */
     tcnt = 0;
-    told = (uint32_t)read(); /* 刚进入时的计数器值 */
+    told = read(); /* 刚进入时的计数器值 */
 
-    while (1) {
-        tnow = (uint32_t)read();
+    while (true) {
+        tnow = read();
         if (tnow != told) {
             /* 32位计数器是递增计数器 */
             if (tnow > told) {
