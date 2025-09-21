@@ -7,15 +7,15 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositonalPid gPatPosPid[3] = {
-    PositonalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositonalPid(18.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositonalPid(15.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+static PositionalPid gPatPosPid[3] = {
+    PositionalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(18.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(15.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
-static PositonalPid gPatVelPid[3] = {
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
+static PositionalPid gPatVelPid[3] = {
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
 namespace GIMBAL {
 
@@ -116,7 +116,7 @@ private:
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
     DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
 
-    DualStagePtr_u<PositonalPid> patPosPid_;
-    DualStagePtr_u<PositonalPid> patVelPid_;
+    DualStagePtr_u<PositionalPid> patPosPid_;
+    DualStagePtr_u<PositionalPid> patVelPid_;
 };
 } // namespace GIMBAL

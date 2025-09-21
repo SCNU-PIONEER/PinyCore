@@ -25,17 +25,17 @@ using namespace PINYMOTOR;
 constexpr float F_PI = std::numbers::pi_v<float>;
 
 //以下数组均可调，未测试
-static PositonalPid swervePosPid[4] = {
-    PositonalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositonalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositonalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositonalPid(15.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f)
+static PositionalPid swervePosPid[4] = {
+    PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    PositionalPid(15.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f)
 };
-static PositonalPid swerveVelPid[4] = {
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f)
+static PositionalPid swerveVelPid[4] = {
+    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f)
 };
 //此滤波并没有调参
 static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),

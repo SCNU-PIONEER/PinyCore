@@ -8,21 +8,21 @@
 #include "PidBasic.hpp"
 #include "IIR.hpp"
 
-static PositonalPid gLauPA(130.f, 300.f, 30.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gLauPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-static PositonalPid gLauYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gLauYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositionalPid gLauPA(130.f, 300.f, 30.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositionalPid gLauPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static PositionalPid gLauYA(80.f, 300.f, 25.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositionalPid gLauYV(0.035f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
 
 namespace GIMBAL {
 
 class LaunchState : public FSMState<FSMState_e> {
     union Pids_u {
         struct {
-            PositonalPid *pitchAngPid;
-            PositonalPid *pitchVelPid;
+            PositionalPid *pitchAngPid;
+            PositionalPid *pitchVelPid;
 
-            PositonalPid *yawAngPid;
-            PositonalPid *yawVelPid;
+            PositionalPid *yawAngPid;
+            PositionalPid *yawVelPid;
         };
         PID *_[4];
     };

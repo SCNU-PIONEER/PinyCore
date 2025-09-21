@@ -9,15 +9,15 @@
 #include "IIR.hpp"
 #include <cstdint>
 
-static PositonalPid gLauPosPid[3] = {
-    PositonalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositonalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositonalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+static PositionalPid gLauPosPid[3] = {
+    PositionalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
-static PositonalPid gLauVelPid[3] = {
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositonalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
+static PositionalPid gLauVelPid[3] = {
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
 
 namespace GIMBAL {
@@ -105,8 +105,8 @@ private:
 
     DualStage_u<float> launchStep;
 
-    DualStagePtr_u<PositonalPid> lauPosPid_;
-    DualStagePtr_u<PositonalPid> lauVelPid_;
+    DualStagePtr_u<PositionalPid> lauPosPid_;
+    DualStagePtr_u<PositionalPid> lauVelPid_;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
 
