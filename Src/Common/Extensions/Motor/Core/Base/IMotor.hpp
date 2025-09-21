@@ -14,7 +14,6 @@ private:
 protected:
     Data_s data_;
     Cmd_s cmd_;
-    GlobalState_e globalState_;
     struct {
         uint16_t uid; // start from 0 to 31, system auto assign
         uint8_t offsetId;
@@ -50,6 +49,8 @@ public:
     virtual ~IMotor() = default;
 
     virtual MotorTypeDef_e update() = 0;
+
+    GlobalState_e globalState;
 
     uint16_t uid() const;
 

@@ -175,10 +175,10 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
         float angDiff = (getMinorArc(this->data_.rawAng, this->data_.angLast)) /
                         this->rr();
 
-        if ((this->globalState_ == GlobalState_e::OFFLINE ||
-             this->globalState_ == GlobalState_e::UNREGISTER) &&
+        if ((this->globalState == GlobalState_e::OFFLINE ||
+             this->globalState == GlobalState_e::UNRECOGNIZED) &&
             this->data_.angLast != this->data_.rawAng) {
-            this->globalState_ = GlobalState_e::ONLINE;
+            this->globalState = GlobalState_e::ONLINE;
             angDiff = 0;
             this->data_.multipCirAng =
                     this->data_.rawAng / this->rr(); // 与电机内编码器同步零点

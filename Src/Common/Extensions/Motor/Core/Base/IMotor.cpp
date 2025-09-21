@@ -9,7 +9,7 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : globalState_(GlobalState_e::UNREGISTER)
+        : globalState(GlobalState_e::UNRECOGNIZED)
         , posPID_(_config.posPID)
         , velPID_(_config.velPID)
         , torqPID_(_config.torqPID)
@@ -53,9 +53,9 @@ void IMotor::calcRecvFreq()
         AUX_.lastRecvTick = xTaskGetTickCount();
     }
     if (AUX_.rxFreq < AUX_.txFreq * 0.5f) {
-        this->globalState_ = GlobalState_e::OFFLINE;
+        this->globalState = GlobalState_e::OFFLINE;
     } else {
-        this->globalState_ = GlobalState_e::ONLINE;
+        this->globalState = GlobalState_e::ONLINE;
     }
 }
 

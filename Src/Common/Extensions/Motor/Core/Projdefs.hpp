@@ -34,7 +34,7 @@ enum class WorkMode_e : uint8_t {
 };
 enum class ComType_e : uint8_t { NONE, FDCAN, CAN, RS485 };
 
-enum class GlobalState_e : uint8_t { UNREGISTER, OFFLINE, ONLINE, ERROR };
+enum class GlobalState_e : uint8_t { UNRECOGNIZED, OFFLINE, ONLINE, ERROR };
 
 enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
