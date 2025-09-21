@@ -3,22 +3,33 @@
 #include "cmsis_os2.h"
 #include "TopicRouter.hpp"
 
+#if INS_ACCEL_CALIBRATION
+#include "AccelCali.hpp"
+#endif
+
 extern SPI_HandleTypeDef IMU_SPI;
 
 using namespace INS_SYS;
+// default accelerometer calibration
+static constexpr AccCaliParams_s ACC_CALI = {
 
-static constexpr AccCali_s ACC_CALI = {
-    // default accelerometer calibration
-    .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
-                 { 0.001142f, 1.009152f, 0.006399f },
-                 { -0.005477f, 0.002071f, 1.013539f } },
-    .accel_offs = { -34.944336f, -3.310059f, 107.792969f }
+    .accelT = { { 1.00378931f, -0.00643978501f, 0.00929921027f },
+                { 0.0178677756f, 1.00453115f, -0.000616421574f },
+                { -0.0180354994f, -0.0277505852f, 1.00323439f } },
+    .accelOffs = { 0.0724740028f, -0.0040230751f, -0.0407223701f }
 };
-static constexpr GyroCali_s GYRO_CALI = {
-    // default gyroscope calibration
-    .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
-    .gx_tco_k = 0.f,       .gx_tco_b0 = 0.f,     .gy_tco_k = 0.f,
-    .gy_tco_b0 = 0.f,      .gz_tco_k = 0.f,      .gz_tco_b0 = 0.f
+// default gyroscope calibration
+static constexpr GyroCaliParams_s GYRO_CALI = {
+
+    .gxBias = -0.898322f,
+    .gyBias = -4.99465f,
+    .gzBias = -0.234681f,
+    .gxTcoK = 0.f,
+    .gxTcoB0 = 0.f,
+    .gyTcoK = 0.f,
+    .gyTcoB0 = 0.f,
+    .gzTcoK = 0.f,
+    .gzTcoB0 = 0.f
 };
 
 static constexpr float IMU_OFFSET_X = 0;
@@ -56,6 +67,13 @@ void INS::task(void *_param)
         bmi088.readRaw(); // read raw 6 axis data from device
         bmi088.read();    // serialize data to real format
 
+#if INS_ACCEL_CALIBRATION
+        AccelCali::instance().update(
+                bmi088.getRawAccelX(), bmi088.getRawAccelY(),
+                bmi088.getRawAccelZ(), bmi088.getRawGyroX(),
+                bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
+                bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
+#else
         // update IMU calibration
         cali.updateTemperature(bmi088.getTemperature());
         cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(),
@@ -97,7 +115,7 @@ void INS::task(void *_param)
 
         // update INS
         instance->update(instance->bmi088_.getTimestamp());
-
+#endif
         vTaskDelay(1);
     }
 }
