@@ -136,7 +136,7 @@ class DMMotor : public IMotor {
 
     using TxBus = TxBus_s::CANTxBuf_s<8>;
 
-    using ConvertFunc = TxBus (DMMotor::*)();
+    using ConvertFunc = void (DMMotor::*)(TxBus &);
 
 private:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
@@ -147,15 +147,15 @@ private:
 
     ConvertFunc convert = &DMMotor::convertDefault;
 
-    TxBus convertMitTt();
-    TxBus convertMitVdes();
-    TxBus convertMitVdesPdes();
-    TxBus convertPdesVdes();
-    TxBus convertVdes();
-    TxBus convertEmit();
-    TxBus convertDefault();
+    void convertMitTt(TxBus &);
+    void convertMitVdes(TxBus &);
+    void convertMitVdesPdes(TxBus &);
+    void convertPdesVdes(TxBus &);
+    void convertVdes(TxBus &);
+    void convertEmit(TxBus &);
+    void convertDefault(TxBus &);
 
-    TxBus serializeMITMsg(MITMsg_s &_msgMIT);
+    void serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf);
 
     void overrideReductionRatio(float _newReductionRatio) final;
 

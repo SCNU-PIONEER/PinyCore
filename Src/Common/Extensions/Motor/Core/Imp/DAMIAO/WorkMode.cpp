@@ -7,21 +7,20 @@
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
 
-DMMotor::TxBus DMMotor::serializeMITMsg(MITMsg_s &_msgMIT)
+void DMMotor::serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf)
 {
-    TxBus txBuf{ .len = 8 };
-    txBuf.data[0] = static_cast<uint8_t>((_msgMIT.exptScale & 0xFF00) >> 8);
-    txBuf.data[1] = static_cast<uint8_t>(_msgMIT.exptScale & 0x00FF);
-    txBuf.data[2] = static_cast<uint8_t>((_msgMIT.exptVel & 0x0FF0) >> 4);
-    txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x000F) << 4 |
-                                         ((_msgMIT.Kp & 0x0FF0) >> 8));
-    txBuf.data[4] = static_cast<uint8_t>(_msgMIT.Kp & 0x000F);
-    txBuf.data[5] = static_cast<uint8_t>((_msgMIT.Kd & 0x0FF0) >> 4);
-    txBuf.data[6] =
+    _txBuf.len = 8;
+    _txBuf.data[0] = static_cast<uint8_t>((_msgMIT.exptScale & 0xFF00) >> 8);
+    _txBuf.data[1] = static_cast<uint8_t>(_msgMIT.exptScale & 0x00FF);
+    _txBuf.data[2] = static_cast<uint8_t>((_msgMIT.exptVel & 0x0FF0) >> 4);
+    _txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x000F) << 4 |
+                                          ((_msgMIT.Kp & 0x0FF0) >> 8));
+    _txBuf.data[4] = static_cast<uint8_t>(_msgMIT.Kp & 0x000F);
+    _txBuf.data[5] = static_cast<uint8_t>((_msgMIT.Kd & 0x0FF0) >> 4);
+    _txBuf.data[6] =
             static_cast<uint8_t>((_msgMIT.Kd & 0x000F) << 4 |
                                  ((_msgMIT.torqueForward & 0x0F00) >> 8));
-    txBuf.data[7] = static_cast<uint8_t>(_msgMIT.torqueForward & 0x00FF);
-    return txBuf;
+    _txBuf.data[7] = static_cast<uint8_t>(_msgMIT.torqueForward & 0x00FF);
 }
 
 void DMMotor::updateCtrlMode()
@@ -64,7 +63,7 @@ void DMMotor::updateCtrlMode()
     }
 }
 
-DMMotor::TxBus DMMotor::convertMitTt()
+void DMMotor::convertMitTt(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
     msgMIT.Kp = msgMIT.Kd = 0;
@@ -115,10 +114,10 @@ DMMotor::TxBus DMMotor::convertMitTt()
     // MIT_TT support return expected current
     this->cmd_.elec = this->cmd_.torq / status_.Kn;
 
-    return serializeMITMsg(msgMIT);
+    serializeMITMsg(msgMIT, _txBuf);
 }
 
-DMMotor::TxBus DMMotor::convertMitVdes()
+void DMMotor::convertMitVdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
     msgMIT.Kd =
@@ -160,10 +159,10 @@ DMMotor::TxBus DMMotor::convertMitVdes()
     // MIT_VDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
 
-    return serializeMITMsg(msgMIT);
+    serializeMITMsg(msgMIT, _txBuf);
 }
 
-DMMotor::TxBus DMMotor::convertMitVdesPdes()
+void DMMotor::convertMitVdesPdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
     msgMIT.Kd =
@@ -197,10 +196,10 @@ DMMotor::TxBus DMMotor::convertMitVdesPdes()
     // MIT_VDES_PDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
 
-    return serializeMITMsg(msgMIT);
+    serializeMITMsg(msgMIT, _txBuf);
 }
 
-DMMotor::TxBus DMMotor::convertPdesVdes()
+void DMMotor::convertPdesVdes(TxBus &_txBuf)
 {
     PDESVDESMsg_s msgPDESVDES = {};
 
@@ -222,17 +221,15 @@ DMMotor::TxBus DMMotor::convertPdesVdes()
     this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
     msgPDESVDES.exptVel = this->cmd_.vel;
 
-    TxBus txBuf{ .len = 8 };
-    memcpy(txBuf.data, &msgPDESVDES.exptScale, 4);
-    memcpy(&txBuf.data[4], &msgPDESVDES.exptVel, 4);
+    _txBuf.len = 8;
+    memcpy(_txBuf.data, &msgPDESVDES.exptScale, 4);
+    memcpy(&_txBuf.data[4], &msgPDESVDES.exptVel, 4);
 
     // PDESVDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
-
-    return txBuf;
 }
 
-DMMotor::TxBus DMMotor::convertVdes()
+void DMMotor::convertVdes(TxBus &_txBuf)
 {
     VDESMsg_s msgVDES = {};
 
@@ -260,16 +257,14 @@ DMMotor::TxBus DMMotor::convertVdes()
     this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
     msgVDES.exptVel = this->cmd_.vel;
 
-    TxBus txBuf{ .len = 4 };
-    memcpy(txBuf.data, &msgVDES.exptVel, 4);
+    _txBuf.len = 4;
+    memcpy(_txBuf.data, &msgVDES.exptVel, 4);
 
     // VDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
-
-    return txBuf;
 }
 
-DMMotor::TxBus DMMotor::convertEmit()
+void DMMotor::convertEmit(TxBus &_txBuf)
 {
     EMITMsg_s msgEMIT = {};
 
@@ -296,27 +291,24 @@ DMMotor::TxBus DMMotor::convertEmit()
             ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
             status_.Kn / status_.currMax * status_.currTxCodeSpan);
 
-    TxBus txBuf{ .len = 8 };
-    memcpy(txBuf.data, &msgEMIT.exptScale, 4);
-    txBuf.data[4] = static_cast<uint8_t>((msgEMIT.exptVelX100) >> 8);
-    txBuf.data[5] = static_cast<uint8_t>(msgEMIT.exptVelX100);
-    txBuf.data[6] = static_cast<uint8_t>((msgEMIT.imaxX10000) >> 8);
-    txBuf.data[7] = static_cast<uint8_t>(msgEMIT.imaxX10000);
+    _txBuf.len = 8;
+    memcpy(_txBuf.data, &msgEMIT.exptScale, 4);
+    _txBuf.data[4] = static_cast<uint8_t>((msgEMIT.exptVelX100) >> 8);
+    _txBuf.data[5] = static_cast<uint8_t>(msgEMIT.exptVelX100);
+    _txBuf.data[6] = static_cast<uint8_t>((msgEMIT.imaxX10000) >> 8);
+    _txBuf.data[7] = static_cast<uint8_t>(msgEMIT.imaxX10000);
 
     // EMIT unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
-
-    return txBuf;
 }
 
-DMMotor::TxBus DMMotor::convertDefault()
+void DMMotor::convertDefault(TxBus &_txBuf)
 {
     if (this->cmd_.curCmdType != MotorCmdType_e::OFF) {
         LOG::error("DMMotor", " %s: work mode error", regInfo_.name);
     }
     while (true)
         // it shouldn't be here
-        ;
-
-    return {};
+        UNUSED(_txBuf);
+    ;
 }

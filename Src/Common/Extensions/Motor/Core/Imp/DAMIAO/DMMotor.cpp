@@ -219,7 +219,7 @@ MotorTypeDef_e DMMotor::ctrl()
         memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
         txBuf.len = 8;
     } else {
-        txBuf = (this->*convert)();
+        (this->*convert)(txBuf);
     }
     rslt |= this->send(this->ctrlId_, txBuf.data, txBuf.len);
     return rslt;
