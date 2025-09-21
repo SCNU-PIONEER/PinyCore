@@ -9,10 +9,10 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : globalState(GlobalState_e::UNRECOGNIZED)
-        , posPID_(_config.posPID)
+        : posPID_(_config.posPID)
         , velPID_(_config.velPID)
         , torqPID_(_config.torqPID)
+        , globalState(GlobalState_e::UNRECOGNIZED)
 {
     regInfo_.uid = MotorManager::instance()->assignId();
     regInfo_.pComHandle = _config.pComHandle;
