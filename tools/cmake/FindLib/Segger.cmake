@@ -1,21 +1,25 @@
 # reference to https://kb.segger.com/FreeRTOS_with_SystemView
-FetchContent_Declare(
-  RTT
-  GIT_REPOSITORY https://github.com/SEGGERMicro/RTT.git
-  GIT_TAG main
-  GIT_SHALLOW TRUE
-  GIT_PROGRESS TRUE
-  SOURCE_DIR "${THIRD_PARTY_DIR}/RTT")
+if(NOT EXISTS "${THIRD_PARTY_DIR}/RTT")
+  FetchContent_Declare(
+    RTT
+    GIT_REPOSITORY https://github.com/SEGGERMicro/RTT.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    SOURCE_DIR "${THIRD_PARTY_DIR}/RTT")
+  FetchContent_MakeAvailable(RTT)
+endif()
 
-FetchContent_Declare(
-  systemview
-  GIT_REPOSITORY https://github.com/SEGGERMicro/SystemView.git
-  GIT_TAG main
-  GIT_SHALLOW TRUE
-  GIT_PROGRESS TRUE
-  SOURCE_DIR "${THIRD_PARTY_DIR}/systemview")
-
-FetchContent_MakeAvailable(RTT systemview)
+if(NOT EXISTS "${THIRD_PARTY_DIR}/systemview")
+  FetchContent_Declare(
+    systemview
+    GIT_REPOSITORY https://github.com/SEGGERMicro/SystemView.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    SOURCE_DIR "${THIRD_PARTY_DIR}/systemview")
+  FetchContent_MakeAvailable(RTT systemview)
+endif()
 
 file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS 
   "${THIRD_PARTY_DIR}/RTT/RTT/*.c"
