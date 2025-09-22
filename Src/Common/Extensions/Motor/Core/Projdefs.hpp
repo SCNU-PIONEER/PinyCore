@@ -34,7 +34,7 @@ enum class WorkMode_e : uint8_t {
 };
 enum class ComType_e : uint8_t { NONE, FDCAN, CAN, RS485 };
 
-enum class GlobalState_e : uint8_t { UNREGISTER, OFFLINE, ONLINE, ERROR };
+enum class GlobalState_e : uint8_t { UNRECOGNIZED, OFFLINE, ONLINE, ERROR };
 
 enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
@@ -72,7 +72,6 @@ struct InitConfig_s {
 };
 
 struct Model_s {
-    char name[12];        // 电机型号名
     uint16_t measureMin;  // 测量最小值
     uint16_t measureMax;  // 测量最大值
     float reductionRatio; // 减速比

@@ -16,12 +16,10 @@ struct Feedback_s {
 struct Status_s {
     float voltTxCodeSpan;
     float torqRxCodeSpan;
-    float currRated;    // A
-    float torqRated;    // Nm
-    float voltMax;      // V
-    float currMax;      // A
-    float torqMax;      // Nm
-    float torqConstant; // Nm/A
+    float voltMax; // V
+    float currMax; // A
+    float torqMax; // Nm
+    float Kn;      // Nm/A
 
     Status_s &operator=(const Status_s &_other);
 };
@@ -29,31 +27,42 @@ struct Status_s {
 class DJIOldMotor : public TripMotorBase {
     using Base = TripMotorBase;
 
+    using ConvertFunc = void (DJIOldMotor::*)();
+
 private:
-    RxBus_s::CANRxBuf_s<8> rxBuf_;
+    RxBus_s::CANRxBuf_s<8> rxBuf_{};
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
+
+    ConvertFunc convert = &DJIOldMotor::convertDefault;
+
+    void convertTripVolt();
+    void convertDefault();
+
+    void serializeMsg(int16_t _ctrlCmd);
+
+    void overrideReductionRatio(float _newReductionRatio) final;
 
 protected:
     /**
      * @brief Register the receive callback function
      * 
      */
-    void registerRecvCallback();
+    void registerRecvCallback(uint16_t _rxId);
 
     /**
      * @brief Cancel the receive callback function
      * 
      */
 
-    void cancelRecvCallback();
+    void cancelRecvCallback(uint16_t _rxId);
     /**
      * @brief Update the control ID based on the current work mode
      * 
      */
-    void updateCtrlId();
+    void updateCtrlMode();
 
     Status_s status_;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
@@ -82,13 +91,6 @@ public:
      * @return uint16_t 
      */
     uint16_t masterId() const;
-
-    /**
-     * @brief Get the unique identifier (UID) of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t uid() final;
 
     /**
      * @brief Update the motor state

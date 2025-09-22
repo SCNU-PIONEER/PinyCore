@@ -26,9 +26,9 @@ void QuadMotorGroup_s::showMotorInfo()
     }
 }
 QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config)
-        : Base(_name, std::move(_config))
+        : Base(_name, _config)
 {
-    isMutiple_ = true;
+    regInfo_.isMutiple = true;
 }
 
 QuadMotorBase::QuadMotors &QuadMotorBase::getMotorMap()
@@ -39,41 +39,40 @@ QuadMotorBase::QuadMotors &QuadMotorBase::getMotorMap()
 
 void QuadMotorBase::updateMotorMap()
 {
-    // 注册电机到motorMap_中
-    // 先寻找是否存在对应的pComHandle_
+    // first, find the pair object in motorMap_ that contains the handle
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->handle == this->pComHandle_) {
+        if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
         }
     }
     if (it == getMotorMap().end()) {
-        // 如果不存在，则直接在motorMap_尾部增多一个pair对象
+        // if not found, create a new pair object
         getMotorMap().emplace_back(
-                this->pComHandle_,
+                regInfo_.pComHandle,
                 std::unordered_map<uint16_t, QuadMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
 
-    // 在找到的pair对象中添加电机组
+    // add the motor to the groupMap_ of the pair object
     auto &map = it->groupMap;
 
-    // 检查pair中是否已经存在电机组
+    // check if the motor is already in the groupMap_
     if (!map.contains(getGroupId())) {
-        // 如果不存在，则创建一个电机组
+        // if not, create a new groupMap_
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
         map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
         LOG::info("QuadMotorBase", "Motor %s: create QuadMotorGroup %hx",
-                  this->name_, getGroupId());
+                  regInfo_.name, getGroupId());
     } else {
-        // 如果存在，则检查电机组中是否已经存在该电机
+        // if already exist, check if the motor is already in the groupMap_
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
             LOG::error("QuadMotorBase",
                        "Motor %s: already exist in group %hx, pos in group: %d",
-                       this->name_, getGroupId(), getPosInGroup());
+                       regInfo_.name, getGroupId(), getPosInGroup());
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -82,12 +81,12 @@ void QuadMotorBase::updateMotorMap()
     }
     group_ = map[getGroupId()];
 
-    // 检查电机组中所有电机的发送频率是否一致，并更新最小发送频率
+    // check if the txFreq is the same as the other motors in the group
     for (auto &i : map[getGroupId()]->motor) {
         if (i != nullptr) {
             if (i->txFreq() != this->txFreq()) {
                 LOG::warn("QuadMotorBase", "Motor %s: txFreq not match",
-                          this->name_);
+                          regInfo_.name);
             }
         }
         map[getGroupId()]->minTxFreq =
@@ -102,7 +101,7 @@ void QuadMotorBase::removeMotorFromMap()
     auto it = getMotorMap().end();
     for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
          ++iter) {
-        if (iter->handle == this->pComHandle_) {
+        if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
         }
@@ -114,21 +113,22 @@ void QuadMotorBase::removeMotorFromMap()
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
             LOG::info("QuadMotorBase",
                       "Motor %s: remove from group %hx, pos in group: %d",
-                      this->name_, getGroupId(), getPosInGroup());
+                      regInfo_.name, getGroupId(), getPosInGroup());
         } else {
             LOG::error("QuadMotorBase", "Motor %s: not in group %hx",
-                       this->name_, getGroupId());
+                       regInfo_.name, getGroupId());
         }
     } else {
-        LOG::error("QuadMotorBase", "Motor %s: not in motorMap_", this->name_);
+        LOG::error("QuadMotorBase", "Motor %s: not in motorMap_",
+                   regInfo_.name);
     }
 }
 
-uint16_t QuadMotorBase::getGroupId() const { return this->model_.txBaseId; }
+uint16_t QuadMotorBase::getGroupId() const { return regInfo_.model.txBaseId; }
 
 uint8_t QuadMotorBase::getPosInGroup() const
 {
-    return (this->offsetId_ - 1) % 4; // 0,1,2,3
+    return (regInfo_.offsetId - 1) % 4; // 0,1,2,3
 }
 
 bool QuadMotorBase::checkGroupSend(QuadMotorGroup_s *_group)

@@ -27,6 +27,8 @@ private:
     MotorTypeDef_e parse(Feedback_s *_rxBuf);
     MotorTypeDef_e ctrl();
 
+    void overrideReductionRatio(float _newReductionRatio) final;
+
 protected:
     uint16_t ctrlId_ = 0xFFFF;
     float kp_; //电机内置pid
@@ -50,8 +52,6 @@ public:
     bool isEnable() const;
     uint16_t getSendId() const;
     uint16_t getReceiveId() const;
-
-    uint16_t uid() final;
 
     MotorTypeDef_e update() final;
 
