@@ -86,13 +86,6 @@ public:
     uint16_t canId() const; // QuadMotor's canId is fixed
 
     /**
-     * @brief Get the master ID of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t masterId() const;
-
-    /**
      * @brief Update the motor state
      * 
      * @return MotorTypeDef_e 
