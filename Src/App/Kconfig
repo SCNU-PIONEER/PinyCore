@@ -26,7 +26,7 @@ menu "app config"
     bool "ins"
     default n
 
-    source "Src/System/Components/INS/Kconfig"
+    source "Src/System/INS/Kconfig"
 
     config APP_USE_DAEMONS
     bool "daemons"

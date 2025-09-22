@@ -45,7 +45,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS5")
 endif()
 
 if(DEFINED TARGET_STM32F407)
-  if(NOT EXISTS "${target_folder}/CMSIS_Device")
+  if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS )
     FetchContent_Declare(
       cmsis_device_f4
       GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-f4.git
@@ -91,7 +91,7 @@ else(DEFINED TARGET_STM32H723)
   endif()
 endif()
 
-if(NOT EXISTS "${target_folder}/hal/Drivers")
+if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Include")
   message(WARNING "No HAL drivers from ${target_folder}/hal/Drivers, generating...")
   execute_process(
     COMMAND ${target_folder}/genSoc.sh
