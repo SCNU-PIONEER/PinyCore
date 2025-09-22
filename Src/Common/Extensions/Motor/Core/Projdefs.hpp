@@ -64,9 +64,9 @@ struct InitConfig_s {
     uint8_t offsetId;
     float txFreq;
 
-    PID *posPID;
-    PID *velPID;
-    PID *torqPID;
+    PID *posPID = nullptr;
+    PID *velPID = nullptr;
+    PID *torqPID = nullptr;
 
     bool isReverse = false;
 };

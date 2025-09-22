@@ -36,9 +36,9 @@ protected:
         uint32_t lastRecvTick = 0; // ms
     } AUX_;                        // AUX info
 
-    PID *posPID_;
-    PID *velPID_;
-    PID *torqPID_; // only VOLT-CTRL motor will need this
+    PID *posPID_ = nullptr;
+    PID *velPID_ = nullptr;
+    PID *torqPID_ = nullptr; // only VOLT-CTRL motor will need this
 
     bool checkSend();
     void calcRecvFreq();
@@ -104,7 +104,7 @@ public:
     float torq() const;
 
     // Don't call it multiple times!
-    virtual void overrideReductionRatio(float _newReductionRatio);
+    virtual void overrideReductionRatio(float _newReductionRatio) = 0;
 
     void overrideMeasureMax(float _newMeasureMax);
     void overrideMeasureMin(float _newMeasureMin);
