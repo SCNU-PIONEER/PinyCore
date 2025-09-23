@@ -20,12 +20,12 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
 
     if (regInfo_.workMode == WorkMode_e::QUAD_CURR) {
         if (_config.offsetId > 4)
-            regInfo_.model.txBaseId = 0x2FE;
+            regInfo_.model.txBaseId = 0x2FF;
         else
             regInfo_.model.txBaseId = 0x1FE;
     } else if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
         if (_config.offsetId > 4)
-            regInfo_.model.txBaseId = 0x2FF;
+            regInfo_.model.txBaseId = 0x2FE;
         else
             regInfo_.model.txBaseId = 0x1FF;
     }
