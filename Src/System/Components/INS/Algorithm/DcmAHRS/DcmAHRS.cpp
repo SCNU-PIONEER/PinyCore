@@ -555,7 +555,7 @@ void DcmAhrs::computeAngles()
     fr2_ *= invlen;
 
     arm_atan2_f32(sr0_, fr0_, &edata_.yaw);
-    arm_atan2_f32(x1_, x2_, &edata_.roll);
+    arm_atan2_f32(-x1_, x2_, &edata_.roll);
     edata_.pitch = asinf(x0_);
 }
 
