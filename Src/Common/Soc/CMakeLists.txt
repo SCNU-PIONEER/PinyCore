@@ -34,16 +34,6 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/.deps)
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS5")
-  FetchContent_Declare(
-    cmsis5
-    URL https://github.com/STMicroelectronics/cmsis-core/archive/refs/tags/v5.9.0.tar.gz
-    URL_HASH
-      SHA256=6cbeb8e53d029f18bae2fbf4be3c33abdce8e8e1a27a2cab69a8550478614fc7
-      DOWNLOAD_EXTRACT_TIMESTAMP TRUE SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS5")
-  FetchContent_MakeAvailable(cmsis5)
-endif()
-
 if(DEFINED TARGET_STM32F407)
   if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS )
     FetchContent_Declare(
