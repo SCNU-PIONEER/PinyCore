@@ -94,7 +94,7 @@ endif()
 if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Include")
   message(WARNING "No HAL drivers from ${target_folder}/hal/Drivers, generating...")
   execute_process(
-    COMMAND ${target_folder}/genSoc.sh
+    COMMAND ${Python_EXECUTABLE} ${target_folder}/genSoc.py
     RESULT_VARIABLE soc_result
     OUTPUT_VARIABLE soc_output
     ERROR_VARIABLE soc_error
