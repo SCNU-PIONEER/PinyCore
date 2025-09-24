@@ -12,6 +12,8 @@ public:
     static constexpr float CURR_TX_CODE_SPAN = 16384.f;
     static constexpr float CURR_RX_CODE_SPAN = 8192.f;
 
+    static constexpr float ORIGINAL_GEARBOX_RR = 36.f / 1.f;
+
     static constexpr float CURR_RATED = 3.f;
     static constexpr float TORQ_RATED = 1.f;
     static constexpr float VOLT_MAX = 25.2f;

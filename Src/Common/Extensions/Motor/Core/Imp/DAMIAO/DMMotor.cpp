@@ -107,7 +107,7 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 #ifdef SOC_FDCAN
         if (regInfo_.comType == ComType_e::FDCAN) {
             return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
-                    reinterpret_cast<canHandle *>(this->pComHandle_), _sendId,
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
                     _txBuf, _len));
         }
 #endif

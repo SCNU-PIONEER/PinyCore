@@ -15,7 +15,7 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
 
     regInfo_.model.measureMax = 8191;
     regInfo_.model.measureMin = 0;
-    regInfo_.model.reductionRatio = 36.f;
+    regInfo_.model.reductionRatio = 1.f;
     regInfo_.model.rxBaseId = 0x200;
 
     if (_config.offsetId > 3)
