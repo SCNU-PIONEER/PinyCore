@@ -64,7 +64,7 @@ void DcmAhrs::updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
     x_last_[2] = x2_;
 
     // control input (gyroscopes)
-    float u0 = -_gx, u1 = -_gy, u2 = -_gz;
+    float u0 = -_gx, u1 = -_gy, u2 = _gz;
 
     // state prediction
     float x0 = x0_ - (dt_ * (u1 * x2_ - u2 * x1_ + x1_ * x5_ - x2_ * x4_));
