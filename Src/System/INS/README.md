@@ -1,11 +1,13 @@
-# INS (Inertial Navigation System) v1.1.0
+# INS (Inertial Navigation System) v1.1.1
 
 
 
 ## 更新日志
 
-1. 创建本README
-2. 添加加速度计矫正
+1. 创建本README v1.0.0
+2. 添加加速度计矫正 v1.1.0
+3. 修复滚转角方向错误以及航向角速度方向错误 v1.1.1
+
 
 
 
@@ -23,12 +25,13 @@ Kcanfig中设置ins为开启，并在INS config中开启accelerometer calibratio
 生成矫正矩阵后填写进INS.cpp的ACC_CALI
 
 ```cpp
+// 此示例为2026牢全参数
 static constexpr AccCali_s ACC_CALI = {
     // default accelerometer calibration
     .accel_T = { { 1.010860f, 0.015129f, -0.001459f },
                  { 0.001142f, 1.009152f, 0.006399f },
                  { -0.005477f, 0.002071f, 1.013539f } },
-    .accel_offs = { -34.944336f, -3.310059f, 107.792969f }
+    .accel_offs = { 0.0724740028f, -0.0040230751f, -0.0407223701f }
 };
 ```
 
@@ -44,6 +47,7 @@ static constexpr AccCali_s ACC_CALI = {
 5. 将记录的数值覆盖INS.cpp的GYRO_CALI的bias项
 
 ```cpp
+// 此示例为2026牢全参数
 static constexpr GyroCaliParams_s GYRO_CALI = {
     // default gyroscope calibration
     .gx_bias = -0.898322f, .gy_bias = -4.99465f, .gz_bias = -0.234681f,
@@ -105,16 +109,15 @@ data = {
 
 先将data改为上文所示的样子，启动INS，监视`ins->insData_.body`的变量大小即变化方向，基于机器人右手系修正data的内容
 
-如25赛季全向轮步兵（牢全）最终矫正的值如下
-
 ```cpp
+// 此示例为2026牢全参数
 data = {
     .a = { .x = cali.getOutput().ax,
            .y = cali.getOutput().ay,
            .z = -cali.getOutput().az },
     .g = { .x = -cali.getOutput().gx,
            .y = -cali.getOutput().gy,
-           .z = -cali.getOutput().gz },
+           .z = cali.getOutput().gz },
 };
 ```
 

@@ -3,6 +3,9 @@
 
 
 using namespace INS_SYS;
+
+// static INSData_s ansINS;
+
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = {
 
@@ -99,7 +102,7 @@ void INS::task(void *_param)
                    .z = -cali.getOutput().az },
             .g = { .x = -cali.getOutput().gx,
                    .y = -cali.getOutput().gy,
-                   .z = -cali.getOutput().gz },
+                   .z = cali.getOutput().gz },
         };
         data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y -
                                data.g.z * data.g.z * IMU_OFFSET_X);
@@ -187,6 +190,8 @@ void INS::update(float _dt)
     // insDat_.earth.mx = earthVectorT_[0][0];
     // insDat_.earth.my = earthVectorT_[1][0];
     // insDat_.earth.mz = earthVectorT_[2][0];
+
+    // memcpy(&ansINS, &insDat_, sizeof(INSData_s));
 
     // send queue
     insPub_->publish();
