@@ -46,7 +46,7 @@ jobs:
         id: clang-format 
         shell: bash {0}
         run: |
-          FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }}...HEAD -- '*.cpp' '*.hpp' '*.c' '*.h' | grep -v "sdkconfig.h" | grep -v "/hal/" | grep -v -E "(^|/)Lib/")
+          FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }}...HEAD -- '*.cpp' '*.hpp' '*.c' '*.h' | grep -v "sdkconfig.h" | grep -v "/hal/" | grep -v -E "(^|/)Lib/" | grep -v -E "(^|/)CMSIS5/")
           if [ -z "$FILES" ]; then
             echo "No files to check"
             exit 0
