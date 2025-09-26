@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "../Projdefs.hpp"
 #include <cstdarg>
+#include "main.h"
 
 namespace PINYMOTOR {
 class IMotor {

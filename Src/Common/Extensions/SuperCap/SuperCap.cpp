@@ -1,7 +1,6 @@
 #include "SuperCap.hpp"
 #include "Bsp_can.hpp"
 #include <cstring>
-#include "sdkconfig.h"
 
 CAP::CAP()
 {

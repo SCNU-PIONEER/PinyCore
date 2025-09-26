@@ -2,7 +2,6 @@
 
 #include "IMotor.hpp"
 
-#include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -36,5 +35,5 @@ void MotorManager::taskCreate()
 {
     xTaskCreate(
             [](void *_param) -> void { MotorManager::instance()->ctrlTask(); },
-            "motor_task", 256, nullptr, osPriorityRealtime, nullptr);
+            "motor_task", 256, nullptr, 4, nullptr);
 }
