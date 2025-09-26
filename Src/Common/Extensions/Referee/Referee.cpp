@@ -105,11 +105,6 @@ uint16_t RefereeTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
     uint16_t totalSize;
     FrameHeader_s txHeader;
 
-    _data[0] = 1;
-    _data[1] = 2;
-    _data[2] = 3;
-    _data[3] = 4;
-
     if (_dataLen + sizeof(FrameHeader_s) + 4 > REFEREE_TX_BUFFER_LEN) {
         return 0;
     }
