@@ -42,4 +42,8 @@ menu "app config"
     bool "vscode plugin: freertos task analyze"
     default n
 
+    config APP_USE_REFEREE
+    bool "referee"
+    default y
+
 endmenu
