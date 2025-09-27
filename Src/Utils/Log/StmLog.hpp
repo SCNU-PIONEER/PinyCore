@@ -4,6 +4,8 @@
 #include "StmLogMsg.hpp"
 #include <string_view>
 #include <cstring>
+#include <vector>
+#include "Vofa.hpp"
 
 #define LOCATION std::source_location::current()
 
@@ -11,10 +13,36 @@ namespace LOG {
 
 class Logger {
 public:
-    static Logger &instance()
+    static Logger &instance();
+
+
+    void setTypeLevel(const std::string &_type, Level_e _level)
     {
-        static Logger instance;
-        return instance;
+        config.typeControl.setTypeLevel(_type, _level);
+    }
+
+    Level_e getTypeLevel(std::string_view _type) const
+    {
+        auto it = config.typeControl.type_levels_.find(std::string(_type));
+        return (it != config.typeControl.type_levels_.end()) ? it->second :
+                                                               config.level;
+    }
+
+    std::unordered_map<std::string, Level_e> getTypeLevels() const
+    {
+        return config.typeControl.type_levels_;
+    }
+
+    Level_e getGlobalLevel() const { return config.level; }
+
+    void removeTypeLevel(const std::string &_type)
+    {
+        config.typeControl.removeTypeLevel(_type);
+    }
+
+    bool hasTypeLevel(const std::string &_type) const
+    {
+        return config.typeControl.hasTypeLevel(_type);
     }
 
     template <typename... Args> void raw(const char *_format, Args &&..._args)
@@ -29,7 +57,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::INFO },
+                       .level = Level_e::INFO },
             std::forward<Args>(_args)...);
     }
 
@@ -40,7 +68,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::DEBUGGING },
+                       .level = Level_e::DEBUGGING },
             std::forward<Args>(_args)...);
     }
 
@@ -51,7 +79,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::WARN },
+                       .level = Level_e::WARN },
             std::forward<Args>(_args)...);
     }
 
@@ -62,7 +90,7 @@ public:
         log(LogParams{ .loc = _loc,
                        .type = _type,
                        .format = _format,
-                       .level = Level::ERROR },
+                       .level = Level_e::ERROR },
             std::forward<Args>(_args)...);
     }
 
@@ -72,11 +100,25 @@ public:
     template <typename Func>
     void check(std::source_location _loc, Func &&_operation)
     {
-        stm_err_t err = _operation();
+        stm_err_t err = std::forward<Func>(_operation)();
         if (unlikely(err != 0)) {
             error(_loc, "check", "error code: %d", err);
             while (1) {
             }
+        }
+    }
+
+    void enableVofa(UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_hdma)
+    {
+        vofa_.init(_huart, _hdma);
+        config.vofaEnabled = true;
+    }
+
+    void setVofaProtocol(Proto_e _proto)
+    {
+        if (_proto == Proto_e::VOFA_FIREWATER ||
+            _proto == Proto_e::VOFA_JUSTFLOAT) {
+            config.proto = _proto;
         }
     }
 
@@ -90,11 +132,13 @@ public:
     */
     void float2Str(char *_str, size_t _buffer_size, float _va);
 
+    void handleLogCmd(const std::string_view &_cmd);
+
     void disable() { config.enable = false; }
 
     void enable() { config.enable = true; }
 
-    void setLevel(Level _level) { config.level = _level; }
+    void setLevel(Level_e _level) { config.level = _level; }
 
     void setColor(bool _enable) { config.showColor = _enable; }
 
@@ -102,7 +146,7 @@ public:
 
     void setName(std::string_view _name) { config.name = _name; }
 
-    void setProto(Proto _proto) { config.proto = _proto; }
+    void setProto(Proto_e _proto) { config.proto = _proto; }
 
     void setConfig(const Config &_config) { config = _config; }
 
@@ -115,12 +159,23 @@ public:
         if (!config.enable)
             return;
 
+        // 获取模块级别和全局级别
+        Level_e typeLevel = getTypeLevel(_params.type);
+        Level_e effectiveLevel = std::min(typeLevel, config.level);
+
+        // 应用更严格的级别过滤
+        if (effectiveLevel == Level_e::NONE) {
+            return;
+        }
+        if (_params.level > effectiveLevel) {
+            return;
+        }
+
         constexpr size_t MAX_LOG_LENGTH = 128;
         char buffer[MAX_LOG_LENGTH];
         char *ptr = buffer;
         const char *end = buffer + MAX_LOG_LENGTH;
 
-        // 写入颜色控制码（如果启用）
         if (config.showColor) [[likely]] {
             auto color = getLevelColor(_params.level);
             size_t len = std::min(color.size(), static_cast<size_t>(end - ptr));
@@ -128,7 +183,6 @@ public:
             ptr += len;
         }
 
-        // 写入位置信息（如果启用）
         if (config.showlocation) [[likely]] {
             std::string_view file(_params.loc.file_name());
             if (auto pos = file.find_last_of("/\\");
@@ -142,35 +196,24 @@ public:
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
-        // 写入日志类型
-        size_t len =
-                std::min(_params.type.size(), static_cast<size_t>(end - ptr));
-        memcpy(ptr, _params.type.data(), len);
-        ptr += len;
+        size_t len = snprintf(ptr, end - ptr, "[%.*s] ",
+                              static_cast<int>(_params.type.size()),
+                              _params.type.data());
+        ptr += std::min(len, static_cast<size_t>(end - ptr));
 
-        // 写入分隔符
-        len = std::min(sizeof(": ") - 1, static_cast<size_t>(end - ptr));
-        memcpy(ptr, ": ", len);
-        ptr += len;
+        len = snprintf(ptr, end - ptr, _params.format,
+                       std::forward<Args>(_args)...);
+        ptr += std::min(len, static_cast<size_t>(end - ptr));
 
-        if (_params.level == Level::RAW) {
-            len = snprintf(ptr, end - ptr, _params.format,
-                           std::forward<Args>(_args)...);
-            ptr += std::min(len, static_cast<size_t>(end - ptr));
-        } else {
-            len = snprintf(ptr, end - ptr, _params.format,
-                           std::forward<Args>(_args)...);
-            ptr += std::min(len, static_cast<size_t>(end - ptr));
-        }
 
         len = std::min(sizeof(RTT_CTRL_RESET "\r\n") - 1,
                        static_cast<size_t>(end - ptr));
         memcpy(ptr, RTT_CTRL_RESET "\r\n", len);
         ptr += len;
 
-        size_t total_len = ptr - buffer;
+        size_t totalLen = ptr - buffer;
 
-        SEGGER_RTT_Write(0, buffer, total_len);
+        SEGGER_RTT_Write(0, buffer, totalLen);
     }
 
 protected:
@@ -180,6 +223,14 @@ protected:
 
 private:
     Config config;
+    Vofa &vofa_ = Vofa::instance();
+
+    int handleLogSet(const std::vector<std::string> &_args);
+    int handleLogGet(const std::vector<std::string> &_args);
+    int handleLogGlobal(const std::vector<std::string> &_args);
+    int handleLogDel(const std::vector<std::string> &_args);
+    std::vector<std::string> splitStr(const std::string_view &_str,
+                                      char _delimiter);
 };
 
 
@@ -192,7 +243,7 @@ template <typename... Args> struct info {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::INFO },
+                                          .level = Level_e::INFO },
                                std::forward<Args>(_args)...);
     }
 };
@@ -207,7 +258,7 @@ template <typename... Args> struct warn {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::WARN },
+                                          .level = Level_e::WARN },
                                std::forward<Args>(_args)...);
     }
 };
@@ -223,7 +274,7 @@ template <typename... Args> struct error {
         Logger::instance().log(LogParams{ .loc = _loc,
                                           .type = _type,
                                           .format = _format,
-                                          .level = Level::ERROR },
+                                          .level = Level_e::ERROR },
                                std::forward<Args>(_args)...);
     }
 };

@@ -1,9 +1,11 @@
 #include "RttMsgHandler.hpp"
+#include "sdkconfig.h"
 #ifdef CHASSIS_TYPE
 #include CHASSIS_FILE
 #endif
 #include <cstring>
 #include "SEGGER_RTT.h"
+#include "StmLog.hpp"
 
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
@@ -38,8 +40,14 @@ void RTTMsgHandler::parse(TimerHandle_t xTimer)
 void RTTMsgHandler::handle()
 {
     memset(data, 0, sizeof(data));
-    SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+    size_t readLen = SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+    std::string_view cmd(reinterpret_cast<const char*>(data), readLen);
+    if (cmd.starts_with("log ")) {
+        LOG::Logger::instance().handleLogCmd(cmd.substr(4));
+        return;
+    }
 }
+
 
 void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
