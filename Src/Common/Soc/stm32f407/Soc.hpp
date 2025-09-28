@@ -14,7 +14,7 @@
 
 //uart
 #define SOC_DMA_RAM
-#define SOC_UART_DMA_DR _huart->Instance->DR
+#define SOC_UART_DMA_DR huart_->Instance->DR
 enum DmaRam_e { RAM };
 
 #define SET_485_1_DE_UP()

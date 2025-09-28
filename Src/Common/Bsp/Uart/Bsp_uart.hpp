@@ -1,37 +1,58 @@
 #pragma once
 
-#include "BspBase.hpp"
 #include "Soc.hpp"
 #include HAL_INCLUDE
 
-class Uart : public BspBase<Uart> {
+class Uart {
 public:
-    using callback = std::function<void(UART_HandleTypeDef *, uint16_t)>;
+    Uart(UART_HandleTypeDef *_huart);
+
+    Uart(UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle);
+
     /**
     * @brief uart registerCallback
     */
-    void registerCallback(UART_HandleTypeDef *_huart, callback _pCallback);
+    using callback = std::function<void(UART_HandleTypeDef *, uint16_t)>;
+    void registerCallback(callback _pCallback);
 
     /**
     * @brief uart multi_DMA_rx_buf init
     *
     * @param DataLength 请开辟两倍的缓冲区
     */
-    HAL_StatusTypeDef RecvDmaMultiBufInit(UART_HandleTypeDef *_huart,
-                                          uint32_t *_dstAddress,
+    HAL_StatusTypeDef recvDmaMultiBufInit(uint32_t *_dstAddress,
                                           uint32_t _dataLength);
 
     /**
     * @brief uart multi_DMA_rx_buf init
     */
-    HAL_StatusTypeDef RecvDmaInit(UART_HandleTypeDef *_huart,
-                                  uint32_t *_dstAddress, uint32_t _dataLength);
+    HAL_StatusTypeDef recvDmaInit(uint32_t *_dstAddress, uint32_t _dataLength);
 
     /**
     * @brief uart rx callbackFromISR
     */
-    void callbackFromISR(UART_HandleTypeDef *_huart, uint16_t _size);
+    void callbackFromISR(uint16_t _size);
 
-private:
-    std::unordered_map<UART_HandleTypeDef *, callback> cbTable;
+    /**
+    * @brief uart tx
+    */
+    HAL_StatusTypeDef transmit(const uint8_t *_pData, uint16_t _size);
+
+    /**
+    * @brief uart tx dma
+    */
+    HAL_StatusTypeDef transmitDma(const uint8_t *_pData, uint16_t _size);
+
+    /**
+    * @brief uart rx
+    */
+    HAL_StatusTypeDef receive(uint8_t *_pData, uint16_t _size);
+
+    /**
+    * @brief uart rx
+    */
+    HAL_StatusTypeDef receiveDma(uint8_t *_pData, uint16_t _size);
+
+    UART_HandleTypeDef *huart_;
+    DMA_HandleTypeDef *hdma_ = nullptr;
 };

@@ -8,6 +8,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
+#include "Bsp.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
