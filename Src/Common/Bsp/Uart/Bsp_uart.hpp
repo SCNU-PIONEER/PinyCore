@@ -2,6 +2,7 @@
 
 #include "Soc.hpp"
 #include HAL_INCLUDE
+#include <functional>
 
 class Uart {
 public:

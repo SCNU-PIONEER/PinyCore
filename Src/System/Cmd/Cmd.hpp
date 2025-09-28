@@ -3,6 +3,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "event_groups.h"
+#include "MsgImpl.hpp"
+
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
 #include "RefereeHandler.hpp"

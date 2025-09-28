@@ -1,5 +1,5 @@
 #include "StmLog.hpp"
-#include "Bsp_can.hpp"
+#include "Bsp.hpp"
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"

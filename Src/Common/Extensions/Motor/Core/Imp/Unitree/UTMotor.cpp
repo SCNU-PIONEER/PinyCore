@@ -1,6 +1,4 @@
 #include "UTMotor.hpp"
-#include "Bsp_uart.hpp"
-#include "Bsp_dma.hpp"
 #include "Soc.hpp"
 #include "Crc.hpp"
 
@@ -28,12 +26,13 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 DMA_HandleTypeDef *_dmaHandle)
+                 UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle)
         : IMotor(_name, _config)
+        , uart_(_huart, _dmaHandle)
         , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(
                   sizeof(TransmitMsg_s)))
         , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
-        , dmaHandle_(_dmaHandle)
+
 {
     this->cmd_.clear();
 
@@ -43,10 +42,8 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
     __HAL_UART_ENABLE_IT(
             reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
             UART_IT_IDLE);
-    HAL_UARTEx_ReceiveToIdle_DMA(
-            reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
-            (uint8_t *)rxBuf_, sizeof(Feedback_s));
-    __HAL_DMA_DISABLE_IT(dmaHandle_, DMA_IT_HT);
+    uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
+    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -61,8 +58,7 @@ uint16_t UTMotor::getReceiveId() const { return regInfo_.model.rxBaseId; }
 
 void UTMotor::registerRecvCallback()
 {
-    Uart::instance().registerCallback(
-            reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
+    uart_.registerCallback(
             [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
                 // basic cb
                 BaseType_t higherPriorityTaskWoken = pdFALSE;
@@ -76,9 +72,8 @@ MotorTypeDef_e UTMotor::send(uint16_t _sendId, TransmitMsg_s *_txBuf,
 {
     SET_485_1_DE_UP();
     memcpy(txBuf_, _txBuf, _len);
-    MotorTypeDef_e ret = (MotorTypeDef_e)HAL_UART_Transmit_DMA(
-            reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
-            (uint8_t *)txBuf_, _len);
+    MotorTypeDef_e ret =
+            (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
     SET_485_1_DE_DOWN();
     return ret;
 }
@@ -111,10 +106,8 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
         this->data_.tempture = fb->fbk.temp;
     }
 
-    (MotorTypeDef_e) HAL_UARTEx_ReceiveToIdle_DMA(
-            reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
-            (uint8_t *)txBuf_, sizeof(TransmitMsg_s));
-    __HAL_DMA_DISABLE_IT(dmaHandle_, DMA_IT_HT);
+    uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
+    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
     return 0; //TODO: return check
 }
 
