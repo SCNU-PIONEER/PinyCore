@@ -1,9 +1,7 @@
 
 #include "Crc.hpp"
 #include "Referee.hpp"
-#include "Bsp_uart.hpp"
 #include "Bsp_dma.hpp"
-#include "stm32f4xx_hal_uart.h"
 #include <cstring>
 
 namespace REFEREE {
@@ -18,7 +16,7 @@ void RefReceiver::init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event)
     uart_ = _huart;
     event_ = _event;
 
-    rxBuffer_ = (uint8_t *)Dma::instance().ram_alloc(REFEREE_RX_BUFFER_LEN);
+    rxBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * REFEREE_RX_BUFFER_LEN);
 
     Uart::instance().RecvDmaMultiBufInit(_huart, (uint32_t *)&rxBuffer_[0],
                                          REFEREE_RX_BUFFER_LEN);
@@ -40,6 +38,7 @@ void RefReceiver::uartIdleCallback(UART_HandleTypeDef *_huart)
 
     dataLen = (lenDif >= 0) ? lenDif : (REFEREE_RX_BUFFER_LEN + lenDif);
 
+    //数据回绕
     if (lenDif < 0)
         memcpy(&rxBuffer_[REFEREE_RX_BUFFER_LEN], &rxBuffer_[0], dmaRxPos);
 
@@ -125,7 +124,7 @@ uint16_t RefereeTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
 
     Append_CRC16_Check_Sum(txBuffer_, totalSize);
 
-    //HAL_UART_Transmit_DMA(uart_, txBuffer_, totalSize);
+    HAL_UART_Transmit_DMA(uart_, txBuffer_, totalSize);
     //TODO: use bsp_uart transimit function
     return totalSize;
 }

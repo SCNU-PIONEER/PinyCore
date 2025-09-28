@@ -18,12 +18,13 @@
 
 #define REFEREE_READY_EVENT (1 << 2)
 
+namespace REFEREE {
+
 static constexpr uint8_t LEN_HEADER = 5;
 static constexpr uint8_t LEN_CMDID = 2;
 static constexpr uint8_t LEN_TAIL = 2;
 static constexpr uint8_t SOF = 0xA5;
 
-namespace REFEREE {
 class RefReceiver {
     static constexpr uint16_t REFEREE_RX_BUFFER_LEN = 256;
     static constexpr uint8_t REFEREE_SYS_MAX_LOST = 5;
@@ -52,9 +53,9 @@ private:
     uint8_t *rxBuffer_;
     RefereeProt_s refereeData_;
 
-    uint16_t rxLostCnt_;
-    uint16_t lastPos;
-    uint16_t dataLen;
+    uint16_t rxLostCnt_ = 0;
+    uint16_t lastPos = 0;
+    uint16_t dataLen = 0;
 
     EventGroupHandle_t event_;
 };

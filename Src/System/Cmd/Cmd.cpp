@@ -31,8 +31,10 @@ void Cmd::parseMsg()
     if (xBits & RTT_READY_EVENT) {
         rttHandler_.handle();
     }
-    if (xBits & REFEREE_READY_EVENT) {
-        refereeHandler_.handle();
+    if constexpr (APP_USE_REFEREE) {
+        if (xBits & REFEREE_READY_EVENT) {
+            refereeHandler_.handle();
+        }
     }
 }
 
