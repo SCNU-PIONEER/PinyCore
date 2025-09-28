@@ -1,12 +1,13 @@
 
 #include "RefereeHandler.hpp"
+#include "sdkconfig.h"
 
 void RefereeHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     this->msgBus_ = _bus;
     this->event = _event;
-    extern UART_HandleTypeDef huart6;
-    referee_.init(&huart6, _event);
+    extern UART_HandleTypeDef REFEREE_UART;
+    referee_.init(&REFEREE_UART, _event);
 }
 
 void RefereeHandler::handle()
