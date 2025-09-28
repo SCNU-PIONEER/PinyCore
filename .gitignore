@@ -1,5 +1,7 @@
 #Motor
 build/
+.deps/
+ThirdParty/
 
 .cache/
 .config

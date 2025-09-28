@@ -19,10 +19,10 @@ public:
     static constexpr float TORQ_MAX = 40.f;
     // 关于转矩电流与转矩关系
     // https://blog.csdn.net/sy243772901/article/details/82925212
-    static constexpr float MAG_FLUX = 0.0044f;     // 磁通量
-    static constexpr float NP = 21.f;              // 极对数
+    static constexpr float MAG_FLUX = 0.0044f; // 磁链 (每个电机因工艺而不同)
+    static constexpr float NP = 21.f;          // 极对数
     static constexpr float INTER_RR = (9.f / 1.f); // 内部减速比
-    static constexpr float TORQ_CONSTANT = 0.9745f;
+    static constexpr float KN = 0.9745f;           // 近似常数
 
     DM8009(const char _name[16], InitConfig_s _config);
 };

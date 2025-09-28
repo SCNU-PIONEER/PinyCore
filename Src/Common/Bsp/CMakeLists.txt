@@ -1,4 +1,3 @@
-# Add the library
 add_library(Bsp STATIC)
 
 target_include_directories(Bsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -28,5 +27,4 @@ if (BSP_USE_DMA)
   target_include_directories(Bsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dma)
 endif()
 
-# link
-target_link_libraries(Bsp PRIVATE System stm32cubemx Soc Utils)
+target_link_libraries(Bsp PUBLIC Soc)
