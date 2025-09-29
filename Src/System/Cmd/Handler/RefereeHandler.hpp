@@ -12,6 +12,4 @@ public:
 private:
     MsgBus_s *msgBus_;
     RefereeMsg_s msg_;
-
-    REFEREE::RefReceiver &referee_ = REFEREE::RefReceiver::instance();
 };

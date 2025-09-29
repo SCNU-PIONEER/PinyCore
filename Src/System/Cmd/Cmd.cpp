@@ -11,8 +11,9 @@ Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART)
 
     rttHandler_.init(&msgBus_, eventGroup_);
     rcHandler_.init(&msgBus_, eventGroup_);
-    if constexpr (APP_USE_REFEREE)
-        refereeHandler_.init(&msgBus_, eventGroup_);
+#if defined APP_USE_REFEREE
+    refereeHandler_.init(&msgBus_, eventGroup_);
+#endif
 
     xTaskCreate(Cmd::task, "cmd_task", 256, this, 1, nullptr);
 
@@ -30,11 +31,11 @@ void Cmd::parseMsg()
     if (xBits & RTT_READY_EVENT) {
         rttHandler_.handle();
     }
-    if constexpr (APP_USE_REFEREE) {
-        if (xBits & REFEREE_READY_EVENT) {
-            refereeHandler_.handle();
-        }
+#if defined APP_USE_REFEREE
+    if (xBits & REFEREE_READY_EVENT) {
+        refereeHandler_.handle();
     }
+#endif
 }
 
 void Cmd::task(void *_param)

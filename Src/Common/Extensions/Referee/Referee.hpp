@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include <cstdint>
 #include "event_groups.h"
-#include "Bsp_uart.hpp"
+#include "Bsp.hpp"
 
 #define REFEREE_READY_EVENT (1 << 2)
 
@@ -30,7 +30,8 @@ class RefReceiver {
     static constexpr uint8_t REFEREE_SYS_MAX_LOST = 5;
 
 public:
-    void init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event);
+    RefReceiver(UART_HandleTypeDef *_huart);
+    void init(EventGroupHandle_t _event);
 
     void uartIdleCallback(UART_HandleTypeDef *_huart);
     void readRefereeData();
@@ -40,16 +41,8 @@ public:
 
     RefereeProt_s &getRefereeData() { return refereeData_; }
 
-    static RefReceiver &instance()
-    {
-        static RefReceiver instance;
-        return instance;
-    }
-
 private:
-    RefReceiver();
-
-    UART_HandleTypeDef *uart_;
+    Uart uart_;
     uint8_t *rxBuffer_;
     RefereeProt_s refereeData_;
 
@@ -75,3 +68,5 @@ private:
 };
 
 } // namespace REFEREE
+
+inline REFEREE::RefReceiver *referee;
