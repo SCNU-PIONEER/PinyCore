@@ -22,6 +22,10 @@ endif()
 if(BSP_USE_DMA)
   target_sources(Bsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dma/Bsp_dma.cpp)
 endif()
+if(BSP_USE_USB)
+  target_sources(Bsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Usb/Bsp_usb.cpp)
+endif()
 
 target_link_libraries(Bsp PUBLIC Soc freertos_kernel utils)
 
+add_subdirectory(${soc_folder}/hal/cmake/stm32cubemx ${CMAKE_CURRENT_BINARY_DIR}/stm32cubemx)

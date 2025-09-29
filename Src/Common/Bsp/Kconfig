@@ -26,4 +26,8 @@ menu "Bsp config"
     config BSP_USE_TIM
         bool "tim"
         default y
+
+    config BSP_USE_USB
+        bool "usb"
+        default y
 endmenu

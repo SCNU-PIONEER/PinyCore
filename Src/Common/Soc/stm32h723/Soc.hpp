@@ -29,3 +29,6 @@
 #define SOC_DMA_SRAM_D2     0x30000000
 #define SOC_DMA_SRAM_D2_END 0x30007FFF
 enum DmaRam_e { SRAM, SRAM_D2 };
+
+/*usb*/
+#define SOC_USB_HS

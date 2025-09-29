@@ -19,3 +19,6 @@ enum DmaRam_e { RAM };
 
 #define SET_485_1_DE_UP()
 #define SET_485_1_DE_DOWN()
+
+/*usb*/
+#define SOC_USB_FS

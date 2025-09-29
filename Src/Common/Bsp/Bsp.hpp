@@ -6,3 +6,4 @@
 #include "Bsp_spi.hpp"
 #include "Bsp_tim.hpp"
 #include "Bsp_uart.hpp"
+#include "Bsp_usb.hpp"
