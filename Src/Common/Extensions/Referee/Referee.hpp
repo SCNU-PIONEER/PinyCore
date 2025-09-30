@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include <cstdint>
 #include "event_groups.h"
-#include "Bsp_uart.hpp"
+#include "Bsp.hpp"
 
 #define REFEREE_READY_EVENT (1 << 2)
 
@@ -30,7 +30,8 @@ class RefReceiver {
     static constexpr uint8_t REFEREE_SYS_MAX_LOST = 5;
 
 public:
-    void init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event);
+    RefReceiver(UART_HandleTypeDef *_huart);
+    void init(EventGroupHandle_t _event);
 
     void uartIdleCallback(UART_HandleTypeDef *_huart);
     void readRefereeData();
@@ -40,16 +41,8 @@ public:
 
     RefereeProt_s &getRefereeData() { return refereeData_; }
 
-    static RefReceiver &instance()
-    {
-        static RefReceiver instance;
-        return instance;
-    }
-
 private:
-    RefReceiver();
-
-    UART_HandleTypeDef *uart_;
+    Uart uart_;
     uint8_t *rxBuffer_;
     RefereeProt_s refereeData_;
 
@@ -60,18 +53,21 @@ private:
     EventGroupHandle_t event_;
 };
 
-class RefereeTransmitter {
+class RefTransmitter {
     static constexpr uint8_t REFEREE_TX_BUFFER_LEN = 128;
 
 public:
-    RefereeTransmitter(UART_HandleTypeDef *_huart);
+    RefTransmitter(UART_HandleTypeDef *_huart);
 
     uint16_t sendData(uint16_t _cmdId, uint8_t *_pStruct, uint16_t _len);
 
 private:
-    UART_HandleTypeDef *uart_;
+    Uart uart_;
 
     uint8_t txBuffer_[REFEREE_TX_BUFFER_LEN];
 };
 
 } // namespace REFEREE
+
+inline REFEREE::RefReceiver *refereeRx;
+inline REFEREE::RefTransmitter *refereeTx;

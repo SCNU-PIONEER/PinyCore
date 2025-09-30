@@ -14,6 +14,8 @@
 #include <cmath>
 #include <cstring>
 
+RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart) : rc_(_huart) {};
+
 
 void RcMsgHandler::updateRocker(float &_target, float _channel)
 {
@@ -25,7 +27,7 @@ void RcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     msgBus_ = _bus;
     this->event = _event;
-    rc_.init(&RC_UART, _event);
+    rc_.init(_event);
 }
 
 

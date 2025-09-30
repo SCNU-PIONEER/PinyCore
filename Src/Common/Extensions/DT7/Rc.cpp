@@ -1,27 +1,24 @@
 #include "Soc.hpp"
 #include <cstring>
 #include "Rc.hpp"
-#include "Bsp_uart.hpp"
-#include "Bsp_dma.hpp"
 #include "task.h"
 
 namespace RC {
 
-Rc::Rc() { memset(&data_, 0, sizeof(data_)); }
-
-void Rc::init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event)
+Rc::Rc(UART_HandleTypeDef *_huart) : uart_(_huart)
 {
-    uart_ = _huart;
-    event_ = _event;
-    rcBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * RC_FRAME_LENGTH);
-    Uart::instance().RecvDmaMultiBufInit(_huart, (uint32_t *)&rcBuffer_[0],
-                                         2 * RC_FRAME_LENGTH);
-    Uart::instance().registerCallback(_huart, &Rc::rawCallBackFromISR);
+    memset(&data_, 0, sizeof(data_));
 }
 
-void Rc::rawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
+void Rc::init(EventGroupHandle_t _event)
 {
-    Rc::instance().callBackFromISR(_huart, _pos);
+    event_ = _event;
+    rcBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * RC_FRAME_LENGTH);
+    uart_.recvDmaMultiBufInit((uint32_t *)&rcBuffer_[0], 2 * RC_FRAME_LENGTH);
+    uart_.registerCallback(
+            [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
+                callBackFromISR(_huart, _dataLength);
+            });
 }
 
 void Rc::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)

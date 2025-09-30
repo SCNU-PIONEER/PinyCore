@@ -6,22 +6,23 @@ void RefereeHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     this->msgBus_ = _bus;
     this->event = _event;
-    extern UART_HandleTypeDef REFEREE_UART;
-    referee_.init(&REFEREE_UART, _event);
+    refereeRx = new REFEREE::RefReceiver(&REFEREE_UART);
+    refereeTx = new REFEREE::RefTransmitter(&REFEREE_UART);
+    refereeRx->init(_event);
 }
 
 void RefereeHandler::handle()
 {
-    referee_.readRefereeData();
+    refereeRx->readRefereeData();
 
-    msg_.bulletSpeed = referee_.getRefereeData().shootData.bulletSpeed;
+    msg_.bulletSpeed = refereeRx->getRefereeData().shootData.bulletSpeed;
     msg_.shooterHeatLimit =
-            referee_.getRefereeData().gameRobotStatus.shooterHeatLimit;
+            refereeRx->getRefereeData().gameRobotStatus.shooterHeatLimit;
     msg_.chassisPowerLimit =
-            referee_.getRefereeData().gameRobotStatus.chassisPowerLimit;
+            refereeRx->getRefereeData().gameRobotStatus.chassisPowerLimit;
     msg_.chassisPowerBuffer =
-            referee_.getRefereeData().powerHeatData.chassisPowerBuffer;
-    msg_.currentHP = referee_.getRefereeData().gameRobotStatus.currentHP;
+            refereeRx->getRefereeData().powerHeatData.chassisPowerBuffer;
+    msg_.currentHP = refereeRx->getRefereeData().gameRobotStatus.currentHP;
 
     notify(&msg_, msgBus_->refereeQueue);
 }

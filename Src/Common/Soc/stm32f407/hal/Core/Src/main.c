@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -137,6 +138,7 @@ int main(void)
   MX_CRC_Init();
   MX_RNG_Init();
   MX_SPI2_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   initPinyCore();
   /* USER CODE END 2 */
