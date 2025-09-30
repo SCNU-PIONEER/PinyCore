@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#define DEBUG       1
+#define DEBUG 1
 
 /*********************************************************************
 * (c) SEGGER Microcontroller GmbH & Co. KG *
