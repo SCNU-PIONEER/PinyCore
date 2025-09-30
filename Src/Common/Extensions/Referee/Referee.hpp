@@ -53,20 +53,21 @@ private:
     EventGroupHandle_t event_;
 };
 
-class RefereeTransmitter {
+class RefTransmitter {
     static constexpr uint8_t REFEREE_TX_BUFFER_LEN = 128;
 
 public:
-    RefereeTransmitter(UART_HandleTypeDef *_huart);
+    RefTransmitter(UART_HandleTypeDef *_huart);
 
     uint16_t sendData(uint16_t _cmdId, uint8_t *_pStruct, uint16_t _len);
 
 private:
-    UART_HandleTypeDef *uart_;
+    Uart uart_;
 
     uint8_t txBuffer_[REFEREE_TX_BUFFER_LEN];
 };
 
 } // namespace REFEREE
 
-inline REFEREE::RefReceiver *referee;
+inline REFEREE::RefReceiver *refereeRx;
+inline REFEREE::RefTransmitter *refereeTx;

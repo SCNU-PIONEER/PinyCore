@@ -89,13 +89,10 @@ void RefReceiver::readRefereeData()
 }
 
 
-RefereeTransmitter::RefereeTransmitter(UART_HandleTypeDef *_huart)
-        : uart_(_huart)
-{
-}
+RefTransmitter::RefTransmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
 
-uint16_t RefereeTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
-                                      uint16_t _dataLen)
+uint16_t RefTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
+                                  uint16_t _dataLen)
 {
     uint16_t totalSize;
     FrameHeader_s txHeader;
@@ -120,8 +117,8 @@ uint16_t RefereeTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
 
     Append_CRC16_Check_Sum(txBuffer_, totalSize);
 
-    HAL_UART_Transmit_DMA(uart_, txBuffer_, totalSize);
-    //TODO: use bsp_uart transimit function
+    uart_.transmitDma(txBuffer_, totalSize);
+
     return totalSize;
 }
 
