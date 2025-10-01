@@ -20,7 +20,7 @@ else()
     set(float-abi "hard" PARENT_SCOPE)
 endif()
 
-message("soc board: ${soc_target}")
+message(STATUS "soc board: ${soc_target}")
 
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
 
@@ -96,4 +96,28 @@ if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS "${targe
   else()
     message(STATUS "genSoc.sh run success: ${soc_output}")
   endif()
+endif()
+
+message("------------------ debug config ---------------------")
+
+function(generate_launch_json)
+  if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${target_folder}/debug/launch_linux.json ${CMAKE_SOURCE_DIR}/.vscode/launch.json)
+  elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${target_folder}/debug/launch_win.json ${CMAKE_SOURCE_DIR}/.vscode/launch.json)
+  endif()
+  message(STATUS "generating ${CMAKE_HOST_SYSTEM_NAME} ${soc_target} debug launch.json")
+endfunction()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/.vscode/launch.json")
+  file(READ "${CMAKE_SOURCE_DIR}/.vscode/launch.json" LAUNCH_JSON_CONTENT)
+  # update launch.json only when change soc target 
+  if(LAUNCH_JSON_CONTENT MATCHES ".*${soc_target}.*")
+      message(STATUS "Found ${soc_target} in launch.json")
+      return()
+    else()
+      generate_launch_json()
+  endif()
+else()
+  generate_launch_json()
 endif()

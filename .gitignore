@@ -8,3 +8,5 @@ ThirdParty/
 .config.old
 sdkconfig.h
 sdkconfig.cmake
+.vscode/launch.json
+*/*.log
