@@ -178,6 +178,8 @@ void IMotor::parseCmd()
 {
     this->cmd_.curCmdType = AUX_.cmdBuf.cmdType;
 
+    cmd_.prevSW = cmd_.SW;
+
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::ON: {
         this->cmd_.updateSW(true);
