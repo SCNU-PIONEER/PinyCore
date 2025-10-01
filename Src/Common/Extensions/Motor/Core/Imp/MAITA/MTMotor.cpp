@@ -114,6 +114,7 @@ MotorTypeDef_e MTMotor::ctrl()
 
 void MTMotor::disable(std::array<uint8_t, 8> &_txBuf)
 {
+    this->cmd_.updateSW(false);
     constexpr std::array<uint8_t, 8> PACK = { 0x80, 0, 0, 0, 0, 0, 0, 0 };
     _txBuf = PACK;
 }
@@ -129,8 +130,8 @@ void MTMotor::absPosCtrl(std::array<uint8_t, 8> &_txBuf)
     TransmitMsg_s data{};
     data.maxspeed = static_cast<uint16_t>(this->cmd_.vel);
     data.pos = regInfo_.isReverse ?
-                       -static_cast<int32_t>(this->cmd_.pos * 100) :
-                       static_cast<int32_t>(this->cmd_.pos * 100);
+                       -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
+                       static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
     memcpy(_txBuf.data(), &data, 8);
 }
 
