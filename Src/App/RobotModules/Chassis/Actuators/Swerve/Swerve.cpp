@@ -238,9 +238,6 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
  */
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
-    Swerve_u<float> tempDir;
-    float del[4], vel[4], torq[4];
-
     // float cosYaw = arm_cos_f32(deltaYaw_);
     // float sinYaw = arm_sin_f32(deltaYaw_);
     // Speed_u refSpeed = {
@@ -248,6 +245,8 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     //     .vy = (_refSpeed.vy * cosYaw) + (_refSpeed.vx * sinYaw),
     //     .wz = _refSpeed.wz
     // };
+    Swerve_u<float> tempDir;
+    float del[4], vel[4], torq[4];
 
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 

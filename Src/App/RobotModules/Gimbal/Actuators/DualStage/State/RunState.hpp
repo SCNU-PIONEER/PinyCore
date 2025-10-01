@@ -8,15 +8,18 @@
 #include "PidBasic.hpp"
 
 static PositionalPid gRunPosPid[3] = {
-    PositionalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(20.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(14.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+    PositionalPid(0.f, 0.f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(35.f, 0.7f, 0.0f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(20.f, 0.7f, 0.0f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.02f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
     PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
+
+extern float yawCur[3];
+
 namespace GIMBAL {
 
 class RunState : public FSMState<FSMState_e> {
@@ -35,6 +38,10 @@ public:
 
     void enter() final
     {
+        for (uint8_t i = 0; i < 3; i++) {
+            eIA._[i] = cIA._[i];
+            eMA._[i] = cMA._[i];
+        }
         gimbal_->enter();
 
         LOG::info("GimbalRun", "enter");
@@ -42,7 +49,7 @@ public:
 
     void run() final
     {
-        DualStage_u<float> delArc;
+        DualStage_u<float> delArc = {};
 
         eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
@@ -50,7 +57,7 @@ public:
 
         eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG,
                                         IMU_PITCH_MAX_ANG);
-        eIA.FirstYaw = gimbal_->rangeConversion(eIA.FirstYaw);
+        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
         delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
@@ -59,11 +66,7 @@ public:
         eMA.FirstYaw = PINYMOTOR::rangeMap(cMA.FirstYaw + delArc.FirstYaw);
         eMA.SecondYaw = 0.f;
 
-        for (uint8_t i = 0; i < 3; i++) {
-            gimbal_->ctrl(gimbal_->motors()->_[i],
-                          gimbal_->gimbalFilter()->_[i], runPosPid_._[i],
-                          runVelPid_._[i], eMA._[i]);
-        }
+        gimbal_->ctrl(eMA, runPosPid_, runVelPid_);
     }
 
     void exit() final
@@ -82,8 +85,10 @@ public:
             return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
+        else if (gimbal_->msg.state == FSMState_e::PATROL)
+            return FSMState_e::PATROL;
         else
-            return FSMState_e::RUN;
+            return FSMState_e::STOP;
     }
 
 private:

@@ -9,17 +9,17 @@ using namespace INS_SYS;
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = {
 
-    .accelT = { { 1.00378931f, -0.00643978501f, 0.00929921027f },
-                { 0.0178677756f, 1.00453115f, -0.000616421574f },
-                { -0.0180354994f, -0.0277505852f, 1.00323439f } },
-    .accelOffs = { 0.0724740028f, -0.0040230751f, -0.0407223701f }
+    .accelT = { { 1.004772f, 0.030028f, 0.002227f },
+                { 0.000336f, 1.008157f, 0.018832f },
+                { -0.003582f, 0.012065f, 1.005470f } },
+    .accelOffs = { 0.089142f, -0.059174f, 0.044562f }
 };
 // default gyroscope calibration
 static constexpr GyroCaliParams_s GYRO_CALI = {
 
-    .gxBias = -0.898322f,
-    .gyBias = -4.99465f,
-    .gzBias = -0.234681f,
+    .gxBias = 2.67470956f,
+    .gyBias = 0.319893122f,
+    .gzBias = 0.747945726f,
     .gxTcoK = 0.f,
     .gxTcoB0 = 0.f,
     .gyTcoK = 0.f,
@@ -100,8 +100,8 @@ void INS::task(void *_param)
             .a = { .x = cali.getOutput().ax,
                    .y = cali.getOutput().ay,
                    .z = -cali.getOutput().az },
-            .g = { .x = -cali.getOutput().gx,
-                   .y = -cali.getOutput().gy,
+            .g = { .x = cali.getOutput().gx,
+                   .y = cali.getOutput().gy,
                    .z = cali.getOutput().gz },
         };
         data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y -

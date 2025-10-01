@@ -1,12 +1,8 @@
 #include "RttMsgHandler.hpp"
-<<<<<<< HEAD:Src/System/Components/Cmd/Handler/RttMsgHandler.cpp
-#include "Chassis.hpp"
-=======
 #ifdef CHASSIS_TYPE
 #include CHASSIS_FILE
 #endif
 #include <cstring>
->>>>>>> fd26e0a4944c47f8fc7cebef5b34d45ee8d35891:Src/System/Cmd/Handler/RttMsgHandler.cpp
 #include "SEGGER_RTT.h"
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)

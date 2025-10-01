@@ -54,10 +54,5 @@ private:
     void masterHandle();
 
     ChassisMsg_s cmsg_;
-<<<<<<< HEAD:Src/System/Components/Cmd/Handler/RcMsgHandler.hpp
     GimbalMsg_s gmsg_;
-=======
-
-    UART_HandleTypeDef *_uart;
->>>>>>> fd26e0a4944c47f8fc7cebef5b34d45ee8d35891:Src/System/Cmd/Handler/RcMsgHandler.hpp
 };

@@ -21,10 +21,15 @@ extern canHandle HCAN1;
 using namespace GIMBAL;
 using namespace PINYMOTOR;
 
+static float curImuAng[3] = {};   //-pi~pi
+static float expImuAng[3] = {};   //-pi~pi
+static float curMotorAng[3] = {}; //0~2pi
+static float expMotorAng[3] = {}; //0~2pi·
+
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
-    FILTER::LPF(1000.f, 4.f),
-    FILTER::LPF(1000.f, 4.f),
+    FILTER::LPF(1000.f, 5.f),
+    FILTER::LPF(1000.f, 5.f),
 };
 
 DualStage::DualStage()
@@ -90,9 +95,9 @@ DualStage::DualStage()
     this->stateFactory_.addState(FSMState_e::LAUNCH,
                                  std::make_unique<LaunchState>(this));
     this->stateFactory_.addState(FSMState_e::STOP,
-                                 std::make_unique<PatrolState>(this));
-    this->stateFactory_.addState(FSMState_e::PATROL,
                                  std::make_unique<StopState>(this));
+    this->stateFactory_.addState(FSMState_e::PATROL,
+                                 std::make_unique<PatrolState>(this));
     this->stateFactory_.init(
             this->stateFactory_.getNextState(FSMState_e::STOP));
 }
@@ -117,17 +122,14 @@ void DualStage::update(void *_param)
     };
     this->insSub_->receive();
 
+    for (uint8_t i = 0; i < 3; i++) {
+        curMotorAng_._[i] = motors_._[i]->posNorm(); // 0~2*pi
+    }
     //ins -pi~pi
     curImuAng_.Pitch = insData_.pitch;
     curImuAng_.SecondYaw = insData_.yaw; //云台imu在小yaw上
-
-    for (uint8_t i = 0; i < 3; i++) {
-        curImuAng_._[i] = rangeConversion(curImuAng_._[i]); // 0~2*pi
-        curMotorAng_._[i] = motors_._[i]->posNorm();        // 0~2*pi
-    }
-
-    curImuAng_.FirstYaw =
-            rangeConversion(curImuAng_.SecondYaw - curMotorAng_.SecondYaw);
+    curImuAng_.FirstYaw = getMinorArc(curImuAng_.SecondYaw,
+                                      rangeConversion(curMotorAng_.SecondYaw));
 
     compensateImuAngle();
     // updateBaseYaw();
@@ -137,11 +139,11 @@ void DualStage::update(void *_param)
     gimbalYawPub_->publish();
 
     this->stateFactory_.update();
-
-    if (msg.state == FSMState_e::STOP) {
-        for (uint8_t i = 0; i < 3; i++) {
-            motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(0.f));
-        }
+    for (uint8_t i = 0; i < 3; i++) {
+        curImuAng[i] = curImuAng_._[i];
+        expImuAng[i] = expImuAng_._[i];
+        curMotorAng[i] = curMotorAng_._[i];
+        expMotorAng[i] = expMotorAng_._[i];
     }
 }
 
@@ -150,11 +152,10 @@ void DualStage::compensateImuAngle()
     float tempComAng;
     if (this->isConfirmYawZero_) {
         //控制大yaw
-        this->curImuAng_.SecondYaw = rangeConversion(getMinorArc(
-                this->curImuAng_.SecondYaw, -this->constDeltaYawArc_));
-        this->curImuAng_.FirstYaw = rangeConversion(getMinorArc(
-                this->curImuAng_.FirstYaw, -this->constDeltaYawArc_));
-
+        this->curImuAng_.SecondYaw = getMinorArc(this->curImuAng_.SecondYaw,
+                                                 -this->constDeltaYawArc_);
+        this->curImuAng_.FirstYaw = getMinorArc(this->curImuAng_.FirstYaw,
+                                                -this->constDeltaYawArc_);
         //与gimbal类保持相同
         this->ctrlYawAng_ = this->curImuAng_.FirstYaw;
     } else {
@@ -166,8 +167,8 @@ void DualStage::compensateImuAngle()
             小yaw+大yaw=imu坐标系与车体坐标系正方向的差角*/
             tempComAng =
                     motors_.SecondYaw->posNorm() + motors_.FirstYaw->posNorm();
-            //0~2*pi
-            tempComAng = rangeConversion(tempComAng);
+            //0~2pi
+            tempComAng = PINYMOTOR::rangeMap(tempComAng);
             this->constDeltaYawArc_ = FIRST_YAW_REVERSE ?
                                               getMinorArc(0.f, tempComAng) :
                                               getMinorArc(tempComAng, 0.f);
@@ -178,26 +179,34 @@ void DualStage::compensateImuAngle()
     }
 }
 
-
 void DualStage::updateBaseYaw() {}
 
-void DualStage::ctrl(PINYMOTOR::IMotor *_motor, FILTER::LPF *_filter,
-                     PID *_angPID, PID *_velPID, float _pos)
+void DualStage::ctrl(DualStage_u<float> _pos,
+                     DualStagePtr_u<PositionalPid> _angPID,
+                     DualStagePtr_u<PositionalPid> _velPID)
 {
-    float del = getMinorArc(_pos, _motor->posNorm());
-    float vel = _angPID->calc(del, 0);
-    float torq = _velPID->calc(vel, _motor->vel());
-    if (msg.state == FSMState_e::STOP) {
-        torq = 0.f;
+    float del[3], vel[3], torq[3];
+    for (uint8_t i = 0; i < 3; i++) {
+        del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
+        vel[i] = _angPID._[i]->calc(del[i], 0);
+        torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
+        if (msg.state == FSMState_e::STOP) {
+            torq[i] = 0.f;
+        }
+        motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
-    _motor->cmdTorq(_filter->process(torq));
 }
 
-void DualStage::ctrl(PINYMOTOR::IMotor *_motor, FILTER::LPF *_filter,
-                     PID *_angPID, PID *_velPID, float _pos, float _vel)
+void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel,
+                     DualStagePtr_u<PositionalPid> _angPID,
+                     DualStagePtr_u<PositionalPid> _velPID)
 {
-    float del = getMinorArc(_pos, _motor->posNorm());
-    float vel = _angPID->calc(fmax(-_vel, fmin(del, _vel)), 0);
-    float torq = _velPID->calc(vel, _motor->vel());
-    _motor->cmdTorq(_filter->process(torq));
+    float del[3], vel[3], torq[3];
+    for (uint8_t i = 0; i < 3; i++) {
+        del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
+        vel[i] = _angPID._[i]->calc(fmax(-_vel._[i], fmin(del[i], _vel._[i])),
+                                    0);
+        torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
+        motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
+    }
 }

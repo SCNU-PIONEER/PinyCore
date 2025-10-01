@@ -23,16 +23,30 @@ template <typename T> union DualStagePtr_u {
 template <typename T> union DualStage_u {
     struct {
         T Pitch;
-        T FirstYaw;
-        T SecondYaw;
+        T FirstYaw;  //大yaw
+        T SecondYaw; //小yaw
     };
     T _[3];
 };
 
-struct Ang_s {
-    float roll, yaw, pitch;
+//转换为-pi~pi
+static inline float rangeConversion(float _ang)
+{
+    return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
 };
 
+static inline void slopeFollowing(float *_exp, float *_cur, float _acc)
+{
+    if (*_exp > *_cur) {
+        *_cur = *_cur + _acc;
+        if (*_cur >= *_exp)
+            *_cur = *_exp;
+    } else if (*_exp < *_cur) {
+        *_cur = *_cur - _acc;
+        if (*_cur <= *_exp)
+            *_cur = *_exp;
+    }
+}
 /**
  * @brief 双级yaw轴,大小yaw.
  * @note 当前版本imu装在小yaw上,但是控制的是大yaw
@@ -40,8 +54,8 @@ struct Ang_s {
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 2.055018f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.0114f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 0.f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 6.22f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.1722f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -54,32 +68,26 @@ public:
 
     DualStage();
 
+
     DualStage_u<bool> isGimbalResverse;
 
-    DualStage_u<float> curImuAng_ = {};
-    DualStage_u<float> expImuAng_ = {};
-
-    DualStage_u<float> curMotorAng_ = {};
-    DualStage_u<float> expMotorAng_ = {};
+    DualStage_u<float> curImuAng_ = {};   //-pi~pi
+    DualStage_u<float> expImuAng_ = {};   //-pi~pi
+    DualStage_u<float> curMotorAng_ = {}; //0~2pi
+    DualStage_u<float> expMotorAng_ = {}; //0~2pi
 
     void stop();
     void enter();
     void update(void *_param);
 
-    void ctrl(PINYMOTOR::IMotor *_motor, FILTER::LPF *_filter, PID *_angPID,
-              PID *_velPID, float _pos);
-    void ctrl(PINYMOTOR::IMotor *_motor, FILTER::LPF *_filter, PID *_angPID,
-              PID *_velPID, float _pos, float _vel);
+    void ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _angPID,
+              DualStagePtr_u<PositionalPid> _velPID);
+    void ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel,
+              DualStagePtr_u<PositionalPid> _angPID,
+              DualStagePtr_u<PositionalPid> _velPID);
 
     DualStagePtr_u<PINYMOTOR::IMotor> *motors() { return &motors_; }
     DualStagePtr_u<FILTER::LPF> *gimbalFilter() { return &gimbalFilterOutput_; }
-
-    //转换为0~2pi
-    float rangeConversion(float _ang)
-    {
-        return _ang > 2 * PI ? _ang - (2 * PI) :
-                               (_ang < 0 ? _ang + (2 * PI) : _ang);
-    };
 
 protected:
 private:
@@ -91,7 +99,7 @@ private:
     void updateBaseYaw();
 
     DualStagePtr_u<FILTER::LPF> gimbalFilterOutput_; //输出滤波
-    DualStagePtr_u<PINYMOTOR::IMotor> motors_; //电机
+    DualStagePtr_u<PINYMOTOR::IMotor> motors_;       //电机
 };
 
 } // namespace GIMBAL

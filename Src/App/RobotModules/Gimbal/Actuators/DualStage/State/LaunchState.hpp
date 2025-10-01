@@ -10,20 +10,20 @@
 #include <cstdint>
 
 static PositionalPid gLauPosPid[3] = {
-    PositionalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(10.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+    PositionalPid(40.f, 0.1f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(60.f, 1.f, 0.01f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(45.f, 0.7f, 0.005f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
 static PositionalPid gLauVelPid[3] = {
     PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
+    PositionalPid(0.02f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.015f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
 
 namespace GIMBAL {
 
 class LaunchState : public FSMState<FSMState_e> {
-    static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 3s
+    static constexpr uint16_t MAX_LAUNCH_TIME = 3000; // 3s
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
     static constexpr float YAW_LAUNCH_ANG_DEADBAND = 0.1f;
@@ -70,12 +70,11 @@ public:
             launchFinishTime_ = 0;
         }
 
+        for (float &i : eMA._) {
+            i = 0;
+        }
         // ctrl (smooth)
-        for (uint8_t i = 0; i < 3; i++) {
-            gimbal_->ctrl(gimbal_->motors()->_[i],
-                          gimbal_->gimbalFilter()->_[i], lauPosPid_._[i],
-                          lauVelPid_._[i], 0.f, launchStep._[i]);
-        };
+        gimbal_->ctrl(eMA, launchStep, lauPosPid_, lauVelPid_);
     }
 
     void exit() final
@@ -108,6 +107,7 @@ private:
     DualStagePtr_u<PositionalPid> lauPosPid_;
     DualStagePtr_u<PositionalPid> lauVelPid_;
 
+    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
 
     uint16_t launchTotalTime_ = 0; // ms

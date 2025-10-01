@@ -2,20 +2,24 @@
 
 #include "FSMState.hpp"
 #include "DualStage.hpp"
+#include "Smooth.hpp"
 #include "StmLog.hpp"
 
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 
 static PositionalPid gPatPosPid[3] = {
-    PositionalPid(10.f, 0.001f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(18.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(15.f, 0.0f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f)
+    PositionalPid(0.f, 0.f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(20.f, 0.5f, 0.0f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+    PositionalPid(15.f, 0.2f, 0.0f, 1.f / 1000.f, 1.f, 120.f, 0.f)
 };
 static PositionalPid gPatVelPid[3] = {
     PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
+    PositionalPid(0.02f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.015f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
 };
 namespace GIMBAL {
 
@@ -23,11 +27,7 @@ class PatrolState : public FSMState<FSMState_e> {
     static constexpr float IMU_PITCH_MIN_ANG = -0.5f;
     static constexpr float IMU_PITCH_MAX_ANG = 0.3f;
 
-    static constexpr float SECOND_YAW_MAX_ANG = 0.2618f; //±15°
-    static constexpr float SECOND_YAW_MIN_ANG = -0.2618f;
-
-    static constexpr float PITCH_PATROL_SPEED = 0.05f;
-    static constexpr float SECOND_YAW_PATROL_SPEED = 0.05f;
+    static constexpr float SECOND_YAW_MAX_ANG = 0.2618f; //±30°
 
 public:
     PatrolState(DualStage *_gimbal)
@@ -41,6 +41,11 @@ public:
 
     void enter() final
     {
+        for (uint8_t i = 0; i < 3; i++) {
+            eIA._[i] = cIA._[i];
+            eMA._[i] = cMA._[i];
+        }
+        patrolCnt = 0;
         gimbal_->enter();
 
         LOG::info("GimbalPatrol", "enter");
@@ -48,39 +53,30 @@ public:
 
     void run() final
     {
-        DualStage_u<float> delArc;
+        DualStage_u<float> delArc = {};
 
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
-        eIA.Pitch += pitchPatDir * PITCH_PATROL_SPEED * 0.001f;
-        eIA.SecondYaw += secondYawPatDir * SECOND_YAW_PATROL_SPEED * 0.001f;
+        eIA.Pitch = cIA.Pitch;
+        eIA.SecondYaw = cIA.SecondYaw;
 
-        if (eIA.Pitch > IMU_PITCH_MAX_ANG) {
-            pitchPatDir = -1;
-        } else if (eIA.Pitch < IMU_PITCH_MIN_ANG) {
-            pitchPatDir = 1;
-        }
-        if (eIA.SecondYaw > SECOND_YAW_MAX_ANG) {
-            secondYawPatDir = -1;
-        } else if (eIA.SecondYaw < SECOND_YAW_MIN_ANG) {
-            secondYawPatDir = 1;
-        }
-
-        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG,
-                                        IMU_PITCH_MAX_ANG);
-        eIA.FirstYaw = gimbal_->rangeConversion(eIA.FirstYaw);
-        eIA.SecondYaw = PINYMOTOR::clampArc(eIA.SecondYaw, SECOND_YAW_MIN_ANG,
-                                            SECOND_YAW_MAX_ANG);
-
+        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         for (uint8_t i = 0; i < 3; i++) {
             delArc._[i] = PINYMOTOR::getMinorArc(eIA._[i], cIA._[i]);
-
             eMA._[i] = PINYMOTOR::rangeMap(cMA._[i] + delArc._[i]);
-
-            gimbal_->ctrl(gimbal_->motors()->_[i],
-                          gimbal_->gimbalFilter()->_[i], patPosPid_._[i],
-                          patVelPid_._[i], eMA._[i]);
         }
+        //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
+        if (patrolCnt + 5 >= MAX_PAT_CNT)
+            maxPatCount = 0;
+        else if (patrolCnt - 5 <= 0)
+            maxPatCount = MAX_PAT_CNT;
+        slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
+
+        eMA.Pitch = PINYMOTOR::rangeMap((0.4f * cos(omiga * patrolCnt)) - 0.1f);
+        eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG *
+                                            sin(omiga * patrolCnt));
+
+        gimbal_->ctrl(eMA, patPosPid_, patVelPid_);
     }
 
     void exit() final
@@ -102,14 +98,18 @@ public:
         else if (gimbal_->msg.state == FSMState_e::PATROL)
             return FSMState_e::PATROL;
         else
-            return FSMState_e::RUN;
+            return FSMState_e::STOP;
     }
 
 private:
     DualStage *gimbal_;
 
-    float pitchPatDir = 1;
-    float secondYawPatDir = 1;
+    static constexpr float PAT_FREQ = 1000.f; //hz,代码运行频率
+    static constexpr float PERIOD = 4;        //s
+    static constexpr float MAX_PAT_CNT = PERIOD * PAT_FREQ;
+    float patrolCnt = 0;
+    float maxPatCount = 0;
+    float omiga = 2 * PI / PERIOD / PAT_FREQ; //rad/s
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;

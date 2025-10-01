@@ -8,7 +8,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
-// #include CHASSIS_FILE
+#include CHASSIS_FILE
 #include GIMBAL_FILE
 
 #if APP_USE_DAEMONS
@@ -22,6 +22,7 @@
 #include "INS.hpp"
 INS_SYS::INS *ins;
 #endif
+
 
 //---------------------------------------------------------------------------------------------------
 

@@ -105,8 +105,8 @@ private:
 
     Swerve_u<float> curDir;                       //舵轮当前方向角
     Swerve_u<float> expDir;                       //舵轮期望方向角
-    SwervePtr_u<PositionalPid> swervePosPid_;      //舵轮位置环
-    SwervePtr_u<PositionalPid> swerveVelPid_;      //舵轮速度环
+    SwervePtr_u<PositionalPid> swervePosPid_;     //舵轮位置环
+    SwervePtr_u<PositionalPid> swerveVelPid_;     //舵轮速度环
     SwervePtr_u<FILTER::LPF> swerveFilterOutput_; //舵轮输出滤波器
 };
 
