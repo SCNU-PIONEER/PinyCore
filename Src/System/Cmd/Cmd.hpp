@@ -3,10 +3,13 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "event_groups.h"
+#include "MsgImpl.hpp"
+
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
+#include "RefereeHandler.hpp"
 
-#define EVENT_MASK (RTT_READY_EVENT | RC_READY_EVENT)
+#define EVENT_MASK (RTT_READY_EVENT | RC_READY_EVENT | REFEREE_READY_EVENT)
 
 class Cmd {
 public:
@@ -24,4 +27,5 @@ private:
 
     RcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
+    RefereeHandler refereeHandler_;
 };

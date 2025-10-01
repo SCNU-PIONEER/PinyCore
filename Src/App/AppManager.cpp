@@ -8,6 +8,7 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
+#include "Bsp.hpp"
 #include CHASSIS_FILE
 #include GIMBAL_FILE
 
@@ -105,12 +106,12 @@ void AppManager::createApp()
             "motor_task", 512, nullptr, 6, nullptr);
 
     // Buzzer Once Task
-    // xTaskCreate(
-    //         [](void *_param) -> void {
-    //             BUZZER::Buzzer::getInstance().playPinyCore();
-    //             vTaskDelete(nullptr); // 否则会进ExistError
-    //         },
-    //         "buzzer_task", 64, nullptr, 3, nullptr);
+    xTaskCreate(
+            [](void *_param) -> void {
+                BUZZER::Buzzer::getInstance().playPinyCore();
+                vTaskDelete(nullptr); // 否则会进ExistError
+            },
+            "buzzer_task", 128, nullptr, 3, nullptr);
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);

@@ -20,6 +20,7 @@
 #include "FreeRTOS.h"
 #include "main.h"
 #include "event_groups.h"
+#include "Bsp.hpp"
 
 #define RC_READY_EVENT (1 << 1)
 
@@ -27,27 +28,18 @@ namespace RC {
 
 class Rc {
 private:
-    Rc();
     RcRawMsg_t data_;
-    UART_HandleTypeDef *uart_;
     uint8_t *rcBuffer_;
     volatile uint8_t dt7RxLostCnt_ = RC_RX_LOST_MAX;
     EventGroupHandle_t event_;
     static constexpr uint16_t UPDATE_FREQ = 70;
+    Uart uart_;
 
 public:
-    Rc(const Rc &) = delete;
-    Rc &operator=(const Rc &) = delete;
-
-    void init(UART_HandleTypeDef *_huart, EventGroupHandle_t _event);
+    Rc(UART_HandleTypeDef *_huart);
+    void init(EventGroupHandle_t _event);
 
     RcRawMsg_t &getData() { return data_; }
-
-    static Rc &instance()
-    {
-        static Rc instance;
-        return instance;
-    }
 
     void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos);
     static void rawCallBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos);

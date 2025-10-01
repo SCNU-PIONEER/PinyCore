@@ -30,7 +30,6 @@ add_subdirectory(Lib/Eigen3)
 # add_subdirectory(Lib/TinyMPC)
 
 add_subdirectory(Src/App)
-add_subdirectory(${soc_folder}/hal/cmake/stm32cubemx)
 add_subdirectory(Src/Common/Extensions)
 add_subdirectory(Src/Common/Bsp)
 add_subdirectory(Src/System)
@@ -42,11 +41,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE Src/PinyCore.cpp)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE Src)
 
 target_link_libraries(
-  ${CMAKE_PROJECT_NAME}
-  Extensions
-  Bsp
-  utils
-  freertos_kernel
+  ${CMAKE_PROJECT_NAME} Extensions Bsp utils freertos_kernel
   # TinyMPC
 )
 

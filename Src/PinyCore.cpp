@@ -1,5 +1,5 @@
 #include "StmLog.hpp"
-#include "Bsp_can.hpp"
+#include "Bsp.hpp"
 #include "PinyCore.hpp"
 #include "AppManager.hpp"
 #include "SEGGER_SYSVIEW.h"
@@ -11,6 +11,9 @@ void PinyCore::bspInit()
     SEGGER_SYSVIEW_Conf();
 
     Can::instance().init();
+
+    /* we need lazy init firstly */
+    auto &usb = Usb::instance();
 }
 
 void PinyCore::coreInit()

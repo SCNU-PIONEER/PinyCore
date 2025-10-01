@@ -16,6 +16,7 @@ struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
     QueueHandle_t armQueue;
+    QueueHandle_t refereeQueue;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -31,6 +32,11 @@ struct GimbalMsg_s : public Msg {
 
 struct ArmMsg_s : public Msg {
     float j1, j2, j3, j4, j5, j6;
+};
+
+struct RefereeMsg_s : public Msg {
+    uint16_t currentHP, shooterHeatLimit, chassisPowerLimit, chassisPowerBuffer;
+    float bulletSpeed;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

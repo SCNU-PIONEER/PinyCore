@@ -2,7 +2,7 @@
 
 #include "IMotor.hpp"
 #include "UTMotorMsg.hpp"
-#include "Bsp_dma.hpp"
+#include "Bsp.hpp"
 
 namespace PINYMOTOR::UTMOTOR {
 
@@ -29,6 +29,8 @@ private:
 
     void overrideReductionRatio(float _newReductionRatio) final;
 
+    Uart uart_;
+
 protected:
     uint16_t ctrlId_ = 0xFFFF;
     float kp_; //电机内置pid
@@ -37,14 +39,12 @@ protected:
     Feedback_s *rxBuf_ = nullptr;
     Status_s status_;
 
-    DMA_HandleTypeDef *dmaHandle_;
-
     void registerRecvCallback();
     void convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd);
 
 public:
     UTMotor(const char _name[16], InitConfig_s _config,
-            DMA_HandleTypeDef *_dmaHandle);
+            UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle);
     ~UTMotor() override;
 
     void overrideStats(const Status_s &_newStats);
@@ -57,6 +57,9 @@ public:
 
     void setKp(const float _kp);
     void setKd(const float _kd);
+
+    float getKp() const { return kp_; }
+    float getKd() const { return kd_; }
 
     MotorTypeDef_e enable();
     MotorTypeDef_e disable();

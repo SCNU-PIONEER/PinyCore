@@ -1,11 +1,8 @@
 #pragma once
 
-#include <stdint.h>
-#include <functional>
-
 template <typename Derived> class BspBase {
 public:
-    inline static Derived &instance()
+    static Derived &instance()
     {
         static Derived instance;
         return instance;

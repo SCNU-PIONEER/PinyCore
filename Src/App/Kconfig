@@ -16,12 +16,6 @@ menu "app config"
     bool "test modules"
     default n
 
-    config APP_USE_UI
-    bool "UI"
-    default n
-
-    source "Src/App/UI/Kconfig"
-
     config APP_USE_INS
     bool "ins"
     default n
@@ -41,5 +35,19 @@ menu "app config"
     config USE_VSCODE_XRTOS
     bool "vscode plugin: freertos task analyze"
     default n
+
+    config APP_USE_REFEREE
+    bool "referee"
+    default n
+    
+    menu "UI config"
+    depends on APP_USE_REFEREE
+
+    config APP_USE_UI
+    bool "UI"
+    default n
+
+    source "Src/App/UI/Kconfig"
+    endmenu
 
 endmenu
