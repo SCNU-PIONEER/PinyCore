@@ -1,6 +1,5 @@
 #include "AppManager.hpp"
 #include "sdkconfig.h"
-#include "cmsis_os2.h"
 #include "MotorManager.hpp"
 #if APP_USE_COMM
 #include "CommManager.hpp"
@@ -9,12 +8,12 @@
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
+#include "Bsp.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
 #endif
 
-extern TIM_HandleTypeDef BEEP_TIMER;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -47,7 +46,7 @@ void AppManager::initApp()
 #endif
 
 #if APP_USE_INS
-    ins = new INS_SYS::INS();
+    ins = new INS_SYS::INS(&IMU_SPI);
 #endif
 
     cmd = new Cmd();
@@ -82,14 +81,13 @@ void AppManager::schedule(std::function<void()> _callback)
 void AppManager::createApp()
 {
     // Robot-Ctrl Continuous Task
-    xTaskCreate(AppManager::ctrlTask, "ctrl_task", 256, this,
-                osPriorityRealtime, nullptr);
+    xTaskCreate(AppManager::ctrlTask, "ctrl_task", 256, this, 10, nullptr);
 
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
         xTaskCreate(
                 [](void *_param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, nullptr, osPriorityNormal, nullptr);
+                "test_task", 256, nullptr, 5, nullptr);
     }
 
     // Motor-Sending Continuous Task
@@ -97,7 +95,7 @@ void AppManager::createApp()
             [](void *_param) -> void {
                 PINYMOTOR::MotorManager::instance()->ctrlTask();
             },
-            "motor_task", 512, nullptr, osPriorityRealtime6, nullptr);
+            "motor_task", 512, nullptr, 6, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
@@ -105,7 +103,7 @@ void AppManager::createApp()
                 BUZZER::Buzzer::getInstance().playPinyCore();
                 vTaskDelete(nullptr); // 否则会进ExistError
             },
-            "buzzer_task", 64, nullptr, osPriorityNormal, nullptr);
+            "buzzer_task", 128, nullptr, 3, nullptr);
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);

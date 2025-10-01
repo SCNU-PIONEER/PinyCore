@@ -16,7 +16,7 @@ public:
     static constexpr float VOLT_MAX = 24.f;
     static constexpr float CURR_MAX = 0.6f;
     static constexpr float TORQ_MAX = 0.2f;
-    static constexpr float TORQ_CONSTANT = 0.16f;
+    static constexpr float KN = 0.16f;
 
     GM3510(const char _name[16], InitConfig_s _config);
 };

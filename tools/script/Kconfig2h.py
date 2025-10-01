@@ -3,8 +3,8 @@ import re
 import subprocess
 
 config_file = ".config"  # Path to your .config file
-cmake_file = "Src/sdkconfig.cmake"  # Path to the generated kconfig.cmake file
-header_file = "Src/sdkconfig.h"  # Path to the generated kconfig.h file
+cmake_file = "Src/Config/sdkconfig.cmake"  # Path to the generated kconfig.cmake file
+header_file = "Src/Config/sdkconfig.h"  # Path to the generated kconfig.h file
 
 
 def parse_config_file_cmake(_config_file):

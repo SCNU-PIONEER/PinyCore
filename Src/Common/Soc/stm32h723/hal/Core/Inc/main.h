@@ -37,6 +37,40 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+extern DMA_HandleTypeDef hdma_usart10_rx;
+extern DMA_HandleTypeDef hdma_usart2_tx;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_uart9_tx;
+extern DMA_HandleTypeDef hdma_uart9_rx;
+extern DMA_HandleTypeDef hdma_uart7_tx;
+extern DMA_HandleTypeDef hdma_uart5_rx;
+extern UART_HandleTypeDef huart10;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart9;
+extern UART_HandleTypeDef huart7;
+extern UART_HandleTypeDef huart5;
+extern DMA_HandleTypeDef hdma_tim2_ch1;
+extern TIM_HandleTypeDef htim13;
+extern TIM_HandleTypeDef htim12;
+extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim1;
+extern DMA_HandleTypeDef hdma_spi6_tx;
+extern DMA_HandleTypeDef hdma_spi2_rx;
+extern DMA_HandleTypeDef hdma_spi2_tx;
+extern SPI_HandleTypeDef hspi6;
+extern SPI_HandleTypeDef hspi2;
+extern FDCAN_HandleTypeDef hfdcan3;
+extern FDCAN_HandleTypeDef hfdcan2;
+extern FDCAN_HandleTypeDef hfdcan1;
+extern DMA_HandleTypeDef hdma_adc1;
+extern ADC_HandleTypeDef hadc1;
+  
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

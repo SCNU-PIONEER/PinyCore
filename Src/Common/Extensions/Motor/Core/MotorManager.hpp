@@ -25,7 +25,7 @@ public:
 
     void taskCreate();
 
-    uint8_t motorListSize();
+    uint8_t assignId();
 
     // <uint16_t, IMotor *> -> <uid, motor>
     std::unordered_map<uint8_t, IMotor *> &motors() { return motorList_; }
@@ -36,6 +36,6 @@ private:
     const float motorTaskFreq_ = 1000.f;
 
     std::unordered_map<uint8_t, IMotor *> motorList_;
-    uint8_t motorListSize_ = 0;
+    uint8_t registedNum_ = 0;
 };
 } // namespace PINYMOTOR
