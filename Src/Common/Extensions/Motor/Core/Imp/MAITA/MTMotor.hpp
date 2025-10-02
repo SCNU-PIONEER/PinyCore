@@ -7,9 +7,10 @@
 namespace PINYMOTOR::MTMOTOR {
 
 struct Status_s {
-    float currMax; // A
-    float torqMax; // Nm
-    float np;      // Nm
+    uint16_t speedMax; //dps
+    float currMax;     // A
+    float torqMax;     // Nm
+    float np;          // Nm
     float interRR;
     float kn; // Nm/A
 

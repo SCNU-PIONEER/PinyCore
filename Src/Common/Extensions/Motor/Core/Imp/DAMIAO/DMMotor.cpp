@@ -172,7 +172,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         this->data_.tempture = fb.mosTemperature;
 
-        float angDiff = (getMinorArc(this->data_.rawAng, this->data_.angLast)) /
+        float angDiff = (getMinorArc(this->data_.ang, this->data_.angLast)) /
                         this->rr();
 
         if ((this->globalState == GlobalState_e::OFFLINE ||
@@ -181,10 +181,10 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
             this->globalState = GlobalState_e::ONLINE;
             angDiff = 0;
             this->data_.multipCirAng =
-                    this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
+                    this->data_.ang / this->rr(); // 与电机内编码器同步零点
         }
 
-        this->data_.angLast = this->data_.rawAng;
+        this->data_.angLast = this->data_.ang;
 
         this->data_.multipCirAng += angDiff;
         this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
