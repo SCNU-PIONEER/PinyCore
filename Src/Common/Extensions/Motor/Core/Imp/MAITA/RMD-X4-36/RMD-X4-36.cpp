@@ -17,11 +17,12 @@ RMDX436::RMDX436(const char _name[16], InitConfig_s _config)
     regInfo_.model.rxBaseId = 0x240;
     regInfo_.model.txBaseId = 0x140;
 
-    this->status_ = Status_s(CURR_MAX, // currMax
-                             TORQ_MAX, // torqMax
-                             NP,       // np
-                             INTER_RR, // interRr
-                             KN        // Kn
+    this->status_ = Status_s(SPEED_MAX, //speedMax
+                             CURR_MAX,  // currMax
+                             TORQ_MAX,  // torqMax
+                             NP,        // np
+                             INTER_RR,  // interRr
+                             KN         // Kn
     );
 
     this->registerMotor();
