@@ -1,4 +1,4 @@
-#include "Hardfault.h"
+#include "Hardfault.hpp"
 void HardFault_Handler(unsigned int *pStack)
 {
     //
