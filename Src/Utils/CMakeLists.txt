@@ -47,10 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME}
                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNew/OperatorNew.cpp)
 
 # link
-target_link_libraries(utils PRIVATE
-  Soc
-  segger
-  Bsp
-  freertos_kernel
-  PUBLIC
-  CMSISDSP)
+target_link_libraries(
+  utils
+  PRIVATE Soc segger Bsp freertos_kernel
+  PUBLIC CMSISDSP)
