@@ -1,12 +1,17 @@
 import os
 import re
 import shutil
+import stat
 
+def remove_readonly(func, path, _):
+    "清除文件的只读属性"
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 def main():
     drivers_dir = os.path.join(".", "hal", "Drivers")
     if os.path.exists(drivers_dir):
-        shutil.rmtree(drivers_dir)
+        shutil.rmtree(drivers_dir, onexc=remove_readonly)
 
     stm32h7xx_dir = os.path.join(
         "hal", "Drivers", "CMSIS", "Device", "ST", "STM32H7xx", "Include"
