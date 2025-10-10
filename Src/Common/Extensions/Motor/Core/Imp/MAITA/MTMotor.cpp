@@ -12,6 +12,7 @@ static constexpr char TAG[] = "MTMotor";
 Status_s &Status_s::operator=(const Status_s &_other)
 {
     if (this != &_other) {
+        speedMax = _other.speedMax;
         currMax = _other.currMax;
         torqMax = _other.torqMax;
         np = _other.np;
@@ -64,7 +65,7 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
                                       static_cast<float>(fb.iq) * 0.01f;
     data_.torq = data_.curr * status_.kn;
     /* speed */
-    float noumenaVel = static_cast<float>(fb.speed) * 1.0f * PI / 30.0f;
+    float noumenaVel = deg2rad(static_cast<float>(fb.speed));
     this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
     /* angle */
@@ -114,6 +115,7 @@ MotorTypeDef_e MTMotor::ctrl()
 
 void MTMotor::disable(std::array<uint8_t, 8> &_txBuf)
 {
+    this->cmd_.updateSW(false);
     constexpr std::array<uint8_t, 8> PACK = { 0x80, 0, 0, 0, 0, 0, 0, 0 };
     _txBuf = PACK;
 }
@@ -127,10 +129,11 @@ void MTMotor::readState2(std::array<uint8_t, 8> &_txBuf)
 void MTMotor::absPosCtrl(std::array<uint8_t, 8> &_txBuf)
 {
     TransmitMsg_s data{};
-    data.maxspeed = static_cast<uint16_t>(this->cmd_.vel);
+    uint16_t rawSpeed = static_cast<uint16_t>(rad2deg(this->cmd_.vel));
+    data.maxspeed = std::min(rawSpeed, this->status_.speedMax);
     data.pos = regInfo_.isReverse ?
-                       -static_cast<int32_t>(this->cmd_.pos * 100) :
-                       static_cast<int32_t>(this->cmd_.pos * 100);
+                       -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
+                       static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
     memcpy(_txBuf.data(), &data, 8);
 }
 
