@@ -116,13 +116,7 @@ struct Cmd_s {
         SW = prevSW = false;
         torq = 0.f;
     }
-    void updateSW(bool _sw)
-    {
-        if (_sw != prevSW) {
-            SW = _sw;
-            prevSW = _sw;
-        }
-    }
+    void updateSW(bool _sw) { SW = _sw; }
 };
 
 struct RxBus_s {
