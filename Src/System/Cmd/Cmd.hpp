@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FreeRTOS.h"
+#include "NavHandler.hpp"
 #include "queue.h"
 #include "event_groups.h"
 #include "MsgImpl.hpp"
@@ -28,4 +29,5 @@ private:
     RcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
     RefereeHandler refereeHandler_;
+    NavHandler navHandler_;
 };

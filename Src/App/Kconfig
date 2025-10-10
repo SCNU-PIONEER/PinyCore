@@ -22,6 +22,12 @@ menu "app config"
 
     source "Src/System/INS/Kconfig"
 
+    config APP_USE_NAV
+    bool "nav"
+    default n
+
+     source "Src/System/Nav/Kconfig"
+
     config APP_USE_DAEMONS
     bool "daemons"
     default n

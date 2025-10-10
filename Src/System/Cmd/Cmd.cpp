@@ -8,11 +8,16 @@ Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART)
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
     msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
     msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
+    msgBus_.navigationQueue = xQueueCreate(30, sizeof(NavMsg_s));
 
     rttHandler_.init(&msgBus_, eventGroup_);
     rcHandler_.init(&msgBus_, eventGroup_);
 #if defined APP_USE_REFEREE
     refereeHandler_.init(&msgBus_, eventGroup_);
+#endif
+
+#ifdef APP_USE_NAV
+    navHandler_.init(&msgBus_, eventGroup_);
 #endif
 
     xTaskCreate(Cmd::task, "cmd_task", 256, this, 1, nullptr);
@@ -34,6 +39,11 @@ void Cmd::parseMsg()
 #if defined APP_USE_REFEREE
     if (xBits & REFEREE_READY_EVENT) {
         refereeHandler_.handle();
+    }
+#endif
+#ifdef APP_USE_NAV
+    if (xBits & NAV_READY_EVENT) {
+        navHandler_.handle();
     }
 #endif
 }
