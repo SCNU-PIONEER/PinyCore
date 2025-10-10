@@ -2,6 +2,7 @@
 #include "MsgBase.hpp"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include <cstdint>
 
 
 namespace CHASSIS {
@@ -12,11 +13,16 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
+namespace NAV {
+enum class SentryDecision_e : uint8_t;
+}
+
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
     QueueHandle_t armQueue;
     QueueHandle_t refereeQueue;
+    QueueHandle_t navigationQueue;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -37,6 +43,13 @@ struct ArmMsg_s : public Msg {
 struct RefereeMsg_s : public Msg {
     uint16_t currentHP, shooterHeatLimit, chassisPowerLimit, chassisPowerBuffer;
     float bulletSpeed;
+};
+
+struct NavMsg_s : public Msg {
+    NAV::SentryDecision_e decision;
+    float vx;
+    float vy;
+    float wz;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
