@@ -70,14 +70,16 @@ void UTMotor::registerRecvCallback()
 MotorTypeDef_e UTMotor::send(uint16_t _sendId, TransmitMsg_s *_txBuf,
                              uint8_t _len)
 {
-    SET_485_1_DE_UP();
-    memcpy(txBuf_, _txBuf, _len);
-    MotorTypeDef_e ret =
-            (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
-    SET_485_1_DE_DOWN();
-    return ret;
+    if (this->checkSend()) {
+        SET_485_1_DE_UP();
+        memcpy(txBuf_, _txBuf, _len);
+        MotorTypeDef_e ret =
+                (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
+        SET_485_1_DE_DOWN();
+        return ret;
+    }
+    return 0; //TODO: return check
 }
-
 MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
 {
     Feedback_s *fb = _rxBuf;
