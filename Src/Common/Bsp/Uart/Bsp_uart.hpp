@@ -17,6 +17,11 @@ public:
     void registerCallback(callback _pCallback);
 
     /**
+    * @brief uart unregisterCallback
+    */
+    void unregisterCallback();
+
+    /**
     * @brief uart multi_DMA_rx_buf init
     *
     * @param DataLength 请开辟两倍的缓冲区

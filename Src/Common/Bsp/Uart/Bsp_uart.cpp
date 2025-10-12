@@ -27,6 +27,16 @@ void Uart::registerCallback(callback _pCallback)
     cbTable.emplace_back(huart_, _pCallback);
 }
 
+void Uart::unregisterCallback()
+{
+    for (auto it = cbTable.begin(); it != cbTable.end(); ++it) {
+        if (it->first == huart_) {
+            cbTable.erase(it);
+            return;
+        }
+    }
+}
+
 HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress,
                                             uint32_t _dataLength)
 {
