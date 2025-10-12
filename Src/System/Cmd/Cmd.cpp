@@ -2,7 +2,7 @@
 #include "MsgImpl.hpp"
 #include "StmLog.hpp"
 
-Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART)
+Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART, eventGroup_)
 {
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
@@ -15,7 +15,7 @@ Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART)
     refereeHandler_.init(&msgBus_, eventGroup_);
 #endif
 
-    xTaskCreate(Cmd::task, "cmd_task", 256, this, 1, nullptr);
+    xTaskCreate(Cmd::task, "cmd_task", 256, this, 2, nullptr);
 
     LOG::info("cmd", "init success");
 }
@@ -25,7 +25,7 @@ void Cmd::parseMsg()
 {
     EventBits_t xBits = xEventGroupWaitBits(eventGroup_, EVENT_MASK, pdTRUE,
                                             pdFALSE, portMAX_DELAY);
-    if (xBits & RC_READY_EVENT) {
+    if (xBits & (RC_READY_EVENT | ET08A_READY_EVENT)) {
         rcHandler_.handle();
     }
     if (xBits & RTT_READY_EVENT) {

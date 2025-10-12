@@ -54,7 +54,6 @@
 /* ------------------Data Struct Data Struct -------*/
 #define RC_FRAME_LENGTH         18
 
-namespace RC {
 
 enum KeyCodes_e : uint8_t {
     W = 1,
@@ -95,7 +94,6 @@ typedef struct {
         uint16_t keyCode;
         uint16_t lastKeyCode;
     } keyboard;
+    //1684 - 1024 - 364， 自动居中 1024
     int16_t wheel;
 } RcRawMsg_t;
-
-} // namespace RC
