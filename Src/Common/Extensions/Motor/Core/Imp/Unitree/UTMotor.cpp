@@ -26,9 +26,9 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle)
+                 UART_HandleTypeDef *_huart)
         : IMotor(_name, _config)
-        , uart_(_huart, _dmaHandle)
+        , uart_(_huart)
         , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(
                   sizeof(TransmitMsg_s)))
         , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
@@ -43,7 +43,6 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
             reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
             UART_IT_IDLE);
     uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
-    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -107,7 +106,6 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
     }
 
     uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
-    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
     return 0; //TODO: return check
 }
 

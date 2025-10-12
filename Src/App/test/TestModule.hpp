@@ -3,7 +3,7 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-#include "RcMsg.hpp"
+#include "DT7Msg.hpp"
 
 namespace TEST {
 enum class FSMState_e : uint8_t {};
@@ -25,7 +25,7 @@ public:
 
     void task();
 
-    RC::RcRawMsg_t rcMsg;
+    RcRawMsg_t rcMsg;
 
     StateFactory<TEST::FSMState_e> stateFactory_;
 
