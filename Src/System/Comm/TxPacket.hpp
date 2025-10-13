@@ -2,7 +2,7 @@
 
 #include "CommManager.hpp"
 
-#include "cmsis_os.h"
+#include "FreeRTOS.h"
 
 namespace COMM {
 
