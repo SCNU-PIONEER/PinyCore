@@ -16,10 +16,15 @@ protected:
 public:
     RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
     {
-        CommManager::instance().registerReceiver([this] { receive(); });
+        CommManager::instance().registerReceiver([this] { receive(); }, uid());
     }
 
-    virtual ~RxPacket() = default;
+    virtual ~RxPacket()
+    {
+        CommManager::instance().cancelReceiver(uid());
+        vQueueDelete(queue_);
+    };
+
     virtual void registerCallback() = 0; // TODO: better protocol abstraction
 
     void receive()

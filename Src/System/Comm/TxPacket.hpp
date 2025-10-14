@@ -14,15 +14,18 @@ protected:
 public:
     TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq)
     {
-        CommManager::instance().registerTransmitter([this]() {
-            if (checkSend()) {
-                Data txBuf = PacketType::compress(this->data_);
-                this->send(txBuf.bytes, PacketType::LEN);
-            }
-        });
+        CommManager::instance().registerTransmitter(
+                [this]() {
+                    if (checkSend()) {
+                        Data txBuf = PacketType::compress(this->data_);
+                        this->send(txBuf.bytes, PacketType::LEN);
+                    }
+                },
+                uid());
     }
 
-    virtual ~TxPacket() = default;
+    virtual ~TxPacket() { CommManager::instance().cancelTransmitter(uid()); };
+    
     virtual void send(uint8_t *_buf,
                       uint16_t _len) = 0; // TODO: better protocol abstraction
 
