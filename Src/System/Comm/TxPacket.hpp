@@ -25,7 +25,7 @@ public:
     }
 
     virtual ~TxPacket() { CommManager::instance().cancelTransmitter(uid()); };
-    
+
     virtual void send(uint8_t *_buf,
                       uint16_t _len) = 0; // TODO: better protocol abstraction
 
