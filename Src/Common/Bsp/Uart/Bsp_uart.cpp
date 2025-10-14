@@ -11,12 +11,6 @@ Uart::Uart(UART_HandleTypeDef *_huart) : huart_(_huart)
     cbTable.reserve(4);
 }
 
-Uart::Uart(UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dma)
-        : huart_(_huart), hdma_(_dma)
-{
-    cbTable.reserve(4);
-}
-
 void Uart::registerCallback(callback _pCallback)
 {
     for (const auto &pair : cbTable) {
@@ -25,6 +19,16 @@ void Uart::registerCallback(callback _pCallback)
         }
     }
     cbTable.emplace_back(huart_, _pCallback);
+}
+
+void Uart::unregisterCallback()
+{
+    for (auto it = cbTable.begin(); it != cbTable.end(); ++it) {
+        if (it->first == huart_) {
+            cbTable.erase(it);
+            return;
+        }
+    }
 }
 
 HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress,
@@ -44,12 +48,11 @@ HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress,
     return result;
 }
 
-HAL_StatusTypeDef Uart::recvDmaInit(uint32_t *_dstAddress, uint32_t _dataLength)
+HAL_StatusTypeDef Uart::recvDmaInit(uint8_t *_dstAddress, uint32_t _dataLength)
 {
     HAL_StatusTypeDef result = HAL_OK;
     __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
-    result = HAL_UARTEx_ReceiveToIdle_DMA(huart_, (uint8_t *)&_dstAddress,
-                                          _dataLength);
+    result = HAL_UARTEx_ReceiveToIdle_DMA(huart_, _dstAddress, _dataLength);
     __HAL_DMA_DISABLE_IT(huart_->hdmarx, DMA_IT_HT);
     return result;
 }
@@ -71,7 +74,10 @@ HAL_StatusTypeDef Uart::receive(uint8_t *_pData, uint16_t _size)
 
 HAL_StatusTypeDef Uart::receiveDma(uint8_t *_pData, uint16_t _size)
 {
-    return HAL_UARTEx_ReceiveToIdle_DMA(huart_, _pData, _size);
+    HAL_StatusTypeDef result =
+            HAL_UARTEx_ReceiveToIdle_DMA(huart_, _pData, _size);
+    __HAL_DMA_DISABLE_IT(huart_->hdmarx, DMA_IT_HT);
+    return result;
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *_huart, uint16_t _size)

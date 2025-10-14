@@ -23,7 +23,7 @@ public:
     static constexpr float RR = 6.33f;        // 减速比
 
     UT80106(const char _name[16], PINYMOTOR::InitConfig_s _config,
-            UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle);
+            UART_HandleTypeDef *_huart);
 };
 
 } // namespace PINYMOTOR::UTMOTOR

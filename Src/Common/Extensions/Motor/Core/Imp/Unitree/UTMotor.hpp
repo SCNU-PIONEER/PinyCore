@@ -44,7 +44,7 @@ protected:
 
 public:
     UTMotor(const char _name[16], InitConfig_s _config,
-            UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle);
+            UART_HandleTypeDef *_huart);
     ~UTMotor() override;
 
     void overrideStats(const Status_s &_newStats);
