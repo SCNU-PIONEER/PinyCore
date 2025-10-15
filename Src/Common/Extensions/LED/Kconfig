@@ -1,0 +1,12 @@
+menu "LEDDriver config"
+    depends on EXTENSION_LED
+    
+    config LED_WS2812
+    bool "ws2812"
+    default y
+
+    config LED_RGBLED
+    bool "rgbled"
+    default y
+
+endmenu
