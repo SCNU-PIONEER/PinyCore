@@ -39,7 +39,6 @@ protected:
 
     PID *posPID_ = nullptr;
     PID *velPID_ = nullptr;
-    PID *torqPID_ = nullptr; // only VOLT-CTRL motor will need this
 
     bool checkSend();
     void calcRecvFreq();

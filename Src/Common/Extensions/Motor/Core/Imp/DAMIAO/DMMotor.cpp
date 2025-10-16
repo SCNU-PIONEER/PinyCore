@@ -212,8 +212,6 @@ MotorTypeDef_e DMMotor::ctrl()
             this->posPID_->reset();
         if (this->velPID_ != nullptr)
             this->velPID_->reset();
-        if (this->torqPID_ != nullptr)
-            this->torqPID_->reset();
         constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF,
                                                  0xFF, 0xFF, 0xFF, 0xFD };
         memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
