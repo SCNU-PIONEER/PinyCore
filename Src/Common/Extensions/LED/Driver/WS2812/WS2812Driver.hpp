@@ -13,7 +13,7 @@ public:
     WS2812Driver(SPI_HandleTypeDef *_spiHandle);
 
 private:
-    void show() final;
+    void show(std::vector<RGB_s> &_data) final;
 };
 
 } // namespace LED

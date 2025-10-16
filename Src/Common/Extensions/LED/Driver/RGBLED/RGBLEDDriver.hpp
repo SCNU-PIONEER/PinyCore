@@ -12,7 +12,7 @@ public:
                  lightTuner _setB(uint8_t));
 
 private:
-    void show() final;
+    void show(std::vector<RGB_s> &_data) final;
 
     lightTuner setR_;
     lightTuner setG_;

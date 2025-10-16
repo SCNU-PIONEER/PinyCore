@@ -3,6 +3,13 @@
 #include "Driver/WS2812/WS2812Driver.hpp"
 #include "Driver/RGBLED/RGBLEDDriver.hpp"
 
+#include "FreeRTOS.h"
+#include "queue.h"
+
+#include "CmdType.h"
+#include <vector>
+#include <memory>
+
 namespace LED {
 
 enum SPIChipsets_e : uint8_t {
@@ -18,6 +25,8 @@ public:
     static LEDs &instance();
     LEDs(const LEDs &) = delete;
     LEDs &operator=(const LEDs &) = delete;
+
+    static void task(void *_param);
 
     /// Add a driver to the LED manager
     /// @param _driver the driver to add
@@ -64,16 +73,27 @@ public:
     }
 
     //-----------------------------------------------------------------------------------
-    // set style
-    /// Show a RGB loop effect
-    /// @param _interval the interval time between each color change, unit: ms
-    void showRGBLoop(uint16_t _interval = 1000.f);
+    static void ctrlLED(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
+
+    static void off();
 
 private:
-    LEDs() = default;
+    LEDs();
+
+    QueueHandle_t queue_ = nullptr;
+
+    std::vector<RGB_s> ledColors_;
+
+    int totalLEDs_ = 0; // total number of LEDs across all drivers
 
     // heart beat
     uint32_t lastTime_ = 0;
+
+    void handleOff(uint8_t _index, uint8_t _ctrlNum);
+    void handleOnInNormal(uint8_t _index, uint8_t _ctrlNum);
+    void handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum);
+
+    void handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum);
 };
 
 } // namespace LED

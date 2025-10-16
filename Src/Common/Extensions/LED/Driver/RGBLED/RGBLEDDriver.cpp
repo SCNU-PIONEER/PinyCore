@@ -9,11 +9,9 @@ RGBLEDDriver::RGBLEDDriver(lightTuner _setR(uint8_t), lightTuner _setG(uint8_t),
     numLEDs_ = 1;
 }
 
-void RGBLEDDriver::show()
+void RGBLEDDriver::show(std::vector<RGB_s> &_data)
 {
-    if (colorData_ != nullptr) {
-        setR_(colorData_[0].r);
-        setG_(colorData_[0].g);
-        setB_(colorData_[0].b);
-    }
+    setR_(_data[vectorIndex_ + 0].r);
+    setG_(_data[vectorIndex_ + 0].g);
+    setB_(_data[vectorIndex_ + 0].b);
 }
