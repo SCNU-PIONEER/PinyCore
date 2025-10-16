@@ -12,7 +12,7 @@ protected:
     using Color = RGB_s::Color_e;
     RGB_s *colorData_ = nullptr;
     LEDDriver *nextDriver_ = nullptr;
-    int numLEDs_ = 0; // number of LEDs in this node
+    int numLEDs_ = 1; // number of LEDs in this node
     static LEDDriver *headDriver_;
     static LEDDriver *tailDriver_;
 
