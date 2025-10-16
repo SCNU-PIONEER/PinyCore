@@ -40,15 +40,13 @@ void DJIOldMotor::convertTripVolt()
         break;
     }
     case MotorCmdType_e::SET_TORQ: {
-        this->cmd_.elec =
-                this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+        this->cmd_.elec = torq2volt(this->cmd_.torq);
         break;
     }
     case MotorCmdType_e::SET_VEL: {
         this->cmd_.torq =
                 this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        this->cmd_.elec =
-                this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+        this->cmd_.elec = torq2volt(this->cmd_.torq);
         break;
     }
     case MotorCmdType_e::SET_POS: {
@@ -61,8 +59,7 @@ void DJIOldMotor::convertTripVolt()
         }
         this->cmd_.torq =
                 this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        this->cmd_.elec =
-                this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+        this->cmd_.elec = torq2volt(this->cmd_.torq);
         break;
     }
     case MotorCmdType_e::SET_POSVEL:
@@ -73,8 +70,7 @@ void DJIOldMotor::convertTripVolt()
                                     0) +
                 this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps) +
                 this->cmd_.torq;
-        this->cmd_.elec =
-                this->torqPID_->calc(this->cmd_.torq, this->data_.torq);
+        this->cmd_.elec = torq2volt(this->cmd_.torq);
         break;
     }
     default:
