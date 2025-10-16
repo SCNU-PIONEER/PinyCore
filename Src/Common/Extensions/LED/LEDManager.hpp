@@ -24,17 +24,16 @@ public:
     /// @param _colorData the color data for the driver
     /// @param _numLEDs the number of LEDs in the driver
     /// @return true if the driver was added successfully, false otherwise
-    static void addLEDs(LEDDriver *_driver, int _numLEDs);
+    void addLEDs(LEDDriver *_driver, int _numLEDs);
 
     /// Show the current LED colors
-    static void show();
+    void show();
 
     /// Create a driver of the given chipset type
     /// @tparam Chip the chipset type to create
     /// @param _handle the handle to the chipset
     /// @return a pointer to the created driver
-    template <SPIChipsets_e Chip>
-    static LEDDriver *create(SPI_HandleTypeDef *_handle)
+    template <SPIChipsets_e Chip> LEDDriver *create(SPI_HandleTypeDef *_handle)
     {
         switch (Chip) {
         case WS2812B:
@@ -64,8 +63,17 @@ public:
         }
     }
 
+    //-----------------------------------------------------------------------------------
+    // set style
+    /// Show a RGB loop effect
+    /// @param _interval the interval time between each color change, unit: ms
+    void showRGBLoop(uint16_t _interval = 1000.f);
+
 private:
     LEDs() = default;
+
+    // heart beat
+    uint32_t lastTime_ = 0;
 };
 
 } // namespace LED
