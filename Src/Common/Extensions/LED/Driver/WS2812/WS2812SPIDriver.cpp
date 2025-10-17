@@ -1,15 +1,16 @@
-#include "WS2812Driver.hpp"
+#include "WS2812SPIDriver.hpp"
 
 using namespace LED;
 
-WS2812Driver::WS2812Driver(SPI_HandleTypeDef *_spiHandle)
+WS2812SPIDriver::WS2812SPIDriver(SPI_HandleTypeDef *_spiHandle)
         : spiHandle_(_spiHandle)
 {
 }
 
-uint8_t txbuf[24 * 1] __attribute__((section(".ram_BDMA"))); // only for test
+uint8_t txbuf[24 * 1] __attribute__((
+        section(".ram_BDMA"))); // TODO: wait for dynamic bdma support
 
-void WS2812Driver::show(std::vector<RGB_s> &_data)
+void WS2812SPIDriver::show(std::vector<RGB_s> &_data)
 {
     for (int id = 0; id < numLEDs_; id++) {
         for (uint8_t i = 0; i < 8; i++) {

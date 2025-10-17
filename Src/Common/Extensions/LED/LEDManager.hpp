@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Driver/WS2812/WS2812Driver.hpp"
+#include "Driver/WS2812/WS2812SPIDriver.hpp"
 #include "Driver/RGBLED/RGBLEDDriver.hpp"
 
 #include "FreeRTOS.h"
@@ -13,7 +13,11 @@
 namespace LED {
 
 enum SPIChipsets_e : uint8_t {
-    WS2812B = 0,
+    SPI_WS2812B = 0,
+};
+
+enum PWMChipsets_e : uint8_t {
+    PWM_WS2812B = 0,
 };
 
 enum IOChipsets_e : uint8_t {
@@ -45,12 +49,14 @@ public:
     template <SPIChipsets_e Chip> LEDDriver *create(SPI_HandleTypeDef *_handle)
     {
         switch (Chip) {
-        case WS2812B:
-            return std::make_unique<WS2812Driver>(_handle).release();
+        case SPI_WS2812B:
+            return std::make_unique<WS2812SPIDriver>(_handle).release();
         default:
             return nullptr;
         }
     }
+
+
 
 
     /// Create a driver of the given chipset type
