@@ -73,8 +73,7 @@ public:
     }
 
     //-----------------------------------------------------------------------------------
-    static void ctrlLED(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
-
+    static void ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
     static void off();
 
 private:

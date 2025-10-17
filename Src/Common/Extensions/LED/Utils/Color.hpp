@@ -752,6 +752,6 @@ enum class EOrder_e : uint8_t {
     GBR = 0120, ///< Green, Blue,  Red   (0120)
     BRG = 0201, ///< Blue,  Red,   Green (0201)
     BGR = 0210  ///< Blue,  Green, Red   (0210)
-};
+}; // TODO: future - add WRGB variants
 
 } // namespace LED

@@ -8,12 +8,12 @@ using namespace LED;
 LEDDriver *LEDDriver::headDriver_ = nullptr;
 LEDDriver *LEDDriver::tailDriver_ = nullptr;
 
-LEDs::LEDs() = default;
+LEDs::LEDs() : queue_(xQueueCreate(3, sizeof(Cmd_s))) {};
 
 void LEDs::task(void *_param)
 {
-    auto instance = static_cast<LEDs *>(_param);
-    instance->queue_ = xQueueCreate(10, sizeof(Cmd_s));
+    auto instance = &LEDs::instance();
+
     for (;;) {
         Cmd_s cmd;
         if (xQueueReceive(instance->queue_, &cmd, portMAX_DELAY) == pdTRUE) {
@@ -53,16 +53,17 @@ void LEDs::addLEDs(LEDDriver *_driver, int _numLEDs)
     totalLEDs_ += _numLEDs;
 }
 
-void LEDs::ctrlLED(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
+void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
 {
     Cmd_s cmd;
     cmd.type = _type;
     cmd.index = _index;
     cmd.ctrlNum = _ctrlNum;
-    xQueueSend(instance().queue_, &cmd, portMAX_DELAY);
+    xQueueSend(instance().queue_, &cmd, 0);
 }
 
-void LEDs::off() { ctrlLED(CmdType_e::OFF, 0, instance().totalLEDs_); }
+void LEDs::off() { ctrl(CmdType_e::OFF, 0, instance().totalLEDs_); }
+
 
 void LEDs::show()
 {
