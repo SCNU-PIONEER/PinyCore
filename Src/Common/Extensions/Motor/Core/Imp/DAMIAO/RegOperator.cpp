@@ -9,7 +9,7 @@ MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
 {
     if (_regObj == nullptr) {
         LOG::error("DMMotor", " %s: registerReg failed, _regObj is nullptr",
-                   this->name_);
+                   regInfo_.name);
         return 1;
     }
     auto it = regObjList_.find(_regObj->regId);
@@ -17,10 +17,10 @@ MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
         LOG::error(
                 "DMMotor",
                 " %s: registerReg failed, _regObj->regId is already registered",
-                this->name_);
+                regInfo_.name);
         return 1;
     }
-    LOG::info("DMMotor", " %s: registerReg success", this->name_);
+    LOG::info("DMMotor", " %s: registerReg success", regInfo_.name);
     regObjList_.insert({ _regObj->regId, _regObj });
     regValueList_.insert({ _regObj->regId, _regValue });
     return 0;
@@ -28,7 +28,7 @@ MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
 
 MotorTypeDef_e DMMotor::cancelReg(RegId_e _regId)
 {
-    LOG::info("DMMotor", " %s: cancelReg success, regId:%d", this->name_,
+    LOG::info("DMMotor", " %s: cancelReg success, regId:%d", regInfo_.name,
               _regId);
     regObjList_.erase(_regId);
     return 0;

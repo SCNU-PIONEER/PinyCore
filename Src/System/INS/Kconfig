@@ -1,0 +1,8 @@
+menu "INS config"
+    depends on APP_USE_INS
+
+    config INS_ACCEL_CALIBRATION
+    bool "accelerometer calibration"
+    default n
+
+endmenu

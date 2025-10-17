@@ -68,3 +68,5 @@ void *Dma::ram_alloc(size_t _size, DmaRam_e _ram)
     }
     return nullptr;
 }
+
+void Dma::ram_free(void *_ptr) { free(_ptr); }

@@ -6,5 +6,7 @@ source "Src/App/Kconfig"
 
 source "Src/Common/Bsp/Kconfig"
 
+source "Src/Common/Extensions/Kconfig"
+
 source "Src/Utils/Kconfig"
 

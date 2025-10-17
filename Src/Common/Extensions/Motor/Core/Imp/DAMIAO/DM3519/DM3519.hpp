@@ -18,7 +18,7 @@ public:
     static constexpr float TORQ_RATED = 3.5f;
     static constexpr float CURR_MAX = 20.5f;
     static constexpr float TORQ_MAX = 7.8f;
-    static constexpr float TORQ_CONSTANT = 0.3805f;
+    static constexpr float KN = 0.3805f;
 
     DM3519(const char _name[16], InitConfig_s _config);
 };

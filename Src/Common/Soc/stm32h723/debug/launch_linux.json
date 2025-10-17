@@ -1,0 +1,136 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "jlink-Debug",
+      "executable": "./build/PinyCore.elf",
+      "type": "cortex-debug",
+      "request": "launch",
+      "showDevDebugOutput": "none",
+      "servertype": "jlink",
+      "device": "stm32h723vg",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 1
+      },
+      "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit",
+        "set p obj on",
+        "set p pretty on"
+      ],
+      "postLaunchCommands": [
+        "b PinyCore::init"
+      ],
+      "rttConfig": {
+        "enabled": true,
+        "address": "auto",
+        "polling_interval": 10,
+        "decoders": [
+          {
+            "type": "console",
+            "label": "cnt",
+            "noclear": false,
+            "logfile": "${workspaceRoot}/.docs/rtt.log",
+            "port": 0
+          }
+        ]
+      }
+    },
+    {
+      "showDevDebugOutput": "none",
+      "cwd": "${workspaceFolder}",
+      "executable": "./build/PinyCore.elf",
+      "name": "dap",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "${workspaceFolder}/tools/openocd/dap.cfg",
+        "target/stm32h7x.cfg"
+      ],
+      // "svdFile": "docs/startup/STM32H723.svd",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 1
+      },
+      "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit",
+        "set p obj on",
+        "set p pretty on"
+      ],
+      "postLaunchCommands": [
+        "b PinyCore::init"
+      ],
+      // "overrideLaunchCommands": [  // 不复位debug
+      //     "monitor  halt",
+      // ],
+      //   "overrideResetCommands": [
+      //     "monitor  halt",
+      // ], // "postDebugTask": "close-RTT",
+      "rttConfig": {
+        "enabled": true,
+        "address": "auto",
+        "polling_interval": 10,
+        "decoders": [
+          {
+            "type": "console",
+            "label": "cnt",
+            "noclear": false,
+            "logfile": "${workspaceRoot}/.docs/rtt.log",
+            "port": 0
+          }
+        ]
+      }
+    },
+    {
+      "showDevDebugOutput": "none",
+      "cwd": "${workspaceFolder}",
+      "executable": "./build/PinyCore.elf",
+      "name": "stlink",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "configFiles": [
+        "${workspaceFolder}/tools/openocd/stlink.cfg",
+        "target/stm32h7x.cfg"
+      ],
+      // "svdFile": "docs/startup/STM32H723.svd",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 1
+      },
+      "preLaunchTask": "build",
+      // "overrideLaunchCommands": [  // 不复位debug
+      //     "monitor  halt",
+      // ],
+      //   "overrideResetCommands": [
+      //     "monitor  halt",
+      // ],
+      // "postDebugTask": "close-RTT",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit",
+        "set p obj on",
+        "set p pretty on"
+      ],
+      "postLaunchCommands": [
+        "b PinyCore::init"
+      ],
+      "rttConfig": {
+        "enabled": true,
+        "address": "auto",
+        "polling_interval": 10,
+        "decoders": [
+          {
+            "type": "console",
+            "label": "cnt",
+            "noclear": false,
+            "logfile": "${workspaceRoot}/.docs/rtt.log",
+            "port": 0
+          }
+        ]
+      }
+    }
+  ]
+}

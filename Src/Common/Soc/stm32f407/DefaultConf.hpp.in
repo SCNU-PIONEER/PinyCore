@@ -1,5 +1,6 @@
 #ifdef BSP_USE_UART
 #define RC_UART huart3
+#define REFEREE_UART huart6
 #endif
 
 #ifdef BSP_USE_PWM
@@ -12,6 +13,3 @@
 #define IMU_SPI hspi1
 #endif
 
-#ifdef APP_USE_UI
-#define UI_UART huart6
-#endif

@@ -47,7 +47,6 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void NMI_Handler(void);
-void HardFault_Handler(void);
 void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
@@ -78,6 +77,9 @@ void DMA2_Stream2_IRQHandler(void);
 void DMA2_Stream3_IRQHandler(void);
 void DMA2_Stream4_IRQHandler(void);
 void FDCAN_CAL_IRQHandler(void);
+void OTG_HS_EP1_OUT_IRQHandler(void);
+void OTG_HS_EP1_IN_IRQHandler(void);
+void OTG_HS_IRQHandler(void);
 void UART7_IRQHandler(void);
 void SPI6_IRQHandler(void);
 void BDMA_Channel0_IRQHandler(void);

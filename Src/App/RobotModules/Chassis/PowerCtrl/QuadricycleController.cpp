@@ -7,9 +7,9 @@ using namespace PINYMOTOR;
 QuadricycleController::QuadricycleController(ChassisType_e _chassisType)
         : PowerController(_chassisType)
 {
-    energyPid_ = std::make_unique<PositonalPid>(0.1f, 0, 0, 0.002f, 0, 0.f, 0);
+    energyPid_ = std::make_unique<PositionalPid>(0.1f, 0, 0, 0.002f, 0, 0.f, 0);
     powerPid_ =
-            std::make_unique<PositonalPid>(300.f, 0, 0, 0.002f, 0, 400.f, 0);
+            std::make_unique<PositionalPid>(300.f, 0, 0, 0.002f, 0, 400.f, 0);
 }
 
 void QuadricycleController::cmdPowerCalc(float *_motorSpeed)
