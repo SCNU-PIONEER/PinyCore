@@ -48,7 +48,6 @@ Omni::Omni()
             .posPID = nullptr,
             .velPID = new IncrementalPid(0.6f, 0.0035f, 0.f,
                                          DJIMOTOR::M3508::TORQ_MAX, 0.f),
-            .torqPID = nullptr
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
