@@ -102,8 +102,6 @@ MotorTypeDef_e MTMotor::ctrl()
             this->posPID_->reset();
         if (this->velPID_ != nullptr)
             this->velPID_->reset();
-        if (this->torqPID_ != nullptr)
-            this->torqPID_->reset();
         disable(txBuf);
     } else if (!this->cmd_.SW && !this->cmd_.prevSW) {
         readState2(txBuf);

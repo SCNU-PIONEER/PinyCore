@@ -152,8 +152,6 @@ MotorTypeDef_e DJIOldMotor::ctrl()
             this->posPID_->reset();
         if (this->velPID_ != nullptr)
             this->velPID_->reset();
-        if (this->torqPID_ != nullptr)
-            this->torqPID_->reset();
         this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
         this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }

@@ -19,6 +19,7 @@ menu "app config"
     config APP_USE_INS
     bool "ins"
     default n
+    depends on EXTENSION_SENSOR
 
     source "Src/System/INS/Kconfig"
 
