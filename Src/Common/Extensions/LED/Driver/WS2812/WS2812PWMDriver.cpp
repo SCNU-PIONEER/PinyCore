@@ -2,8 +2,7 @@
 
 using namespace LED;
 
-WS2812PWMDriver::WS2812PWMDriver(TIM_HandleTypeDef *_timHandle)
-        : timHandle_(_timHandle)
+WS2812PWMDriver::WS2812PWMDriver(Pwm *_pwmHandle) : pwm_(_pwmHandle)
 {
     txbuf = std::unique_ptr<uint8_t[]>(new uint8_t[(numLEDs_ + 1) * 24]);
     memset(txbuf.get(), 0, (numLEDs_ + 1) * 24);
@@ -26,5 +25,6 @@ void WS2812PWMDriver::show(std::vector<RGB_s> &_data)
                     (_data[vectorIndex_ + id].b & (1 << (23 - i))) ? CODE1 :
                                                                      CODE0;
     }
-    // TODO: pwm start dma
+    pwm_->startDMA(reinterpret_cast<uint32_t *>(txbuf.get()),
+                   (numLEDs_ + 1) * 24);
 }

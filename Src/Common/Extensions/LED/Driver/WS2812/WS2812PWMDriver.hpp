@@ -8,11 +8,11 @@
 namespace LED {
 
 class WS2812PWMDriver : public LEDDriver {
-    TIM_HandleTypeDef *timHandle_ = nullptr;
+    Pwm *pwm_ = nullptr;
     static constexpr uint8_t CODE1 = 0x86; // 1code
     static constexpr uint8_t CODE0 = 0x43; // 0code
 public:
-    WS2812PWMDriver(TIM_HandleTypeDef *_timHandle);
+    WS2812PWMDriver(Pwm *_pwmHandle);
 
 private:
     std::unique_ptr<uint8_t[]> txbuf;
