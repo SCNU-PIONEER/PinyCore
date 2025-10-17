@@ -10,6 +10,12 @@
 
 namespace PINYMOTOR {
 
+static float torq2volt(float _val)
+{
+    // foo function
+    return _val;
+}
+
 static inline float getMinorArc(float _ref, float _cur, float _range)
 {
     // float temp =

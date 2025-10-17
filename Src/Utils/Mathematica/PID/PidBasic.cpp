@@ -49,8 +49,8 @@ void IncrementalPid::reset()
 }
 
 
-PositonalPid::PositonalPid(float _kp, float _ki, float _kd, float _dt,
-                           float _iMax, float _outMax, float _deadband)
+PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt,
+                             float _iMax, float _outMax, float _deadband)
         : iOut(0.0f)
         , kp(_kp)
         , ki(_ki)
@@ -64,7 +64,7 @@ PositonalPid::PositonalPid(float _kp, float _ki, float _kd, float _dt,
     memset(err, 0, 2U * sizeof(float_t));
 }
 
-float PositonalPid::calc(float _ref, float _cur)
+float PositionalPid::calc(float _ref, float _cur)
 {
     err[1] = err[0];
     err[0] = _ref - _cur;
@@ -77,7 +77,7 @@ float PositonalPid::calc(float _ref, float _cur)
                       -outMax, outMax);
 }
 
-void PositonalPid::reset()
+void PositionalPid::reset()
 {
     /* Reset state to zero */
     memset(err, 0, 2U * sizeof(float_t));

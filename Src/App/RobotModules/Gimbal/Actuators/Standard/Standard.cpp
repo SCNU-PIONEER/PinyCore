@@ -39,7 +39,6 @@ Standard::Standard()
         .txFreq = PITCH_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
-        .torqPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
     motors_.pitch = new DJIMOTOR::GM6020("Pitch", pitchGM6020Config);
@@ -55,7 +54,6 @@ Standard::Standard()
         .txFreq = YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
-        .torqPID = nullptr,
         .isReverse = YAW_REVERSE,
     };
     motors_.yaw = new DJIMOTOR::GM6020("Yaw", yawGM6020Config);

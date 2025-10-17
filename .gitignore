@@ -1,8 +1,12 @@
 #Motor
 build/
+.deps/
+ThirdParty/
 
 .cache/
 .config
 .config.old
 sdkconfig.h
 sdkconfig.cmake
+.vscode/launch.json
+*/*.log

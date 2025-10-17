@@ -7,21 +7,21 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositonalPid gMotPA(130.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gMotPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 7.f, 0.f);
-static PositonalPid gMotYA(50.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositonalPid gMotYV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 0.1f, 0.f);
+static PositionalPid gMotPA(130.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositionalPid gMotPV(0.025f, 0.0f, 0.f, 1.f / 500.f, 0.f, 7.f, 0.f);
+static PositionalPid gMotYA(50.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
+static PositionalPid gMotYV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 0.1f, 0.f);
 
 namespace GIMBAL {
 
 class MotorRunState : public FSMState<FSMState_e> {
     union Pids_u {
         struct {
-            PositonalPid *pitchAngPid;
-            PositonalPid *pitchVelPid;
+            PositionalPid *pitchAngPid;
+            PositionalPid *pitchVelPid;
 
-            PositonalPid *yawAngPid;
-            PositonalPid *yawVelPid;
+            PositionalPid *yawAngPid;
+            PositionalPid *yawVelPid;
         };
         PID *_[4];
     };

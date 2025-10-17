@@ -4,26 +4,34 @@
 #include HAL_INCLUDE
 #include "BspBase.hpp"
 
-class Pwm : public BspBase<Pwm> {
+class Pwm {
 public:
+    /**
+     * @brief pwm init
+     */
+    Pwm(TIM_HandleTypeDef *_htim, uint32_t _channel);
+
     /**
      * @brief pwm start
      */
-    void start(TIM_HandleTypeDef *_htim, uint32_t _channel);
+    void start();
 
     /**
      * @brief pwm stop
      */
-    void stop(TIM_HandleTypeDef *_htim, uint32_t _channel);
+    void stop();
 
     /**
      * @brief pwm set duty
      */
-    void setDutyCycle(TIM_HandleTypeDef *_htim, uint32_t _channel,
-                      uint32_t _dutyCycle);
+    void setDutyCycle(uint32_t _dutyCycle);
 
     /**
      * @brief pwm set frequency
      */
-    void setFrequency(TIM_HandleTypeDef *_htim, uint32_t _frequency);
+    void setFrequency(uint32_t _frequency);
+
+private:
+    TIM_HandleTypeDef *htim_;
+    uint32_t channel_;
 };

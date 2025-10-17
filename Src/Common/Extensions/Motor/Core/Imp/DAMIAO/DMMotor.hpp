@@ -123,11 +123,9 @@ struct Status_s {
     float MITKpMax;
     float MITKdMax;
     float currTxCodeSpan;
-    float currRated;    // A
-    float torqRated;    // Nm
-    float currMax;      // A
-    float torqMax;      // Nm
-    float torqConstant; // Nm/A
+    float currMax; // A
+    float torqMax; // Nm
+    float Kn;      // Nm/A
 
     Status_s &operator=(const Status_s &_other);
 };
@@ -136,30 +134,47 @@ class DMMotor : public IMotor {
     using Base = IMotor;
     using RegMap = std::unordered_map<RegId_e, Reg_s *>;
 
+    using TxBus = TxBus_s::CANTxBuf_s<8>;
+
+    using ConvertFunc = void (DMMotor::*)(TxBus &);
+
 private:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
-    TxBus_s::CANTxBuf_s<8> txBuf_ = {};
 
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
+
+    ConvertFunc convert = &DMMotor::convertDefault;
+
+    void convertMitTt(TxBus &);
+    void convertMitVdes(TxBus &);
+    void convertMitVdesPdes(TxBus &);
+    void convertPdesVdes(TxBus &);
+    void convertVdes(TxBus &);
+    void convertEmit(TxBus &);
+    void convertDefault(TxBus &);
+
+    void serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf);
+
+    void overrideReductionRatio(float _newReductionRatio) final;
 
 protected:
     /**
      * @brief Register the receive callback function
      * 
      */
-    void registerRecvCallback();
+    void registerRecvCallback(uint16_t _rxId);
     /**
      * @brief Cancel the receive callback function
      * 
      */
-    void cancelRecvCallback();
+    void cancelRecvCallback(uint16_t _rxId);
     /**
      * @brief Update the control ID based on the current work mode
      * 
      */
-    void updateCtrlId();
+    void updateCtrlMode();
 
     Status_s status_;
 
@@ -199,20 +214,6 @@ public:
      * @return uint16_t 
      */
     uint16_t canId() const;
-
-    /**
-     * @brief Get the master ID of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t masterId() const;
-
-    /**
-     * @brief Get the unique identifier (UID) of the motor
-     * 
-     * @return uint16_t 
-     */
-    uint16_t uid() final;
 
     /**
      * @brief Update the motor state

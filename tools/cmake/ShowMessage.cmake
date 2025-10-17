@@ -1,5 +1,5 @@
 function(showMessage)
-  message("-----------------------------------------------------")
+  message("------------------- build info ----------------------")
   message("-- Build type:" ${CMAKE_BUILD_TYPE})
   message("-- C Standard: " ${CMAKE_C_STANDARD})
   message("-- C++ Standard: " ${CMAKE_CXX_STANDARD})

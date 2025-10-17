@@ -7,9 +7,9 @@
 
 #include "PidBasic.hpp"
 
-static PositonalPid gWzAP{ 0.6f,   0.3f, 0.01f,
-                           0.001f, 0.2f, CHASSIS::Omni::MAX_WZ_SPEED,
-                           0.f };
+static PositionalPid gWzAP{ 0.6f,   0.3f, 0.01f,
+                            0.001f, 0.2f, CHASSIS::Omni::MAX_WZ_SPEED,
+                            0.f };
 
 namespace CHASSIS {
 
@@ -66,6 +66,6 @@ public:
 
 private:
     Omni *chassis_;
-    PositonalPid *wzAngPid_;
+    PositionalPid *wzAngPid_;
 };
 } // namespace CHASSIS
