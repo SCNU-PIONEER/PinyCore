@@ -78,7 +78,13 @@ public:
     }
 
     //-----------------------------------------------------------------------------------
+    /// Control the LEDs
+    /// @param _type the type of command
+    /// @param _index the index of the totalLEDs_
+    /// @param _ctrlNum the number of the controled LED starting from _index
     static void ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
+
+    /// Turn off all the LEDs
     static void off();
 
 private:
