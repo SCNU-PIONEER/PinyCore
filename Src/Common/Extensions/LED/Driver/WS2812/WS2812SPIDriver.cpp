@@ -2,8 +2,8 @@
 
 using namespace LED;
 
-WS2812SPIDriver::WS2812SPIDriver(SPI_HandleTypeDef *_spiHandle)
-        : spiHandle_(_spiHandle)
+WS2812SPIDriver::WS2812SPIDriver(SPI_HandleTypeDef *_spiHandle, int _num)
+        : LEDDriver(_num), spiHandle_(_spiHandle)
 {
 }
 

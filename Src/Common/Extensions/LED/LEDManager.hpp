@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Driver/WS2812/WS2812SPIDriver.hpp"
+#include "Driver/WS2812/WS2812PWMDriver.hpp"
 #include "Driver/RGBLED/RGBLEDDriver.hpp"
 
 #include "FreeRTOS.h"
@@ -35,35 +36,33 @@ public:
     /// Add a driver to the LED manager
     /// @param _driver the driver to add
     /// @param _colorData the color data for the driver
-    /// @param _numLEDs the number of LEDs in the driver
     /// @return true if the driver was added successfully, false otherwise
-    void addLEDs(LEDDriver *_driver, int _numLEDs);
+    void addLEDs(LEDDriver *_driver);
 
     /// Show the current LED colors
     void show();
 
-    /// Create a driver of the given chipset type
+    /// Create a driver of the PWM chipset type
     /// @tparam Chip the chipset type to create
     /// @param _handle the handle to the chipset
+    /// @param _num the number of LEDs in the driver
     /// @return a pointer to the created driver
-    template <SPIChipsets_e Chip> LEDDriver *create(SPI_HandleTypeDef *_handle)
+    template <PWMChipsets_e Chip> LEDDriver *create(Pwm *_handle, int _num)
     {
         switch (Chip) {
-        case SPI_WS2812B:
-            return std::make_unique<WS2812SPIDriver>(_handle).release();
+        case PWM_WS2812B:
+            return std::make_unique<WS2812PWMDriver>(_handle, _num).release();
         default:
             return nullptr;
         }
     }
-
-
-
 
     /// Create a driver of the given chipset type
     /// @tparam Chip the chipset type to create
     /// @param _setR the function to set the red value
     /// @param _setG the function to set the green value
     /// @param _setB the function to set the blue value
+    /// @param _num the number of LEDs in the driver
     /// @return a pointer to the created driver
     template <IOChipsets_e Chip>
     static LEDDriver *create(RGBLEDDriver::lightTuner _setR(uint8_t),

@@ -44,13 +44,13 @@ LEDs &LEDs::instance()
     return instance;
 }
 
-void LEDs::addLEDs(LEDDriver *_driver, int _numLEDs)
+void LEDs::addLEDs(LEDDriver *_driver)
 {
     if (_driver != nullptr) {
         _driver->setIndex(ledColors_.size());
-        ledColors_.resize(ledColors_.size() + _numLEDs);
+        ledColors_.resize(ledColors_.size() + _driver->num());
+        totalLEDs_ += _driver->num();
     }
-    totalLEDs_ += _numLEDs;
 }
 
 void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
@@ -135,6 +135,6 @@ void LEDs::handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum)
             }
         }
         this->show();
-        vTaskDelay(10 / portTICK_PERIOD_MS); // interval 10ms
+        vTaskDelay(100 / portTICK_PERIOD_MS); // interval 10ms
     }
 }

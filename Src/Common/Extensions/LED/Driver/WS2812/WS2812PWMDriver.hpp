@@ -12,10 +12,10 @@ class WS2812PWMDriver : public LEDDriver {
     static constexpr uint8_t CODE1 = 0x86; // 1code
     static constexpr uint8_t CODE0 = 0x43; // 0code
 public:
-    WS2812PWMDriver(Pwm *_pwmHandle);
+    WS2812PWMDriver(Pwm *_pwmHandle, int _num);
 
 private:
-    std::unique_ptr<uint8_t[]> txbuf;
+    std::unique_ptr<uint32_t[]> txbuf;
     void show(std::vector<RGB_s> &_data) final;
 };
 

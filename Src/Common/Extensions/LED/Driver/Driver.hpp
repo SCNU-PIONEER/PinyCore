@@ -12,7 +12,7 @@ protected:
     using Color = RGB_s::Color_e;
     uint8_t vectorIndex_ = 0; // index in the LEDs manager color vector
     LEDDriver *nextDriver_ = nullptr;
-    int numLEDs_ = 1; // number of LEDs in this node
+    int numLEDs_ = 2; // number of LEDs in this node
     static LEDDriver *headDriver_;
     static LEDDriver *tailDriver_;
 
@@ -20,7 +20,7 @@ protected:
 
 public:
     virtual ~LEDDriver() = default;
-    LEDDriver()
+    LEDDriver(int _numLEDs) : numLEDs_(_numLEDs)
     {
         if (headDriver_ == nullptr) {
             headDriver_ = this;
@@ -34,6 +34,7 @@ public:
     static LEDDriver *head() { return headDriver_; }
     LEDDriver *next() { return nextDriver_; }
     void setIndex(uint8_t _index) { vectorIndex_ = _index; }
+    int num() { return numLEDs_; }
 
     /// How many LEDs does this controller manage?
     /// @returns LEDDriver::numLEDs_

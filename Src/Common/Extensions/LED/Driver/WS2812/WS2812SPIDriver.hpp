@@ -10,7 +10,7 @@ class WS2812SPIDriver : public LEDDriver {
     static constexpr uint8_t CODE0 = 0xC0; // 0code
     static constexpr uint8_t CODE1 = 0xF0; // 1code
 public:
-    WS2812SPIDriver(SPI_HandleTypeDef *_spiHandle);
+    WS2812SPIDriver(SPI_HandleTypeDef *_spiHandle, int _num);
 
 private:
     void show(std::vector<RGB_s> &_data) final;
