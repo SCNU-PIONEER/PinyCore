@@ -15,7 +15,7 @@ public:
     WS2812PWMDriver(Pwm *_pwmHandle, int _num);
 
 private:
-    std::unique_ptr<uint32_t[]> txbuf;
+    uint32_t *txbuf;
     void show(std::vector<RGB_s> &_data) final;
 };
 

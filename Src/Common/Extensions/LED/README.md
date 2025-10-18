@@ -1,11 +1,11 @@
-# LED v1.0.0
+# LED v1.0.1
 
 
 
 ## 更新日志 
 
 1. 创建本README v1.0.0 
-
+2. WS2812B的PWM DMA驱动中，DMA缓冲区使用ram_alloc创建 v1.0.1
 
 
 ## 如何使用
