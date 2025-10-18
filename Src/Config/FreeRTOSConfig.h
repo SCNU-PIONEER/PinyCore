@@ -115,7 +115,7 @@ header file. */
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
 
 /* vscode rtos-view support */
-#ifdef USE_VSCODE_XRTOS
+#if USE_VSCODE_XRTOS
 extern void dwtInit(void);
 extern uint32_t dwtRead(void);
 #define configGENERATE_RUN_TIME_STATS            1
