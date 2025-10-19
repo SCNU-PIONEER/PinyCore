@@ -16,24 +16,33 @@ protected:
 public:
     RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
     {
-        CommManager::instance().registerReceiver([this] { receive(); }, uid());
+        start();
     }
 
     virtual ~RxPacket()
     {
-        CommManager::instance().cancelReceiver(uid());
+        stop();
         vQueueDelete(queue_);
     };
 
     virtual void registerCallback() = 0; // TODO: better protocol abstraction
 
-    void receive()
+    bool receive()
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
             data_ = PacketType::decompress(this->rxBuf_);
             rxFreq_ = Dwt::instance().getFreq(&recvCnt_);
-        }
+            return true;
+        } else
+            return false;
     }
+
+    void start()
+    {
+        CommManager::instance().registerReceiver([this] { receive(); }, uid());
+    }
+
+    void stop() { CommManager::instance().cancelReceiver(uid()); }
 
     const ProtoData &data() const { return data_; }
     uint16_t uid() const { return PacketType::ID; }

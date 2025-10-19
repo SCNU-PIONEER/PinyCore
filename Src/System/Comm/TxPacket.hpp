@@ -3,6 +3,7 @@
 #include "CommManager.hpp"
 
 #include "FreeRTOS.h"
+#include "task.h"
 
 namespace COMM {
 
@@ -12,22 +13,25 @@ protected:
     using ProtoData = typename PacketType::ProtoData_s;
 
 public:
-    TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq)
+    TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq) { start(); }
+
+    virtual ~TxPacket() { stop(); };
+
+    virtual void
+    transmit(uint8_t *_buf,
+             uint16_t _len) = 0; // TODO: better protocol abstraction
+
+    void send()
     {
-        CommManager::instance().registerTransmitter(
-                [this]() {
-                    if (checkSend()) {
-                        Data txBuf = PacketType::compress(this->data_);
-                        this->send(txBuf.bytes, PacketType::LEN);
-                    }
-                },
-                uid());
+        Data txBuf = PacketType::compress(this->data_);
+        this->transmit(txBuf.bytes, PacketType::LEN);
+    }
+    void start()
+    {
+        CommManager::instance().registerTransmitter(transmitFunc_, uid());
     }
 
-    virtual ~TxPacket() { CommManager::instance().cancelTransmitter(uid()); };
-
-    virtual void send(uint8_t *_buf,
-                      uint16_t _len) = 0; // TODO: better protocol abstraction
+    void stop() { CommManager::instance().cancelTransmitter(uid()); }
 
     void loadFull(ProtoData *_data)
     {
@@ -46,14 +50,21 @@ private:
     float txFreq_;
     bool checkSend()
     {
-        if ((xTaskGetTickCount() - lastSendTick_) >=
-            pdMS_TO_TICKS(1000.f / this->txFreq_)) {
+        if (txFreq_ > 0.f && ((xTaskGetTickCount() - lastSendTick_) >=
+                              pdMS_TO_TICKS(1000.f / this->txFreq_))) {
             this->lastSendTick_ = xTaskGetTickCount();
             return true;
         } else {
             return false;
         }
     }
+
+    std::function<void()> transmitFunc_{ [this]() {
+        if (checkSend()) {
+            Data txBuf = PacketType::compress(this->data_);
+            this->transmit(txBuf.bytes, PacketType::LEN);
+        }
+    } };
 };
 
 } // namespace COMM
