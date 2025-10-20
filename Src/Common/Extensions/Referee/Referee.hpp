@@ -12,9 +12,9 @@
 
 #include "RefereeProt.hpp"
 #include "FreeRTOS.h"
-#include <cstdint>
 #include "event_groups.h"
 #include "Bsp.hpp"
+#include <memory>
 
 #define REFEREE_READY_EVENT (1 << 2)
 
@@ -31,13 +31,14 @@ class RefReceiver {
 
 public:
     RefReceiver(UART_HandleTypeDef *_huart);
+    ~RefReceiver();
     void init(EventGroupHandle_t _event);
 
     void uartIdleCallback(UART_HandleTypeDef *_huart);
     void readRefereeData();
 
-    void incRxLost();
-    bool isOffline();
+    void rxFreqCalc();
+    float getRxFreq() { return rxFreq_; }
 
     RefereeProt_s &getRefereeData() { return refereeData_; }
 
@@ -46,7 +47,8 @@ private:
     uint8_t *rxBuffer_;
     RefereeProt_s refereeData_;
 
-    uint16_t rxLostCnt_ = 0;
+    float rxFreq_ = 0.f;
+    uint16_t rxCnt_ = 0;
     uint16_t lastPos = 0;
     uint16_t dataLen = 0;
 
@@ -69,5 +71,5 @@ private:
 
 } // namespace REFEREE
 
-inline REFEREE::RefReceiver *refereeRx;
-inline REFEREE::RefTransmitter *refereeTx;
+inline std::unique_ptr<REFEREE::RefReceiver> refereeRx;
+inline std::unique_ptr<REFEREE::RefTransmitter> refereeTx;
