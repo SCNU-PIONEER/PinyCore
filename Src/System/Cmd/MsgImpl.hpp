@@ -42,7 +42,7 @@ struct ArmMsg_s : public Msg {
 
 struct RefereeMsg_s : public Msg {
     uint16_t currentHP, shooterHeatLimit, chassisPowerLimit, chassisPowerBuffer;
-    float bulletSpeed;
+    float bulletSpeed, rxFreq;
 };
 
 struct NavMsg_s : public Msg {

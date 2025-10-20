@@ -1,11 +1,12 @@
-# Comm (Multi-core communication) v1.0.0
+# Comm (Multi-core communication) v1.0.2
 
 
 
 ## 更新日志
 
-1. 创建本README
-2. 接收端的注册回调函数中不再切换到高优先任务
+1. 创建本README v1.0.0
+2. 接收端的注册回调函数中不再切换到高优先任务 v1.0.1
+3. 新增start和stop的API，原来默认固定频率发，现在支持手动发，支持停止发送/接收和开始发送/接收 v1.0.2
 
 
 ## How to use
@@ -73,6 +74,7 @@ class ChassisCtrlPacketType{
 // this is a sample, gimbal is a master
 
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
+    // ChassisCtrlTxPacket() : TxPacket(-1); 发送频率默认为100Hz，若手动设置为-1，则该发送包需要手动调用API:send()来发送
     void send(uint8_t *_buf, uint16_t _len) final;
 };
 ```

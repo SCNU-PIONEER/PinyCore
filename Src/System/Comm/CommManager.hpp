@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <functional>
+#include <unordered_map>
+
+#include "StmLog.hpp"
 
 class CommManager {
     static constexpr int MAX_TX_NUM = 3;
@@ -17,43 +20,45 @@ public:
     CommManager(const CommManager &) = delete;
     CommManager &operator=(const CommManager &) = delete;
 
-
-    void registerTransmitter( // NOLINTNEXTLINE
-            std::function<void()> _tx)
+    void registerTransmitter(std::function<void()> _tx, uint16_t _id)
     {
-        if (txIndex_ < MAX_TX_NUM) {
-            transmitter_[txIndex_++] = _tx;
+        if (transmitter_.contains(_id)) {
+            LOG::warn("TxPacket", "NO.%d already registered", _id);
+            return;
         }
+        transmitter_[_id] = _tx;
     }
 
-    void registerReceiver(std::function<void()> _rx)
+    void cancelTransmitter(uint16_t _id) { transmitter_.erase(_id); }
+
+    void registerReceiver(std::function<void()> _rx, uint16_t _id)
     {
-        if (rxIndex_ < MAX_RX_NUM) {
-            receiver_[rxIndex_++] = _rx;
+        if (receiver_.contains(_id)) {
+            LOG::warn("RxPacket", "NO.%d already registered", _id);
+            return;
         }
+        receiver_[_id] = _rx;
     }
+
+    void cancelReceiver(uint16_t _id) { receiver_.erase(_id); }
 
     void txTask()
     {
-        for (uint8_t i = 0; i < txIndex_; i++) {
-            transmitter_[i]();
+        for (auto &txPair : transmitter_) {
+            txPair.second();
         }
     }
 
     void rxTask()
     {
-        for (uint8_t i = 0; i < rxIndex_; i++) {
-            receiver_[i]();
+        for (auto &rxPair : receiver_) {
+            rxPair.second();
         }
     }
 
 private:
     CommManager() = default;
 
-    // NOLINTNEXTLINE
-    std::function<void()> transmitter_[MAX_TX_NUM];
-    uint8_t txIndex_ = 0;
-
-    std::function<void()> receiver_[MAX_RX_NUM];
-    uint8_t rxIndex_ = 0;
+    std::unordered_map<uint16_t, std::function<void()> > transmitter_;
+    std::unordered_map<uint16_t, std::function<void()> > receiver_;
 };

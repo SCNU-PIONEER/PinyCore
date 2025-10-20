@@ -1,0 +1,37 @@
+menu "extension config"
+    choice
+        prompt "remote controller"
+        default EXTENSION_DT7
+        
+        config EXTENSION_DT7
+        bool "remote control dt7"
+
+        config EXTENSION_ET08A
+        bool "remote control et08a"
+    endchoice
+
+    config EXTENSION_BUZZER
+    bool "buzzer"
+    default y
+
+    config EXTENSION_MOTOR
+    bool "motor driver"
+    default y
+
+    config EXTENSION_REFEREE
+    bool "referee"
+    default y
+
+    config EXTENSION_SENSOR
+    bool "sensor"
+    default y
+
+    config EXTENSION_SUPERCAP
+    bool "super cap"
+    default n
+
+    config EXTENSION_WS2812
+    bool "ws2812"
+    default n
+
+endmenu
