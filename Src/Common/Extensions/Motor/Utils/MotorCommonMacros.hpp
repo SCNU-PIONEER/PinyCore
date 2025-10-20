@@ -16,11 +16,34 @@ static float torq2volt(float _val)
     return _val;
 }
 
-/// @brief get the minor arc between two angles
-/// @param _startAngle the start of the range
-/// @param _endAngle the end of the range
-/// @param _range the range of the angle
-/// @return the minor arc from _startAngle to _endAngle in [-range/2, range/2]
+/**
+ * @brief Calculate the minor arc between two angles
+ * 
+ * This function computes the shortest angular distance (minor arc) between
+ * two given angles within a specified range. The result is always returned
+ * as a value within [-range/2, range/2].
+ * 
+ * @param _startAngle The starting angle of the range
+ * @param _endAngle The ending angle of the range
+ * @param _range The total range of the angle (typically 2*PI for full circle)
+ * @return The minor arc from _startAngle to _endAngle, guaranteed to be
+ *         within [-range/2, range/2]
+ * 
+ * @note The function always returns the shortest path between the two angles.
+ *       For example, for angles 350° and 10°, it will return 20° rather than
+ *       340°.
+ * 
+ * @warning The _range parameter should be positive and typically 2*PI for
+ *          circular measurements. Using other values may produce unexpected
+ *          results.
+ * 
+ * @example
+ * float start = 350.0f * PI/180.0f;  // 350 degrees or -10 degrees in radians
+ * float end = 10.0f * PI/180.0f;     // 10 degrees in radians
+ * float arc = getMinorArc(start, end, 2*PI);
+ * // arc will be approximately +20 degrees in radians (0.349f)
+ */
+
 static inline float getMinorArc(float _endAngle, float _startAngle,
                                 float _range = 2.f * PI)
 {
@@ -30,14 +53,32 @@ static inline float getMinorArc(float _endAngle, float _startAngle,
     return rslt;
 }
 
-/// @brief clamp an angle to a range
-/// @param _angle the angle to clamp
-/// @param _startAngle the start of the range
-/// @param _endAngle the end of the range
-/// @param _range the range of the angle
-/// @return the clamped angle in [_startAngle, _endAngle]
-/// @note if the angle is outside the range, it will be clamped to the nearest edge of the range
-/// @note [-3/PI, 3/PI] is a minor arc range and [3/PI, -3/PI] is a major arc range
+/**
+ * @brief Clamp an angle to specified range
+ * 
+ * This function restricts the input angle value within the specified angle range.
+ * If the angle exceeds the range, it will be clamped to the nearest boundary
+ * of the range.
+ * 
+ * @param _angle The angle value to be clamped
+ * @param _startAngle The start value of the angle range
+ * @param _endAngle The end value of the angle range
+ * @param _range The range value of the angle
+ * @return The clamped angle value within [_startAngle, _endAngle] range
+ * 
+ * @note Range definitions:
+ *       - [-3/PI, 3/PI] represents a minor arc range
+ *       - [3/PI, -3/PI] represents a major arc range
+ * 
+ * @warning Input parameters should ensure that _startAngle and _endAngle 
+ *          form a valid angle range
+ * 
+ * @example
+ * float angle = 4.0f;
+ * float result = clampAngle(angle, -3.0f/PI, 3.0f/PI, 6.0f/PI);
+ * // result will be clamped within [-3/PI, 3/PI] range
+ */
+
 static float clampArc(float _angle, float _startAngle, float _endAngle,
                       float _range = 2.f * PI)
 {
