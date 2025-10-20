@@ -18,7 +18,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
     regInfo_.comType = _config.comType;
     regInfo_.workMode = _config.workMode;
     regInfo_.offsetId = _config.offsetId;
-    strncpy(regInfo_.name, _name, 16);
+    snprintf(regInfo_.name, sizeof(regInfo_.name), "%s", _name);
 
     AUX_.txFreq = _config.txFreq;
 
