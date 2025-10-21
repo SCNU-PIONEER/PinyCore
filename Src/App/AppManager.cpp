@@ -4,6 +4,9 @@
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
+#if APP_USE_MINIPC
+#include "MiniPcManager.hpp"
+#endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "UI/UIApp.hpp"
@@ -55,6 +58,10 @@ void AppManager::initApp()
 #endif
 
     cmd = new Cmd();
+#if APP_USE_MINIPC
+    schedule([]() { MINIPC::PcManager::instance().txTask(); });
+#endif
+
     // schedule([]() { chassis->update(); });
     gimbal = new GIMBAL::DualStage();
     schedule([]() { gimbal->update(cmd); });

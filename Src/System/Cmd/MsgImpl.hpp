@@ -13,7 +13,7 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
-namespace NAV {
+namespace MINIPC {
 enum class SentryDecision_e : uint8_t;
 }
 
@@ -22,6 +22,7 @@ struct MsgBus_s {
     QueueHandle_t gimbalQueue;
     QueueHandle_t armQueue;
     QueueHandle_t refereeQueue;
+    QueueHandle_t visionQueue;
     QueueHandle_t navigationQueue;
 };
 
@@ -45,8 +46,13 @@ struct RefereeMsg_s : public Msg {
     float bulletSpeed;
 };
 
+struct VisionMsg_s : public Msg {
+    //TODO: add vision msg
+    float x, y, z;
+};
+
 struct NavMsg_s : public Msg {
-    NAV::SentryDecision_e decision;
+    MINIPC ::SentryDecision_e decision;
     float vx;
     float vy;
     float wz;

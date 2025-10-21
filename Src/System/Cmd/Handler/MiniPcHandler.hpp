@@ -1,10 +1,12 @@
 #pragma once
-#include "MsgImpl.hpp"
 #include "Nav.hpp"
+#include "Vision.hpp"
 #include "Referee.hpp"
 #include "Handler.hpp"
 
-class NavHandler : public Handler {
+#define MINIPC_READY_EVENT (NAV_READY_EVENT | VISION_READY_EVENT)
+
+class MiniPcHandler : public Handler {
 public:
 public:
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
@@ -13,5 +15,6 @@ public:
 
 private:
     MsgBus_s *msgBus_;
-    NavMsg_s msg_;
+    NavMsg_s navMsg_;
+    VisionMsg_s visionMsg_;
 };
