@@ -33,37 +33,70 @@ public:
 
     static void task(void *_param);
 
-    /// Add a driver to the LED manager
-    /// @param _driver the driver to add
-    /// @param _colorData the color data for the driver
-    /// @return true if the driver was added successfully, false otherwise
+    /**
+     * @brief Adds a new driver to the LED manager system
+     * 
+     * @param _driver Pointer to the LED driver instance to be added
+     * @param _colorData Initial color data array for the driver
+     * 
+     * @note The manager takes ownership of the driver instance
+     * @note The color data array must match the driver's LED count
+     */
     void addLEDs(LEDDriver *_driver);
 
     /// Show the current LED colors
     void show();
 
-    /// Create a driver of the PWM chipset type
-    /// @tparam Chip the chipset type to create
-    /// @param _handle the handle to the chipset
-    /// @param _num the number of LEDs in the driver
-    /// @return a pointer to the created driver
+    /**
+     * @brief Creates a driver instance for the specified PWM chipset type
+     * 
+     * @tparam Chip The chipset type to create (template parameter)
+     * @param _handle Handle to the PWM peripheral for LED control
+     * @param _num Total number of LEDs to be controlled by the driver
+     * 
+     * @return LEDDriver* Pointer to the created driver instance
+     */
     template <PWMChipsets_e Chip> LEDDriver *create(Pwm *_handle, int _num)
     {
         switch (Chip) {
         case PWM_WS2812B:
-            return std::make_unique<WS2812PWMDriver>(_handle, _num).release();
+            return new WS2812PWMDriver(_handle, _num);
         default:
             return nullptr;
         }
     }
 
-    /// Create a driver of the given chipset type
-    /// @tparam Chip the chipset type to create
-    /// @param _setR the function to set the red value
-    /// @param _setG the function to set the green value
-    /// @param _setB the function to set the blue value
-    /// @param _num the number of LEDs in the driver
-    /// @return a pointer to the created driver
+    /**
+    * @brief Creates a driver instance for the specified SPI chipset type
+    * 
+    * @tparam Chip The chipset type to create (template parameter)
+    * @param _handle Handle to the SPI peripheral for communication
+    * @param _num Total number of LEDs to be controlled by the driver
+    * 
+    * @return LEDDriver* Pointer to the created driver instance
+    */
+    template <SPIChipsets_e Chip>
+    LEDDriver *create(SPI_HandleTypeDef *_handle, int _num)
+    {
+        switch (Chip) {
+        case SPI_WS2812B:
+            return new WS2812SPIDriver(_handle, _num);
+        default:
+            return nullptr;
+        }
+    }
+
+    /**
+     * @brief Creates a driver instance for the specified GPIO chipset type
+     * 
+     * @tparam Chip The chipset type to create (template parameter)
+     * @param _setR Function pointer to set the red value of LEDs
+     * @param _setG Function pointer to set the green value of LEDs
+     * @param _setB Function pointer to set the blue value of LEDs
+     * @param _num Total number of LEDs to be controlled by the driver
+     * 
+     * @return LEDDriver* Pointer to the created driver instance
+     */
     template <IOChipsets_e Chip>
     static LEDDriver *create(RGBLEDDriver::lightTuner _setR(uint8_t),
                              RGBLEDDriver::lightTuner _setG(uint8_t),
@@ -71,20 +104,30 @@ public:
     {
         switch (Chip) {
         case RGBLED:
-            return std::make_unique<RGBLEDDriver>(_setR, _setG, _setB).release();
+            return new RGBLEDDriver(_setR, _setG, _setB);
         default:
             return nullptr;
         }
     }
 
     //-----------------------------------------------------------------------------------
-    /// Control the LEDs
-    /// @param _type the type of command
-    /// @param _index the index of the totalLEDs_
-    /// @param _ctrlNum the number of the controled LED starting from _index
+    /**
+     * @brief Controls the LEDs with specified parameters
+     * 
+     * @param _type The type of command to execute
+     * @param _index The index of the totalLEDs_ array
+     * @param _ctrlNum The number of LEDs to control starting from _index position
+     * 
+     * @note This function modifies the LED states based on the command type and parameters
+     * 
+     * @warning Ensure _index is within bounds of totalLEDs_ array
+     * @warning Ensure _ctrlNum does not exceed array bounds starting from _index
+     */
     static void ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
 
-    /// Turn off all the LEDs
+    /**
+     * @brief Turn off all LEDs
+     */
     static void off();
 
 private:
