@@ -23,11 +23,10 @@ menu "app config"
 
     source "Src/System/INS/Kconfig"
 
-    config APP_USE_NAV
-    bool "nav"
+    config APP_USE_MINIPC
+    bool "MiniPc"
     default n
-
-     source "Src/System/Nav/Kconfig"
+    source "Src/System/MiniPc/Kconfig"
 
     config APP_USE_DAEMONS
     bool "daemons"
