@@ -8,7 +8,11 @@ using namespace LED;
 LEDDriver *LEDDriver::headDriver_ = nullptr;
 LEDDriver *LEDDriver::tailDriver_ = nullptr;
 
-LEDs::LEDs() : queue_(xQueueCreate(3, sizeof(Cmd_s))) {};
+LEDs::LEDs() : queue_(xQueueCreate(3, sizeof(Cmd_s)))
+{
+    // uxStackDepth depends on the number of lights
+    xTaskCreate(task, "led_task", 128, nullptr, 10, nullptr);
+};
 
 void LEDs::task(void *_param)
 {
