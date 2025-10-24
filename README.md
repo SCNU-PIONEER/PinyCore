@@ -51,6 +51,10 @@ cmake --build ./build --target menuconfig
 
 1. 全局变量构造不要有 hal 库的操作，但可以初始化 hal 指针，因为 hal 是在 main 中初始化，而全局变量是在 main 之前构造!
 
+## framework
+
+![frame](.docs/frame.png)
+
 # 🙌Contributing
 
 Contributions are always welcome!
