@@ -8,7 +8,7 @@ public:
     * @brief  init incremental pid parameter
     */
     IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
-                   float _deadband);
+                   float _deadband = 0.f);
 
     /** @brief  pid reset
     */
@@ -39,7 +39,7 @@ public:
     * @brief  init positonal pid parameter
     */
     PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-                  float _outMax, float _deadband);
+                  float _outMax, float _deadband = 0.f);
 
     /** @brief  pid reset
     */

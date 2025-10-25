@@ -50,7 +50,7 @@ void IncrementalPid::reset()
 
 
 PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt,
-                             float _iMax, float _outMax, float _deadband = 0.f)
+                             float _iMax, float _outMax, float _deadband)
         : iOut(0.0f)
         , kp(_kp)
         , ki(_ki)
@@ -82,7 +82,7 @@ float PositionalPid::calc(float _ref, float _cur)
             return 0.0f;
     }
 
-    iOut += ki * err[0] * dt;
+    iOut += ki * (err[0] + err[1]) / 2.f * dt;
     iOut = std::clamp(iOut, -iMax, iMax);
     return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt),
                       -outMax, outMax);
