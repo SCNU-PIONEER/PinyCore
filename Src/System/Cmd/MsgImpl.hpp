@@ -2,6 +2,7 @@
 #include "MsgBase.hpp"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include <cstdint>
 
 
 namespace CHASSIS {
@@ -12,11 +13,17 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
+namespace MINIPC {
+enum class SentryDecision_e : uint8_t;
+}
+
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
     QueueHandle_t armQueue;
     QueueHandle_t refereeQueue;
+    QueueHandle_t visionQueue;
+    QueueHandle_t navigationQueue;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -27,7 +34,7 @@ struct ChassisMsg_s : public Msg {
 
 struct GimbalMsg_s : public Msg {
     GIMBAL::FSMState_e state;
-    float roll, pitch, yaw;
+    float wRoll, wPitch, wYaw;
 };
 
 struct ArmMsg_s : public Msg {
@@ -39,13 +46,27 @@ struct RefereeMsg_s : public Msg {
     float bulletSpeed, rxFreq;
 };
 
+struct VisionMsg_s : public Msg {
+    //TODO: add vision msg
+    float x, y, z;
+};
+
+struct NavMsg_s : public Msg {
+    MINIPC ::SentryDecision_e decision;
+    float vx;
+    float vy;
+    float wz;
+};
+
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct GimbalEularMsg_s : public Msg {
+struct INSEularMsg_s : public Msg {
     float roll, pitch, yaw;
 };
 
-struct DeltaYawMsg_s : public Msg {
-    float deltaYaw;
+struct GimbalYawMsg_s : public Msg {
+    bool isReset;
+    float followYaw;
+    float chassisYaw; // only single core system need it
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

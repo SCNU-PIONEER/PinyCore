@@ -1,0 +1,11 @@
+menu "MiniPc config" 
+    depends on APP_USE_MINIPC
+
+        config APP_USE_VISION
+        bool "vision"
+        default n
+
+        config APP_USE_NAV
+        bool "nav"
+        default n
+endmenu

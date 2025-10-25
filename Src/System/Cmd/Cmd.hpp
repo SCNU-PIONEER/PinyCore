@@ -1,16 +1,19 @@
 #pragma once
 
 #include "FreeRTOS.h"
+#include "Handler/MiniPcHandler.hpp"
+#include "MiniPcHandler.hpp"
 #include "queue.h"
 #include "event_groups.h"
 #include "MsgImpl.hpp"
-
+#include "MiniPcHandler.hpp"
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
 #include "RefereeHandler.hpp"
 
-#define EVENT_MASK \
-    (RTT_READY_EVENT | RC_READY_EVENT | REFEREE_READY_EVENT | ET08A_READY_EVENT)
+#define EVENT_MASK                                            \
+    (RTT_READY_EVENT | RC_READY_EVENT | REFEREE_READY_EVENT | \
+     ET08A_READY_EVENT | MINIPC_READY_EVENT)
 
 class Cmd {
 public:
@@ -29,4 +32,5 @@ private:
     RcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
     RefereeHandler refereeHandler_;
+    MiniPcHandler MiniPcHandler_;
 };
