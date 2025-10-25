@@ -6,7 +6,7 @@
 #include <memory>
 
 
-#define VISION_READY_EVENT (1 << 3)
+#define VISION_READY_EVENT (1 << 4)
 
 namespace MINIPC {
 

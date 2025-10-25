@@ -3,7 +3,8 @@
 #include "StmLog.hpp"
 #include <cstdint>
 #include <functional>
-#include "BSP.hpp"
+#include "Bsp.hpp"
+#include <vector>
 
 namespace MINIPC {
 
@@ -26,20 +27,17 @@ public:
     void registerTransmitter( // NOLINTNEXTLINE
             std::function<void()> _tx)
     {
-        if (txIndex_ < MAX_TX_NUM) {
-            transmitter_[txIndex_++] = _tx;
-        }
+        transmitter_.push_back(_tx);
     }
 
     void txTask()
     {
         static uint8_t i = 0;
-        i < txIndex_ ? transmitter_[i](), i++ : i = 0;
+        i < MAX_TX_NUM ? transmitter_[i](), i++ : i = 0;
     }
 
 private:
     // NOLINTNEXTLINE
-    std::function<void()> transmitter_[MAX_TX_NUM];
-    uint8_t txIndex_ = 0;
+    std::vector<std::function<void()> > transmitter_;
 };
 } // namespace MINIPC

@@ -50,7 +50,6 @@ DualStage::DualStage()
         .txFreq = PITCH_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
-        .torqPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
     motors_.Pitch = new DJIMOTOR::GM6020("Pitch", pitchGM6020Config);
@@ -66,7 +65,6 @@ DualStage::DualStage()
         .txFreq = FIRST_YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
-        .torqPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
     motors_.FirstYaw = new DJIMOTOR::GM6020("Yaw", firstYawGM6020Config);
@@ -82,7 +80,6 @@ DualStage::DualStage()
         .txFreq = SECOND_YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
-        .torqPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
     motors_.SecondYaw = new DJIMOTOR::GM6020("Yaw", secondYawGM6020Config);

@@ -11,7 +11,6 @@ using namespace PINYMOTOR;
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
         : posPID_(_config.posPID)
         , velPID_(_config.velPID)
-        , torqPID_(_config.torqPID)
         , globalState(GlobalState_e::UNRECOGNIZED)
 {
     regInfo_.uid = MotorManager::instance()->assignId();
@@ -19,7 +18,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
     regInfo_.comType = _config.comType;
     regInfo_.workMode = _config.workMode;
     regInfo_.offsetId = _config.offsetId;
-    strncpy(regInfo_.name, _name, 16);
+    snprintf(regInfo_.name, sizeof(regInfo_.name), "%s", _name);
 
     AUX_.txFreq = _config.txFreq;
 

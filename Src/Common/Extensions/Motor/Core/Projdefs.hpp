@@ -66,7 +66,6 @@ struct InitConfig_s {
 
     PID *posPID = nullptr;
     PID *velPID = nullptr;
-    PID *torqPID = nullptr;
 
     bool isReverse = false;
 };

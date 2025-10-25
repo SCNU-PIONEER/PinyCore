@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "sdkconfig.h"
-#include "BSP.hpp"
+#include "Bsp.hpp"
 #include "event_groups.h"
 #include "MsgImpl.hpp"
 
@@ -12,7 +12,7 @@ namespace MINIPC {
 class MiniPc {
 public:
     static constexpr int MAX_TX_NUM = 3;
-    MiniPc() : usb_(&Usb::instance()) {}
+    MiniPc() = default;
 
     virtual ~MiniPc() = default;
     virtual void init(EventGroupHandle_t _event) = 0;
@@ -20,7 +20,6 @@ public:
     virtual void parseData() = 0;
     virtual void sendData() = 0;
 
-    Usb *usb_;
     EventGroupHandle_t event_;
 };
 

@@ -1,5 +1,7 @@
 #pragma once
-#include "Rc.hpp"
+#include "Bsp.hpp"
+#include "DT7.hpp"
+#include "ET08A.hpp"
 #include "Handler.hpp"
 
 class RcMsgHandler : public Handler {
@@ -32,7 +34,7 @@ class RcMsgHandler : public Handler {
     } RcMsg_t;
 
 public:
-    RcMsgHandler(UART_HandleTypeDef *_huart);
+    RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
     void handle() override;
     void notify(Msg *_msg, QueueHandle_t _queue) override;
@@ -40,8 +42,6 @@ public:
 private:
     static constexpr float S_CURVE_ACC = 2.0f;
     static constexpr uint8_t T_ACC_CNT = 100;
-
-    RC::Rc rc_;
 
     RcMsg_t rcMsg_ = {};
 

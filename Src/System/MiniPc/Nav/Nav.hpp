@@ -6,7 +6,7 @@
 #include <memory>
 
 
-#define NAV_READY_EVENT (1 << 4)
+#define NAV_READY_EVENT (1 << 5)
 
 namespace MINIPC {
 

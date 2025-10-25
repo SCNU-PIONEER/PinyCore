@@ -17,7 +17,7 @@ Nav::Nav()
 void Nav::init(EventGroupHandle_t _event)
 {
     event_ = _event;
-    usb_->registerCallback([this](uint8_t *_buf, uint16_t _len) {
+    Usb::instance().registerCallback([this](uint8_t *_buf, uint16_t _len) {
         usbIdleCallback(_buf, _len);
     });
 };
@@ -28,8 +28,8 @@ void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len)
         Verify_CRC16_Check_Sum(&_buf[0], NAV_DATA_LEN)) {
         memcpy(&rxBuffer_, _buf, NAV_DATA_LEN);
         rxCnt_++;
+        xEventGroupSetBitsFromISR(event_, NAV_READY_EVENT, nullptr);
     }
-    xEventGroupSetBitsFromISR(event_, NAV_READY_EVENT, nullptr);
 };
 
 
@@ -47,7 +47,7 @@ void Nav::sendData()
     ecToNavDatas_.pitch--;
     ecToNavDatas_.yaw++;
     Append_CRC16_Check_Sum((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
-    usb_->send((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
+    Usb::instance().send((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
 };
 
 void Nav::rxFreqCalc()

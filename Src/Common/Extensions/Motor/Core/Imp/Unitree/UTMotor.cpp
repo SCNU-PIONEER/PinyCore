@@ -26,9 +26,9 @@ Status_s &Status_s::operator=(const Status_s &_other)
 }
 
 UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle)
+                 UART_HandleTypeDef *_huart)
         : IMotor(_name, _config)
-        , uart_(_huart, _dmaHandle)
+        , uart_(_huart)
         , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(
                   sizeof(TransmitMsg_s)))
         , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
@@ -43,7 +43,6 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
             reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
             UART_IT_IDLE);
     uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
-    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
 }
 
 UTMotor::~UTMotor() { this->cancelMotor(); }
@@ -70,14 +69,16 @@ void UTMotor::registerRecvCallback()
 MotorTypeDef_e UTMotor::send(uint16_t _sendId, TransmitMsg_s *_txBuf,
                              uint8_t _len)
 {
-    SET_485_1_DE_UP();
-    memcpy(txBuf_, _txBuf, _len);
-    MotorTypeDef_e ret =
-            (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
-    SET_485_1_DE_DOWN();
-    return ret;
+    if (this->checkSend()) {
+        SET_485_1_DE_UP();
+        memcpy(txBuf_, _txBuf, _len);
+        MotorTypeDef_e ret =
+                (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
+        SET_485_1_DE_DOWN();
+        return ret;
+    }
+    return 0; //TODO: return check
 }
-
 MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
 {
     Feedback_s *fb = _rxBuf;
@@ -107,7 +108,6 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
     }
 
     uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
-    __HAL_DMA_DISABLE_IT(uart_.hdma_, DMA_IT_HT);
     return 0; //TODO: return check
 }
 
