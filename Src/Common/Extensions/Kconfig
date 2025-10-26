@@ -14,6 +14,12 @@ menu "extension config"
     bool "buzzer"
     default y
 
+    config EXTENSION_LED
+    bool "led"
+    default y
+
+    source "Src/Common/Extensions/LED/Kconfig"
+
     config EXTENSION_MOTOR
     bool "motor driver"
     default y
@@ -28,10 +34,6 @@ menu "extension config"
 
     config EXTENSION_SUPERCAP
     bool "super cap"
-    default n
-
-    config EXTENSION_WS2812
-    bool "ws2812"
     default n
 
 endmenu

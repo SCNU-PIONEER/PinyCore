@@ -1,0 +1,16 @@
+menu "LEDDriver config"
+    depends on EXTENSION_LED
+    
+    config LED_WS2812_SPI
+    bool "ws2812-spi"
+    default y
+
+    config LED_WS2812_PWM
+    bool "ws2812-pwm"
+    default n
+
+    config LED_RGBLED
+    bool "rgbled"
+    default n
+
+endmenu
