@@ -6,8 +6,10 @@ void MiniPcHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     this->msgBus_ = _bus;
     this->event = _event;
+#if APP_USE_VISION
     vision = std::make_unique<MINIPC::Vision>();
     vision->init(_event);
+#endif
 #if APP_USE_NAV
     nav = std::make_unique<MINIPC::Nav>();
     nav->init(_event);
@@ -16,13 +18,14 @@ void MiniPcHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 
 void MiniPcHandler::handle()
 {
+#if APP_USE_VISION
     vision->parseData();
     vision->rxFreqCalc();
     visionMsg_.x = vision->getVisionToEcDataPtr().x;
     visionMsg_.y = vision->getVisionToEcDataPtr().y;
     visionMsg_.z = vision->getVisionToEcDataPtr().z;
     notify(&visionMsg_, msgBus_->visionQueue);
-
+#endif
 #if APP_USE_NAV
     nav->parseData();
     nav->rxFreqCalc();

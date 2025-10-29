@@ -27,17 +27,21 @@ public:
     void registerTransmitter( // NOLINTNEXTLINE
             std::function<void()> _tx)
     {
-        transmitter_.push_back(_tx);
+        if (txIndex_ < MAX_TX_NUM) {
+            transmitter_.push_back(_tx);
+            txIndex_++;
+        }
     }
 
     void txTask()
     {
         static uint8_t i = 0;
-        i < MAX_TX_NUM ? transmitter_[i](), i++ : i = 0;
+        i < txIndex_ ? transmitter_[i](), i++ : i = 0;
     }
 
 private:
     // NOLINTNEXTLINE
     std::vector<std::function<void()> > transmitter_;
+    uint8_t txIndex_ = 0;
 };
 } // namespace MINIPC
