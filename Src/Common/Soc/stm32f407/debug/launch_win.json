@@ -14,6 +14,9 @@
         "samplesPerSecond": 1
       },
       "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit"
+      ],
       "rttConfig": {
         "enabled": true,
         "address": "auto",
@@ -47,6 +50,9 @@
         "samplesPerSecond": 1
       },
       "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit"
+      ],
       // "overrideLaunchCommands": [  // 不复位debug
       //     "monitor  halt",
       // ],
@@ -86,6 +92,9 @@
         "samplesPerSecond": 1
       },
       "preLaunchTask": "build",
+      "preLaunchCommands": [
+        "source ${workspaceRoot}/tools/script/.gdbinit"
+      ],
       // "overrideLaunchCommands": [  // 不复位debug
       //     "monitor  halt",
       // ],

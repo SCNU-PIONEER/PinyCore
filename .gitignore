@@ -10,3 +10,4 @@ sdkconfig.h
 sdkconfig.cmake
 .vscode/launch.json
 */*.log
+__pycache__/
