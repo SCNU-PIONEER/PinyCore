@@ -68,10 +68,21 @@ float PositionalPid::calc(float _ref, float _cur)
 {
     err[1] = err[0];
     err[0] = _ref - _cur;
-    if (fabsf(err[0]) <= deadband) {
-        return 0.0f;
+
+    if (err[0] > deadband) {
+        err[0] -= deadband;
+    } else if (err[0] < -deadband) {
+        err[0] += deadband;
+    } else {
+        //  reference value get into deadband && last error out of deadband
+        if (_ref < deadband && _ref > -deadband &&
+            (err[1] < -deadband || err[1] > deadband)) {
+            iOut = 0.0f;
+        } else
+            return 0.0f;
     }
-    iOut += ki * err[0] * dt;
+
+    iOut += ki * (err[0] + err[1]) / 2.f * dt;
     iOut = std::clamp(iOut, -iMax, iMax);
     return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt),
                       -outMax, outMax);
