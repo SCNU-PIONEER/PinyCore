@@ -17,4 +17,7 @@ menu "utils config"
     config USE_VOFA 
         bool "vofa"
         default y
+    config USE_LAZY
+        bool "lazy init"
+        default y
 endmenu
