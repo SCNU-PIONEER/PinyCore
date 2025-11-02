@@ -75,7 +75,7 @@ public:
         stm_err_t err = _operation();
         if (unlikely(err != 0)) {
             error(_loc, "check", "error code: %d", err);
-            while (1) {
+            while (true) {
             }
         }
     }
@@ -232,14 +232,16 @@ error(std::string_view _type, const char *_format, Args &&..._args)
         -> error<Args...>;
 
 
-template <typename T> void CHECK(T &&_condition)
+template <typename T>
+void CHECK(T &&_condition,
+           std::source_location _loc = std::source_location::current())
 {
     if constexpr (std::is_invocable_v<T>) {
         /* 处理可调用对象 */
-        Logger::instance().check(LOCATION, std::forward<T>(_condition));
+        Logger::instance().check(_loc, std::forward<T>(_condition));
     } else {
         /* 处理原始值 */
-        Logger::instance().check(LOCATION,
+        Logger::instance().check(_loc,
                                  [&] { return static_cast<bool>(_condition); });
     }
 }
