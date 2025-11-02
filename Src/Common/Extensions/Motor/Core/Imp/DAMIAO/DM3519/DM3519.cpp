@@ -15,7 +15,7 @@ DM3519::DM3519(const char _name[16], InitConfig_s _config)
 
     regInfo_.model.measureMax = 16383;
     regInfo_.model.measureMin = 0;
-    regInfo_.model.reductionRatio = (3591.f / 187.f);
+    regInfo_.model.reductionRatio = 1.f;
     regInfo_.model.rxBaseId = 0x10;
     regInfo_.model.txBaseId = 0x00;
 
