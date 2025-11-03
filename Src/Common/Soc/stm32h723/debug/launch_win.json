@@ -15,7 +15,7 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit"
+        "source tools/script/.gdbinit"
       ],
       "rttConfig": {
         "enabled": true,
@@ -51,7 +51,7 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit"
+        "source tools/script/.gdbinit"
       ],
       // "overrideLaunchCommands": [  // 不复位debug
       //     "monitor  halt",
@@ -93,7 +93,7 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit"
+        "source tools/script/.gdbinit"
       ],
       // "overrideLaunchCommands": [  // 不复位debug
       //     "monitor  halt",
