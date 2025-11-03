@@ -241,8 +241,9 @@ void CHECK(T &&_condition,
         Logger::instance().check(_loc, std::forward<T>(_condition));
     } else {
         /* 处理原始值 */
-        Logger::instance().check(_loc,
-                                 [&] { return static_cast<bool>(_condition); });
+        Logger::instance().check(_loc, [&] {
+            return !static_cast<bool>(_condition);
+        });
     }
 }
 // NOLINTEND
