@@ -9,7 +9,7 @@ static constexpr char TAG[] = "RMDX27";
 RMDX27::RMDX27(const char _name[16], InitConfig_s _config)
         : MTMotor(_name, _config)
 {
-    LOG::CHECK(checkBaseConfig());
+    LOG::CHECK([this]() { return checkBaseConfig(); });
 
     regInfo_.model.measureMax = 65535;
     regInfo_.model.measureMin = 0;

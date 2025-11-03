@@ -11,7 +11,7 @@ using namespace DJIMOTOR;
 GM6020::GM6020(const char _name[16], InitConfig_s _config)
         : DJIMotor(_name, _config)
 {
-    LOG::CHECK(checkBaseConfig());
+    LOG::CHECK([this]() { return checkBaseConfig(); });
 
     regInfo_.model.measureMax = 8191;
     regInfo_.model.measureMin = 0;
