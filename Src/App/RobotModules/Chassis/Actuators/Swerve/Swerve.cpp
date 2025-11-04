@@ -60,7 +60,6 @@ Swerve::Swerve()
             .txFreq = 100.0f,
             .posPID = nullptr,
             .velPID = nullptr,
-            .torqPID = nullptr,
             .isReverse = true,
         };
         motors_._[i + 3] = new DJIMOTOR::GM6020("GM6020", gm6020Config);
@@ -74,7 +73,6 @@ Swerve::Swerve()
             .txFreq = 100.0f,
             .posPID = nullptr,
             .velPID = new IncrementalPid(0.5f, 0.005f, 0.f, 4.f, 0.f),
-            .torqPID = nullptr
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
