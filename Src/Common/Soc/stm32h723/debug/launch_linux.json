@@ -15,12 +15,7 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit",
-        "set p obj on",
-        "set p pretty on"
-      ],
-      "postLaunchCommands": [
-        "b PinyCore::init"
+        "source ${workspaceRoot}/tools/script/.gdbinit"
       ],
       "rttConfig": {
         "enabled": true,
@@ -56,12 +51,7 @@
       },
       "preLaunchTask": "build",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit",
-        "set p obj on",
-        "set p pretty on"
-      ],
-      "postLaunchCommands": [
-        "b PinyCore::init"
+        "source ${workspaceRoot}/tools/script/.gdbinit"
       ],
       // "overrideLaunchCommands": [  // 不复位debug
       //     "monitor  halt",
@@ -110,12 +100,7 @@
       // ],
       // "postDebugTask": "close-RTT",
       "preLaunchCommands": [
-        "source ${workspaceRoot}/tools/script/.gdbinit",
-        "set p obj on",
-        "set p pretty on"
-      ],
-      "postLaunchCommands": [
-        "b PinyCore::init"
+        "source ${workspaceRoot}/tools/script/.gdbinit"
       ],
       "rttConfig": {
         "enabled": true,

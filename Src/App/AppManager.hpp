@@ -24,5 +24,5 @@ private:
     AppManager() = default;
     void createApp();
 
-    std::list<std::function<void()> > tasks;
+    std::vector<std::function<void()> > tasks;
 };
