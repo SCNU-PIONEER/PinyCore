@@ -48,6 +48,11 @@ struct DeltaYawMsg_s : public Msg {
     float deltaYaw;
 };
 
+struct GimbalYawMsg_s : public Msg {
+    bool isReset;
+    float followYaw;
+    float chassisYaw; // only single core system need it
+};
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct ChassisTxMsg_s {
     CHASSIS::FSMState_e state;

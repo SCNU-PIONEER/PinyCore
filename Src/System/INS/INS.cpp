@@ -32,8 +32,7 @@ static constexpr float IMU_OFFSET_X = 0;
 static constexpr float IMU_OFFSET_Y = 0;
 
 INS::INS(SPI_HandleTypeDef *_spi)
-        : insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
-                                           &insDat_))
+        : insPub_(&insTopic,&insDat_)
 {
     xTaskCreate(INS::task, "ins_task", 384, this, 7, nullptr);
 
@@ -194,5 +193,5 @@ void INS::update(float _dt)
     // memcpy(&ansINS, &insDat_, sizeof(INSData_s));
 
     // send queue
-    insPub_->publish();
+    insPub_.publish();
 }

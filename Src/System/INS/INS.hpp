@@ -82,7 +82,7 @@ private:
 
     INSData_s insDat_; // data after INS algorithm, body and earth axis system
 
-    Publisher<INSData_s> *insPub_;
+    Publisher<INSData_s> insPub_;
 
     BMI088 bmi088_;
 };

@@ -9,6 +9,7 @@
 #include "test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
+#include "Swerve.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
@@ -25,6 +26,8 @@ Lazy<INS_SYS::INS> ins;
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
+
+Lazy<CHASSIS::Swerve> chassis;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -69,6 +72,8 @@ void AppManager::initApp()
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
 #endif
+
+    schedule([]() { chassis->update(); });
 
     // Generate threads at the end
     this->createApp();

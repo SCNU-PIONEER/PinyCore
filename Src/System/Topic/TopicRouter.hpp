@@ -1,17 +1,10 @@
 #pragma once
 #include "Topic.hpp"
-
 #include "MsgImpl.hpp"
-
 #include "INS.hpp"
 
-class TopicRouter {
-public:
-    static TopicRouter &instance();
+inline Topic<INS_SYS::INSData_s> insTopic{ "CompleteINSData" };
 
-    Topic<INS_SYS::INSData_s> insTopic{ "CompleteINSData" };
+inline Topic<GimbalEularMsg_s> gimbalEularTopic{ "GimbalEular" };
 
-    Topic<GimbalEularMsg_s> gimbalEularTopic{ "GimbalEular" };
-
-    Topic<DeltaYawMsg_s> deltaYawTopic{ "DeltaYaw" };
-};
+inline Topic<GimbalYawMsg_s> gimbalYawTopic{ "GimbalYaw" };
