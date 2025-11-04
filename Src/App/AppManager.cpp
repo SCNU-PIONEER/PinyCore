@@ -9,8 +9,11 @@
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
+#include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
 #include "Bsp.hpp"
+#include CHASSIS_FILE
+#include GIMBAL_FILE
 #include "Lazy.hpp"
 
 #if APP_USE_DAEMONS
@@ -29,7 +32,8 @@ Lazy<INS_SYS::INS> ins;
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
-
+// CHASSIS::Swerve *chassis;
+GIMBAL::DualStage *gimbal;
 //---------------------------------------------------------------------------------------------------
 
 
@@ -56,6 +60,10 @@ void AppManager::initApp()
 
     cmd.init();
 
+#if APP_USE_MINIPC
+    schedule([]() { MINIPC::PcManager::instance().txTask(); });
+#endif
+
 #if APP_USE_UI
     ui.init(UI_ROBOT_ID);
     schedule([]() { ui.task(); });
@@ -64,6 +72,9 @@ void AppManager::initApp()
 #if APP_USE_DAEMONS
     schedule([]() { Daemons::instance().update(); });
 #endif
+    // schedule([]() { chassis->update(); });
+    gimbal = new GIMBAL::DualStage();
+    schedule([]() { gimbal->update(&cmd); });
 
     // TestModule
     if constexpr (APP_USE_TEST) {
