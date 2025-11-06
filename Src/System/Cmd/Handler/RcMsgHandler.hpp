@@ -31,6 +31,8 @@ class RcMsgHandler : public Handler {
             int16_t yMove;
             int16_t zRoller;
         }; // TODO:
+
+        float wheelRocker;
     } RcMsg_t;
 
 public:
@@ -42,6 +44,7 @@ public:
 private:
     static constexpr float S_CURVE_ACC = 2.0f;
     static constexpr uint8_t T_ACC_CNT = 100;
+    static constexpr float WHEEL_THESHORLD = 0.2f;
 
     RcMsg_t rcMsg_ = {};
 
@@ -54,6 +57,8 @@ private:
     void chassisHandle();
     void masterHandle();
 
-    ChassisMsg_s cmsg_;
-    GimbalMsg_s gmsg_;
+    ChassisMsg_s chassisMsg_;
+    GimbalMsg_s gimbalMsg_;
+    ArmorLoaderMsg_s armorLoaderMsg_;
+    ArmorBoosterMsg_s armorBoosterMsg_;
 };

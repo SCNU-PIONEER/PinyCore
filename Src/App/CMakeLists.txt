@@ -32,8 +32,27 @@ elseif(APP_USE_STACKED)
 endif()
 
 file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
-  "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp")
+  "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp"
+  "RobotModules/Gimbal/Vision/*.cpp")
 list(APPEND SOURCES ${GIMBAL_SOURCES})
+
+# ArmorLoader
+if(APP_USE_DIAL)
+  set(ARMORLOADER_TYPE "Dial")
+endif()
+
+file(GLOB_RECURSE ARMORLOADER_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/ArmorLoader/Actuators/${ARMORLOADER_TYPE}/*.cpp")
+list(APPEND SOURCES ${ARMORLOADER_SOURCES})
+
+# ArmorBooster
+if(APP_USE_BOOSTER)
+  set(ARMORBOOSTER_TYPE "DualFric")
+endif()
+
+file(GLOB_RECURSE ARMORBOOSTER_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/ArmorBooster/Actuators/${ARMORBOOSTER_TYPE}/*.cpp")
+list(APPEND SOURCES ${ARMORBOOSTER_SOURCES})
 
 # ui
 if(APP_USE_UI)

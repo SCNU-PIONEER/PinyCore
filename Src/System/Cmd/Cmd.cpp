@@ -4,10 +4,11 @@
 
 Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART, eventGroup_)
 {
-    msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
-    msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
-    msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
-    msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
+    msgBus_.chassisQueue = xQueueCreate(10, sizeof(ChassisMsg_s));
+    msgBus_.gimbalQueue = xQueueCreate(10, sizeof(GimbalMsg_s));
+    msgBus_.armorBoosterQueue = xQueueCreate(10, sizeof(ArmorBoosterMsg_s));
+    msgBus_.armorLoaderQueue = xQueueCreate(10, sizeof(ArmorLoaderMsg_s));
+    msgBus_.refereeQueue = xQueueCreate(10, sizeof(RefereeMsg_s));
 
     rttHandler_.init(&msgBus_, eventGroup_);
     rcHandler_.init(&msgBus_, eventGroup_);

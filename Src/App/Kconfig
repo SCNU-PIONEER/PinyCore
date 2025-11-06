@@ -12,6 +12,18 @@ menu "app config"
 
     source "Src/App/RobotModules/Gimbal/Kconfig"
 
+    config APP_USE_ARMORLOADER
+    bool "amror loader"
+    default n
+
+    source "Src/App/RobotModules/ArmorLoader/Kconfig"
+
+    config APP_USE_ARMORBOOSTER
+    bool "amror booster"
+    default n
+
+    source "Src/App/RobotModules/ArmorBooster/Kconfig"
+
     config APP_USE_TEST
     bool "test modules"
     default n
