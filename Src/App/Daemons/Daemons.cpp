@@ -2,7 +2,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "StmLog.hpp"
-#include "Rc.hpp"
+#include "remoteControl.hpp"
 
 
 extern "C" void vApplicationMallocFailedHook()
@@ -22,7 +22,7 @@ Daemons::Daemons()
     /* rc */
     schedule([]() {
         static uint32_t updateCnt = 0;
-        if (!RC::Rc::instance().isOnline()) {
+        if (!rc->isOnline()) {
             if (xTaskGetTickCount() - updateCnt >= 2000) {
                 updateCnt = xTaskGetTickCount();
                 LOG::warn("Daemons", "RC offline");

@@ -11,5 +11,5 @@
 
 #ifdef BSP_USE_SPI
 #define IMU_SPI hspi2
+#define BOARD_WS2812_SPI hspi6
 #endif
-

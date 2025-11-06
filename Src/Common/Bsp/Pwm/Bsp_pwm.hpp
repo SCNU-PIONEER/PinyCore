@@ -17,6 +17,11 @@ public:
     void start();
 
     /**
+     * @brief pwm start with DMA
+     */
+    void startDMA(uint32_t *_txData, uint16_t _dataLength);
+
+    /**
      * @brief pwm stop
      */
     void stop();

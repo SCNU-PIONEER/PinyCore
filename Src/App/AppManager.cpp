@@ -6,9 +6,9 @@
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "UI/UIApp.hpp"
 #include "test/TestModule.hpp"
 #include "Bsp.hpp"
+#include "Lazy.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
@@ -19,12 +19,12 @@
 
 #if APP_USE_INS
 #include "INS.hpp"
-INS_SYS::INS *ins;
+Lazy<INS_SYS::INS> ins;
 #endif
 
 //---------------------------------------------------------------------------------------------------
 
-Cmd *cmd;
+Lazy<Cmd> cmd;
 
 //---------------------------------------------------------------------------------------------------
 
@@ -45,7 +45,8 @@ GIMBAL::GIMBAL_TYPE gimbal;
 
 
 #if APP_USE_UI
-UI::App ui(UI_ROBOT_ID);
+#include "UI/UIApp.hpp"
+Lazy<UI::App> ui;
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -61,13 +62,13 @@ void AppManager::initApp()
 #endif
 
 #if APP_USE_INS
-    ins = new INS_SYS::INS(&IMU_SPI);
+    ins.init(&IMU_SPI);
 #endif
 
-    cmd = new Cmd();
+    cmd.init();
 
 #if APP_USE_UI
-    ui.init();
+    ui.init(UI_ROBOT_ID);
     schedule([]() { ui.task(); });
 #endif
 
