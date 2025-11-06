@@ -9,9 +9,6 @@
 
 #include "IIR.hpp"
 
-#include "RxPacket.hpp"
-#include "PacketImpl.hpp"
-
 namespace CHASSIS {
 
 union Speed_u {
@@ -40,13 +37,6 @@ union Motors_u {
         PINYMOTOR::IMotor *RB;
     };
     PINYMOTOR::IMotor *_[4];
-};
-
-class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::SamplePacketType, 1> {
-public:
-    // TODO: slightly cumbersome like this or CRTP
-    ChassisCtrlRxPacket() { registerCallback(); }
-    void registerCallback() final;
 };
 
 class Omni : public Chassis {
@@ -98,14 +88,8 @@ private:
 
     FILTER::IIR3 velFltr_[4];
 
-#if !APP_USE_COMM
     GimbalYawMsg_s gimbalYawMsg_;
     Subscriber<GimbalYawMsg_s> *gimbalYawSub_;
-#endif
-#ifdef APP_CHASSIS_SLAVE
-    ChassisCtrlRxPacket chassisCtrlRxPacket_;
-    Subscriber<INS_SYS::INSData_s> *insSub_;
-#endif
 
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;

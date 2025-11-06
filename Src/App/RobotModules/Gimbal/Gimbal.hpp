@@ -11,7 +11,7 @@ class Gimbal {
 public:
     Gimbal()
             : insSub_(new Subscriber<INS_SYS::INSData_s>(
-                      4, &TopicRouter::instance().insTopic, &insData_))
+                      2, &TopicRouter::instance().insTopic, &insData_))
     {
     }
 

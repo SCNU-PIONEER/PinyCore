@@ -4,14 +4,9 @@
 
 #include "sdkconfig.h"
 
-#include <functional>
-
 #include "IMotor.hpp"
 
 #include "LPF.hpp"
-
-#include "TxPacket.hpp"
-#include "PacketImpl.hpp"
 
 namespace GIMBAL {
 
@@ -30,10 +25,6 @@ union States_u {
         float torq;
     };
     float _[2];
-};
-
-class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::SamplePacketType> {
-    void send(uint8_t *_buf, uint16_t _len) final;
 };
 
 class Standard : public Gimbal {
@@ -78,14 +69,9 @@ private:
 
     Motors_u motors_;
 
-#if !APP_USE_COMM
     // Master send deltaYaw to chassis
     GimbalYawMsg_s gimbalYawMsg_{};
     Publisher<GimbalYawMsg_s> *gimbalYawPub_;
-#endif
-#ifdef APP_GIMBAL_MASTER
-    ChassisCtrlTxPacket chassisCtrlTxPacket_;
-#endif
 
     float ctrlYawAng_ = 0.f;       // be-ctrled-Joint's ang in earth
     float constDeltaYawArc_ = 0.f; // be-ctrled-Joint to base mapping arc

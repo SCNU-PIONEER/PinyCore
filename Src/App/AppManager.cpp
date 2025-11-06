@@ -31,13 +31,13 @@ Lazy<Cmd> cmd;
 #ifdef CHASSIS_TYPE
 #if !APP_USE_COMM || APP_CHASSIS_SLAVE
 #include CHASSIS_FILE
-CHASSIS::CHASSIS_TYPE chassis;
+Lazy<CHASSIS::CHASSIS_TYPE> chassis;
 #endif
 #endif
 #ifdef GIMBAL_TYPE
 #if !APP_USE_COMM || APP_GIMBAL_MASTER
 #include GIMBAL_FILE
-GIMBAL::GIMBAL_TYPE gimbal;
+Lazy<GIMBAL::GIMBAL_TYPE> gimbal;
 #endif
 #endif
 
@@ -77,11 +77,13 @@ void AppManager::initApp()
 #endif
 
 #if !APP_USE_COMM || APP_CHASSIS_SLAVE
-    schedule([]() { chassis.update(cmd->getMsgBus()); });
+    chassis.init();
+    schedule([]() { chassis->update(cmd->getMsgBus()); });
 #endif
 
 #if !APP_USE_COMM || APP_GIMBAL_MASTER
-    schedule([]() { gimbal.update(cmd->getMsgBus()); });
+    gimbal.init();
+    schedule([]() { gimbal->update(cmd->getMsgBus()); });
 #endif
 
     // TestModule
