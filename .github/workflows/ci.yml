@@ -69,3 +69,9 @@ jobs:
       - name: Ninja build
         run: ninja -C build
 
+      - name: Ctest
+        run: |
+            cd test
+            cmake -B build -G Ninja
+            ninja -C build
+            ctest --test-dir build
