@@ -107,8 +107,7 @@ void RcMsgHandler::masterHandle()
         gimbalMsg_.wYaw =
                 -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, S_CURVE_ACC);
         // chassis
-        // chassisMsg_.state = CHASSIS::FSMState_e::IDLE;
-        chassisMsg_.state = CHASSIS::FSMState_e::RUN;
+        chassisMsg_.state = CHASSIS::FSMState_e::IDLE;
         chassisMsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, S_CURVE_ACC);
         chassisMsg_.vy =
                 -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, S_CURVE_ACC);
@@ -140,9 +139,9 @@ void RcMsgHandler::masterHandle()
                 -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, S_CURVE_ACC);
         // chassis
         if (rcMsg_.lSwitch == RC_SW_DOWN) {
-            // chassisMsg_.state = CHASSIS::FSMState_e::TANK;
+            chassisMsg_.state = CHASSIS::FSMState_e::TANK;
         } else {
-            // chassisMsg_.state = CHASSIS::FSMState_e::SPIN;
+            chassisMsg_.state = CHASSIS::FSMState_e::SPIN;
         }
         chassisMsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, S_CURVE_ACC);
         chassisMsg_.vy =

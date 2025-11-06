@@ -3,24 +3,15 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-#include "MotorCommonMacros.hpp"
-
-#include "PidBasic.hpp"
-
-static PositionalPid gWzAP{ 0.6f,   0.3f, 0.01f,
-                            0.001f, 0.2f, CHASSIS::Omni::MAX_WZ_SPEED,
-                            0.f };
-
 namespace CHASSIS {
 
-class RunState : public FSMState<FSMState_e> {
+class SpinState : public FSMState<FSMState_e> {
     static constexpr float ACC = 0.5f;
+    static constexpr float MAX_SPIN_SPEED = 5.0f;
 
 public:
-    RunState(Omni *_chassis)
-            : FSMState<FSMState_e>(FSMState_e::RUN)
-            , chassis_(_chassis)
-            , wzAngPid_(&gWzAP)
+    SpinState(Omni *_chassis)
+            : FSMState<FSMState_e>(FSMState_e::SPIN), chassis_(_chassis)
     {
     }
 
@@ -33,7 +24,6 @@ public:
     void run() final
     {
         Speed_u ref;
-
         ref.vx = std::fmax(chassis_->getSpeed().vx - ACC,
                            std::fmin(chassis_->msg.vx,
                                      chassis_->getSpeed().vx + ACC));
@@ -41,15 +31,14 @@ public:
         ref.vy = std::fmax(chassis_->getSpeed().vy - ACC,
                            std::fmin(chassis_->msg.vy,
                                      chassis_->getSpeed().vy + ACC));
-
-        ref.wz = wzAngPid_->calc(0, chassis_->deltaYaw);
-        // ref.wz = 0;
+        ref.wz = getSpinVel(spinCnt_++);
         chassis_->ctrl(ref);
     }
 
     void exit() final
     {
-        wzAngPid_->reset();
+        spinCnt_ = 0;
+        spinDir_ = !spinDir_;
         LOG::info("ChassisRun", " exit");
     }
 
@@ -58,14 +47,28 @@ public:
     {
         if (chassis_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
-            return FSMState_e::RUN;
+        else if (chassis_->msg.state == FSMState_e::IDLE)
+            return FSMState_e::IDLE;
+        else if (chassis_->msg.state == FSMState_e::TANK)
+            return FSMState_e::TANK;
+        else if (chassis_->msg.state == FSMState_e::SPIN)
+            return FSMState_e::SPIN;
         else
-            return FSMState_e::RUN;
+            return FSMState_e::IDLE;
+    }
+
+    /// @brief speed change spinning
+    float getSpinVel(uint32_t _cnt)
+    {
+        float x = 2.1f * (static_cast<float>(_cnt) * 0.001f);
+        float rslt = (MAX_SPIN_SPEED * sinf(x) * sinf(x)) + 2.5f;
+        return spinDir_ ? rslt : -rslt;
     }
 
 private:
     Omni *chassis_;
-    PositionalPid *wzAngPid_;
+
+    bool spinDir_ = false; // true : left, false: right
+    uint32_t spinCnt_ = 0;
 };
 } // namespace CHASSIS

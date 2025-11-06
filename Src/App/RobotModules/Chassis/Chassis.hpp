@@ -4,7 +4,7 @@
 #include "TopicRouter.hpp"
 
 namespace CHASSIS {
-enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, IDLE, TANK, SPIN };
 }
 class Chassis {
 public:

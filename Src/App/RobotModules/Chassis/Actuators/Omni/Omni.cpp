@@ -8,7 +8,9 @@
 #include "QuadricycleController.hpp"
 
 #include "./State/StopState.hpp"
-#include "./State/RunState.hpp"
+#include "./State/IdleState.hpp"
+#include "./State/TankState.hpp"
+#include "./State/SpinState.hpp"
 
 extern canHandle HCAN1;
 extern canHandle HCAN2;
@@ -42,8 +44,12 @@ Omni::Omni()
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 
-    this->stateFactory_.addState(FSMState_e::RUN,
-                                 std::make_unique<RunState>(this));
+    this->stateFactory_.addState(FSMState_e::SPIN,
+                                 std::make_unique<SpinState>(this));
+    this->stateFactory_.addState(FSMState_e::TANK,
+                                 std::make_unique<TankState>(this));
+    this->stateFactory_.addState(FSMState_e::IDLE,
+                                 std::make_unique<IdleState>(this));
     this->stateFactory_.addState(FSMState_e::STOP,
                                  std::make_unique<StopState>(this));
     this->stateFactory_.init(

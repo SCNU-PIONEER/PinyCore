@@ -4,6 +4,7 @@
 #include "StmLog.hpp"
 
 namespace CHASSIS {
+
 class StopState : public FSMState<FSMState_e> {
 public:
     StopState(Omni *_chassis)
@@ -11,11 +12,7 @@ public:
     {
     }
 
-    void enter() final
-    {
-        chassis_->stop();
-        LOG::info("ChassisStop", " enter");
-    }
+    void enter() final { LOG::info("ChassisStop", " enter"); }
 
     void run() final { chassis_->stop(); }
 
@@ -26,9 +23,9 @@ public:
     {
         if (chassis_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN &&
+        else if (chassis_->msg.state == FSMState_e::IDLE &&
                  chassis_->isGimbalReset())
-            return FSMState_e::RUN;
+            return FSMState_e::IDLE;
         else
             return FSMState_e::STOP;
     }
