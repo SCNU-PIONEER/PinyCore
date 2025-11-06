@@ -46,6 +46,8 @@ private:
     float targetVel_ = SLOW_FRIC_RATE;
 
     PID *fricPid_[2];
+
+    void ctrl(float _vel);
 };
 
 }; // namespace ARMORBOOSTER

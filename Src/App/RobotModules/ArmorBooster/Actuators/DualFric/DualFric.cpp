@@ -82,13 +82,20 @@ void DualFric::update(void *_param)
     this->stateFactory_.update();
 }
 
-void DualFric::on()
+void DualFric::ctrl(float _vel)
 {
     for (uint8_t i = 0; i < 2; i++) {
         float torq = fricPid_[i]->calc(
-                SLOW_FRIC_RATE, velFltr_[i].process(motors_._[i]->vel()));
+                _vel, velFltr_[i].process(motors_._[i]->vel()));
         motors_._[i]->cmdTorq(torq);
     }
+}
+
+void DualFric::on()
+{
+    float constTarget = SLOW_FRIC_RATE;
+    SMOOTH::slopeFollowing(&constTarget, &targetVel_, 5.f);
+    ctrl(targetVel_);
 }
 
 void DualFric::off()
@@ -97,12 +104,8 @@ void DualFric::off()
         FRIC_STOP_THRESHOLD) {
         stop();
     } else {
-        float zero = 0;
-        for (uint8_t i = 0; i < 2; i++) {
-            float torq = fricPid_[i]->calc(
-                    SLOW_FRIC_RATE, velFltr_[i].process(motors_._[i]->vel()));
-            SMOOTH::slopeFollowing(&zero, &torq, 5.f);
-            motors_._[i]->cmdTorq(torq);
-        }
+        float constZero = 0;
+        SMOOTH::slopeFollowing(&constZero, &targetVel_, 5.f);
+        ctrl(targetVel_);
     }
 }
