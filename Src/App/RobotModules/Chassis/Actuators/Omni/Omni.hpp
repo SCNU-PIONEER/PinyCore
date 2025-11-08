@@ -48,7 +48,7 @@ public:
 
     static constexpr float MAX_VX_SPEED = 2.f;
     static constexpr float MAX_VY_SPEED = 2.f;
-    static constexpr float MAX_WZ_SPEED = 3.f;
+    static constexpr float MAX_WZ_SPEED = 6.f;
 
     Omni();
 
@@ -89,7 +89,7 @@ private:
     FILTER::IIR3 velFltr_[4];
 
     ChassisCtrlMsg_s chassisCtrlMsg_;
-    Subscriber<ChassisCtrlMsg_s> *gimbalYawSub_;
+    Subscriber<ChassisCtrlMsg_s> *chassisCtrlSub_;
 
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;

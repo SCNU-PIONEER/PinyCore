@@ -7,9 +7,9 @@
 
 #include "MotorCommonMacros.hpp"
 
-static PositionalPid gWzAP{ 10.f,   0.3f, 0.00f,
-                            0.001f, 0.2f, CHASSIS::Omni::MAX_WZ_SPEED,
-                            0.03f };
+static PositionalPid idleFollowVelPid{
+    6.f, 1.f, 0.20f, 0.001f, 0.2f, 6.f, 0.03f
+};
 
 namespace CHASSIS {
 
@@ -20,7 +20,7 @@ public:
     IdleState(Omni *_chassis)
             : FSMState<FSMState_e>(FSMState_e::IDLE)
             , chassis_(_chassis)
-            , wzAngPid_(&gWzAP)
+            , wzAngPid_(&idleFollowVelPid)
     {
     }
 

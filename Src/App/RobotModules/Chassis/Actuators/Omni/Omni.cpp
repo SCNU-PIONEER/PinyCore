@@ -25,7 +25,7 @@ Omni::Omni()
 {
 #if !APP_USE_COMM
     // NOLINTBEGIN
-    gimbalYawSub_ = new Subscriber<ChassisCtrlMsg_s>(
+    chassisCtrlSub_ = new Subscriber<ChassisCtrlMsg_s>(
             1, &TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
     // NOLINTEND
 #endif
@@ -38,8 +38,7 @@ Omni::Omni()
             .offsetId = i,
             .txFreq = 200.0f,
             .posPID = nullptr,
-            .velPID = new IncrementalPid(0.6f, 0.0035f, 0.f,
-                                         DJIMOTOR::M3508::TORQ_MAX, 0.f),
+            .velPID = new IncrementalPid(0.6f, 0.0035f, 0.f, 4.5f, 0.f),
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
         motors_._[i - 1]->overrideReductionRatio(
@@ -150,8 +149,8 @@ void Omni::ctrl(const Speed_u &_refSpeed)
 void Omni::loadDeltaYaw()
 {
     // Master Board method
-    if (gimbalYawSub_->receive()) {
-        deltaYaw = chassisCtrlMsg_.deltaYaw;
+    if (chassisCtrlSub_->receive()) {
+        deltaYaw = getMinorArc(chassisCtrlMsg_.deltaYaw, 0.f);
     }
 
     cosYaw_ = arm_cos_f32(deltaYaw);
