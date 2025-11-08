@@ -25,8 +25,8 @@ Omni::Omni()
 {
 #if !APP_USE_COMM
     // NOLINTBEGIN
-    gimbalYawSub_ = new Subscriber<GimbalYawMsg_s>(
-            1, &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg_);
+    gimbalYawSub_ = new Subscriber<ChassisCtrlMsg_s>(
+            1, &TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
     // NOLINTEND
 #endif
 
@@ -149,12 +149,11 @@ void Omni::loadDeltaYaw()
 {
     // Master Board method
     if (gimbalYawSub_->receive()) {
-        deltaYaw =
-                getMinorArc(gimbalYawMsg_.followYaw, gimbalYawMsg_.chassisYaw);
+        deltaYaw = chassisCtrlMsg_.deltaYaw;
     }
 
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
 };
 
-bool Omni::isGimbalReset() const { return gimbalYawMsg_.isReset; }
+bool Omni::isGimbalReset() const { return chassisCtrlMsg_.isReset; }

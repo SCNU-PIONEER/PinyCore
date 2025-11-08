@@ -88,8 +88,8 @@ private:
 
     FILTER::IIR3 velFltr_[4];
 
-    GimbalYawMsg_s gimbalYawMsg_;
-    Subscriber<GimbalYawMsg_s> *gimbalYawSub_;
+    ChassisCtrlMsg_s chassisCtrlMsg_;
+    Subscriber<ChassisCtrlMsg_s> *gimbalYawSub_;
 
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;

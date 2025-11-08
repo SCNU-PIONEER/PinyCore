@@ -13,5 +13,5 @@ public:
 
     Topic<INSEularMsg_s> gimbalEularTopic{ "GimbalEular" };
 
-    Topic<GimbalYawMsg_s> gimbalYawTopic{ "GimbalYaw" };
+    Topic<ChassisCtrlMsg_s> chassisCtrlTopic{ "ChassisCtrl" };
 };

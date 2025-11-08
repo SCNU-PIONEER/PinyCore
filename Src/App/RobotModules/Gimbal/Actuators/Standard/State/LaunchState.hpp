@@ -8,10 +8,14 @@
 #include "PidBasic.hpp"
 #include "IIR.hpp"
 
-static PositionalPid gLauPA(80.f, 300.f, 5.f, 1.f / 500.f, 1.f, 70.f, 0.f);
-static PositionalPid gLauPV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
-static PositionalPid gLauYA(80.f, 300.f, 5.f, 1.f / 500.f, 1.f, 120.f, 0.f);
-static PositionalPid gLauYV(0.01f, 0.0f, 0.f, 1.f / 500.f, 0.f, 1.2f, 0.f);
+static volatile float launchPitchStep = 0.6f;
+static volatile float launchYawStep = 0.5f;
+
+static PositionalPid launchPitchAngPID(15.f, 0.f, 0.001f, 0.001f, 0.f, 5.f,
+                                       0.f);
+static PositionalPid launchPitchVelPID(0.2f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
+static PositionalPid launchYawAngPID(10.f, 0.f, 0.f, 0.001f, 0.f, 10.f, 0.f);
+static PositionalPid launchYawVelPID(0.2f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
 
 namespace GIMBAL {
 
@@ -27,22 +31,19 @@ class LaunchState : public FSMState<FSMState_e> {
         PID *_[4];
     };
 
-    static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 3s
+    static constexpr uint16_t MAX_LAUNCH_TIME = 300; // 3s
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
     static constexpr float YAW_LAUNCH_ANG_DEADBAND = 0.1f;
-
-    static constexpr float PITCH_LAUNCH_STEP = 0.08f;
-    static constexpr float YAW_LAUNCH_STEP = 0.05f;
 
 public:
     LaunchState(Standard *_gimbal)
             : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
     {
-        pids_.pitchAngPid = &gLauPA;
-        pids_.pitchVelPid = &gLauPV;
-        pids_.yawAngPid = &gLauYA;
-        pids_.yawVelPid = &gLauYV;
+        pids_.pitchAngPid = &launchPitchAngPID;
+        pids_.pitchVelPid = &launchPitchVelPID;
+        pids_.yawAngPid = &launchYawAngPID;
+        pids_.yawVelPid = &launchYawVelPID;
     }
 
     void enter() final
@@ -76,10 +77,10 @@ public:
         }
 
         // ctrl (smooth)
-        gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
-                           cmdMotorPitchAng_, PITCH_LAUNCH_STEP);
-        gimbal_->ctrlYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_,
-                         YAW_LAUNCH_STEP);
+        gimbal_->ctrlPitchSmooth(pids_.pitchAngPid, pids_.pitchVelPid,
+                                 cmdMotorPitchAng_, launchPitchStep);
+        gimbal_->ctrlYawSmooth(pids_.yawAngPid, pids_.yawVelPid,
+                               cmdMotorYawAng_, launchYawStep);
     }
 
     void exit() final

@@ -15,8 +15,6 @@ public:
 
     void enter() final
     {
-        gimbal_->outFilrYaw.reset();
-        gimbal_->outFilrPitch.reset();
         gimbal_->stop();
         gimbal_->loadResetState(false);
 

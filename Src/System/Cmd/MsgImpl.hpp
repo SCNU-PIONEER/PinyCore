@@ -59,10 +59,9 @@ struct INSEularMsg_s : public Msg {
     float roll, pitch, yaw;
 };
 
-struct GimbalYawMsg_s : public Msg {
+struct ChassisCtrlMsg_s : public Msg {
     bool isReset;
-    float followYaw;
-    float chassisYaw; // only single core system need it
+    float deltaYaw;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
