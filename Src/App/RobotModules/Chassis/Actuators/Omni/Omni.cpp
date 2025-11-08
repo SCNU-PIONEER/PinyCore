@@ -42,6 +42,8 @@ Omni::Omni()
                                          DJIMOTOR::M3508::TORQ_MAX, 0.f),
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
+        motors_._[i - 1]->overrideReductionRatio(
+                DJIMOTOR::M3508::ORIGINAL_GEARBOX_RR);
     }
 
     this->stateFactory_.addState(FSMState_e::SPIN,
