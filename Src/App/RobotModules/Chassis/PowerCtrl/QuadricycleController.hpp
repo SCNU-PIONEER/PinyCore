@@ -20,5 +20,5 @@ private:
                            .MLC = 0.0001f,
                            .ESR = 0.0001f,
                            .LeakagePower = 4.7f / (float)motorNum_ };
-    RLS<3> wheelRLS_ = RLS<3>(0.99999999f);
+    RLS<3> wheelRLS_ = RLS<3>(0.999f);
 };
