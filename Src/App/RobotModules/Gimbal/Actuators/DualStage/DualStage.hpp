@@ -34,19 +34,6 @@ static inline float rangeConversion(float _ang)
 {
     return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
 };
-
-static inline void slopeFollowing(float *_exp, float *_cur, float _acc)
-{
-    if (*_exp > *_cur) {
-        *_cur = *_cur + _acc;
-        if (*_cur >= *_exp)
-            *_cur = *_exp;
-    } else if (*_exp < *_cur) {
-        *_cur = *_cur - _acc;
-        if (*_cur <= *_exp)
-            *_cur = *_exp;
-    }
-}
 /**
  * @brief 双级yaw轴,大小yaw.
  * @note 当前版本imu装在小yaw上,但是控制的是大yaw

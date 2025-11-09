@@ -81,9 +81,12 @@ void RcMsgHandler::chassisHandle()
         cmsg_.yaw = 0.f;
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
         cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);   // Scale to m/s
-        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);  // Scale to m/s
-        float dyaw = s_curve(ROCKER_WZ_GAIN, rcMsg_.lx); // Scale to m/s
+        cmsg_.vx =
+                SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100); // Scale to m/s
+        cmsg_.vy =
+                -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100); // Scale to m/s
+        float dyaw =
+                SMOOTH::sCurve(ROCKER_WZ_GAIN, rcMsg_.lx, 100); // Scale to m/s
         cmsg_.yaw += dyaw;
         constexpr float TWO_PI = 2.0f * M_PI;
         if (cmsg_.yaw > M_PI) {
@@ -109,21 +112,21 @@ void RcMsgHandler::masterHandle()
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
         // gimbal
         gmsg_.state = GIMBAL::FSMState_e::RUN;
-        gmsg_.wPitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
-        gmsg_.wYaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
+        gmsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, 100);
+        gmsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, 100);
         // chassis
         cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
-        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
+        cmsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100);
+        cmsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100);
     } else if (rcMsg_.rSwitch == RC_SW_UP) {
         // gimbal
         gmsg_.state = GIMBAL::FSMState_e::PATROL;
-        gmsg_.wPitch = -s_curve(ROCKER_PITCH_GAIN, rcMsg_.ly);
-        gmsg_.wYaw = -s_curve(ROCKER_YAW_GAIN, rcMsg_.lx);
+        gmsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, 100);
+        gmsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, 100);
         // chassis
         cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx = s_curve(ROCKER_VX_GAIN, rcMsg_.ry);
-        cmsg_.vy = -s_curve(ROCKER_VY_GAIN, rcMsg_.rx);
+        cmsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100);
+        cmsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100);
     }
 
     else {

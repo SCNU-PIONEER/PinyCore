@@ -1,0 +1,46 @@
+name: CD
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  CD:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    container:
+        image: archlinux
+    steps:
+      - name: Get required pacman pkgs
+        shell: bash
+        run: |
+          sed -i 's/SigLevel = Required DatabaseOptional/SigLevel = Optional TrustAll/' /etc/pacman.conf
+          pacman --noconfirm --noprogressbar -Syyu
+          pacman --noconfirm --noprogressbar -Sy \
+            git \
+            diffutils \
+            cmake \
+            ninja \
+            clang \
+            arm-none-eabi-gcc \
+            arm-none-eabi-newlib \
+            python-pip
+          pip install kconfiglib==14.1.0 --break-system-packages
+
+      # Fuck the issue with actions/checkout where the checkout repo is not mark as safe
+      - name: Mark directory as safe for git
+        shell: bash
+        run: |
+          git config --global --add safe.directory /__w/PinyCore/PinyCore
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+
+      - name: Cmake
+        run: cmake -B build -G Ninja
+
+      - name: Ninja build
+        run: ninja -C build
+

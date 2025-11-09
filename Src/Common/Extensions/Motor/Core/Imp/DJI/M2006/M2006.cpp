@@ -23,16 +23,14 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     else
         regInfo_.model.txBaseId = 0x200;
 
-    this->status_ =
-            Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                     CURR_TX_CODE_SPAN, // currTxCodeSpan
-                     CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     VOLT_MAX,          //voltmax
-                     //搭配c610无堵转电流和堵转扭矩数据，所以还是用额定数据
-                     CURR_MAX, // currMax
-                     TORQ_MAX, // torqMax
-                     KN        // Kn
-            );
+    this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             CURR_RX_CODE_SPAN, // currRxCodeSpan
+                             VOLT_MAX,          // voltmax
+                             CURR_MAX,          // currMax
+                             TORQ_MAX,          // torqMax
+                             KN                 // Kn
+    );
 
     this->updateMotorMap();
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);

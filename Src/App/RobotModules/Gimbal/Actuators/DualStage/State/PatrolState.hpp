@@ -70,7 +70,7 @@ public:
             maxPatCount = 0;
         else if (patrolCnt - 5 <= 0)
             maxPatCount = MAX_PAT_CNT;
-        slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
+        SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
         eMA.Pitch = PINYMOTOR::rangeMap((0.4f * cos(omiga * patrolCnt)) - 0.1f);
         eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG *
