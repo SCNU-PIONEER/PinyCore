@@ -6,7 +6,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "sdkconfig.h"
-#include "Rc.hpp"
 
 using namespace TEST;
 
@@ -18,11 +17,7 @@ TestModule *TestModule::instance()
 
 void TestModule::init() {}
 
-void TestModule::update()
-{
-    rcMsg = RC::Rc::instance().getData();
-    stateFactory_.update();
-}
+void TestModule::update() { stateFactory_.update(); }
 
 void TestModule::task()
 {
