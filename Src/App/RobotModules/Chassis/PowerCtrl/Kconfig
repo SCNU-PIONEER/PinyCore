@@ -1,0 +1,11 @@
+    menu "power control settings"
+    depends on APP_USE_POWERCTRL
+
+    config POWERCTRL_USE_RLS
+        bool "rls"
+        default y
+
+    config POWERCTRL_USE_REFEREE
+        bool "referee feedback"
+        default n    
+    endmenu
