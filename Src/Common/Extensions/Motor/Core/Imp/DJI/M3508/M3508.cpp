@@ -23,15 +23,14 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     else
         regInfo_.model.txBaseId = 0x200;
 
-    this->status_ =
-            Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
-                     CURR_TX_CODE_SPAN, // currTxCodeSpan
-                     CURR_RX_CODE_SPAN, // currRxCodeSpan
-                     VOLT_MAX,          // voltMax
-                     20.f,     // currMax BUG: we need C620 MAX_CURRENT value
-                     TORQ_MAX, // torqMax
-                     KN        // Kn
-            );
+    this->status_ = Status_s(VOLT_TX_CODE_SPAN, // voltTxCodeSpan
+                             CURR_TX_CODE_SPAN, // currTxCodeSpan
+                             CURR_RX_CODE_SPAN, // currRxCodeSpan
+                             VOLT_MAX,          // voltMax
+                             CURR_MAX,          // currMax
+                             TORQ_BLOCK,        // torqMax
+                             KN                 // Kn
+    );
 
     this->updateMotorMap();
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
