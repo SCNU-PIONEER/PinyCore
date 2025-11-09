@@ -10,7 +10,7 @@ private:
 public:
     static constexpr float VOLT_TX_CODE_SPAN = 25000.f;
     static constexpr float CURR_TX_CODE_SPAN = 16384.f;
-    static constexpr float CURR_RX_CODE_SPAN = 8192.f;
+    static constexpr float CURR_RX_CODE_SPAN = 16384.f;
 
     static constexpr float ORIGINAL_GEARBOX_RR = 3591.f / 187.f;
     static constexpr float XROLL_GEARBOX_RR = 286.f / 17.f;
