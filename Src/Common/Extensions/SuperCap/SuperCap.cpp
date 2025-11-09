@@ -1,34 +1,24 @@
 #include "SuperCap.hpp"
-#include "Bsp_can.hpp"
 #include <cstring>
 
-CAP::CAP()
+CAP::CAP(CAN_HandleTypeDef *_hcan)
+        : hcan_(_hcan)
+        , rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
 {
-    memset(&rawCapData_, 0, sizeof(RawCapData_s));
-    memset(&capData_, 0, sizeof(CapData_s));
-    memset(&capCmd_, 0, sizeof(CapCmd_s));
-    this->registerCapCallback();
-    capTxFreq_ = 1000.f;
-}
-
-void CAP::registerCapCallback()
-{
-    extern canHandle HCAN1;
-    const uint8_t *_rxbuf;
-    Can::instance().registerCallback(&HCAN1, CAPMasterID,
-                                     [this](const uint8_t *_rxBuf) {
-                                         this->praseCapData(_rxBuf);
-                                     });
+    Can::instance().registerCallback(
+            hcan_, CAP_DATA_ID, [this](const uint8_t *_rxBuf) {
+                BaseType_t higherPriorityTaskWoken = pdFALSE;
+                xQueueSendFromISR(this->rxQueue_, _rxBuf,
+                                  &higherPriorityTaskWoken);
+            });
 }
 
 void CAP::praseCapData(const uint8_t *_rxbuf)
 {
     memcpy(&rawCapData_, _rxbuf, sizeof(RawCapData_s));
 
-    //get_data_refresh_freq(capData_.inputVoltage, cap_data_rfreq);
-    //TODO: 翻译各个数据
-    capData_.inputVoltage =
-            24.f + static_cast<float>(rawCapData_.busVoltage) / 100.0f;
+    capData_.inputVoltage = BATTERY_VOLTAGE +
+                            static_cast<float>(rawCapData_.busVoltage) / 100.0f;
     capData_.capVoltage = static_cast<float>(rawCapData_.capVoltage) / 70.0f;
     capData_.inputCurrent =
             static_cast<float>(rawCapData_.inputCurrent) / 1000.0f;
@@ -42,29 +32,51 @@ void CAP::praseCapData(const uint8_t *_rxbuf)
 }
 
 uint8_t CAP::capDataSend(float _capChargePower, bool _capEnableFlag,
-                         bool _EnableFeedforward, bool _limitPower)
+                         bool _enableCharge, uint16_t _chassisPower)
 {
-    extern canHandle HCAN1;
     uint8_t ret = 0;
-    if (checkSend()) {
-        capCmd_.chargeCmdPower = _capChargePower;
-        capCmd_.EnableCAP = _capEnableFlag;
-        capCmd_.EnableFeedforward = _EnableFeedforward;
-        capCmd_.chassisCmdPower = _limitPower;
 
-        uint8_t _txbuf[8] = { 0 };
-        memcpy(_txbuf, &capCmd_, sizeof(CapCmd_s));
+    capCmd_.chargePower = _capChargePower;
+    capCmd_.EnableCAP = _capEnableFlag;
+    capCmd_.EnableCharge = _enableCharge;
+    capCmd_.chassisCmdPower = _chassisPower;
+
+    if (checkSend()) {
+        uint8_t txbuf[8] = {};
+        memcpy(txbuf, &capCmd_, 8);
 
         ret = static_cast<uint8_t>(
-                Can::instance().transmitData(&HCAN1, CAPCmdID, _txbuf, 8));
-
+                Can::instance().transmitData(hcan_, CAP_CMD_ID, txbuf, 8));
         lastSendTick_ = xTaskGetTickCount();
     }
     return ret;
 }
 
+void CAP::capTask(float _capChargePower, bool _capEnableFlag,
+                  bool _enableCharge, uint16_t _chassisPower)
+{
+    if (xQueueReceive(rxQueue_, &rxBuf_.data, 0) == pdTRUE) {
+        rxCnt_++;
+        praseCapData(rxBuf_.data);
+    }
+
+    capDataSend(_capChargePower, _capEnableFlag, _enableCharge, _chassisPower);
+    rxFreqCalc();
+}
+
 bool CAP::checkSend()
 {
     return (xTaskGetTickCount() - lastSendTick_) >=
-           pdMS_TO_TICKS(1000.f / capTxFreq_);
+           pdMS_TO_TICKS(1000.f / CAP_TX_FREQ);
+}
+
+void CAP::rxFreqCalc()
+{
+    static uint32_t lastTick = 0;
+    if ((xTaskGetTickCount() - lastTick) >= pdMS_TO_TICKS(1000)) {
+        rxFreq_ = static_cast<float>(rxCnt_) /
+                  (static_cast<float>(xTaskGetTickCount() - lastTick) / 1000.f);
+        rxCnt_ = 0;
+        lastTick = xTaskGetTickCount();
+    }
 }
