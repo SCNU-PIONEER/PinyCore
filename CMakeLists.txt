@@ -48,4 +48,9 @@ target_link_libraries(
   # TinyMPC
 )
 
+if(NOT RTOS_DEBUG)
+  target_compile_options(freertos_kernel PRIVATE -O3 -g0)
+  target_compile_options(freertos_kernel_port PRIVATE -O3 -g0)
+endif()
+
 showmessage()

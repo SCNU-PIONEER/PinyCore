@@ -1,0 +1,18 @@
+menu "Kernel hacking"
+
+    config RTOS_DEBUG
+    bool "generate rtos debug info"
+    default y
+	  help
+        在vscode中调试打断点不再会在task.c中暂停，
+        并且不会在任意地方断点暂停，需要手动声明断点
+
+    config USE_VSCODE_XRTOS
+    bool "vscode plugin: freertos task analyze"
+    default n
+    depends on RTOS_DEBUG
+    help
+        在vscode中使用xrtos插件分析freertos的task信息
+        需要配合RTOS_DEBUG选项使用
+
+endmenu
