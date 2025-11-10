@@ -4,7 +4,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "DWT.hpp"
+#include "Dwt.hpp"
 
 namespace COMM {
 
