@@ -15,6 +15,7 @@ CAP::CAP(CAN_HandleTypeDef *_hcan)
 
 void CAP::praseCapData(const uint8_t *_rxbuf)
 {
+    //TODO: 昭庆蜜汁换算magic number ,后续跟琪宝交流
     memcpy(&rawCapData_, _rxbuf, sizeof(RawCapData_s));
 
     capData_.inputVoltage = BATTERY_VOLTAGE +

@@ -42,8 +42,8 @@ class CAP {
 public:
     static constexpr uint16_t CAP_CMD_ID = 0x222;
     static constexpr uint16_t CAP_DATA_ID = 0x223;
-    static constexpr float CAP_TX_FREQ = 1000.f;
-    static constexpr float DATA_RX_FREQ = 1000.f;
+    static constexpr float CAP_TX_FREQ = 50.f;
+    static constexpr float DATA_RX_FREQ = 1000.f;  //  应与底盘控制频率相同
     static constexpr float BATTERY_VOLTAGE = 24.f; // 电池电压
 
     CAP(CAN_HandleTypeDef *_hcan);
