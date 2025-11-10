@@ -14,10 +14,7 @@ protected:
     using ProtoData = typename PacketType::ProtoData_s;
 
 public:
-    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
-    {
-        start();
-    }
+    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType))) { start(); }
 
     virtual ~RxPacket()
     {

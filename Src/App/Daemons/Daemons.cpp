@@ -45,10 +45,7 @@ Daemons::Daemons()
     });
 }
 
-void Daemons::schedule(std::function<void()> _func)
-{
-    cb.push_back(std::move(_func));
-}
+void Daemons::schedule(std::function<void()> _func) { cb.push_back(std::move(_func)); }
 
 void Daemons::update()
 {

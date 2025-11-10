@@ -39,8 +39,7 @@ Lazy<UI::App> ui;
 void AppManager::initApp()
 {
     // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
-                                       BEEP_APB_FREQ);
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
@@ -74,10 +73,7 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback)
-{
-    tasks.push_back(std::move(_callback));
-}
+void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {
