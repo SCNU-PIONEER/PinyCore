@@ -9,7 +9,10 @@
 #include "test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
+#include "INS.hpp"
 #include "Swerve.hpp"
+#include "Standard.hpp"
+#include "UI/UIApp.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
@@ -18,24 +21,19 @@
 
 //---------------------------------------------------------------------------------------------------
 
-#if APP_USE_INS
-#include "INS.hpp"
 Lazy<INS_SYS::INS> ins;
-#endif
 
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
 
 Lazy<CHASSIS::Swerve> chassis;
+Lazy<GIMBAL::Standard> gimbal;
 
 //---------------------------------------------------------------------------------------------------
 
 
-#if APP_USE_UI
-#include "UI/UIApp.hpp"
 Lazy<UI::App> ui;
-#endif
 
 //---------------------------------------------------------------------------------------------------
 
@@ -62,6 +60,16 @@ void AppManager::initApp()
 
 #if APP_USE_DAEMONS
     schedule([]() { Daemons::instance().update(); });
+#endif
+
+#if APP_CHASSIS_SLAVE && APP_USE_SWERVE
+    chassis.init();
+    schedule([]() { chassis->update(); });
+#endif
+
+#if APP_GIMBAL_MASTER && APP_USE_GIMBAL
+    gimbal.init();
+    schedule([]() { gimbal->update((void *)cmd->getMsgBus()); });
 #endif
 
     // TestModule
