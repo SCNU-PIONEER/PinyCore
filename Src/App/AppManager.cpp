@@ -11,6 +11,7 @@
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
+Lazy<Daemons> daemon;
 #endif
 
 
@@ -55,9 +56,9 @@ void AppManager::initApp()
     ui.init(UI_ROBOT_ID);
     schedule([]() { ui.task(); });
 #endif
-
 #if APP_USE_DAEMONS
-    schedule([]() { Daemons::instance().update(); });
+    daemon.init();
+    schedule([]() { daemon->update(); });
 #endif
 
     // TestModule
@@ -84,6 +85,14 @@ void AppManager::createApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance();
     }
+
+    // Buzzer Once Task
+    xTaskCreate(
+            [](void *_param) -> void {
+                BUZZER::Buzzer::getInstance().playPinyCore();
+                vTaskDelete(nullptr); // 否则会进ExistError
+            },
+            "buzzer_task", 128, nullptr, 3, nullptr);
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);
