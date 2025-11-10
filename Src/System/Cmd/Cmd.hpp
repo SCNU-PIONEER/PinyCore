@@ -1,9 +1,9 @@
 #pragma once
 
-#include "FreeRTOS.h"
+#include "MsgImpl.hpp"
+#include "Task.hpp"
 #include "queue.h"
 #include "event_groups.h"
-#include "MsgImpl.hpp"
 
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
@@ -12,11 +12,11 @@
 #define EVENT_MASK \
     (RTT_READY_EVENT | RC_READY_EVENT | REFEREE_READY_EVENT | ET08A_READY_EVENT)
 
-class Cmd {
+class Cmd : public Task<Cmd, 256> {
 public:
     Cmd();
 
-    static void task(void *_param);
+    void task();
     MsgBus_s *getMsgBus() { return &msgBus_; }
 
 protected:

@@ -2,7 +2,11 @@
 #include "MsgImpl.hpp"
 #include "StmLog.hpp"
 
-Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART, eventGroup_)
+Cmd::Cmd()
+        : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
+        , eventGroup_(xEventGroupCreate())
+        , rcHandler_(&RC_UART, eventGroup_)
+
 {
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
@@ -14,8 +18,6 @@ Cmd::Cmd() : eventGroup_(xEventGroupCreate()), rcHandler_(&RC_UART, eventGroup_)
 #if defined APP_USE_REFEREE
     refereeHandler_.init(&msgBus_, eventGroup_);
 #endif
-
-    xTaskCreate(Cmd::task, "cmd_task", 256, this, 2, nullptr);
 
     LOG::info("cmd", "init success");
 }
@@ -38,10 +40,9 @@ void Cmd::parseMsg()
 #endif
 }
 
-void Cmd::task(void *_param)
+void Cmd::task()
 {
-    auto instance = static_cast<Cmd *>(_param);
     for (;;) {
-        instance->parseMsg();
+        parseMsg();
     }
 }

@@ -2,9 +2,6 @@
 
 #include "IMotor.hpp"
 
-#include "FreeRTOS.h"
-#include "task.h"
-
 using namespace PINYMOTOR;
 
 MotorManager *MotorManager::instance()
@@ -13,7 +10,7 @@ MotorManager *MotorManager::instance()
     return &instance;
 }
 
-void MotorManager::ctrlTask()
+void MotorManager::task()
 {
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
@@ -27,13 +24,4 @@ void MotorManager::ctrlTask()
     }
 }
 
-void MotorManager::init() {}
-
 uint8_t MotorManager::assignId() { return registedNum_++; }
-
-void MotorManager::taskCreate()
-{
-    xTaskCreate(
-            [](void *_param) -> void { MotorManager::instance()->ctrlTask(); },
-            "motor_task", 256, nullptr, 4, nullptr);
-}
