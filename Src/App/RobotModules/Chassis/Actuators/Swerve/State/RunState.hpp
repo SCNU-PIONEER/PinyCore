@@ -2,18 +2,18 @@
 #include "Swerve.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
-
 #include "PidBasic.hpp"
+#include "MotorCommonMacros.hpp"
 
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
 public:
-    RunState(Swerve *_chassis)
+    RunState(Swerve &_chassis)
             : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis) {};
 
     void enter() final
     {
-        chassis_->enter();
+        chassis_.enter();
         LOG::info("ChassisRun", " enter");
     }
 
@@ -21,12 +21,12 @@ public:
     {
         Speed_u ref;
 
-        ref.vx = chassis_->msg.vx;
-        ref.vy = chassis_->msg.vy;
-        // ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_->msg.yaw,
-        //                                                   chassis_->yaw()));
-        ref.wz = 0;
-        chassis_->ctrl(ref);
+        ref.vx = chassis_.msg.vx;
+        ref.vy = chassis_.msg.vy;
+        float targetYaw = (fabs(chassis_.deltaYaw) > PI / 2.f) ? PI : 0.f;
+        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_.deltaYaw,
+                                                          targetYaw));
+        chassis_.ctrl(ref);
     }
 
     void exit() final
@@ -38,16 +38,17 @@ public:
 
     FSMState_e checkChange() final
     {
-        if (chassis_->msg.state == FSMState_e::STOP)
-            return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
-            return FSMState_e::RUN;
-        else
-            return FSMState_e::STOP;
+        using enum FSMState_e;
+        switch (chassis_.msg.state) {
+        case RUN:
+            return RUN;
+        default:
+            return STOP;
+        }
     }
 
 private:
-    Swerve *chassis_;
+    Swerve &chassis_;
     PositionalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
 };
 } // namespace CHASSIS

@@ -4,9 +4,11 @@
 #include <numbers>
 #include "GM6020.hpp"
 #include "M3508.hpp"
+#include "MotorCommonMacros.hpp"
 
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
+#include "./State/SpinState.hpp"
 #include "Cmd.hpp"
 
 extern Cmd cmd;
@@ -35,6 +37,16 @@ static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),
                                           FILTER::LPF(1000.f, 4.f),
                                           FILTER::LPF(1000.f, 4.f) };
 
+void ChassisCtrlRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(
+            &HCAN1, uid(), [this](const uint8_t *_rxBuf) {
+                xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+            });
+    LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx",
+              uid());
+}
+
 Swerve::Swerve()
 {
     for (uint8_t i = 1; i <= 4; i++) {
@@ -55,7 +67,7 @@ Swerve::Swerve()
             .isReverse = true,
         };
         motors_._[i + 3] = new DJIMOTOR::GM6020("GM6020", gm6020Config);
-        motors_._[i + 3]->setZeroAng(SwerveZero[i - 1]);
+        motors_._[i + 3]->setZeroAng(SWERV_EZERO[i - 1]);
 
         InitConfig_s m3508Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -70,9 +82,11 @@ Swerve::Swerve()
     }
 
     this->stateFactory_.addState(FSMState_e::RUN,
-                                 std::make_unique<RunState>(this));
+                                 std::make_unique<RunState>(*this));
     this->stateFactory_.addState(FSMState_e::STOP,
-                                 std::make_unique<StopState>(this));
+                                 std::make_unique<StopState>(*this));
+    this->stateFactory_.addState(FSMState_e::SPIN,
+                                 std::make_unique<SpinState>(*this));
     this->stateFactory_.init(
             this->stateFactory_.getNextState(FSMState_e::STOP));
 
@@ -111,7 +125,7 @@ void Swerve::update()
 
 /**
  * @brief 轮速得车速
- * @see 模型：https://www.zxytql.top/algorithm/Swerveing_wheel
+ * @see 模型：https://www.zxytql.top/Algorithm/Steering_Wheel
  * @param _wSpeed 
  * @return Speed_u 
  */
@@ -161,7 +175,7 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
 
 /**
  * @brief 车速得轮速
- * @see 模型：https://www.zxytql.top/algorithm/Swerveing_wheel
+ * @see 模型：https://www.zxytql.top/Algorithm/Steering_Wheel
  * @param _speed 
  * @return WheelsSpeed_u 
  */
@@ -181,7 +195,7 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     wheelComVel[0] =
             sqrtf((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]));
 
-    expDir.S_LF = atan2(wheelVy[0], wheelVx[0]);
+    refWheels.S_LF = atan2(wheelVy[0], wheelVx[0]);
 
     //LB:1
     wheelVx[1] = _speed.vx - (_speed.wz * rY);
@@ -189,7 +203,7 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     wheelComVel[1] =
             sqrtf((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]));
 
-    expDir.S_LB = atan2(wheelVy[1], wheelVx[1]);
+    refWheels.S_LB = atan2(wheelVy[1], wheelVx[1]);
 
     //RB:2
     wheelVx[2] = _speed.vx + (_speed.wz * rY);
@@ -197,7 +211,7 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     wheelComVel[2] =
             sqrtf((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]));
 
-    expDir.S_RB = atan2(wheelVy[2], wheelVx[2]);
+    refWheels.S_RB = atan2(wheelVy[2], wheelVx[2]);
 
     //RF:3
     wheelVx[3] = _speed.vx + (_speed.wz * rY);
@@ -205,9 +219,9 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     wheelComVel[3] =
             sqrtf((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]));
 
-    expDir.S_RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
+    refWheels.S_RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
 
-    for (float &i : expDir._) {
+    for (float &i : refWheels._) {
         if (i < 0) {
             i += 2 * F_PI; //[0,2pi]
         }
@@ -235,16 +249,16 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     //     .vy = (_refSpeed.vy * cosYaw) + (_refSpeed.vx * sinYaw),
     //     .wz = _refSpeed.wz
     // };
-    Swerve_u<float> tempDir;
+    Swerve_u<float> tempDir{};
     float del[4], vel[4], torq[4];
 
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
-        tempDir._[i] = expDir._[i];
+        tempDir._[i] = refWSpeed._[i + 4];
         //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
-        if (fabs(getMinorArc(expDir._[i], motors_._[i + 4]->posNorm())) >=
-            F_PI / 2) {
+        if (fabs(getMinorArc(refWSpeed._[i + 4],
+                             motors_._[i + 4]->posNorm())) >= F_PI / 2) {
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
@@ -261,6 +275,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             motors_._[i + 4]->cmdTorq(
                     swerveFilterOutput_._[i]->process(torq[i]));
         }
+
         //3508
         motors_._[i]->cmdVel(refWSpeed._[i]);
         // motors_._[i]->cmdVel(0); //不动

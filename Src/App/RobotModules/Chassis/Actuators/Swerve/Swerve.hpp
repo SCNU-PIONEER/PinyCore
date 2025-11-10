@@ -3,6 +3,8 @@
 #include "IMotor.hpp"
 #include "PidBasic.hpp"
 #include "LPF.hpp"
+#include "PacketImpl.hpp"
+#include "RxPacket.hpp"
 
 namespace CHASSIS {
 
@@ -25,6 +27,7 @@ template <typename T> union Swerve_u {
     T _[4];
 };
 
+// 机器人坐标系
 union Speed_u {
     struct {
         float vx; // m/s
@@ -33,29 +36,45 @@ union Speed_u {
     };
     float _[3];
 };
+
+// 舵轮坐标系
 union WheelsSpeed_u {
     struct {
         float M_LF; // motor of the left front
         float M_RF; // motor of the right front
         float M_RB; // motor of the right back
         float M_LB; // motor of the left back
+
+        float S_LF; // swerve of the left front
+        float S_RF; // swerve of the right front
+        float S_RB; // swerve of the right back
+        float S_LB; // swerve of the left back
     };
-    float _[4]; // rpm
+    float _[8]; // rpm
 };
 
 union Motors_u {
     struct {
+        // 舵
         PINYMOTOR::IMotor *M_LF;
         PINYMOTOR::IMotor *M_RF;
         PINYMOTOR::IMotor *M_RB;
         PINYMOTOR::IMotor *M_LB;
-
+        // 轮子
         PINYMOTOR::IMotor *S_LF;
         PINYMOTOR::IMotor *S_RF;
         PINYMOTOR::IMotor *S_RB;
         PINYMOTOR::IMotor *S_LB;
     };
     PINYMOTOR::IMotor *_[8];
+};
+
+class ChassisCtrlRxPacket
+        : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
+    friend class Swerve;
+    // TODO: slightly cumbersome like this or CRTP
+    ChassisCtrlRxPacket() { registerCallback(); }
+    void registerCallback() final;
 };
 
 class Swerve : public Chassis {
@@ -72,6 +91,7 @@ public:
     void enter();
     void update();
     void ctrl(const Speed_u &_refSpeed);
+    const Speed_u &getSpeed() const { return curSpeed_; }
 
 protected:
     /*
@@ -94,11 +114,12 @@ private:
     Speed_u curSpeed_;
 
     //舵轮零位角度，用于回正方向,rad
-    static constexpr float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f,
-                                             3.03151608f };
+    static constexpr float SWERV_EZERO[4] = { 3.6206367f, 0.556135f, 4.248f,
+                                              3.03151608f };
+
+    ChassisCtrlRxPacket chassisCtrlRxPacket_;
 
     Swerve_u<float> curDir;                       //舵轮当前方向角
-    Swerve_u<float> expDir;                       //舵轮期望方向角
     SwervePtr_u<PositionalPid> swervePosPid_;     //舵轮位置环
     SwervePtr_u<PositionalPid> swerveVelPid_;     //舵轮速度环
     SwervePtr_u<FILTER::LPF> swerveFilterOutput_; //舵轮输出滤波器

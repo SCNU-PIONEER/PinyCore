@@ -6,31 +6,32 @@
 namespace CHASSIS {
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Swerve *_chassis)
+    StopState(Swerve &_chassis)
             : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis) {};
 
     void enter() final
     {
-        chassis_->stop();
+        chassis_.stop();
         LOG::info("ChassisStop", " enter");
     }
 
-    void run() final { chassis_->stop(); }
+    void run() final { chassis_.stop(); }
 
     void exit() final { LOG::info("ChassisStop", " exit"); }
 
 
     FSMState_e checkChange() final
     {
-        if (chassis_->msg.state == FSMState_e::STOP)
-            return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
-            return FSMState_e::RUN;
-        else
-            return FSMState_e::STOP;
+        using enum FSMState_e;
+        switch (chassis_.msg.state) {
+        case RUN:
+            return RUN;
+        default:
+            return STOP;
+        }
     }
 
 private:
-    Swerve *chassis_;
+    Swerve &chassis_;
 };
 } // namespace CHASSIS
