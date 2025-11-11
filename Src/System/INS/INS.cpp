@@ -1,5 +1,8 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
+#if INS_ACCEL_CALIBRATION
+#include "AccelCali.hpp"
+#endif
 
 
 using namespace INS_SYS;
