@@ -5,7 +5,7 @@
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "test/TestModule.hpp"
+#include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
 
