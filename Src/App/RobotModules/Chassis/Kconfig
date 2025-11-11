@@ -35,6 +35,8 @@ menu "chassis config"
     bool "power control"
     default n
 
+    source "Src/App/RobotModules/Chassis/PowerCtrl/Kconfig"
+
     config APP_USE_ODOMETER
     bool "odometer"
     default n

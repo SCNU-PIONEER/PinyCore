@@ -3,25 +3,22 @@
 
 class QuadricycleController : public PowerController {
 public:
-    QuadricycleController(ChassisType_e _chassisType);
+    QuadricycleController(ChassisType_e _chassisType, CAP *_cap);
 
-    void cmdPowerCalc(float *_motorSpeed) final;
+    void cmdPowerCalc(const float *_motorSpeed, PINYMOTOR::IMotor *_motor[4],
+                      const float *_cmd);
+    void relPowerCalc(PINYMOTOR::IMotor *_motor[4]);
+    void currentCalc(PINYMOTOR::IMotor *_motor[4], const float *_cmd);
+    void rlsUpdate(PINYMOTOR::IMotor *_motor[4]);
 
-    void relPowerCalc() final;
-
-    void currentCalc() final;
-
-    void rlsUpdate() final;
-
-    std::vector<float> powerCtrl(float *_motorSpeed) final;
+    std::vector<float> powerCtrl(const float *_motorSpeed,
+                                 PINYMOTOR::IMotor *_motor[4],
+                                 const float *_cmd, RefereeMsg_s _msg);
 
 private:
-    float powerRatio_ = 0.0f;
-
-    MotorParam_s M3508 = { .k0 = 0.0f,
-                           .MLC = 0.0f,
-                           .ESR = 0.0f,
-                           .LeakagePower = 0.0f };
-
-    RLS<3> wheelRLS_ = RLS<3>(0.99999f);
+    MotorParam_s M3508 = { .KN = 0.0001f,
+                           .MLC = 0.0001f,
+                           .ESR = 0.0001f,
+                           .LeakagePower = 4.7f / (float)motorNum_ };
+    RLS<3> wheelRLS_ = RLS<3>(0.999f);
 };
