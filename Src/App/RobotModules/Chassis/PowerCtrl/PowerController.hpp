@@ -29,29 +29,13 @@ enum class ErrorCode_e : uint8_t {
 
 class PowerController {
 public:
-    PowerController(ChassisType_e _chassisType);
-    virtual ~PowerController() = default;
-
-    virtual void relPowerCalc(PINYMOTOR::IMotor **_motor) = 0;
-    virtual void cmdPowerCalc(const float *_motorSpeed,
-                              PINYMOTOR::IMotor **_motor,
-                              const float *_cmd) = 0;
-    virtual void currentCalc(PINYMOTOR::IMotor **_motor, const float *_cmd) = 0;
-
-    virtual std::vector<float> powerCtrl(const float *_motorSpeed,
-                                         PINYMOTOR::IMotor **_motor,
-                                         const float *_cmd,
-                                         RefereeMsg_s _msg) = 0;
-    virtual void rlsUpdate(PINYMOTOR::IMotor **_motor) = 0;
+    PowerController(ChassisType_e _chassisType, CAP *_cap);
 
     void update(RefereeMsg_s _msg);
     void dynamicPower(float _capVoltage);
     void updateReferee(RefereeMsg_s _msg);
     void errorCheck(float _refereeFreq, float _capFreq);
 
-#if EXTENSION_SUPERCAP
-    CAP &getCap() { return cap_; }
-#endif
     //四个发送给超电的数据
     float chargeCmdPower = 0.f; //期望电容充电功率
     bool capEnable_ = true;     //超电使能
@@ -87,14 +71,12 @@ protected:
     float capCmdRatio = 0.9f;
     float capRealRatio = 1.f;
 
-#if EXTENSION_SUPERCAP
-    CAP cap_{ &HCAN1 };
-#endif
+    CAP *cap_;
 
 private:
     ChassisType_e chassisType_;
-    PositionalPid energyPid{ 0.1f, 0, 0, 0.002f, 0, 0, 0 };
-    PositionalPid powerPid{ 300.f, 0, 0, 0.002f, 0, 400.f, 0 };
+    PositionalPid energyPid{ 0.1f, 0, 0, 0.001f, 0, 0, 0 };
+    PositionalPid powerPid{ 300.f, 0, 0, 0.001f, 0, 400.f, 0 };
 
     ErrorCode_e errorState_ = ErrorCode_e::NO_ERROR;
 };

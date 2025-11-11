@@ -1,7 +1,7 @@
 #include "PowerController.hpp"
 
-PowerController::PowerController(ChassisType_e _chassisType)
-        : chassisType_(_chassisType)
+PowerController::PowerController(ChassisType_e _chassisType, CAP *_cap)
+        : cap_(_cap), chassisType_(_chassisType)
 {
     const uint8_t motorNum = static_cast<uint8_t>(chassisType_);
     motorNum_ = motorNum;
@@ -22,12 +22,13 @@ PowerController::PowerController(ChassisType_e _chassisType)
 void PowerController::update(RefereeMsg_s _msg)
 {
     float capFreq = 0.f;
-#if EXTENSION_SUPERCAP
-    CapData_s capData = cap_.getCapData();
-    capFeedbackPower = capData.inputVoltage * capData.outputCurrent;
-    capFreq = cap_.getRxFreq();
-    dynamicPower(capData.capVoltage);
-#endif
+
+    if (cap_ != nullptr) {
+        CapData_s capData = cap_->getCapData();
+        capFeedbackPower = capData.inputVoltage * capData.outputCurrent;
+        capFreq = cap_->getRxFreq();
+        dynamicPower(capData.capVoltage);
+    }
     errorCheck(_msg.rxFreq, capFreq);
     updateReferee(_msg);
 }

@@ -2,13 +2,14 @@
 
 using namespace PINYMOTOR;
 
-QuadricycleController::QuadricycleController(ChassisType_e _chassisType)
-        : PowerController(_chassisType)
+QuadricycleController::QuadricycleController(ChassisType_e _chassisType,
+                                             CAP *_cap)
+        : PowerController(_chassisType, _cap)
 {
 }
 
 void QuadricycleController::cmdPowerCalc(const float *_motorSpeed,
-                                         IMotor **_motor, const float *_cmd)
+                                         IMotor *_motor[4], const float *_cmd)
 {
     float motorCmdRads[4] = { 0, 0, 0, 0 };
     float powerSum = 0;
@@ -22,7 +23,7 @@ void QuadricycleController::cmdPowerCalc(const float *_motorSpeed,
     chassisRawPower = powerSum;
 }
 
-void QuadricycleController::relPowerCalc(IMotor **_motor)
+void QuadricycleController::relPowerCalc(IMotor *_motor[4])
 {
     float motorRelRads[4] = { 0, 0, 0, 0 };
     float powerSum = 0;
@@ -38,7 +39,7 @@ void QuadricycleController::relPowerCalc(IMotor **_motor)
     chassisRealPower = powerSum;
 }
 
-void QuadricycleController::currentCalc(IMotor **_motor, const float *_cmd)
+void QuadricycleController::currentCalc(IMotor *_motor[4], const float *_cmd)
 {
     float motorRelRads[4] = { 0, 0, 0, 0 };
     for (uint8_t i = 0; i < motorNum_; i++) {
@@ -62,7 +63,7 @@ void QuadricycleController::currentCalc(IMotor **_motor, const float *_cmd)
     }
 }
 
-void QuadricycleController::rlsUpdate(IMotor **_motor)
+void QuadricycleController::rlsUpdate(IMotor *_motor[4])
 {
     float motorRelRads[4] = { 0, 0, 0, 0 };
     float vectorValue[3] = { 0, 0, 0 };
@@ -86,7 +87,7 @@ void QuadricycleController::rlsUpdate(IMotor **_motor)
 }
 
 std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed,
-                                                    IMotor **_motor,
+                                                    IMotor *_motor[4],
                                                     const float *_cmd,
                                                     RefereeMsg_s _msg)
 {
@@ -118,8 +119,9 @@ std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed,
                         1000.f;
     lastSetPower = chassisSetPower;
     taskTick = xTaskGetTickCount();
-    cap_.chargeCmdPower =
-            std::clamp(limitPower - (0.01f * setPowerDot), 30.f, 120.f);
+    if (cap_ != nullptr)
+        cap_->chargeCmdPower =
+                std::clamp(limitPower - (0.01f * setPowerDot), 30.f, 120.f);
 
     return setIq;
 }
