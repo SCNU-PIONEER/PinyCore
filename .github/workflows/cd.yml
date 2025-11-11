@@ -41,6 +41,11 @@ jobs:
       - name: Cmake
         run: cmake -B build -G Ninja
 
+      - name: config
+        run: |
+             allyesconfig Kconfig
+             python ./tools/script/Kconfig2h.py .config
+
       - name: Ninja build
         run: ninja -C build
 
