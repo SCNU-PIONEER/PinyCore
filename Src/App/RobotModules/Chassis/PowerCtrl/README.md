@@ -1,8 +1,8 @@
-# PowerCtrl v2.0.0
+# PowerCtrl v2.1.0
 
 ## 更新
-1. 函数传参变化
-2. 增加RLS动态拟合参数
+1. 函数多态取消
+2. 外部实例化超电
 3. 更新日志
 
 ## 主要成员变量
@@ -46,15 +46,18 @@ currentCalc()     //计算最终设定输出电流
 ```c++
 hpp中
 SwerveController *powerCtrl_;(使用对应控制器)
+CAP cap_{&HCAN1};(使用对应can)
+
 cpp中
 #if APP_USE_POWERCTRL
-    powerCtrl_ = new SwerveController(ChassisType_e::SWERVE);
+    powerCtrl_ = new SwerveController(ChassisType_e::SWERVE, &cap_);
 #endif
 ```
+
 2. 在底盘的update()里调用
 ```c++
-#if APP_USE_POWERCTRL && EXTENSION_SUPERCAP
-    powerCtrl_->getCap().capTask(
+#if APP_USE_POWERCTRL
+    cap_.capTask(
             chargeCmdPower, powerCtrl_->capEnable_, powerCtrl_->capCharge,
             static_cast<uint16_t>(powerCtrl_->chassisSetPower));
 #endif
