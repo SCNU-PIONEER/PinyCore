@@ -53,7 +53,7 @@ void AppManager::initApp()
 
 #if APP_USE_UI
     ui.init(UI_ROBOT_ID);
-    schedule([]() { ui.task(); });
+    schedule([]() { ui->task(); });
 #endif
 
 #if APP_USE_DAEMONS
