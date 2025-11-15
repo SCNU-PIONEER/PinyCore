@@ -5,7 +5,7 @@
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "test/TestModule.hpp"
+#include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
 
@@ -53,7 +53,7 @@ void AppManager::initApp()
 
 #if APP_USE_UI
     ui.init(UI_ROBOT_ID);
-    schedule([]() { ui.task(); });
+    schedule([]() { ui->task(); });
 #endif
 
 #if APP_USE_DAEMONS
