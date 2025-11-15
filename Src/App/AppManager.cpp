@@ -11,6 +11,7 @@
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
+Lazy<Daemons> daemon;
 #endif
 
 
@@ -38,8 +39,7 @@ Lazy<UI::App> ui;
 void AppManager::initApp()
 {
     // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
-                                       BEEP_APB_FREQ);
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
@@ -55,9 +55,9 @@ void AppManager::initApp()
     ui.init(UI_ROBOT_ID);
     schedule([]() { ui->task(); });
 #endif
-
 #if APP_USE_DAEMONS
-    schedule([]() { Daemons::instance().update(); });
+    daemon.init();
+    schedule([]() { daemon->update(); });
 #endif
 
     // TestModule
@@ -73,10 +73,7 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback)
-{
-    tasks.push_back(std::move(_callback));
-}
+void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {
@@ -84,6 +81,14 @@ void AppManager::createApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance();
     }
+
+    // Buzzer Once Task
+    xTaskCreate(
+            [](void *_param) -> void {
+                BUZZER::Buzzer::getInstance().playPinyCore();
+                vTaskDelete(nullptr); // 否则会进ExistError
+            },
+            "buzzer_task", 128, nullptr, 3, nullptr);
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);

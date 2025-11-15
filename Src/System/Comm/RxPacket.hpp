@@ -4,7 +4,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "DWT.hpp"
+#include "Dwt.hpp"
 
 namespace COMM {
 
@@ -14,10 +14,7 @@ protected:
     using ProtoData = typename PacketType::ProtoData_s;
 
 public:
-    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
-    {
-        start();
-    }
+    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType))) { start(); }
 
     virtual ~RxPacket()
     {
