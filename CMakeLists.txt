@@ -45,7 +45,8 @@ target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC
                         ${CMAKE_SOURCE_DIR}/Lib/CMSIS-DSP/Lib)
 
 target_link_libraries(
-  ${CMAKE_PROJECT_NAME} Extensions Bsp utils kernel
+  ${CMAKE_PROJECT_NAME} Extensions Bsp utils freertos_kernel
+  etl::etl
   # TinyMPC
 )
 
