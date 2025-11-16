@@ -13,13 +13,10 @@ void DMMotor::serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf)
     _txBuf.data[0] = static_cast<uint8_t>((_msgMIT.exptScale & 0xFF00) >> 8);
     _txBuf.data[1] = static_cast<uint8_t>(_msgMIT.exptScale & 0x00FF);
     _txBuf.data[2] = static_cast<uint8_t>((_msgMIT.exptVel & 0x0FF0) >> 4);
-    _txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x000F) << 4 |
-                                          ((_msgMIT.Kp & 0x0FF0) >> 8));
+    _txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x000F) << 4 | ((_msgMIT.Kp & 0x0FF0) >> 8));
     _txBuf.data[4] = static_cast<uint8_t>(_msgMIT.Kp & 0x000F);
     _txBuf.data[5] = static_cast<uint8_t>((_msgMIT.Kd & 0x0FF0) >> 4);
-    _txBuf.data[6] =
-            static_cast<uint8_t>((_msgMIT.Kd & 0x000F) << 4 |
-                                 ((_msgMIT.torqueForward & 0x0F00) >> 8));
+    _txBuf.data[6] = static_cast<uint8_t>((_msgMIT.Kd & 0x000F) << 4 | ((_msgMIT.torqueForward & 0x0F00) >> 8));
     _txBuf.data[7] = static_cast<uint8_t>(_msgMIT.torqueForward & 0x00FF);
 }
 
@@ -72,44 +69,27 @@ void DMMotor::convertMitTt(TxBus &_txBuf)
     case MotorCmdType_e::SET_TORQ:
         break;
     case MotorCmdType_e::SET_VEL: {
-        this->cmd_.torq =
-                this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         break;
     }
     case MotorCmdType_e::SET_POS: {
-        this->cmd_.vel = this->posPID_->calc(
-                getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        if (!(this->cmd_.velMax < 0.f)) {
-            this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                        this->cmd_.velMax);
-        }
-        this->cmd_.torq =
-                this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
+        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
+        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
         break;
     }
     case MotorCmdType_e::SET_POSVEL: {
-        if (!(this->cmd_.velMax < 0.f)) {
-            this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                        this->cmd_.velMax);
-        }
-        this->cmd_.torq =
-                this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps) +
-                this->posPID_->calc(getMinorArc(this->cmd_.pos,
-                                                this->data_.singleCirAng),
-                                    0);
+        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps) +
+                          this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
 
     this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
-    msgMIT.torqueForward =
-            float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+    msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_TT support return expected current
     this->cmd_.elec = this->cmd_.torq / status_.Kn;
@@ -120,11 +100,9 @@ void DMMotor::convertMitTt(TxBus &_txBuf)
 void DMMotor::convertMitVdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
-    msgMIT.Kd =
-            float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
+    msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
     msgMIT.Kp = 0;
-    msgMIT.torqueForward =
-            float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+    msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_VEL:
@@ -132,29 +110,20 @@ void DMMotor::convertMitVdes(TxBus &_txBuf)
     case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL:
     case MotorCmdType_e::SET_MIT: {
-        this->cmd_.vel = this->posPID_->calc(
-                getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        if (!(this->cmd_.velMax < 0.f)) {
-            this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                        this->cmd_.velMax);
-        }
+        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
 
     this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
-    msgMIT.exptVel =
-            float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+    msgMIT.exptVel = float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
 
     this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
-    msgMIT.torqueForward =
-            float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+    msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_VDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
@@ -165,10 +134,8 @@ void DMMotor::convertMitVdes(TxBus &_txBuf)
 void DMMotor::convertMitVdesPdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
-    msgMIT.Kd =
-            float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
-    msgMIT.Kp =
-            float2uint(this->MITKp_, -status_.MITKpMax, status_.MITKpMax, 12);
+    msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
+    msgMIT.Kp = float2uint(this->MITKp_, -status_.MITKpMax, status_.MITKpMax, 12);
 
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_POS:
@@ -177,21 +144,16 @@ void DMMotor::convertMitVdesPdes(TxBus &_txBuf)
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
     this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
-    msgMIT.exptScale =
-            float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
+    msgMIT.exptScale = float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
     this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
-    msgMIT.exptVel =
-            float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
+    msgMIT.exptVel = float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
     this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
-    msgMIT.torqueForward =
-            float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
+    msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_VDES_PDES unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
@@ -204,15 +166,12 @@ void DMMotor::convertPdesVdes(TxBus &_txBuf)
     PDESVDESMsg_s msgPDESVDES = {};
 
     switch (this->cmd_.curCmdType) {
-    case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL: {
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
 
@@ -238,19 +197,12 @@ void DMMotor::convertVdes(TxBus &_txBuf)
         break;
     case MotorCmdType_e::SET_POS:
     case MotorCmdType_e::SET_POSVEL: {
-        this->cmd_.vel = this->posPID_->calc(
-                getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        if (!(this->cmd_.velMax < 0.f)) {
-            this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                        this->cmd_.velMax);
-        }
+        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
 
@@ -269,27 +221,21 @@ void DMMotor::convertEmit(TxBus &_txBuf)
     EMITMsg_s msgEMIT = {};
 
     switch (this->cmd_.curCmdType) {
-    case MotorCmdType_e::SET_POS:
-    case MotorCmdType_e::SET_POSVEL:
     case MotorCmdType_e::SET_MIT: {
         break;
     }
     default:
-        if (this->cmd_.curCmdType != MotorCmdType_e::OFF &&
-            this->cmd_.curCmdType != MotorCmdType_e::ON)
-            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported",
-                      regInfo_.name);
+        if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
+            LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
     this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
     msgEMIT.exptScale = this->cmd_.pos;
     this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
-    msgEMIT.exptVelX100 = static_cast<uint16_t>(
-            ((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) * 100.f);
+    msgEMIT.exptVelX100 = static_cast<uint16_t>(((this->cmd_.vel < 0) ? -this->cmd_.vel : this->cmd_.vel) * 100.f);
     this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
-    msgEMIT.imaxX10000 = static_cast<uint16_t>(
-            ((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
-            status_.Kn / status_.currMax * status_.currTxCodeSpan);
+    msgEMIT.imaxX10000 = static_cast<uint16_t>(((this->cmd_.torq < 0) ? -this->cmd_.torq : this->cmd_.torq) /
+                                               status_.Kn / status_.currMax * status_.currTxCodeSpan);
 
     _txBuf.len = 8;
     memcpy(_txBuf.data, &msgEMIT.exptScale, 4);
