@@ -10,3 +10,5 @@ source "Src/Common/Extensions/Kconfig"
 
 source "Src/Utils/Kconfig"
 
+source "Src/Kconfig.debug"
+

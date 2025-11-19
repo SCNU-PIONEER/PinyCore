@@ -44,4 +44,4 @@ find_include_dir(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Extensions PUBLIC ${HEADERS})
 
 # link
-target_link_libraries(Extensions PRIVATE Bsp utils Soc freertos_kernel)
+target_link_libraries(Extensions PRIVATE Bsp utils Soc kernel)

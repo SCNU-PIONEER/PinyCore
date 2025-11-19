@@ -4,3 +4,4 @@ Diagnostics:
     IgnoreHeader:
       - ".*FreeRTOS\\.h"
       - ".*Bsp.hpp"
+      - ".*main.h"
