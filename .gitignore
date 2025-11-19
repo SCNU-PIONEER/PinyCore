@@ -1,13 +1,21 @@
-#Motor
+# build cache
 build/
 .deps/
-ThirdParty/
-
 .cache/
 .config
 .config.old
 sdkconfig.h
 sdkconfig.cmake
+
+# Third-party
+ThirdParty/
+
+# IDE files
 .vscode/launch.json
+PinyCore.code-workspace
+
+# Log files
 */*.log
+
+# Python cache
 __pycache__/
