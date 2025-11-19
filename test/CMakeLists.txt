@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 project(pinyTest LANGUAGES CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 include(CTest)
 enable_testing()
 
@@ -21,6 +22,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 add_executable(pinyTest)
 
-add_subdirectory(utils)
+# add_subdirectory(utils)
+add_subdirectory(arm)
 
 target_link_libraries(pinyTest PRIVATE Catch2::Catch2WithMain)
