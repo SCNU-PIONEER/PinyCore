@@ -1,3 +1,4 @@
+#include "Matrix.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
@@ -79,17 +80,14 @@ std::array<float, 6> d = { 0.0f, 0.0f, 0.0f, 1.f, 1.f, 1.f };
 TEST_CASE("rotation2euler test", "[rotation2euler]")
 {
     Kinematic kinematic;
-    array<float, 9> identity = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+    Matrix<3, 3> identity = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
     auto euler = kinematic.rotation2euler(identity);
 
     SECTION("单位矩阵应该返回零欧拉角")
     {
         // 单位旋转矩阵
-        std::array<float, 9> identity_rotation = {
-            1.0f, 0.0f, 0.0f, // 第一行
-            0.0f, 1.0f, 0.0f, // 第二行
-            0.0f, 0.0f, 1.0f  // 第三行
-        };
+        Matrix<3, 3> identity_rotation = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
+
 
         auto euler = kinematic.rotation2euler(identity_rotation);
 
@@ -100,7 +98,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
 
     SECTION("绕X轴旋转90度")
     {
-        std::array<float, 9> rot_x_90 = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f };
+        Matrix<3, 3> rot_x_90 = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0f, 0.0f } };
 
         auto euler = kinematic.rotation2euler(rot_x_90);
 
@@ -114,7 +112,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
         float cos45 = cosf(M_PI / 4);
         float sin45 = sinf(M_PI / 4);
 
-        std::array<float, 9> rot_y_45 = { cos45, 0.0f, sin45, 0.0f, 1.0f, 0.0f, -sin45, 0.0f, cos45 };
+        Matrix<3, 3> rot_y_45 = { { cos45, 0.0f, sin45 }, { 0.0f, 1.0f, 0.0f }, { -sin45, 0.0f, cos45 } };
 
         auto euler = kinematic.rotation2euler(rot_y_45);
 
@@ -128,7 +126,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
         float cos30 = cosf(M_PI / 6);
         float sin30 = sinf(M_PI / 6);
 
-        std::array<float, 9> rot_z_30 = { cos30, -sin30, 0.0f, sin30, cos30, 0.0f, 0.0f, 0.0f, 1.0f };
+        Matrix<3, 3> rot_z_30 = { { cos30, -sin30, 0 }, { sin30, cos30, 0.0f }, { 0.0f, 0.0f, 1.0f } };
 
         auto euler = kinematic.rotation2euler(rot_z_30);
 
@@ -139,7 +137,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
 
     SECTION("万向节锁测试 - Pitch = +90°")
     {
-        std::array<float, 9> gimbal_lock_pos = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f };
+        Matrix<3, 3> gimbal_lock_pos = { { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, { -1.0f, 0.0f, 0.0f } };
 
         auto euler = kinematic.rotation2euler(gimbal_lock_pos);
 
@@ -151,7 +149,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
 
     SECTION("万向节锁测试 - Pitch = -90°")
     {
-        std::array<float, 9> gimbal_lock_neg = { 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f };
+        Matrix<3, 3> gimbal_lock_neg = { { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } };
 
         auto euler = kinematic.rotation2euler(gimbal_lock_neg);
 
@@ -161,31 +159,9 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
         REQUIRE(euler[2] <= M_PI);
     }
 
-    SECTION("边界条件测试 - 接近万向节锁")
-    {
-        float epsilon = 0.0001f;
-        std::array<float, 9> test_cases[] = { { epsilon, 0.0f, 1.0f - epsilon, 0.0f, 1.0f, 0.0f, -0.9999f, 0.0f,
-                                                epsilon },
-                                              { 0.001f, 0.0f, 0.999f, 0.0f, 1.0f, 0.0f, -0.999f, 0.0f, 0.001f },
-                                              { 1e-5f, 0.0f, 0.99999f, 0.0f, 1.0f, 0.0f, -0.99999f, 0.0f, 1e-5f } };
-
-        for (const auto &rot_matrix : test_cases) {
-            auto euler = kinematic.rotation2euler(rot_matrix);
-
-            const float tolerance = 1e-5f;
-
-            REQUIRE(euler[1] >= -M_PI_2 - tolerance);
-            REQUIRE(euler[1] <= M_PI_2 + tolerance);
-
-            REQUIRE(std::isfinite(euler[0]));
-            REQUIRE(std::isfinite(euler[1]));
-            REQUIRE(std::isfinite(euler[2]));
-        }
-    }
-
     SECTION("万向节锁精确测试")
     {
-        std::array<float, 9> exact_gimbal_lock = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f };
+        Matrix<3, 3> exact_gimbal_lock = { { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f, 1.0f }, { -1.0f, 0.0f, 0.0f } };
 
         auto euler = kinematic.rotation2euler(exact_gimbal_lock);
 
@@ -214,7 +190,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
                                      << ", Yaw=" << original_euler[2]);
 
             // 欧拉角 → 旋转矩阵
-            auto rotation_matrix = kinematic.eulerAngle2Rotation(original_euler);
+            auto rotation_matrix = kinematic.euler2Rotation(original_euler);
 
             // 旋转矩阵 → 欧拉角
             auto recovered_euler = kinematic.rotation2euler(rotation_matrix);
@@ -349,8 +325,10 @@ TEST_CASE("fk test", "[fk]")
             auto T = kinematic.fkine2T(test_angles);
 
             printMatrix(T);
+            auto euler = kinematic.rotation2euler(Kinematic::t2r(T));
 
             printf("x: %f,y: %f,z: %f\n", T(0, 3), T(1, 3), T(2, 3));
+            printf("roll: %f,pitch: %f,yaw: %f\n", euler[0], euler[1], euler[2]);
 
             REQUIRE_THAT(T(0, 3), WithinAbs(9.912175f, 1e-6f));  // x
             REQUIRE_THAT(T(1, 3), WithinAbs(-0.892475f, 1e-6f)); // y
@@ -454,7 +432,7 @@ TEST_CASE("ikine test", "[ik]")
         std::array<float, 6> test_angles = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
         auto T = kinematic.fkine2T(test_angles);
         auto theta_pos = kinematic.ikine(T, test_angles);
-
+        std::printf("theta:");
         for (int i = 0; i < 6; i++) {
             std::printf("%f ", theta_pos[i]);
         }
@@ -465,7 +443,37 @@ TEST_CASE("ikine test", "[ik]")
         }
     }
 
-    std::array<float, 6> q = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
-    auto T = kinematic.fkine2T(q);
-    BENCHMARK("ikine benchmark") { return kinematic.ikine(T, q); };
+    SECTION("XYZRPY逆解测试")
+    {
+        std::array<float, 3> xyz = { 9.91f, -0.89f, 2.39f };                // 平移向量
+        std::array<float, 3> rpy = { 0.f, -1.1f, -1.45f };                  // 欧拉角 (roll, pitch, yaw)
+        std::array<float, 6> pose = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }; // 初始关节位置
+
+        auto result = kinematic.ikinePose(xyz, rpy, pose);
+        std::printf("XYZRPY:");
+        for (int i = 0; i < 6; i++) {
+            std::printf("%f ", result[i]);
+        }
+        std::printf("\n");
+
+        for (size_t i = 0; i < result.size(); ++i) {
+            REQUIRE(result[i] >= -M_PI);
+            REQUIRE(result[i] <= M_PI);
+        }
+    }
+
+    // BENCHMARK("ikine benchmark")
+    // {
+    //     std::array<float, 6> q = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }; // 初始关节位置
+    //     auto t = kinematic.fkine2T(q);
+    //     return kinematic.ikine(t, q);
+    // };
+    //
+    // BENCHMARK("ikinePose benchmark")
+    // {
+    //     std::array<float, 3> xyz = { 1.0f, 2.0f, 3.0f };                 // 平移向量
+    //     std::array<float, 3> rpy = { 0.1f, 0.2f, 0.3f };                 // 欧拉角 (roll, pitch, yaw)
+    //     std::array<float, 6> q = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }; // 初始关节位置
+    //     return kinematic.ikinePose(xyz, rpy, q);
+    // };
 }

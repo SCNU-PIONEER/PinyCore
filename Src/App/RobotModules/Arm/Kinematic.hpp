@@ -28,12 +28,15 @@ public:
     Kinematic(const MDH &_mdh);
 
     // utils functions
-    Matrix<3, 1> t2p(Matrix<4, 4> _t);
-    Matrix<4, 4> p2t(Matrix<3, 1> _p);
-    Matrix<3, 3> hat(Matrix<3, 1> _vec);
-    Matrix<3, 1> cross(Matrix<3, 1> _vec1, Matrix<3, 1> _vec2);
-    static array<float, 9> eulerAngle2Rotation(const array<float, 3> &_euler);
-    static array<float, 3> rotation2euler(const array<float, 9> &_rotationM);
+    static Matrix<3, 1> t2p(Matrix<4, 4> _t);
+    static Matrix<3, 3> t2r(Matrix<4, 4> _t);
+    static Matrix<4, 4> p2t(Matrix<3, 1> _p);
+    static Matrix<4, 4> r2t(Matrix<3, 3> _r);
+    static Matrix<4, 4> rp2t(Matrix<3, 3> _r, array<float, 3> _p);
+    static Matrix<3, 3> hat(Matrix<3, 1> _vec);
+    static Matrix<3, 1> cross(Matrix<3, 1> _vec1, Matrix<3, 1> _vec2);
+    static Matrix<3, 3> euler2Rotation(const array<float, 3> &_euler);
+    static array<float, 3> rotation2euler(const Matrix<3, 3> &_rotationM);
     static Matrix<4, 4> dhTransform(const float _a, const float _alpha, const float _d, const float _theta);
 
     // kinematic functions
@@ -42,6 +45,8 @@ public:
     array<float, 3> fkine2euler(const array<float, 6> &_theta);
     Matrix<6, 6> jacob0(const array<float, 6> &_q);
     array<float, 6> ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose);
+    array<float, 6> ikinePose(const array<float, 3> &_xyz, const std::array<float, 3> &_rpy,
+                              const array<float, 6> &_pose);
     array<float, 6> ikineWithTcp(const Matrix<4, 4> &_t, const Matrix<4, 4> &_tcp, const array<float, 6> &_pose);
 
 private:

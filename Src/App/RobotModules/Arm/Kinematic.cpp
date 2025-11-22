@@ -62,11 +62,31 @@ Kinematic::Kinematic(const MDH &_mdh) : dh(_mdh)
 
 Matrix<3, 1> Kinematic::t2p(Matrix<4, 4> _t) { return _t.block<3, 1>(0, 3); }
 
+Matrix<3, 3> Kinematic::t2r(Matrix<4, 4> _t) { return _t.block<3, 3>(0, 0); }
+
 Matrix<4, 4> Kinematic::p2t(Matrix<3, 1> _p)
 {
     // T=[I,P;0,1]
     float t[16] = { 1, 0, 0, _p(0, 0), 0, 1, 0, _p(1, 0), 0, 0, 1, _p(2, 0), 0, 0, 0, 1 };
     return Matrix<4, 4>(t);
+}
+
+Matrix<4, 4> Kinematic::r2t(Matrix<3, 3> _r)
+{
+    Matrix<4, 4> t = { { _r(0, 0), _r(0, 1), _r(0, 2), 0 },
+                       { _r(1, 0), _r(1, 1), _r(1, 2), 0 },
+                       { _r(2, 0), _r(2, 1), _r(2, 2), 0 },
+                       { 0, 0, 0, 1 } };
+    return t;
+}
+
+Matrix<4, 4> Kinematic::rp2t(Matrix<3, 3> _r, array<float, 3> _p)
+{
+    Matrix<4, 4> t = { { _r(0, 0), _r(0, 1), _r(0, 2), _p[0] },
+                       { _r(1, 0), _r(1, 1), _r(1, 2), _p[1] },
+                       { _r(2, 0), _r(2, 1), _r(2, 2), _p[2] },
+                       { 0, 0, 0, 1 } };
+    return t;
 }
 
 Matrix<3, 3> Kinematic::hat(Matrix<3, 1> _vec)
@@ -77,59 +97,59 @@ Matrix<3, 3> Kinematic::hat(Matrix<3, 1> _vec)
 
 Matrix<3, 1> Kinematic::cross(Matrix<3, 1> _vec1, Matrix<3, 1> _vec2) { return hat(_vec1) * _vec2; }
 
-array<float, 9> Kinematic::eulerAngle2Rotation(const array<float, 3> &_euler)
+Matrix<3, 3> Kinematic::euler2Rotation(const array<float, 3> &_rpy)
 {
-    array<float, 9> rot;
+    Matrix<3, 3> rot;
 
-    float ca = cosf(_euler[2]);
-    float cb = cosf(_euler[1]);
-    float cc = cosf(_euler[0]);
-    float sa = sinf(_euler[2]);
-    float sb = sinf(_euler[1]);
-    float sc = sinf(_euler[0]);
+    float ca = cosf(_rpy[2]);
+    float cb = cosf(_rpy[1]);
+    float cc = cosf(_rpy[0]);
+    float sa = sinf(_rpy[2]);
+    float sb = sinf(_rpy[1]);
+    float sc = sinf(_rpy[0]);
 
-    rot[0] = ca * cb;
-    rot[1] = (ca * sb * sc) - (sa * cc);
-    rot[2] = (ca * sb * cc) + (sa * sc);
-    rot[3] = sa * cb;
-    rot[4] = (sa * sb * sc) + (ca * cc);
-    rot[5] = (sa * sb * cc) - (ca * sc);
-    rot[6] = -sb;
-    rot[7] = cb * sc;
-    rot[8] = cb * cc;
+    rot(0, 0) = ca * cb;
+    rot(0, 1) = (ca * sb * sc) - (sa * cc);
+    rot(0, 2) = (ca * sb * cc) + (sa * sc);
+    rot(1, 0) = sa * cb;
+    rot(1, 1) = (sa * sb * sc) + (ca * cc);
+    rot(1, 2) = (sa * sb * cc) - (ca * sc);
+    rot(2, 0) = -sb;
+    rot(2, 1) = cb * sc;
+    rot(2, 2) = cb * cc;
 
     return rot;
 }
 
-array<float, 3> Kinematic::rotation2euler(const array<float, 9> &_rot)
+array<float, 3> Kinematic::rotation2euler(const Matrix<3, 3> &_rot)
 {
     array<float, 3> euler;
 
     /* 奇异点 */
-    if (fabsf(_rot[6]) >= 0.9999f) {
-        if (_rot[6] < 0) {
+    if (fabsf(_rot(2, 0)) >= 0.9999f) {
+        if (_rot(2, 0) < 0) {
             // Pitch = +90° (万向节锁)
             euler[0] = 0.0f;
             euler[1] = (float)M_PI_2;
-            euler[2] = atan2f(-_rot[5], _rot[4]);
+            euler[2] = atan2f(-_rot(1, 2), _rot(1, 1));
         } else {
             // Pitch = -90° (万向节锁)
             euler[0] = 0.0f;
             euler[1] = -(float)M_PI_2;
-            euler[2] = -atan2f(_rot[5], _rot[4]);
+            euler[2] = -atan2f(_rot(1, 2), _rot(1, 1));
         }
     } else {
         // 非奇异情况 (ZYX顺序: Roll-Pitch-Yaw)
-        float denominator = sqrtf((_rot[0] * _rot[0]) + (_rot[3] * _rot[3]));
+        float denominator = sqrtf((_rot(0, 0) * _rot(0, 0)) + (_rot(1, 0) * _rot(1, 0)));
         if (fabsf(denominator) < 1e-6f)
             denominator = 1e-6f;
-        //Pitch
-        euler[1] = atan2f(-_rot[6], denominator);
+        // Pitch
+        euler[1] = atan2f(-_rot(2, 0), denominator);
         float cosPitch = cosf(euler[1]);
         if (fabsf(cosPitch) < 1e-6f)
             cosPitch = 1e-6f;
-        euler[0] = atan2f(_rot[7] / cosPitch, _rot[8] / cosPitch); //Roll
-        euler[2] = atan2f(_rot[3] / cosPitch, _rot[0] / cosPitch); //Yaw
+        euler[0] = atan2f(_rot(2, 1) / cosPitch, _rot(2, 2) / cosPitch); // Roll
+        euler[2] = atan2f(_rot(1, 0) / cosPitch, _rot(0, 0) / cosPitch); // Yaw
     }
 
     return euler;
@@ -211,20 +231,8 @@ array<Matrix<4, 4>, 7> Kinematic::fkine2Ts(const array<float, 6> &_theta)
 
 array<float, 3> Kinematic::fkine2euler(const array<float, 6> &_theta)
 {
-    array<float, 9> rot;
-
     auto t = fkine2T(_theta);
-
-    rot[0] = t(0, 0);
-    rot[1] = t(0, 1);
-    rot[2] = t(0, 2);
-    rot[3] = t(1, 0);
-    rot[4] = t(1, 1);
-    rot[5] = t(1, 2);
-    rot[6] = t(2, 0);
-    rot[7] = t(2, 1);
-    rot[8] = t(2, 2);
-
+    Matrix<3, 3> rot = t2r(t);
     auto euler = rotation2euler(rot);
     return euler;
 }
@@ -409,6 +417,15 @@ array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &
 
     return target;
     //NOLINTEND
+}
+
+array<float, 6> Kinematic::ikinePose(const array<float, 3> &_xyz, const std::array<float, 3> &_rpy,
+                                     const array<float, 6> &_pose)
+{
+    auto rot = euler2Rotation(_rpy);
+    auto t = rp2t(rot, _xyz);
+
+    return ikine(t, _pose);
 }
 
 array<float, 6> Kinematic::ikineWithTcp(const Matrix<4, 4> &_t, const Matrix<4, 4> &_tcp, const array<float, 6> &_pose)
