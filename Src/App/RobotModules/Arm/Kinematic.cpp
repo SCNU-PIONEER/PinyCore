@@ -1,5 +1,7 @@
 #include "./Kinematic.hpp"
 #include "Matrix.hpp"
+#include <cmath>
+#include <cstdint>
 
 using namespace ARM;
 
@@ -23,6 +25,22 @@ float Kinematic::sqrtf(const float _x)
     arm_sqrt_f32(_x, &sqrt);
     return sqrt;
 }
+#else
+
+#include <cstdio>
+template <int Rows, int Cols> void printfMatrix(const Matrix<Rows, Cols> &mat)
+{
+    for (int i = 0; i < Rows; i++) {
+        printf("[");
+        for (int j = 0; j < Cols; j++) {
+            printf("%10.6f", mat(i, j));
+            if (j < Cols - 1)
+                printf(", ");
+        }
+        printf("]\n");
+    }
+    printf("\n");
+}
 
 #endif
 
@@ -35,7 +53,29 @@ Kinematic::Kinematic()
 {
 }
 
-Kinematic::Kinematic(const MDH &_mdh) : dh(_mdh) {}
+Kinematic::Kinematic(const MDH &_mdh) : dh(_mdh)
+{
+    if (dh.a[2] == 0 || dh.a[3] == 0) {
+        // LOG::error("Arm", "dh param error");
+    }
+}
+
+Matrix<3, 1> Kinematic::t2p(Matrix<4, 4> _t) { return _t.block<3, 1>(0, 3); }
+
+Matrix<4, 4> Kinematic::p2t(Matrix<3, 1> _p)
+{
+    // T=[I,P;0,1]
+    float t[16] = { 1, 0, 0, _p(0, 0), 0, 1, 0, _p(1, 0), 0, 0, 1, _p(2, 0), 0, 0, 0, 1 };
+    return Matrix<4, 4>(t);
+}
+
+Matrix<3, 3> Kinematic::hat(Matrix<3, 1> _vec)
+{
+    float hat[9] = { 0, -_vec(2, 0), _vec(1, 0), _vec(2, 0), 0, -_vec(0, 0), -_vec(1, 0), _vec(0, 0), 0 };
+    return Matrix<3, 3>(hat);
+}
+
+Matrix<3, 1> Kinematic::cross(Matrix<3, 1> _vec1, Matrix<3, 1> _vec2) { return hat(_vec1) * _vec2; }
 
 array<float, 9> Kinematic::eulerAngle2Rotation(const array<float, 3> &_euler)
 {
@@ -108,30 +148,52 @@ array<float, 3> Kinematic::rotation2euler(const array<float, 9> &_rot)
  *       [st*sa, ct*sa, ca , d*ca ],
  *       [0    , 0    , 0  , 1    ]
 */
-Matrix<4, 4> Kinematic::dhTransform(float _a, float _alpha, float _d, float _theta)
+// Matrix<4, 4> Kinematic::dhTransform(const float _a, const float _alpha, const float _d, const float _theta)
+// {
+//     float ct = cosf(_theta), st = sinf(_theta);
+//     float ca = cosf(_alpha), sa = sinf(_alpha);
+//     return Matrix<4, 4>{
+//         { ct, -st, 0, _a }, { st * ca, ct * ca, -sa, -_d * sa }, { st * sa, ct * sa, ca, _d * ca }, { 0, 0, 0, 1.0f }
+//     };
+// }
+
+/*
+ * brief: get homogeneous transformation matrix in SDH
+ * param: _a: link length
+ *        _alpha: link twist
+ *        _d: link offest
+ *        _theta: joint angle theta
+ *
+ * return: Matirx<4,4> homogeneous transformation matrix
+ *       [ct, -st*ca, st*sa , a*ct ],
+ *       [st, ct*ca , -ct*sa, a*st ],
+ *       [0 , sa    , ca    , d    ],
+ *       [0 , 0     , 0     , 1    ]
+*/
+Matrix<4, 4> Kinematic::dhTransform(const float _a, const float _alpha, const float _d, const float _theta)
 {
     float ct = cosf(_theta), st = sinf(_theta);
     float ca = cosf(_alpha), sa = sinf(_alpha);
 
     return Matrix<4, 4>{
-        { ct, -st, 0, _a }, { st * ca, ct * ca, -sa, -_d * sa }, { st * sa, ct * sa, ca, _d * ca }, { 0, 0, 0, 1.0f }
+        { ct, -st * ca, st * sa, _a * ct }, { st, ct * ca, -ct * sa, _a * st }, { 0, sa, ca, _d }, { 0, 0, 0, 1.0f }
     };
 }
 
 
-Matrix<4, 4> Kinematic::fkine2T(array<float, 6> _theta)
+Matrix<4, 4> Kinematic::fkine2T(const array<float, 6> &_theta)
 {
     auto t = Matrix<4, 4>::eye();
 
     for (int i = 0; i < 6; ++i) {
-        auto theta = _theta[i] + dh.theta[i];
-        auto ti = dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
+        // auto theta = _theta[i] + dh.theta[i];
+        auto ti = dhTransform(dh.a[i], dh.alpha[i], dh.d[i], _theta[i]);
         t = t * ti;
     }
     return t;
 }
 
-array<Matrix<4, 4>, 7> Kinematic::fkine2Ts(array<float, 6> _theta)
+array<Matrix<4, 4>, 7> Kinematic::fkine2Ts(const array<float, 6> &_theta)
 {
     auto t = Matrix<4, 4>::eye();
     array<Matrix<4, 4>, 7> ts{};
@@ -147,7 +209,7 @@ array<Matrix<4, 4>, 7> Kinematic::fkine2Ts(array<float, 6> _theta)
     return ts;
 }
 
-array<float, 3> Kinematic::fkine2euler(array<float, 6> _theta)
+array<float, 3> Kinematic::fkine2euler(const array<float, 6> &_theta)
 {
     array<float, 9> rot;
 
@@ -165,4 +227,191 @@ array<float, 3> Kinematic::fkine2euler(array<float, 6> _theta)
 
     auto euler = rotation2euler(rot);
     return euler;
+}
+
+
+Matrix<6, 6> Kinematic::jacob0(const array<float, 6> &_q)
+{
+    Matrix<3, 1> p = t2p(fkine2T(_q));    // p_e
+    Matrix<4, 4> t = Matrix<4, 4>::eye(); // T_i-1
+    Matrix<3, 1> z;                       // 关节 i 相对于基座（坐标系 0）的 z 轴单位向量
+    Matrix<3, 1> r;                       // 末端执行器相对于坐标系 i 的位置
+    Matrix<3, 1> jl;                      // 关节速度与线速度关联起来的部分
+    Matrix<3, 1> ja;                      // 关节速度与角速度关联起来的部分
+    Matrix<6, 6> j;                       //return
+
+    // revolute joint: J_pi = z-1x(p_e-p_i-1), J_oi = z-1
+    for (int i = 0; i < 6; i++) {
+        // MDH
+        // auto theta = _q[i] + dh.theta[i];
+        // t = t * dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
+
+        z = t.block<3, 1>(0, 2);
+        r = t2p(t);
+
+        // SDH
+        auto theta = _q[i] + dh.theta[i];
+        t = t * dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
+
+        jl = cross(p - r, z);
+        ja = z;
+
+        j(0, i) = jl(0, 0);
+        j(1, i) = jl(1, 0);
+        j(2, i) = jl(2, 0);
+        j(3, i) = ja(0, 0);
+        j(4, i) = ja(1, 0);
+        j(5, i) = ja(2, 0);
+    }
+    return j;
+}
+
+/**
+ * @brief Inverse Kinematic
+ * @param[in] target t
+ * @param[in] current pose
+ *
+ * @refer：
+ * Villalobos, J., Sanchez, I. Y., & Martell, F. (2022). 
+ * Singularity Analysis and Complete Methods to Compute the Inverse Kinematics 
+ * for a 6-DOF UR/TM-Type Robot. Robotics, 11(6), 137.
+ * https://doi.org/10.3390/robotics11060137
+ *
+ * Algorithm 2: compute only one complete set of angles by FSM
+ */
+array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose)
+{
+    //NOLINTBEGIN
+    array<float, 6> target;
+
+    auto minAngle = [](const float currentAngle, const float angle1, const float angle2) -> float {
+        auto angularDistance = [](const float a, const float b) -> float {
+            float diff = fabs(a - b);
+            return (diff <= M_PI) ? diff : (2 * M_PI - diff);
+        };
+        float diff1 = angularDistance(angle1, currentAngle);
+        float diff2 = angularDistance(angle2, currentAngle);
+        return (diff1 < diff2) ? angle1 : angle2;
+    };
+
+    float r11 = _t(0, 0);
+    float r12 = _t(0, 1);
+    float r13 = _t(0, 2);
+    float r21 = _t(1, 0);
+    float r22 = _t(1, 1);
+    float r23 = _t(1, 2);
+    float r31 = _t(2, 0);
+    float r32 = _t(2, 1);
+    float r33 = _t(2, 2);
+
+    float px = _t(0, 3);
+    float py = _t(1, 3);
+    float pz = _t(2, 3);
+
+    float d1 = dh.d[0];
+    float d2 = dh.d[1];
+    float d3 = dh.d[2];
+    float d4 = dh.d[3];
+    float d5 = dh.d[4];
+    float d6 = dh.d[5];
+
+    float a2 = dh.a[1];
+    float a3 = dh.a[2];
+
+    // theta 1
+    float A = py - d6 * r23;
+    float B = px - d6 * r13;
+
+    float sqrt1 = B * B + A * A - d4 * d4;
+
+    if (sqrt1 < 0)
+        return _pose;
+
+    float theta1_1 = atan2f(sqrtf(sqrt1), d4) + atan2f(B, -A);
+    float theta1_2 = -atan2f(sqrtf(sqrt1), d4) + atan2f(B, -A);
+
+    target[0] = minAngle(_pose[0], theta1_1, theta1_2);
+
+    // theta 5
+    float c1 = cosf(target[0]);
+    float s1 = sinf(target[0]);
+
+    float D = c1 * r22 - s1 * r12;
+    float E = s1 * r11 - c1 * r21;
+    if (fabsf(D) < 1e-6)
+        D = 0.0;
+    if (abs(E) < 1e-6)
+        E = 0.0;
+
+    float theta5_1 = atan2f(sqrtf(E * E + D * D), s1 * r13 - c1 * r23);
+    float theta5_2 = atan2f(-sqrtf(E * E + D * D), s1 * r13 - c1 * r23);
+
+    target[4] = minAngle(_pose[4], theta5_1, theta5_2);
+
+    // Singularities
+    if (fabsf(sinf(target[4])) < 1e-12f)
+        return _pose;
+
+    // theta 6
+    float s5 = sinf(target[4]);
+    target[5] = atan2f(D / s5, E / s5);
+
+    // theta 3
+    float c5 = cosf(target[4]);
+    float s6 = sinf(target[5]);
+    float c6 = cosf(target[5]);
+    float C = c1 * r11 + s1 * r21;
+    float F = c5 * c6;
+
+    float theta234 = atan2f(((r31 * F) - (s6 * C)), ((F * C) + (s6 * r31)));
+
+    float s234 = sinf(theta234);
+    float c234 = cosf(theta234);
+
+    float Kc = (c1 * px) + (s1 * py) - (s234 * d5) + (c234 * s5 * d6);
+    float Ks = pz - d1 + (c234 * d5) + (s234 * s5 * d6);
+
+    float c3 = ((Ks * Ks) + (Kc * Kc) - (a2 * a2) - (a3 * a3)) / (2 * a2 * a3);
+
+    float s3 = sqrtf(1 - (c3 * c3));
+    if (abs(s3) < 1e-6)
+        s3 = 0.0;
+
+    float theta3_1 = atan2f(s3, c3);
+    float theta3_2 = atan2f(-s3, c3);
+
+    target[2] = minAngle(_pose[2], theta3_1, theta3_2);
+
+    // Singularities
+    if (fabsf(sinf(target[2])) < 1e-12f)
+        return _pose;
+
+    // theta 2
+    target[1] = atan2f(Ks, Kc) - atan2f(s3 * dh.a[2], c3 * dh.a[2] + dh.a[1]);
+
+    // theta 4
+    target[3] = theta234 - target[1] - target[2];
+
+    // map angles to [-pi, pi]
+    for (uint8_t i : { 0, 1, 2, 3, 4, 5 }) {
+        if (!std::isfinite(target[i])) {
+            target = _pose; // just as same
+            return target;
+        }
+
+        const double y = fmod(target[i], 2.0 * M_PI);
+        if (y > M_PI) {
+            target[i] += y - 2.0 * M_PI;
+        } else if (y < -M_PI) {
+            target[i] += 2.0 * M_PI;
+        }
+    }
+
+    return target;
+    //NOLINTEND
+}
+
+array<float, 6> Kinematic::ikineWithTcp(const Matrix<4, 4> &_t, const Matrix<4, 4> &_tcp, const array<float, 6> &_pose)
+{
+    return ikine(_t * _tcp.inv(), _pose);
 }

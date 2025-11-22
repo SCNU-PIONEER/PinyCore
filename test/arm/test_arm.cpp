@@ -1,7 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include "Kinematic.hpp"
+#include <cmath>
 #include <cstdio>
+#include <iostream>
+// #include <print>
 
 using namespace Catch::Matchers;
 using namespace ARM;
@@ -44,6 +48,33 @@ bool isTransformValid(const Matrix<4, 4> &transform)
     auto rotation = extractRotation(transform);
     return isRotationMatrixValid(rotation);
 }
+
+
+template <int Rows, int Cols> void printMatrix(const Matrix<Rows, Cols> &mat)
+{
+    for (int i = 0; i < Rows; i++) {
+        std::cout << "[";
+        for (int j = 0; j < Cols; j++) {
+            std::cout << std::setw(12) << std::setprecision(6) << std::fixed << mat(i, j);
+            if (j < Cols - 1)
+                std::cout << ", ";
+        }
+        std::cout << "]" << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+// SDH
+std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
+std::array<float, 6> a = { 0.0f, 5.0f, 5.0f, 0.f, 0.0f, 0.0f };
+std::array<float, 6> alpha = { M_PI_2, 0.0f, 0.0f, M_PI_2, -M_PI_2, 0.0f };
+std::array<float, 6> d = { 0.0f, 0.0f, 0.0f, 1.f, 1.f, 1.f };
+
+// MDH
+// std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
+// std::array<float, 6> a = { 0.0f, 0.0f, 5.f, 5.f, 0.0f, 0.0f };
+// std::array<float, 6> alpha = { 0, M_PI_2, 0.0f, 0.0f, -M_PI_2, -M_PI_2 };
+// std::array<float, 6> d = { 0.0f, 0.0f, 0.0f, 1.f, 1.f, 1.f };
 
 TEST_CASE("rotation2euler test", "[rotation2euler]")
 {
@@ -195,6 +226,7 @@ TEST_CASE("rotation2euler test", "[rotation2euler]")
         }
     }
 }
+
 TEST_CASE("dh test", "[dh]")
 {
     SECTION("单位变换测试")
@@ -277,12 +309,6 @@ TEST_CASE("fk test", "[fk]")
 {
     SECTION("基本功能验证")
     {
-        // 使用MDH参数
-        std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
-        std::array<float, 6> a = { 0.0f, 0.0f, 5.f, 5.f, 0.0f, 0.0f };
-        std::array<float, 6> alpha = { 0.0f, M_PI_2, 0.0f, 0, -M_PI_2, -M_PI_2 };
-        std::array<float, 6> d = { 0.0f, 0.0f, 0.0f, 1.f, 1.f, 1.f };
-
         MDH mdh_params(theta, a, alpha, d);
         Kinematic kinematic(mdh_params);
 
@@ -322,9 +348,124 @@ TEST_CASE("fk test", "[fk]")
 
             auto T = kinematic.fkine2T(test_angles);
 
-            REQUIRE_THAT(T(0, 3), WithinAbs(3.192953f, 1e-6f));  // x
-            REQUIRE_THAT(T(1, 3), WithinAbs(-0.202824f, 1e-6f)); // y
-            REQUIRE_THAT(T(2, 3), WithinAbs(8.606504f, 1e-6f));  // z
+            printMatrix(T);
+
+            printf("x: %f,y: %f,z: %f\n", T(0, 3), T(1, 3), T(2, 3));
+
+            REQUIRE_THAT(T(0, 3), WithinAbs(9.912175f, 1e-6f));  // x
+            REQUIRE_THAT(T(1, 3), WithinAbs(-0.892475f, 1e-6f)); // y
+            REQUIRE_THAT(T(2, 3), WithinAbs(2.393317f, 1e-6f));  // z
         }
     }
+}
+
+TEST_CASE("jacob test", "[jacob]")
+{
+    MDH mdh_params(theta, a, alpha, d);
+    Kinematic kinematic(mdh_params);
+
+    SECTION("不同姿态雅可比矩阵验证")
+    {
+        std::array<std::array<float, 6>, 3> test_poses = { {
+                { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },     // 零位
+                { M_PI / 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }, // 关节1旋转90°
+                { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f }      // 随机姿态
+        } };
+
+        for (const auto &q : test_poses) {
+            auto jacob = kinematic.jacob0(q);
+
+            // 验证所有元素有效
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 6; j++) {
+                    REQUIRE(std::isfinite(jacob(i, j)));
+                }
+            }
+        }
+    }
+
+    // SECTION("与MATLAB jacob0结果对比")
+    // {
+    //     Matrix<6, 6> matlab_jacob = { { 1.0005f, -7.3265f, -2.4506f, -0.0655f, -0.2089f, 0.0f },
+    //                                   { 4.8475f, -0.7351f, -0.2459f, -0.0066f, -0.9030f, 0.0f },
+    //                                   { 0.0f, 4.7234f, 5.7168f, 1.3288f, -0.3755f, 0.0f },
+    //                                   { -0.0000f, 0.0998f, 0.0998f, 0.0998f, 0.7794f, 0.5907f },
+    //                                   { 0.0000f, -0.9950f, -0.9950f, -0.9950f, 0.0782f, -0.4226f },
+    //                                   { 1.0000f, 0.0000f, 0.0000f, 0.0000f, -0.6216f, 0.6874f } };
+    //
+    //     std::array<float, 6> q = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
+    //     auto cpp_jacob = kinematic.jacob0(q);
+    //     printMatrix(cpp_jacob);
+    //
+    //     SECTION("逐元素精度验证")
+    //     {
+    //         const float tolerance = 1e-4f;
+    //
+    //         for (int i = 0; i < 6; i++) {
+    //             for (int j = 0; j < 6; j++) {
+    //                 float cpp_val = cpp_jacob(i, j);
+    //                 float matlab_val = matlab_jacob(i, j);
+    //                 float error = std::abs(cpp_val - matlab_val);
+    //
+    //                 INFO("元素[" << i << "," << j << "]: C++=" << cpp_val << ", MATLAB=" << matlab_val
+    //                              << ", 误差=" << error);
+    //
+    //                 REQUIRE(error < tolerance);
+    //             }
+    //         }
+    //     }
+
+
+    //  [    0.892475,    -2.381361,     2.494491,     4.879643,    -0.530440,     2.025912]
+    //  [    9.912175,    -0.238933,     0.250283,     0.489597,    -0.177539,     6.417145]
+    //  [    0.000000,     9.773557,    10.766903,     6.378992,    -0.687434,     2.203971]
+    //  [    0.000000,     0.099833,     0.099833,     0.099833,     0.779414,     0.590651]
+    //  [    0.000000,    -0.995004,    -0.995004,    -0.995004,     0.078202,    -0.422570]
+    //  [    1.000000,    -0.000000,    -0.000000,    -0.000000,    -0.621610,     0.687434]
+
+    // SECTION("矩阵范数对比")
+    // {
+    //     float cpp_norm = matrixFrobeniusNorm(cpp_jacob);
+    //     float matlab_norm = matrixFrobeniusNorm(matlab_jacob);
+    //     float norm_error = std::abs(cpp_norm - matlab_norm);
+    //
+    //     INFO("C++ 矩阵范数: " << cpp_norm);
+    //     INFO("MATLAB 矩阵范数: " << matlab_norm);
+    //     INFO("范数误差: " << norm_error);
+    //
+    //     REQUIRE(norm_error < 1e-3f);
+    // }
+
+
+    // BENCHMARK("雅可比矩阵计算性能")
+    // {
+    //     std::array<float, 6> q = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
+    //     return kinematic.jacob(q);
+    // };
+}
+
+TEST_CASE("ikine test", "[ik]")
+{
+    MDH mdh_params(theta, a, alpha, d);
+    Kinematic kinematic(mdh_params);
+
+    SECTION("正逆解验证")
+    {
+        std::array<float, 6> test_angles = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
+        auto T = kinematic.fkine2T(test_angles);
+        auto theta_pos = kinematic.ikine(T, test_angles);
+
+        for (int i = 0; i < 6; i++) {
+            std::printf("%f ", theta_pos[i]);
+        }
+        std::printf("\n");
+
+        for (int i = 0; i < 6; i++) {
+            REQUIRE(std::fabs(theta_pos[i] - test_angles[i]) < 1e-5);
+        }
+    }
+
+    std::array<float, 6> q = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f };
+    auto T = kinematic.fkine2T(q);
+    BENCHMARK("ikine benchmark") { return kinematic.ikine(T, q); };
 }
