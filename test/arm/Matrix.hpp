@@ -10,12 +10,13 @@ private:
 public:
     Matrix() : eigen_mat_(Eigen::Matrix<float, Rows, Cols>::Zero()) {}
 
-    Matrix(const float *_data) : eigen_mat_(Eigen::Map<const Eigen::Matrix<float, Rows, Cols> >(_data)) {}
+    Matrix(const float *_data)
+            : eigen_mat_(Eigen::Map<const Eigen::Matrix<float, Rows, Cols, Eigen::RowMajor> >(_data)) {};
 
     // 从Eigen矩阵构造
     Matrix(const Eigen::Matrix<float, Rows, Cols> &mat) : eigen_mat_(mat) {}
 
-    // 初始化列表构造
+    // 行优先初始化列表构造
     Matrix(std::initializer_list<std::initializer_list<float> > init)
     {
         int row = 0;
