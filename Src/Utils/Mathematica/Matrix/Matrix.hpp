@@ -136,9 +136,10 @@ public:
     template <int rows, int cols> Matrix<rows, cols> block(const int &_start_row, const int &_start_col) const
     {
         Matrix<rows, cols> res;
-        for (int row = _start_row; row < _start_row + rows; row++) {
-            memcpy((float *)res[0] + ((row - _start_row) * cols), (float *)this->data_ + (row * _cols) + _start_col,
-                   cols * sizeof(float));
+        for (int i = 0; i < rows; i++) {
+            const float *srcPtr = &(*this)(_start_row + i, _start_col);
+            float *dstPtr = &res(i, 0);
+            memcpy(dstPtr, srcPtr, cols * sizeof(float));
         }
         return res;
     }
