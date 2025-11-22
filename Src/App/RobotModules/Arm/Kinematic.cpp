@@ -409,9 +409,9 @@ array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &
 
         const double y = fmod(target[i], 2.0 * M_PI);
         if (y > M_PI) {
-            target[i] += y - 2.0 * M_PI;
+            target[i] = y - 2.0 * M_PI;
         } else if (y < -M_PI) {
-            target[i] += 2.0 * M_PI;
+            target[i] = y + 2.0 * M_PI;
         }
     }
 
