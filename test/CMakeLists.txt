@@ -22,7 +22,8 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 add_executable(pinyTest)
 
-# add_subdirectory(utils)
+add_subdirectory(utils)
 add_subdirectory(arm)
 
 target_link_libraries(pinyTest PRIVATE Catch2::Catch2WithMain)
+target_compile_options(${PROJECT_NAME} PRIVATE -g3)
