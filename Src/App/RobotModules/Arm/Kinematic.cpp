@@ -49,7 +49,8 @@ Kinematic::Kinematic()
         : dh({ { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }, // theta
              { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }, // a
              { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }, // alpha
-             { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }) // d
+             { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }, // d
+             { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }) // offset
 {
 }
 
@@ -206,8 +207,8 @@ Matrix<4, 4> Kinematic::fkine2T(const array<float, 6> &_theta)
     auto t = Matrix<4, 4>::eye();
 
     for (int i = 0; i < 6; ++i) {
-        // auto theta = _theta[i] + dh.theta[i];
-        auto ti = dhTransform(dh.a[i], dh.alpha[i], dh.d[i], _theta[i]);
+        auto theta = _theta[i] + dh.offset[i];
+        auto ti = dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
         t = t * ti;
     }
     return t;
@@ -221,7 +222,7 @@ array<Matrix<4, 4>, 7> Kinematic::fkine2Ts(const array<float, 6> &_theta)
     // 基座变换（单位矩阵）
     ts[0] = t;
     for (int i = 0; i < 6; ++i) {
-        auto theta = _theta[i] + dh.theta[i];
+        auto theta = _theta[i] + dh.offset[i];
         auto ti = dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
         t = t * ti;
         ts[i + 1] = t;
@@ -258,10 +259,10 @@ Matrix<6, 6> Kinematic::jacob0(const array<float, 6> &_q)
         r = t2p(t);
 
         // SDH
-        auto theta = _q[i] + dh.theta[i];
+        auto theta = _q[i] + dh.offset[i];
         t = t * dhTransform(dh.a[i], dh.alpha[i], dh.d[i], theta);
 
-        jl = cross(p - r, z);
+        jl = cross(z, p - r);
         ja = z;
 
         j(0, i) = jl(0, 0);
@@ -357,7 +358,7 @@ array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &
     target[4] = minAngle(_pose[4], theta5_1, theta5_2);
 
     // Singularities
-    if (fabsf(sinf(target[4])) < 1e-12f)
+    if (fabsf(sinf(target[4])) < 1e-6f)
         return _pose;
 
     // theta 6

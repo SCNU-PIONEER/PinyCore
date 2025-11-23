@@ -10,16 +10,14 @@ using std::array;
 class MDH {
 public:
     MDH(const array<float, 6> &_theta, const array<float, 6> &_a, const array<float, 6> &_alpha,
-        const array<float, 6> &_d)
-            : theta(_theta), a(_a), alpha(_alpha), d(_d) {};
+        const array<float, 6> &_d, const array<float, 6> &_offset)
+            : theta(_theta), a(_a), alpha(_alpha), d(_d), offset(_offset) {};
 
-private:
-    friend class Kinematic;
-
-    array<float, 6> theta; // joint angle theta
-    array<float, 6> a;     // link length
-    array<float, 6> alpha; // link twist
-    array<float, 6> d;     // link offest
+    array<float, 6> theta;  // joint angle theta  (rad)
+    array<float, 6> a;      // link length        (m)
+    array<float, 6> alpha;  // link twist         (rad)
+    array<float, 6> d;      // link offest        (m)
+    array<float, 6> offset; // joint angle offest (rad)
 };
 
 class Kinematic {
@@ -45,9 +43,20 @@ public:
     array<float, 3> fkine2euler(const array<float, 6> &_theta);
     Matrix<6, 6> jacob0(const array<float, 6> &_q);
     array<float, 6> ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose);
-    array<float, 6> ikinePose(const array<float, 3> &_xyz, const std::array<float, 3> &_rpy,
-                              const array<float, 6> &_pose);
+    array<float, 6> ikinePose(const array<float, 3> &_xyz, const array<float, 3> &_rpy, const array<float, 6> &_pose);
     array<float, 6> ikineWithTcp(const Matrix<4, 4> &_t, const Matrix<4, 4> &_tcp, const array<float, 6> &_pose);
+
+    // TODO: Cubic polynomial trajectory planning in joint spaces
+    // TODO: quintic polynomial trajectory planning in joint spaces
+    // TODO: arc trajectory planning in Cartesian space
+    // TODO: traight line trajectory planning in Cartesian space
+    bool moveP(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
+    bool moveL(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
+    bool moveC(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
+
+    // TODO: dynamic functions
+    void gravityCompensation(const array<float, 6> &_pos);
+    void frictionCompensation(const array<float, 6> &_v);
 
 private:
 #ifndef TEST
@@ -61,11 +70,14 @@ private:
 private:
     // kinematic params
     MDH dh;
+    array<float, 6> angleMin; // motor min angle
+    array<float, 6> angleMax; // motor min angle
 
     // dynamic params
-    array<float, 6> mass;    // link mass
+    array<float, 6> mass;    // link mass (kg)
     array<float, 3> gravity; // world gravity
-    Matrix<6, 3> I;          // link inertia matrix
+    Matrix<6, 3> centerMass; // center of Mass (m)
+    Matrix<6, 9> I;          // link inertia matrix
     array<float, 6> B;       // link viscous friction
     array<float, 6> Tc;      // link coulomb friction
     array<float, 6> Jm;      // motor inertia
