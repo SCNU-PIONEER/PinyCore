@@ -1,4 +1,4 @@
-#include "./Kinematic.hpp"
+#include "./ArmKinematic.hpp"
 #include "Matrix.hpp"
 #include <cmath>
 #include <cstdint>
@@ -44,6 +44,14 @@ template <int Rows, int Cols> void printfMatrix(const Matrix<Rows, Cols> &mat)
 
 #endif
 
+Joint operator-(const Joint &_joint1, const Joint &_joint2)
+{
+    Joint result;
+    for (auto i = 0; i < 6; ++i) {
+        result[i] = _joint1[i] - _joint2[i];
+    }
+    return result;
+}
 
 Kinematic::Kinematic()
         : dh({ { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } }, // theta

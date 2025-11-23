@@ -7,6 +7,9 @@ namespace ARM {
 
 using std::array;
 
+using Joint = array<float, 6>;
+Joint operator-(const Joint &_joint1, const Joint &_joint2);
+
 class MDH {
 public:
     MDH(const array<float, 6> &_theta, const array<float, 6> &_a, const array<float, 6> &_alpha,
@@ -46,14 +49,6 @@ public:
     array<float, 6> ikinePose(const array<float, 3> &_xyz, const array<float, 3> &_rpy, const array<float, 6> &_pose);
     array<float, 6> ikineWithTcp(const Matrix<4, 4> &_t, const Matrix<4, 4> &_tcp, const array<float, 6> &_pose);
 
-    // TODO: Cubic polynomial trajectory planning in joint spaces
-    // TODO: quintic polynomial trajectory planning in joint spaces
-    // TODO: arc trajectory planning in Cartesian space
-    // TODO: traight line trajectory planning in Cartesian space
-    bool moveP(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
-    bool moveL(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
-    bool moveC(const array<float, 6> &_xyz, const array<float, 6> &_pose, const float _t);
-
     // TODO: dynamic functions
     void gravityCompensation(const array<float, 6> &_pos);
     void frictionCompensation(const array<float, 6> &_v);
@@ -70,8 +65,6 @@ private:
 private:
     // kinematic params
     MDH dh;
-    array<float, 6> angleMin; // motor min angle
-    array<float, 6> angleMax; // motor min angle
 
     // dynamic params
     array<float, 6> mass;    // link mass (kg)
