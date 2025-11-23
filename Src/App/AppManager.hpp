@@ -1,9 +1,9 @@
 #pragma once
 
-#include <list>
 #include <functional>
+#include "Task.hpp"
 
-class AppManager {
+class AppManager : public Task<AppManager, 512> {
 public:
     static AppManager *instance()
     {
@@ -18,10 +18,10 @@ public:
 
     void schedule(std::function<void()> _callback);
 
-    static void ctrlTask(void *_param);
+    void task();
 
 private:
-    AppManager() = default;
+    AppManager() : Task("AppTask", TaskPriority_e::HIGH1) {};
     void createApp();
 
     std::vector<std::function<void()> > tasks;

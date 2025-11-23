@@ -1,5 +1,8 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
+#if INS_ACCEL_CALIBRATION
+#include "AccelCali.hpp"
+#endif
 
 
 using namespace INS_SYS;
@@ -32,10 +35,8 @@ static constexpr float IMU_OFFSET_X = 0;
 static constexpr float IMU_OFFSET_Y = 0;
 
 INS::INS(SPI_HandleTypeDef *_spi)
-        : insPub_(&insTopic,&insDat_)
+        : Task<INS, 384>("insTask", TaskPriority_e::HIGH3), insPub_(Publisher<INSData_s>(&insTopic, &insDat_))
 {
-    xTaskCreate(INS::task, "ins_task", 384, this, 7, nullptr);
-
     init(_spi);
 
     LOG::info("INS", "task init success");
@@ -46,16 +47,14 @@ void INS::init(SPI_HandleTypeDef *_spi)
     while (bmi088_.init(_spi))
         // wait for ACK from BMI088
         ;
-    imuCali_.init(ACC_CALI, GYRO_CALI, bmi088_.getAccelMappingVaule(),
-                  bmi088_.getGyroMappingVaule());
+    imuCali_.init(ACC_CALI, GYRO_CALI, bmi088_.getAccelMappingVaule(), bmi088_.getGyroMappingVaule());
     DCM_.init();
 }
 
-void INS::task(void *_param)
+void INS::task()
 {
-    auto instance = static_cast<INS *>(_param);
-    auto &bmi088 = instance->bmi088_;
-    auto &cali = instance->imuCali_;
+    auto &bmi088 = bmi088_;
+    auto &cali = imuCali_;
 
     while (true) {
         // read BMI088 data
@@ -63,18 +62,14 @@ void INS::task(void *_param)
         bmi088.read();    // serialize data to real format
 
 #if INS_ACCEL_CALIBRATION
-        AccelCali::instance().update(
-                bmi088.getRawAccelX(), bmi088.getRawAccelY(),
-                bmi088.getRawAccelZ(), bmi088.getRawGyroX(),
-                bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
-                bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
+        AccelCali::instance().update(bmi088.getRawAccelX(), bmi088.getRawAccelY(), bmi088.getRawAccelZ(),
+                                     bmi088.getRawGyroX(), bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
+                                     bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
 #else
         // update IMU calibration
         cali.updateTemperature(bmi088.getTemperature());
-        cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(),
-                      bmi088.getRawAccelZ());
-        cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(),
-                      bmi088.getRawGyroZ());
+        cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(), bmi088.getRawAccelZ());
+        cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(), bmi088.getRawGyroZ());
         if constexpr (CORRECT_IMU_DATA) {
             cali.steadyStateDetection();
         }
@@ -94,22 +89,16 @@ void INS::task(void *_param)
         // Roll: Clockwise increase(+) when looking straight ahead
         // Pitch: Head up decrease(-)
         // Yaw: Clockwise decrease(-) when viewed from above
-        auto &data = instance->rawDat_;
+        auto &data = rawDat_;
         data = {
-            .a = { .x = cali.getOutput().ax,
-                   .y = cali.getOutput().ay,
-                   .z = -cali.getOutput().az },
-            .g = { .x = -cali.getOutput().gx,
-                   .y = -cali.getOutput().gy,
-                   .z = cali.getOutput().gz },
+            .a = { .x = cali.getOutput().ax, .y = cali.getOutput().ay, .z = -cali.getOutput().az },
+            .g = { .x = -cali.getOutput().gx, .y = -cali.getOutput().gy, .z = cali.getOutput().gz },
         };
-        data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y -
-                               data.g.z * data.g.z * IMU_OFFSET_X);
-        data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X -
-                               data.g.x * data.g.z * IMU_OFFSET_Y);
+        data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y - data.g.z * data.g.z * IMU_OFFSET_X);
+        data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X - data.g.x * data.g.z * IMU_OFFSET_Y);
 
         // update INS
-        instance->update(instance->bmi088_.getTimestamp());
+        update(bmi088_.getTimestamp());
 #endif
         vTaskDelay(1);
     }
@@ -121,13 +110,11 @@ void INS::update(float _dt)
     this->dt_ = _dt; // update time interval
 
     // Update DCM algorithm
-    DCM_.update(rawDat_.g.x, rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y,
-                rawDat_.a.z, this->dt_);
+    DCM_.update(rawDat_.g.x, rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y, rawDat_.a.z, this->dt_);
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
-    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
-          z = insDat_.q[3];
+    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2], z = insDat_.q[3];
 
     // Get the Euler angles
     insDat_.roll = DCM_.getRoll();

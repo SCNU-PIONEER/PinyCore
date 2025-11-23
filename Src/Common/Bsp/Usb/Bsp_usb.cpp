@@ -12,10 +12,9 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 #define USB_DEVICE hUsbDeviceFS
 #endif
 
-Usb::Usb()
+Usb::Usb() : Task("UsbTask", TaskPriority_e::MID1)
 {
     rx_.semphr = xSemaphoreCreateBinary();
-    xTaskCreate(task, "Usb", 256, this, 1, nullptr);
 }
 
 void usbParse(uint8_t *_data, uint16_t _len)
@@ -59,16 +58,15 @@ int8_t Usb::registerCallback(std::function<void(uint8_t *, uint16_t)> _cb)
     return -1;
 }
 
-void Usb::task(void *_arg)
+void Usb::task()
 {
-    Usb *const pThis = static_cast<Usb *>(_arg);
     for (;;) {
-        if (xSemaphoreTake(pThis->rx_.semphr, portMAX_DELAY) == pdTRUE) {
-            if (pThis->rx_.dataPending) {
-                pThis->rx_.dataPending = false;
-                for (auto &cb : pThis->cbList_) {
+        if (xSemaphoreTake(this->rx_.semphr, portMAX_DELAY) == pdTRUE) {
+            if (this->rx_.dataPending) {
+                this->rx_.dataPending = false;
+                for (auto &cb : this->cbList_) {
                     if (cb) {
-                        cb(pThis->rx_.buf, pThis->rx_.len);
+                        cb(this->rx_.buf, this->rx_.len);
                     }
                 }
                 USBD_CDC_ReceivePacket(&USB_DEVICE); // Allow next packet
