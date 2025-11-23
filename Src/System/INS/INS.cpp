@@ -34,8 +34,7 @@ static constexpr GyroCaliParams_s GYRO_CALI = {
 static constexpr float IMU_OFFSET_X = 0;
 static constexpr float IMU_OFFSET_Y = 0;
 
-INS::INS(SPI_HandleTypeDef *_spi)
-        : Task<INS, 384>("insTask", TaskPriority_e::HIGH3), insPub_(Publisher<INSData_s>(&insTopic, &insDat_))
+INS::INS(SPI_HandleTypeDef *_spi) : Task<INS, 384>("insTask", TaskPriority_e::HIGH3), insPub_(&insTopic, &insDat_)
 {
     init(_spi);
 
@@ -141,33 +140,33 @@ void INS::update(float _dt)
     R_[2][1] = 0.0f;
     R_[2][2] = cosf(insDat_.pitch);
 #else
-    R_[0][0] = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
-    R_[0][1] = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
-    R_[0][2] = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy
-    R_[1][0] = 2.f * x * y + 2.f * w * z;       // 2xy + 2wz
-    R_[1][1] = 1.f - 2.f * x * x - 2.f * z * z; // 1-2x^2-2z^2
-    R_[1][2] = 2.f * y * z - 2.f * w * x;       // 2yz - 2wx
-    R_[2][0] = 2.f * x * z - 2.f * w * y;       // 2xz - 2wy
-    R_[2][1] = 2.f * y * z + 2.f * w * x;       // 2xy + 2wz
-    R_[2][2] = 1.f - 2.f * x * x - 2.f * y * y; // 1-2x^2-2y^2
+    R_(0, 0) = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
+    R_(0, 1) = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
+    R_(0, 2) = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy
+    R_(1, 0) = 2.f * x * y + 2.f * w * z;       // 2xy + 2wz
+    R_(1, 1) = 1.f - 2.f * x * x - 2.f * z * z; // 1-2x^2-2z^2
+    R_(1, 2) = 2.f * y * z - 2.f * w * x;       // 2yz - 2wx
+    R_(2, 0) = 2.f * x * z - 2.f * w * y;       // 2xz - 2wy
+    R_(2, 1) = 2.f * y * z + 2.f * w * x;       // 2xy + 2wz
+    R_(2, 2) = 1.f - 2.f * x * x - 2.f * y * y; // 1-2x^2-2y^2
 #endif
 
     // Transform body axis data to earth axis system using the rotation matrix
-    bodyVectorT_[0][0] = insDat_.body.ax;
-    bodyVectorT_[1][0] = insDat_.body.ay;
-    bodyVectorT_[2][0] = insDat_.body.az;
+    bodyVectorT_(0, 0) = insDat_.body.ax;
+    bodyVectorT_(1, 0) = insDat_.body.ay;
+    bodyVectorT_(2, 0) = insDat_.body.az;
     earthVectorT_ = R_ * bodyVectorT_;
-    insDat_.earth.ax = earthVectorT_[0][0];
-    insDat_.earth.ay = earthVectorT_[1][0];
-    insDat_.earth.az = earthVectorT_[2][0];
+    insDat_.earth.ax = earthVectorT_(0, 0);
+    insDat_.earth.ay = earthVectorT_(1, 0);
+    insDat_.earth.az = earthVectorT_(2, 0);
 
-    bodyVectorT_[0][0] = insDat_.body.gx;
-    bodyVectorT_[1][0] = insDat_.body.gy;
-    bodyVectorT_[2][0] = insDat_.body.gz;
+    bodyVectorT_(0, 0) = insDat_.body.gx;
+    bodyVectorT_(1, 0) = insDat_.body.gy;
+    bodyVectorT_(2, 0) = insDat_.body.gz;
     earthVectorT_ = R_ * bodyVectorT_;
-    insDat_.earth.gx = earthVectorT_[0][0];
-    insDat_.earth.gy = earthVectorT_[1][0];
-    insDat_.earth.gz = earthVectorT_[2][0];
+    insDat_.earth.gx = earthVectorT_(0, 0);
+    insDat_.earth.gy = earthVectorT_(1, 0);
+    insDat_.earth.gz = earthVectorT_(2, 0);
 
     // bodyVectorT_[0][0] = insDat_.body.mx;
     // bodyVectorT_[1][0] = insDat_.body.my;

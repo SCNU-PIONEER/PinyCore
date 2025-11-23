@@ -91,16 +91,13 @@ void AccelCali::startCalibration()
     memset(refData_, 0, sizeof(float) * 6 * 3);
     stationaryData_ = StationaryData_s();
 
-    LOG::info(
-            "AccelCali",
-            "now you need to put the sensor on the table and keep it stationary");
+    LOG::info("AccelCali", "now you need to put the sensor on the table and keep it stationary");
 
-    LOG::info{ "AccelCali", "the needed side is %s",
-               ORIENTATION_STR[side_].second };
+    LOG::info{ "AccelCali", "the needed side is %s", ORIENTATION_STR[side_].second };
 }
 
-void AccelCali::update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx,
-                       int16_t _gy, int16_t _gz, float _aTransK, float _gTransK)
+void AccelCali::update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx, int16_t _gy, int16_t _gz, float _aTransK,
+                       float _gTransK)
 {
     imuData_.ax = static_cast<float>(_ax) * _aTransK;
     imuData_.ay = static_cast<float>(_ay) * _aTransK;
@@ -113,8 +110,7 @@ void AccelCali::update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx,
         if (collectData()) {
             if (side_ < 6) {
                 side_++;
-                LOG::info{ "AccelCali", "the needed side is %s",
-                           ORIENTATION_STR[side_].second };
+                LOG::info{ "AccelCali", "the needed side is %s", ORIENTATION_STR[side_].second };
             } else {
                 calculateCalibrationParams();
                 saveCalibrationParams();
@@ -134,8 +130,7 @@ bool AccelCali::isStationary()
     stationaryData_.gyroSamples[stationaryData_.index][1] = imuData_.gy;
     stationaryData_.gyroSamples[stationaryData_.index][2] = imuData_.gz;
 
-    stationaryData_.index =
-            (stationaryData_.index + 1) % STATIONART_DETECTION_BUFFER_SIZE;
+    stationaryData_.index = (stationaryData_.index + 1) % STATIONART_DETECTION_BUFFER_SIZE;
     if (!stationaryData_.isFull && stationaryData_.index == 0) {
         stationaryData_.isFull = true;
     }
@@ -213,9 +208,7 @@ bool AccelCali::isStationary()
 bool AccelCali::isCorrectOrientation()
 {
     Orientation_e currOrientation = Orientation_e::UNKOWN;
-    float magnitude =
-            sqrtf((imuData_.ax * imuData_.ax) + (imuData_.ay * imuData_.ay) +
-                  (imuData_.az * imuData_.az));
+    float magnitude = sqrtf((imuData_.ax * imuData_.ax) + (imuData_.ay * imuData_.ay) + (imuData_.az * imuData_.az));
     float normAx = imuData_.ax / magnitude;
     float normAy = imuData_.ay / magnitude;
     float normAz = imuData_.az / magnitude;
@@ -244,8 +237,7 @@ bool AccelCali::collectData()
         refData_[side_ - 1][1] /= SAMPLE_COUNT;
         refData_[side_ - 1][2] /= SAMPLE_COUNT;
         collectCnt_ = 0;
-        LOG::info("AccelCali", "Collecting data for side %d, 100%% done",
-                  side_);
+        LOG::info("AccelCali", "Collecting data for side %d, 100%% done", side_);
         return true;
     } else {
         refData_[side_ - 1][0] += imuData_.ax;
@@ -253,14 +245,11 @@ bool AccelCali::collectData()
         refData_[side_ - 1][2] += imuData_.az;
         collectCnt_++;
         if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.25f)) {
-            LOG::info("AccelCali", "Collecting data for side %d, 25%% done",
-                      side_);
+            LOG::info("AccelCali", "Collecting data for side %d, 25%% done", side_);
         } else if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.5f)) {
-            LOG::info("AccelCali", "Collecting data for side %d, 50%% done",
-                      side_);
+            LOG::info("AccelCali", "Collecting data for side %d, 50%% done", side_);
         } else if (collectCnt_ == static_cast<uint16_t>(SAMPLE_COUNT * 0.75f)) {
-            LOG::info("AccelCali", "Collecting data for side %d, 75%% done",
-                      side_);
+            LOG::info("AccelCali", "Collecting data for side %d, 75%% done", side_);
         }
         return false;
     }
@@ -270,8 +259,7 @@ void AccelCali::calculateCalibrationParams()
 {
     // calc offset
     for (uint8_t i = 0; i < 3; i++) {
-        caliParams_.accelOffs[i] =
-                (refData_[i * 2][i] + refData_[(i * 2) + 1][i]) / 2.0f;
+        caliParams_.accelOffs[i] = (refData_[i * 2][i] + refData_[(i * 2) + 1][i]) / 2.0f;
     }
     // NOLINTNEXTLINE
     Matrix<3, 3> A;
@@ -279,7 +267,7 @@ void AccelCali::calculateCalibrationParams()
 
     for (uint8_t i = 0; i < 3; i++) {
         for (uint8_t j = 0; j < 3; j++) {
-            A[i][j] = refData_[i * 2][j] - caliParams_.accelOffs[j];
+            A(i, j) = refData_[i * 2][j] - caliParams_.accelOffs[j];
         }
     }
 
@@ -294,22 +282,18 @@ void AccelCali::calculateCalibrationParams()
         for (uint8_t j = 0; j < 3; j++) {
             caliParams_.accelT[i][j] = 0;
             for (uint8_t k = 0; k < 3; k++) {
-                caliParams_.accelT[i][j] += invA[j][k] * b[k];
+                caliParams_.accelT[i][j] += invA(j, k) * b[k];
             }
         }
     }
 
-    LOG::info("AccelCali", ".accelT =  { %.6ff, %.6ff, %.6ff },",
-              caliParams_.accelT[0][0], caliParams_.accelT[0][1],
+    LOG::info("AccelCali", ".accelT =  { %.6ff, %.6ff, %.6ff },", caliParams_.accelT[0][0], caliParams_.accelT[0][1],
               caliParams_.accelT[0][2]);
-    LOG::info("AccelCali", "            { %.6ff, %.6ff, %.6ff },",
-              caliParams_.accelT[1][0], caliParams_.accelT[1][1],
+    LOG::info("AccelCali", "            { %.6ff, %.6ff, %.6ff },", caliParams_.accelT[1][0], caliParams_.accelT[1][1],
               caliParams_.accelT[1][2]);
-    LOG::info("AccelCali", "            { %.6ff, %.6ff, %.6ff }",
-              caliParams_.accelT[2][0], caliParams_.accelT[2][1],
+    LOG::info("AccelCali", "            { %.6ff, %.6ff, %.6ff }", caliParams_.accelT[2][0], caliParams_.accelT[2][1],
               caliParams_.accelT[2][2]);
-    LOG::info("AccelCali", ".accelOffs = { %.6ff, %.6ff, %.6ff }",
-              caliParams_.accelOffs[0], caliParams_.accelOffs[1],
+    LOG::info("AccelCali", ".accelOffs = { %.6ff, %.6ff, %.6ff }", caliParams_.accelOffs[0], caliParams_.accelOffs[1],
               caliParams_.accelOffs[2]);
 }
 
