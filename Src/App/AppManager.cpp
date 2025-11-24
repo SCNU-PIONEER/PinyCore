@@ -12,6 +12,7 @@
 #include "Swerve.hpp"
 #include "Standard.hpp"
 #include "UI/UIApp.hpp"
+#include "Arm.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
@@ -29,7 +30,8 @@ Lazy<Cmd> cmd;
 
 Lazy<CHASSIS::Swerve> chassis;
 Lazy<GIMBAL::Standard> gimbal;
-
+// Lazy<Arm> arm;
+Arm* arm;
 //---------------------------------------------------------------------------------------------------
 
 
@@ -80,7 +82,8 @@ void AppManager::initApp()
     schedule([]() { CommManager::instance().txTask(); });
 #endif
 
-    schedule([]() { chassis->update(); });
+    arm = new Arm();
+    schedule([]() { arm->update(cmd->getMsgBus()); });
 
     // Generate threads at the end
     this->createApp();

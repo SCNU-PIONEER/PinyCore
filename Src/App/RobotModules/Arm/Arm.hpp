@@ -4,6 +4,8 @@
 #include "./ArmMotor.hpp"
 #include "MsgImpl.hpp"
 
+#include "./ArmHand.hpp"
+
 namespace ARM {
 
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL };
@@ -30,6 +32,8 @@ public:
     ARM::Motors motors;
 
     ArmMsg_s msg = {};
+
+    ARM::Hand hand;
 
     ARM::Joint target_joints = {};
 

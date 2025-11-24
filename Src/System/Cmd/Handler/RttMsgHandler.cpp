@@ -4,6 +4,7 @@
 #endif
 #include <cstring>
 #include "SEGGER_RTT.h"
+#include "Arm.hpp"
 
 
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
@@ -27,10 +28,8 @@ void RTTMsgHandler::parse(TimerHandle_t xTimer)
 {
     if (SEGGER_RTT_HasKey()) {
         BaseType_t higher_priority_task_woken = pdFALSE;
-        RTTMsgHandler *handler =
-                static_cast<RTTMsgHandler *>(pvTimerGetTimerID(xTimer));
-        xEventGroupSetBitsFromISR(handler->event, RTT_READY_EVENT,
-                                  &higher_priority_task_woken);
+        RTTMsgHandler *handler = static_cast<RTTMsgHandler *>(pvTimerGetTimerID(xTimer));
+        xEventGroupSetBitsFromISR(handler->event, RTT_READY_EVENT, &higher_priority_task_woken);
         portYIELD_FROM_ISR(higher_priority_task_woken);
     }
 }
@@ -39,9 +38,21 @@ void RTTMsgHandler::handle()
 {
     memset(data, 0, sizeof(data));
     SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+
+    ArmMsg_s armMsg{};
+    armMsg.state = ARM::FSMState_e::NORMAL;
+
+    if (strcmp((const char *)data, "on\n") == 0) {
+        armMsg.switch1 = true;
+    } else if (strcmp((const char *)data, "off\n") == 0) {
+        armMsg.switch1 = false;
+    } else if (strcmp((const char *)data, "stop\n") == 0) {
+        armMsg.state = ARM::FSMState_e::STOP;
+    } else if (strcmp((const char *)data, "run\n") == 0) {
+        armMsg.state = ARM::FSMState_e::NORMAL;
+    }
+
+    notify(&armMsg, msgBus_->armQueue);
 }
 
-void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
-{
-    xQueueSend(_queue, _msg, 0);
-}
+void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }

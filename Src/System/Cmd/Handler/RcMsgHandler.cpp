@@ -77,7 +77,47 @@ void RcMsgHandler::handle()
 
 void RcMsgHandler::chassisHandle() {}
 
-void RcMsgHandler::masterHandle() {}
+void RcMsgHandler::masterHandle()
+{
+    ChassisMsg_s chassisMsg{};
+    GimbalMsg_s gimbalMsg{};
+    if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        // gimbal
+        gimbalMsg.state = GIMBAL::FSMState_e::STOP;
+        gimbalMsg.pitch = gimbalMsg.yaw = 0.f;
+        // chassis
+        chassisMsg.state = CHASSIS::FSMState_e::STOP;
+        chassisMsg.vx = chassisMsg.vy = 0.f;
+    } else if (rcMsg_.rSwitch == RC_SW_MID) {
+        // gimbal
+        gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+        gimbalMsg.pitch =
+                -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg.yaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
+        // chassis
+        chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
+        chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+
+    } else if (rcMsg_.rSwitch == RC_SW_UP) {
+        // gimbal
+        gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+        gimbalMsg.pitch =
+                -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg.yaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
+        // chassis
+        if (rcMsg_.lSwitch == RC_SW_DOWN) {
+        } else {
+            chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+        }
+        chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
+        chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+    } else {
+        return;
+    }
+    notify(&chassisMsg, msgBus_->chassisQueue);
+    notify(&gimbalMsg, msgBus_->gimbalQueue);
+}
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
 {
