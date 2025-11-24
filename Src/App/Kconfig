@@ -47,4 +47,7 @@ menu "app config"
     source "Src/App/UI/Kconfig"
     endmenu
 
+    config APP_USE_ARM
+    bool "arm"
+    default y
 endmenu

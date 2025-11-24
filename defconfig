@@ -39,8 +39,8 @@ CONFIG_GIMBAL_FILE="\"Standard.hpp\""
 # CONFIG_APP_USE_INS is not set
 # CONFIG_APP_USE_DAEMONS is not set
 # CONFIG_APP_USE_COMM is not set
-# CONFIG_USE_VSCODE_XRTOS is not set
 # CONFIG_APP_USE_REFEREE is not set
+CONFIG_APP_USE_ARM=y
 # end of app config
 
 #
@@ -89,3 +89,10 @@ CONFIG_USE_STM_LOG=y
 CONFIG_USE_VOFA=y
 CONFIG_USE_LAZY=y
 # end of utils config
+
+#
+# Kernel hacking
+#
+CONFIG_RTOS_DEBUG=y
+# CONFIG_USE_VSCODE_XRTOS is not set
+# end of Kernel hacking
