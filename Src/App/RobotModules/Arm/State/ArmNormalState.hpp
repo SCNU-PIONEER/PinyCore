@@ -19,7 +19,7 @@ public:
 
     bool change() override
     {
-        if (arm_.msg_.state == FSMState_e::STOP) {
+        if (arm_.msg.state == FSMState_e::STOP) {
             arm_.isEnabled = false; //change中stop
             return true;
         }
@@ -35,7 +35,7 @@ public:
     void run() override
     {
         for (uint8_t i = 0; i < 7; i++) {
-            arm_.target_joints[i] += arm_.msg_.target[i];
+            arm_.target_joints[i] += arm_.msg.target[i];
         }
         arm_.motors.safety.setSpeed(1);
         arm_.motors.safety.setAllAngleLimit(arm_.target_joints);
@@ -47,9 +47,9 @@ public:
 
     FSMState_e checkChange() override
     {
-        if (arm_.msg_.state == FSMState_e::STOP)
+        if (arm_.msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (arm_.msg_.state == FSMState_e::NORMAL)
+        else if (arm_.msg.state == FSMState_e::NORMAL)
             return FSMState_e::NORMAL;
         return FSMState_e::STOP;
     }

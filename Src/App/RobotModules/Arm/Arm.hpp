@@ -18,7 +18,7 @@ class Arm {
 public:
     Arm();
 
-    void update();
+    void update(MsgBus_s *_param);
 
     // void setTargetPose(const JointRoute_s _route);
 
@@ -27,9 +27,9 @@ public:
 
     StateFactory<ARM::FSMState_e> stateFactory_;
 
-    ArmMsg_s msg_ = {};
-
     ARM::Motors motors;
+
+    ArmMsg_s msg = {};
 
     ARM::Joint target_joints = {};
 

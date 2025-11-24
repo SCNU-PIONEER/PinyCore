@@ -32,7 +32,7 @@ public:
 
     FSMState_e checkChange() override
     {
-        if (arm_.msg_.state == FSMState_e::NORMAL)
+        if (arm_.msg.state == FSMState_e::NORMAL)
             return FSMState_e::NORMAL;
         return FSMState_e::STOP;
     }

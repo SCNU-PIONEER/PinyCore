@@ -21,10 +21,9 @@ Arm::Arm()
     motors.stop();
 }
 
-void Arm::update()
+void Arm::update(MsgBus_s *_param)
 {
-    extern Cmd *cmd;
-    if (xQueueReceive(cmd->getMsgBus()->armQueue, &msg_, 0) == pdTRUE) {
+    if (xQueueReceive(_param->armQueue, &msg, 0) == pdTRUE) {
         uint32_t i = 0;
     }
     motors.update();
