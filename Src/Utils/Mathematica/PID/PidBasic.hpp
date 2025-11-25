@@ -7,8 +7,7 @@ public:
     /**
     * @brief  init incremental pid parameter
     */
-    IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
-                   float _deadband = 0.f);
+    IncrementalPid(float _kp, float _ki, float _kd, float _outMax, float _deadband = 0.f);
 
     /** @brief  pid reset
     */
@@ -28,7 +27,7 @@ protected:
 private:
     float kp;       /**< The proportional gain. */
     float ki;       /**< The integral gain. */
-    float kd;       /**< The derivative gain. */
+    float kd;       /**< The anti-saturation gain. */
     float outMax;   /**< The maximum output value. */
     float deadband; /**< The deadband value. */
 };
@@ -38,8 +37,8 @@ public:
     /**
     * @brief  init positonal pid parameter
     */
-    PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-                  float _outMax, float _deadband = 0.f);
+    PositionalPid(float _kp, float _ki, float _kd, float _kc, float _dt, float _iMax, float _outMax,
+                  float _deadband = 0.f);
 
     /** @brief  pid reset
     */
@@ -58,6 +57,7 @@ private:
     float kp;       /**< The proportional gain. */
     float ki;       /**< The integral gain. */
     float kd;       /**< The derivative gain. */
+    float kc;       /**< The derivative gain. */
     float dt;       /**< The time step for the PID calculation. */
     float iMax;     /**< The maximum integral output value. */
     float outMax;   /**< The maximum output value. */

@@ -3,8 +3,7 @@
 #include <cstring>
 #include <algorithm>
 
-IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
-                               float _deadband)
+IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax, float _deadband)
         : kp(_kp), ki(_ki), kd(_kd), outMax(_outMax), deadband(_deadband)
 {
     /* Derived coefficient A0 */
@@ -49,16 +48,9 @@ void IncrementalPid::reset()
 }
 
 
-PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt,
-                             float _iMax, float _outMax, float _deadband)
-        : iOut(0.0f)
-        , kp(_kp)
-        , ki(_ki)
-        , kd(_kd)
-        , dt(_dt)
-        , iMax(_iMax)
-        , outMax(_outMax)
-        , deadband(_deadband)
+PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _kc, float _dt, float _iMax, float _outMax,
+                             float _deadband)
+        : iOut(0.0f), kp(_kp), ki(_ki), kd(_kd), kc(_kc), dt(_dt), iMax(_iMax), outMax(_outMax), deadband(_deadband)
 {
     /* Reset state to zero */
     memset(err, 0, 2U * sizeof(float_t));
@@ -69,23 +61,25 @@ float PositionalPid::calc(float _ref, float _cur)
     err[1] = err[0];
     err[0] = _ref - _cur;
 
+    iOut += ki * (err[0] + err[1]) / 2.f * dt;
+
     if (err[0] > deadband) {
         err[0] -= deadband;
     } else if (err[0] < -deadband) {
         err[0] += deadband;
     } else {
-        //  reference value get into deadband && last error out of deadband
-        if (_ref < deadband && _ref > -deadband &&
-            (err[1] < -deadband || err[1] > deadband)) {
+        if (_ref < deadband && _ref > -deadband && (err[1] < -deadband || err[1] > deadband)) {
             iOut = 0.0f;
         } else
             return 0.0f;
     }
 
-    iOut += ki * (err[0] + err[1]) / 2.f * dt;
+    float outUnclamp = (kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt);
+    float out = std::clamp(outUnclamp, -outMax, outMax);
+    iOut += (out - outUnclamp) * kc;
+
     iOut = std::clamp(iOut, -iMax, iMax);
-    return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt),
-                      -outMax, outMax);
+    return out;
 }
 
 void PositionalPid::reset()

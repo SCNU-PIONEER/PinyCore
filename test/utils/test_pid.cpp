@@ -4,7 +4,7 @@
 
 TEST_CASE("pid test", "[positional pid]")
 {
-    PositionalPid pid(1.0, 0.1, 0.01, 1, 10, 10);
+    PositionalPid pid(1.0, 0.1, 0.01, 0, 1, 10, 10);
     REQUIRE_THAT(pid.calc(0, 2), Catch::Matchers::WithinAbs(-2.11, 0.01));
     pid.reset();
     REQUIRE_THAT(pid.calc(2, 0), Catch::Matchers::WithinAbs(2.11, 0.01));

@@ -61,14 +61,14 @@ inline static constexpr float MEMBERSHIPS_PARAMS[7][3] = {
     { 2, 3, 3 }     // PB
 };
 
-FuzzyPid::FuzzyPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-                   float _outMax, float _deadband, float _errorScale,
-                   float _errorRateScale)
+FuzzyPid::FuzzyPid(float _kp, float _ki, float _kd, float _kc, float _dt, float _iMax, float _outMax, float _deadband,
+                   float _errorScale, float _errorRateScale)
         : errorScale(_errorScale)
         , errorRateScale(_errorRateScale)
         , kp(_kp)
         , ki(_ki)
         , kd(_kd)
+        , kc(_kc)
         , dt(_dt)
         , iMax(_iMax)
         , outMax(_outMax)
@@ -89,8 +89,7 @@ float FuzzyPid::membershipCalc(float _val, float _ref) const
     return (params[2] - _val) / (params[2] - params[1]);
 }
 
-float FuzzyPid::fuzzyInference(float _err, float _errRate,
-                               const RuleTable &_rules) const
+float FuzzyPid::fuzzyInference(float _err, float _errRate, const RuleTable &_rules) const
 {
     // normalize
     float e = _err / errorScale * 3.f;
@@ -142,31 +141,33 @@ float FuzzyPid::calc(float _ref, float _cur)
     err[1] = err[0];
     err[0] = _ref - _cur;
 
+    float errRate = (err[0] - err[1]) / dt;
+
+    float deltaKi = fuzzyInference(err[0], errRate, DELTA_KI_RULE) * ki / 2.f;
+    float fuzzyKi = ki + deltaKi;
+    iOut += fuzzyKi * (err[0] + err[1]) / 2.f * dt;
     if (err[0] > deadband) {
         err[0] -= deadband;
     } else if (err[0] < -deadband) {
         err[0] += deadband;
     } else {
-        if (_ref < deadband && _ref > -deadband &&
-            (err[1] < -deadband || err[1] > deadband)) {
+        if (_ref < deadband && _ref > -deadband && (err[1] < -deadband || err[1] > deadband)) {
             iOut = 0.0f;
         } else
             return 0.0f;
     }
 
-    float errRate = (err[0] - err[1]) / dt;
-
     float deltaKp = fuzzyInference(err[0], errRate, DELTA_KP_RULE) * kp / 2.f;
-    float deltaKi = fuzzyInference(err[0], errRate, DELTA_KI_RULE) * ki / 2.f;
-    float deltaKd = fuzzyInference(err[0], errRate, DELTA_KD_RULE) * kd / 2.f;
-
     float fuzzyKp = kp + deltaKp;
-    float fuzzyKi = ki + deltaKi;
+
+    float deltaKd = fuzzyInference(err[0], errRate, DELTA_KD_RULE) * kd / 2.f;
     float fuzzyKd = kd + deltaKd;
 
-    iOut += fuzzyKi * (err[0] + err[1]) / 2.f * dt;
+    float outUnclamp = (fuzzyKp * err[0]) + iOut + (fuzzyKd * errRate);
+    float out = std::clamp(outUnclamp, -outMax, outMax);
+    iOut += (out - outUnclamp) * kc;
+
     iOut = std::clamp(iOut, -iMax, iMax);
 
-    return std::clamp((fuzzyKp * err[0]) + iOut + (fuzzyKd * errRate), -outMax,
-                      outMax);
+    return out;
 }
