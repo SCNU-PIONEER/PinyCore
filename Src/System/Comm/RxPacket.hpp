@@ -22,12 +22,16 @@ public:
         vQueueDelete(queue_);
     };
 
-    /// @brief Register a callback to be called when a packet is received
-    /// @note This function should be implemented in the derived class
+    /**
+     * @brief Register a callback to be called when a packet is received
+     * @note This function is pure virtual and must be implemented by the derived class
+     */
     virtual void registerCallback() = 0; // TODO: better protocol abstraction
 
-    /// @brief Receive a packet from the queue
-    /// @return true if a packet was received, false otherwise
+    /**
+     * @brief Receive a packet from the queue
+     * @return true if a packet was received, false otherwise 
+     */
     bool receive()
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
@@ -38,15 +42,19 @@ public:
             return false;
     }
 
-    /// @brief Start the packet receiver
-    /// @note This function should be called in the constructor
+    /**
+     * @brief Start the packet receiver
+     * @note This function should be called in the constructor
+     */
     void start()
     {
         CommManager::instance().registerReceiver([this] { receive(); }, uid());
     }
 
-    /// @brief Stop the packet receiver
-    /// @note This function should be called in the destructor
+    /**
+     * @brief Stop the packet receiver
+     * @note This function should be called in the destructor
+     */
     void stop() { CommManager::instance().cancelReceiver(uid()); }
 
     const ProtoData &data() const { return data_; }

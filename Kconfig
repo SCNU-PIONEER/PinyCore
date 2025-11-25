@@ -1,5 +1,20 @@
 mainmenu "Piny Development Framework Configuration"
 
+choice 
+    prompt "target config"
+    default TARGET_MASTER
+
+    config TARGET_MASTER
+        bool "master"
+        help
+            select config as master
+
+    config TARGET_SLAVE
+        bool "slave"
+        help
+            select config as slave
+endchoice
+
 source "Src/Common/Soc/Kconfig"
 
 source "Src/App/Kconfig"
@@ -11,4 +26,3 @@ source "Src/Common/Extensions/Kconfig"
 source "Src/Utils/Kconfig"
 
 source "Src/Kconfig.debug"
-
