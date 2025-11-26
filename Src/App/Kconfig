@@ -19,6 +19,7 @@ menu "app config"
     config APP_USE_INS
     bool "ins"
     default n
+    depends on EXTENSION_SENSOR
 
     source "Src/System/INS/Kconfig"
 
@@ -28,12 +29,6 @@ menu "app config"
 
     config APP_USE_COMM
     bool "muti communication"
-    default n
-
-    source "Src/System/Comm/Kconfig"
-
-    config USE_VSCODE_XRTOS
-    bool "vscode plugin: freertos task analyze"
     default n
 
     config APP_USE_REFEREE

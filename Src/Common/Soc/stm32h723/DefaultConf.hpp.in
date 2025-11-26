@@ -1,6 +1,7 @@
 #ifdef BSP_USE_UART
 #define RC_UART huart5
 #define REFEREE_UART huart1
+#define UI_UART huart7
 #endif
 
 #ifdef BSP_USE_TIM
@@ -11,5 +12,5 @@
 
 #ifdef BSP_USE_SPI
 #define IMU_SPI hspi2
+#define BOARD_WS2812_SPI hspi6
 #endif
-

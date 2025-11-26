@@ -11,7 +11,7 @@ using namespace DMMOTOR;
 DM8009::DM8009(const char _name[16], InitConfig_s _config)
         : DMMotor(_name, _config)
 {
-    LOG::CHECK(checkBaseConfig());
+    LOG::CHECK([this]() { return checkBaseConfig(); });
 
     regInfo_.model.measureMax = 16383;
     regInfo_.model.measureMin = 0;

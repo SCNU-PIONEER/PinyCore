@@ -4,7 +4,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "DWT.hpp"
+#include "Dwt.hpp"
 
 namespace COMM {
 
@@ -14,23 +14,51 @@ protected:
     using ProtoData = typename PacketType::ProtoData_s;
 
 public:
-    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType)))
-    {
-        CommManager::instance().registerReceiver([this] { receive(); });
-    }
+    RxPacket() : queue_(xQueueCreate(BufferSize, sizeof(PacketType))) { start(); }
 
-    virtual ~RxPacket() = default;
+    virtual ~RxPacket()
+    {
+        stop();
+        vQueueDelete(queue_);
+    };
+
+    /**
+     * @brief Register a callback to be called when a packet is received
+     * @note This function is pure virtual and must be implemented by the derived class
+     */
     virtual void registerCallback() = 0; // TODO: better protocol abstraction
 
-    void receive()
+    /**
+     * @brief Receive a packet from the queue
+     * @return true if a packet was received, false otherwise 
+     */
+    bool receive()
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
             data_ = PacketType::decompress(this->rxBuf_);
             rxFreq_ = Dwt::instance().getFreq(&recvCnt_);
-        }
+            return true;
+        } else
+            return false;
     }
 
+    /**
+     * @brief Start the packet receiver
+     * @note This function should be called in the constructor
+     */
+    void start()
+    {
+        CommManager::instance().registerReceiver([this] { receive(); }, uid());
+    }
+
+    /**
+     * @brief Stop the packet receiver
+     * @note This function should be called in the destructor
+     */
+    void stop() { CommManager::instance().cancelReceiver(uid()); }
+
     const ProtoData &data() const { return data_; }
+
     uint16_t uid() const { return PacketType::ID; }
 
 protected:

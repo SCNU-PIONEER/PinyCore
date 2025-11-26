@@ -12,7 +12,7 @@ using namespace DJI_ODMOTOR;
 GM3510::GM3510(const char _name[16], InitConfig_s _config)
         : DJIOldMotor(_name, _config)
 {
-    LOG::CHECK(checkBaseConfig());
+    LOG::CHECK([this]() { return checkBaseConfig(); });
 
     regInfo_.model.measureMax = 8191;
     regInfo_.model.measureMin = 0;

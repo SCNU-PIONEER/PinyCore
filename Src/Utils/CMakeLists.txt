@@ -42,6 +42,10 @@ if(USE_VOFA)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
 endif()
 
+if(USE_LAZY)
+  target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Lazy)
+endif()
+
 target_sources(${CMAKE_PROJECT_NAME}
                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNew/OperatorNew.cpp)
 

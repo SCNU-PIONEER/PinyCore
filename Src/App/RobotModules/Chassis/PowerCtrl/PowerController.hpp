@@ -1,19 +1,14 @@
 #pragma once
-#include <cstdint>
 #include <vector>
-#include "MotorManager.hpp"
 #include "IMotor.hpp"
 #include "PidBasic.hpp"
-#include <memory>
 #include "SuperCap.hpp"
 #include "RLS.hpp"
-#include "MotorCommonMacros.hpp"
-
-#define USEConfidenceLevel 0
-#define USELinearityRatio  1
+#include "sdkconfig.h"
+#include "MsgImpl.hpp"
 
 struct MotorParam_s {
-    float k0;           //扭矩常数
+    float KN;           //Torque constant（扭矩常数）
     float MLC;          //Mechanical loss coefficient （机械损耗系数）
     float ESR;          //Equivalent Series Resistance（等效串联电阻）
     float LeakagePower; //静态功耗
@@ -23,33 +18,40 @@ enum class ChassisType_e : uint8_t {
     QUADRICYCLE = 4u,
     WHEELLEG = 6u,
     SWERVE = 8u,
-    BANNED = 1u,
+};
+
+enum class ErrorCode_e : uint8_t {
+    NO_ERROR = 0u,
+    CAP_DISCONNECT = 1u,
+    REFREEE_DISCONNECT = 2u,
+    ALL_DISCONNECT = 3u,
 };
 
 class PowerController {
 public:
-    PowerController(ChassisType_e _chassisType);
+    PowerController(ChassisType_e _chassisType, CAP *_cap);
 
-    virtual ~PowerController() = default;
+    void update(RefereeMsg_s _msg);
+    void dynamicPower(float _capVoltage);
+    void updateReferee(RefereeMsg_s _msg);
+    void errorCheck(float _refereeFreq, float _capFreq);
 
-    virtual void relPowerCalc() = 0;
-
-    virtual void cmdPowerCalc(float *_motorSpeed) = 0;
-
-    virtual void currentCalc() = 0;
-
-    virtual std::vector<float> powerCtrl(float *_motorSpeed) = 0;
-
-    virtual void rlsUpdate() = 0;
-
-    void refereeDataUpdate();
+    //四个发送给超电的数据
+    float chargeCmdPower = 0.f; //期望电容充电功率
+    bool capEnable_ = true;     //超电使能
+    bool capCharge = true;      //超电充电使能
+    float chassisSetPower = 0.f;
 
 protected:
-    ChassisType_e chassisType_;
+    static constexpr float VCAP_MAX = 26.f;
+    static constexpr float VCAP_MIN = 5.f;
+    static constexpr float VOLTAGE_RANGE =
+            (VCAP_MAX * VCAP_MAX) - (VCAP_MIN * VCAP_MIN);
+
     uint8_t motorNum_; //电机数量
 
-    float limitPower = 0.f; // 最大输入功率（裁判系统读取）
-    float maxPower = 0.f;   // 允许最大输出功率（经过动态规划）
+    float limitPower = 10.f;
+    float maxPower = 0.f; // 允许最大输出功率（经过动态规划）
     float offsetPower = 0.f;
     float powerBuffer = 60.f;    // 实际缓冲能量值,从裁判系统读取,亦可软件设定
     float expPowerBuffer = 60.f; // 期望缓冲能量值
@@ -60,21 +62,21 @@ protected:
     std::vector<float> relPower; // 根据电机数据拟合出的实际功率
     float chassisRealPower =
             0.f; // 根据模型算出的实际输出功率（与超电反馈功率比较反映模型拟合程度）
-    float capFeedbackPower =
-            0.f; // 根据超电输出电流和输入电压算出的实际输出功率
+    float capFeedbackPower = 0.f; // 实际输出功率
 
     std::vector<float> setIq;    // 最终设定输出电流
-    std::vector<float> setPower; // 最终均分后所得的功率
-    float powerRatio = 1.f;      // 功率分配比例
+    std::vector<float> setPower; // 功率控制后所得的功率
+    float powerRatio = 1.f;
 
-    float capCmdRatio = 0.9f; // 期望电容剩余能量百分比
-    float capRealRatio = 1.f; // 实际电容剩余能量百分比
+    float capCmdRatio = 0.9f;
+    float capRealRatio = 1.f;
 
-    CAP cap_;
-    bool capEnable_ = 1;
-    bool capFeedforwardEnable_ = 1;
-    float chargeCmdPower = 0.f; //期望电容充电功率
+    CAP *cap_;
 
-    std::unique_ptr<PositionalPid> energyPid_ = nullptr;
-    std::unique_ptr<PositionalPid> powerPid_ = nullptr;
+private:
+    ChassisType_e chassisType_;
+    PositionalPid energyPid{ 0.1f, 0, 0, 0.001f, 0, 0, 0 };
+    PositionalPid powerPid{ 300.f, 0, 0, 0.001f, 0, 400.f, 0 };
+
+    ErrorCode_e errorState_ = ErrorCode_e::NO_ERROR;
 };

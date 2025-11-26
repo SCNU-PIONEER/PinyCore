@@ -9,17 +9,14 @@
 using namespace PINYMOTOR;
 
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
-        : posPID_(_config.posPID)
-        , velPID_(_config.velPID)
-        , torqPID_(_config.torqPID)
-        , globalState(GlobalState_e::UNRECOGNIZED)
+        : posPID_(_config.posPID), velPID_(_config.velPID), globalState(GlobalState_e::UNRECOGNIZED)
 {
     regInfo_.uid = MotorManager::instance()->assignId();
     regInfo_.pComHandle = _config.pComHandle;
     regInfo_.comType = _config.comType;
     regInfo_.workMode = _config.workMode;
     regInfo_.offsetId = _config.offsetId;
-    strncpy(regInfo_.name, _name, 16);
+    snprintf(regInfo_.name, sizeof(regInfo_.name), "%s", _name);
 
     AUX_.txFreq = _config.txFreq;
 
@@ -32,8 +29,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
 
 bool IMotor::checkSend()
 {
-    if ((xTaskGetTickCount() - AUX_.lastSendTick) >=
-        pdMS_TO_TICKS(1000.f / AUX_.txFreq)) {
+    if ((xTaskGetTickCount() - AUX_.lastSendTick) >= pdMS_TO_TICKS(1000.f / AUX_.txFreq)) {
         AUX_.lastSendTick = xTaskGetTickCount();
         return true;
     } else {
@@ -47,8 +43,7 @@ void IMotor::calcRecvFreq()
     if (dt < 1000) {
         return;
     } else {
-        AUX_.rxFreq = static_cast<float>(AUX_.recvCnt) /
-                      (static_cast<float>(dt) / 1000.f);
+        AUX_.rxFreq = static_cast<float>(AUX_.recvCnt) / (static_cast<float>(dt) / 1000.f);
         AUX_.recvCnt = 0;
         AUX_.lastRecvTick = xTaskGetTickCount();
     }
@@ -88,10 +83,7 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
         memcpy(&AUX_.cmdBuf, &cmd, sizeof(CmdBus_s));
         return 0;
     } else {
-        LOG::error(
-                "IMotor",
-                " %s: none of cmd are supported in this function except ON and OFF",
-                regInfo_.name);
+        LOG::error("IMotor", " %s: none of cmd are supported in this function except ON and OFF", regInfo_.name);
         return 1;
     }
 }
@@ -102,51 +94,44 @@ MotorTypeDef_e IMotor::cmdProto(CmdBus_s &_cmd)
     return 0;
 }
 
-MotorTypeDef_e IMotor::cmdMIT(float _pos, float _vel, float _torq,
-                              float _velMax, float _posMin, float _posMax)
+MotorTypeDef_e IMotor::cmdMIT(float _pos, float _vel, float _torq, float _posMin, float _posMax)
 {
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_MIT;
     cmdBuf.posCmd = _pos;
     cmdBuf.velCmd = _vel;
     cmdBuf.torqCmd = _torq;
-    cmdBuf.velMax = _velMax;
     cmdBuf.posMin = _posMin;
     cmdBuf.posMax = _posMax;
     return cmdProto(cmdBuf);
 }
 
-MotorTypeDef_e IMotor::cmdPosVel(float _pos, float _vel, float _velMax,
-                                 float _posMin, float _posMax)
+MotorTypeDef_e IMotor::cmdPosVel(float _pos, float _vel, float _posMin, float _posMax)
 {
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_POSVEL;
     cmdBuf.posCmd = _pos;
     cmdBuf.velCmd = _vel;
-    cmdBuf.velMax = _velMax;
     cmdBuf.posMin = _posMin;
     cmdBuf.posMax = _posMax;
     return cmdProto(cmdBuf);
 }
 
-MotorTypeDef_e IMotor::cmdPos(float _pos, float _velMax, float _posMin,
-                              float _posMax)
+MotorTypeDef_e IMotor::cmdPos(float _pos, float _posMin, float _posMax)
 {
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_POS;
     cmdBuf.posCmd = _pos;
-    cmdBuf.velMax = _velMax;
     cmdBuf.posMin = _posMin;
     cmdBuf.posMax = _posMax;
     return cmdProto(cmdBuf);
 }
 
-MotorTypeDef_e IMotor::cmdVel(float _vel, float _velMax)
+MotorTypeDef_e IMotor::cmdVel(float _vel)
 {
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_VEL;
     cmdBuf.velCmd = _vel;
-    cmdBuf.velMax = _velMax;
     cmdBuf.posMin = 0.f; // no limit
     cmdBuf.posMax = 0.f; // no limit
     return cmdProto(cmdBuf);
@@ -157,9 +142,8 @@ MotorTypeDef_e IMotor::cmdTorq(float _torq)
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_TORQ;
     cmdBuf.torqCmd = _torq;
-    cmdBuf.velMax = -1.f; // no limit
-    cmdBuf.posMin = 0.f;  // no limit
-    cmdBuf.posMax = 0.f;  // no limit
+    cmdBuf.posMin = 0.f; // no limit
+    cmdBuf.posMax = 0.f; // no limit
     return cmdProto(cmdBuf);
 }
 
@@ -168,9 +152,8 @@ MotorTypeDef_e IMotor::cmdElec(float _elec)
     CmdBus_s cmdBuf = {};
     cmdBuf.cmdType = MotorCmdType_e::SET_ELEC;
     cmdBuf.elecCmd = _elec;
-    cmdBuf.velMax = -1.f; // no limit
-    cmdBuf.posMin = 0.f;  // no limit
-    cmdBuf.posMax = 0.f;  // no limit
+    cmdBuf.posMin = 0.f; // no limit
+    cmdBuf.posMax = 0.f; // no limit
     return cmdProto(cmdBuf);
 }
 
@@ -221,20 +204,12 @@ void IMotor::parseCmd()
     }
     }
 
-    clampVel(AUX_.cmdBuf.velMax);
     clampPos(AUX_.cmdBuf.posMin, AUX_.cmdBuf.posMax);
 
-    if (!(this->cmd_.velMax < 0.f)) {
-        this->cmd_.vel = std::clamp(this->cmd_.vel, -this->cmd_.velMax,
-                                    this->cmd_.velMax);
-    }
     if (this->cmd_.posMax != this->cmd_.posMin) {
-        this->cmd_.pos =
-                clampArc(this->cmd_.pos, this->cmd_.posMin, this->cmd_.posMax);
+        this->cmd_.pos = clampArc(this->cmd_.pos, this->cmd_.posMin, this->cmd_.posMax);
     }
 }
-
-void IMotor::clampVel(float _velMax) { this->cmd_.velMax = _velMax; }
 
 void IMotor::clampPos(float _posMin, float _posMax)
 {
@@ -270,33 +245,17 @@ float IMotor::getCmdCurr()
     }
 }
 
-float IMotor::txBaseId() const
-{
-    return static_cast<float>(regInfo_.model.txBaseId);
-}
+float IMotor::txBaseId() const { return static_cast<float>(regInfo_.model.txBaseId); }
 
-float IMotor::rxBaseId() const
-{
-    return static_cast<float>(regInfo_.model.rxBaseId);
-}
+float IMotor::rxBaseId() const { return static_cast<float>(regInfo_.model.rxBaseId); }
 
 float IMotor::rr() const { return regInfo_.model.reductionRatio; }
 
-float IMotor::measureMax() const
-{
-    return static_cast<float>(regInfo_.model.measureMax);
-}
+float IMotor::measureMax() const { return static_cast<float>(regInfo_.model.measureMax); }
 
-float IMotor::measureMin() const
-{
-    return static_cast<float>(regInfo_.model.measureMin);
-}
+float IMotor::measureMin() const { return static_cast<float>(regInfo_.model.measureMin); }
 
-float IMotor::span() const
-{
-    return static_cast<float>(regInfo_.model.measureMax -
-                              regInfo_.model.measureMin);
-}
+float IMotor::span() const { return static_cast<float>(regInfo_.model.measureMax - regInfo_.model.measureMin); }
 
 float IMotor::txFreq() const { return AUX_.txFreq; }
 

@@ -5,6 +5,11 @@ Pwm::Pwm(TIM_HandleTypeDef *_htim, uint32_t _channel)
 
 void Pwm::start() { HAL_TIM_PWM_Start(htim_, channel_); }
 
+void Pwm::startDMA(uint32_t *_txData, uint16_t _dataLength)
+{
+    HAL_TIM_PWM_Start_DMA(htim_, channel_, _txData, _dataLength);
+}
+
 void Pwm::stop() { HAL_TIM_PWM_Stop(htim_, channel_); }
 
 void Pwm::setDutyCycle(uint32_t _dutyCycle)

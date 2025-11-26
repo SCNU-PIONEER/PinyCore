@@ -8,13 +8,16 @@ class Uart {
 public:
     Uart(UART_HandleTypeDef *_huart);
 
-    Uart(UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle);
-
     /**
     * @brief uart registerCallback
     */
     using callback = std::function<void(UART_HandleTypeDef *, uint16_t)>;
     void registerCallback(callback _pCallback);
+
+    /**
+    * @brief uart unregisterCallback
+    */
+    void unregisterCallback();
 
     /**
     * @brief uart multi_DMA_rx_buf init
@@ -27,7 +30,7 @@ public:
     /**
     * @brief uart multi_DMA_rx_buf init
     */
-    HAL_StatusTypeDef recvDmaInit(uint32_t *_dstAddress, uint32_t _dataLength);
+    HAL_StatusTypeDef recvDmaInit(uint8_t *_dstAddress, uint32_t _dataLength);
 
     /**
     * @brief uart rx callbackFromISR
@@ -55,5 +58,4 @@ public:
     HAL_StatusTypeDef receiveDma(uint8_t *_pData, uint16_t _size);
 
     UART_HandleTypeDef *huart_;
-    DMA_HandleTypeDef *hdma_ = nullptr;
 };

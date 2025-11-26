@@ -3,10 +3,11 @@
 #include "Soc.hpp"
 #include HAL_INCLUDE
 #include "BuzzerNote.hpp"
+#include "Task.hpp"
 
 namespace BUZZER {
 
-class Buzzer {
+class Buzzer : public Task<Buzzer, 128> {
 public:
     void init(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq);
 
@@ -27,13 +28,16 @@ public:
     /**
     * @brief fdcan get Instance
     */
-    inline static Buzzer &getInstance()
+    static Buzzer &getInstance()
     {
         static Buzzer instance;
         return instance;
     }
 
+    void task();
+
 private:
+    Buzzer() : Task<Buzzer, 128>("BuzzerTask", TaskPriority_e::LOW1) {}
     // static Buzzer *instance;
     TIM_HandleTypeDef *htim_;
     uint32_t timerFreq_;

@@ -1,5 +1,8 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
+#if INS_ACCEL_CALIBRATION
+#include "AccelCali.hpp"
+#endif
 
 
 using namespace INS_SYS;
@@ -32,11 +35,10 @@ static constexpr float IMU_OFFSET_X = 0;
 static constexpr float IMU_OFFSET_Y = 0;
 
 INS::INS(SPI_HandleTypeDef *_spi)
-        : insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
+        : Task<INS, 384>("insTask", TaskPriority_e::HIGH3)
+        , insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
                                            &insDat_))
 {
-    xTaskCreate(INS::task, "ins_task", 384, this, 7, nullptr);
-
     init(_spi);
 
     LOG::info("INS", "task init success");
@@ -52,11 +54,10 @@ void INS::init(SPI_HandleTypeDef *_spi)
     DCM_.init();
 }
 
-void INS::task(void *_param)
+void INS::task()
 {
-    auto instance = static_cast<INS *>(_param);
-    auto &bmi088 = instance->bmi088_;
-    auto &cali = instance->imuCali_;
+    auto &bmi088 = bmi088_;
+    auto &cali = imuCali_;
 
     while (true) {
         // read BMI088 data
@@ -95,7 +96,7 @@ void INS::task(void *_param)
         // Roll: Clockwise increase(+) when looking straight ahead
         // Pitch: Head up decrease(-)
         // Yaw: Clockwise decrease(-) when viewed from above
-        auto &data = instance->rawDat_;
+        auto &data = rawDat_;
         data = {
             .a = { .x = cali.getOutput().ax,
                    .y = cali.getOutput().ay,
@@ -110,7 +111,7 @@ void INS::task(void *_param)
                                data.g.x * data.g.z * IMU_OFFSET_Y);
 
         // update INS
-        instance->update(instance->bmi088_.getTimestamp());
+        update(bmi088_.getTimestamp());
 #endif
         vTaskDelay(1);
     }

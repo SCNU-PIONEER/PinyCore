@@ -1,17 +1,17 @@
 #include "AppManager.hpp"
 #include "sdkconfig.h"
-#include "MotorManager.hpp"
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "UI/UIApp.hpp"
-#include "test/TestModule.hpp"
+#include "Test/TestModule.hpp"
 #include "Bsp.hpp"
+#include "Lazy.hpp"
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
+Lazy<Daemons> daemon;
 #endif
 
 
@@ -19,18 +19,19 @@
 
 #if APP_USE_INS
 #include "INS.hpp"
-INS_SYS::INS *ins;
+Lazy<INS_SYS::INS> ins;
 #endif
 
 //---------------------------------------------------------------------------------------------------
 
-Cmd *cmd;
+Lazy<Cmd> cmd;
 
 //---------------------------------------------------------------------------------------------------
 
 
 #if APP_USE_UI
-UI::App ui(UI_ROBOT_ID);
+#include "UI/UIApp.hpp"
+Lazy<UI::App> ui;
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -38,26 +39,25 @@ UI::App ui(UI_ROBOT_ID);
 void AppManager::initApp()
 {
     // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
-                                       BEEP_APB_FREQ);
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
 #endif
 
 #if APP_USE_INS
-    ins = new INS_SYS::INS(&IMU_SPI);
+    ins.init(&IMU_SPI);
 #endif
 
-    cmd = new Cmd();
+    cmd.init();
 
 #if APP_USE_UI
-    ui.init();
-    schedule([]() { ui.task(); });
+    ui.init(UI_ROBOT_ID);
+    schedule([]() { ui->task(); });
 #endif
-
 #if APP_USE_DAEMONS
-    schedule([]() { Daemons::instance().update(); });
+    daemon.init();
+    schedule([]() { daemon->update(); });
 #endif
 
     // TestModule
@@ -73,29 +73,14 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback)
-{
-    tasks.push_back(std::move(_callback));
-}
+void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {
-    // Robot-Ctrl Continuous Task
-    xTaskCreate(AppManager::ctrlTask, "ctrl_task", 256, this, 10, nullptr);
-
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
-        xTaskCreate(
-                [](void *_param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, nullptr, 5, nullptr);
+        TestModule::instance();
     }
-
-    // Motor-Sending Continuous Task
-    xTaskCreate(
-            [](void *_param) -> void {
-                PINYMOTOR::MotorManager::instance()->ctrlTask();
-            },
-            "motor_task", 512, nullptr, 6, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
@@ -109,11 +94,10 @@ void AppManager::createApp()
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);
 }
 
-void AppManager::ctrlTask(void *_param)
+void AppManager::task()
 {
-    auto app = static_cast<AppManager *>(_param);
     while (true) {
-        for (auto &task : app->tasks) {
+        for (auto &task : this->tasks) {
             task();
         }
         vTaskDelay(1);

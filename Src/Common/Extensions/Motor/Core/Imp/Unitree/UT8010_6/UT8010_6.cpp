@@ -5,10 +5,10 @@ using namespace PINYMOTOR;
 using namespace UTMOTOR;
 
 UT80106::UT80106(const char _name[16], InitConfig_s _config,
-                 UART_HandleTypeDef *_huart, DMA_HandleTypeDef *_dmaHandle)
-        : UTMotor(_name, _config, _huart, _dmaHandle)
+                 UART_HandleTypeDef *_huart)
+        : UTMotor(_name, _config, _huart)
 {
-    LOG::CHECK(checkBaseConfig());
+    LOG::CHECK([this]() { return checkBaseConfig(); });
 
     regInfo_.model.measureMax = 0;
     regInfo_.model.measureMin = 0;
