@@ -1,7 +1,7 @@
 #include "SuperCap.hpp"
 #include <cstring>
 
-CAP::CAP(CAN_HandleTypeDef *_hcan)
+CAP::CAP(canHandle *_hcan)
         : hcan_(_hcan)
         , rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
 {

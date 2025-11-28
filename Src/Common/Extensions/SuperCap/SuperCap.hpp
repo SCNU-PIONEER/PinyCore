@@ -46,7 +46,7 @@ public:
     static constexpr float DATA_RX_FREQ = 1000.f;  //  应与底盘控制频率相同
     static constexpr float BATTERY_VOLTAGE = 24.f; // 电池电压
 
-    CAP(CAN_HandleTypeDef *_hcan);
+    CAP(canHandle *_hcan);
 
     void registerCapCallback();
     void praseCapData(const uint8_t *_rxbuf);
@@ -64,7 +64,7 @@ public:
     float chargeCmdPower = 0.f; //期望电容充电功率
 
 private:
-    CAN_HandleTypeDef *hcan_;
+    canHandle *hcan_;
 
     CapData_s capData_;
     RawCapData_s rawCapData_;
