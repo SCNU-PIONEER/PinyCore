@@ -31,8 +31,6 @@ menu "app config"
     bool "muti communication"
     default n
 
-    source "Src/System/Comm/Kconfig"
-
     config APP_USE_REFEREE
     bool "referee"
     default n
