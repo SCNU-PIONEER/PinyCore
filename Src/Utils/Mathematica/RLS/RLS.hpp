@@ -17,9 +17,8 @@ public:
     void update(Matrix<rank, 1> _inputVector, float _outPut)
     {
         inputVector_ = _inputVector;
-        e_ = _outPut - (inputVector_.trans() * estVector_)[0][0];
-        K_ = (P_ * inputVector_) /
-             ((inputVector_.trans() * P_ * inputVector_)[0][0] + lamda_);
+        e_ = _outPut - (inputVector_.trans() * estVector_)(0, 0);
+        K_ = (P_ * inputVector_) / ((inputVector_.trans() * P_ * inputVector_)(0, 0) + lamda_);
         P_ = (P_ - K_ * inputVector_.trans() * P_) / lamda_;
         estVector_ += K_ * e_;
     }
