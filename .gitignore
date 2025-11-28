@@ -12,7 +12,7 @@ ThirdParty/
 
 # IDE files
 .vscode/launch.json
-PinyCore.code-workspace
+*.code-workspace
 
 # Log files
 */*.log
