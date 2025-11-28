@@ -51,12 +51,10 @@ public:
     void registerCapCallback();
     void praseCapData(const uint8_t *_rxbuf);
     bool checkSend();
-    void capTask(float _capChargePower, bool _capEnableFlag, bool _enableCharge,
-                 uint16_t _chassisPower);
+    void capTask(float _capChargePower, bool _capEnableFlag, bool _enableCharge, uint16_t _chassisPower);
     void rxFreqCalc();
 
-    uint8_t capDataSend(float _capChargePower, bool _capEnableFlag,
-                        bool _enableFeedforward, uint16_t _chassisPower);
+    uint8_t capDataSend(float _capChargePower, bool _capEnableFlag, bool _enableFeedforward, uint16_t _chassisPower);
 
     CapData_s &getCapData() { return capData_; }
     float getRxFreq() { return rxFreq_; }
