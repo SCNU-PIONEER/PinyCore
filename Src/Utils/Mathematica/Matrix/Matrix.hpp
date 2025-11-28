@@ -50,12 +50,9 @@ public:
 
     uint32_t cols() const { return _cols; }
 
-    float *operator[](const int &_row) { return &this->data_[_row * _cols]; }
+    float &operator()(int _row, int _col) { return data_[(_row * _cols) + _col]; }
 
-    const float *operator[](const int &_row) const
-    {
-        return &this->data_[_row * _cols];
-    }
+    const float &operator()(int _row, int _col) const { return data_[(_row * _cols) + _col]; }
 
     Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
     {
