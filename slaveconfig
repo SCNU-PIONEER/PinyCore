@@ -1,3 +1,5 @@
+# CONFIG_TARGET_MASTER is not set
+CONFIG_TARGET_SLAVE=y
 
 #
 # Soc config
@@ -24,21 +26,11 @@ CONFIG_CHASSIS_FILE="\"Swerve.hpp\""
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 
-CONFIG_APP_USE_GIMBAL=y
-
-#
-# gimbal config
-#
-CONFIG_APP_USE_STANDARD=y
-# CONFIG_APP_USE_STACKED is not set
-CONFIG_GIMBAL_TYPE="Standard"
-CONFIG_GIMBAL_FILE="\"Standard.hpp\""
-# end of gimbal config
-
+# CONFIG_APP_USE_GIMBAL is not set
 # CONFIG_APP_USE_TEST is not set
 # CONFIG_APP_USE_INS is not set
-# CONFIG_APP_USE_DAEMONS is not set
-# CONFIG_APP_USE_COMM is not set
+CONFIG_APP_USE_DAEMONS=y
+CONFIG_APP_USE_COMM=y
 # CONFIG_APP_USE_REFEREE is not set
 CONFIG_APP_USE_ARM=y
 # end of app config
