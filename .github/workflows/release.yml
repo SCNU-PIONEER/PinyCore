@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - master
+      - 2026
 
 permissions:
       contents: write
@@ -22,9 +22,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           default_prerelease_bump: false
-          release_branches: master
-          custom_release_rules: "ci:prerelease,refactor:prerelease,chore:prerelease,docs:prepatch,style:prerelease,build:prerelease,test:prerelease"
-          append_to_pre_release_tag: nightly
+          release_branches: 2026
+          custom_release_rules: "ci:patch,refactor:patch,chore:patch,docs:patch,style:patch,build:patch,test:patch"
           fetch_all_tags: true
 
       - name: Create a GitHub release
