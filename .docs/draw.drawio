@@ -1,0 +1,390 @@
+<mxfile host="65bd71144e">
+    <diagram id="MQMIxuHazgLKfnXh8VPn" name="第 1 页">
+        <mxGraphModel dx="1334" dy="662" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#000000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <UserObject label="场地交互" treeRoot="1" id="9">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="9" y="783" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="311" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#d79b00;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;" edge="1" parent="1" source="10">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="245.00003051757812" y="802.7499923706055" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="装甲板" treeRoot="1" id="10">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="9" y="727" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="273" style="edgeStyle=elbowEdgeStyle;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#6c8ebf;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#dae8fc;" parent="1" source="11" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="262.0179029192245" y="546.5714634486608" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="336" value="航空线" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="273">
+                    <mxGeometry x="-0.2109" y="4" relative="1" as="geometry">
+                        <mxPoint x="-33" y="11" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="灯条" treeRoot="1" id="11">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="11" y="595" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="12" style="edgeStyle=elbowEdgeStyle;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0;exitDx=0;exitDy=0;" parent="1" source="9" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="272" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#6c8ebf;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#dae8fc;" parent="1" source="17" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="265.4464656284879" y="548.8571864536832" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="裁判系统主控" treeRoot="1" id="17">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="11" y="526" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="295" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;strokeWidth=3;" parent="1" source="40" target="67" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="345" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;strokeColor=#d79b00;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;" edge="1" parent="1" source="40" target="67">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;达妙主控板2&lt;/span&gt;" treeRoot="1" id="40">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="418" y="519" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="75" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;strokeWidth=2;" parent="1" source="282" target="53" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="480" y="691.9999999999998" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="277" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.25;exitDx=0;exitDy=0;strokeColor=#d79b00;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="365" y="554" as="sourcePoint"/>
+                        <mxPoint x="420" y="554" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="389" y="554"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="81" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="48" target="50" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="分电板1" treeRoot="1" id="48">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="379" y="947" width="80" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="325" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" edge="1" parent="1" source="50" target="319">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="左6020+电调线+电源线+can线" treeRoot="1" id="50">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="227" y="942" width="90" height="50" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="80" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="52" target="54" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="分电板2" treeRoot="1" id="52">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="514" y="947" width="80" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="78" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;strokeWidth=2;" parent="1" source="53" target="52" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="79" style="edgeStyle=elbowEdgeStyle;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;targetPerimeterSpacing=8;jumpStyle=none;endSize=6;sourcePerimeterSpacing=4;strokeWidth=2;" parent="1" source="53" target="48" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="227" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;entryX=0.75;entryY=1;entryDx=0;entryDy=0;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;strokeWidth=3;exitX=0.423;exitY=0.039;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="53" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="451" y="707" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="397" y="727"/>
+                        </Array>
+                        <mxPoint x="332.5" y="720" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="达妙主控板1" treeRoot="1" id="53">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="408" y="779" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="328" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" edge="1" parent="1" source="54" target="320">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="右6020+电调线+电源线+can线" treeRoot="1" id="54">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="621" y="942" width="91" height="50" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="214" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#d79b00;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;strokeWidth=3;" parent="1" source="61" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="电源管理模块" treeRoot="1" id="61">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="245" y="773" width="120" height="60" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="224" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;strokeWidth=3;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="310.09" y="720" as="sourcePoint"/>
+                        <mxPoint x="309.9135294117646" y="773" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="260" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;strokeWidth=4;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="311.9999999999998" y="569" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="309" y="600"/>
+                        </Array>
+                        <mxPoint x="305" y="650" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="274" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.75;exitY=0;exitDx=0;exitDy=0;strokeColor=#d79b00;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#ffe6cc;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="333.14285714285734" y="569" as="targetPoint"/>
+                        <mxPoint x="332.5" y="650" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="235" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="67" target="68" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="236" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="67" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="515" y="453" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="491" y="444"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="分电板" treeRoot="1" id="67">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="398" y="408" width="80" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <UserObject label="达妙电机4340*4和4310*4和8009*2" treeRoot="1" id="68">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                        <mxGeometry x="506" y="362" width="105" height="46" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <UserObject label="瓴控8016和达妙10010" treeRoot="1" id="69">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                        <mxGeometry x="517" y="442" width="83" height="41" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="304" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="70" target="40" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="舵机*2固定能量单元" treeRoot="1" id="70">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                        <mxGeometry x="685" y="425" width="123" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="265" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="71" target="40" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="小电脑" treeRoot="1" id="71">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                        <mxGeometry x="685" y="559" width="80" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="95" style="edgeStyle=elbowEdgeStyle;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.75;exitDx=0;exitDy=0;strokeColor=none;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="73" target="67" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="303" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="73" target="40" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="舵机*2用于臂上图传的移动" treeRoot="1" id="73">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                        <mxGeometry x="685" y="494" width="123" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="270" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#6c8ebf;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#dae8fc;" parent="1" source="87" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="261" y="549" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="uwb" treeRoot="1" id="87">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="11" y="393" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="271" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#6c8ebf;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#dae8fc;" parent="1" source="89" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="259.7321799142021" y="547.714303152902" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="图传" treeRoot="1" id="89">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="9" y="456" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="310" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;" edge="1" parent="1" source="91" target="61">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="313" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;" edge="1" parent="1" source="91" target="318">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="250" y="667.5" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="-33" y="752"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="继电器" treeRoot="1" id="91">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                        <mxGeometry x="14" y="858" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="299" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="125" target="40" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="RC接收端" treeRoot="1" id="125">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#cce5ff;strokeColor=#36393d;" parent="1" vertex="1">
+                        <mxGeometry x="685" y="631" width="90" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="263" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;strokeWidth=3;fillColor=#d5e8d4;" parent="1" source="251" target="61" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="305" style="edgeStyle=elbowEdgeStyle;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" edge="1" parent="1" source="251">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="86.00001525878906" y="897.25" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="306" style="edgeStyle=elbowEdgeStyle;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" edge="1" parent="1" source="251">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="49.00000762939453" y="897.25" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="334" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;" edge="1" parent="1" source="251">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="419" y="947" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="335" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;" edge="1" parent="1" source="251" target="52">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="550" y="913"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <UserObject label="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;电源1,2&lt;/span&gt;" treeRoot="1" id="251">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" parent="1" vertex="1">
+                        <mxGeometry x="247" y="867" width="120" height="40" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="278" value="arm" style="ellipse;whiteSpace=wrap;html=1;align=center;newEdgeStyle={&quot;edgeStyle&quot;:&quot;entityRelationEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;,&quot;segment&quot;:10,&quot;curved&quot;:1,&quot;sourcePerimeterSpacing&quot;:0,&quot;targetPerimeterSpacing&quot;:0};treeFolding=1;treeMoving=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;fillColor=#fad7ac;strokeColor=#b46504;" parent="1" vertex="1">
+                    <mxGeometry x="248" y="395" width="117" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="281" value="gimbal" style="ellipse;whiteSpace=wrap;html=1;align=center;newEdgeStyle={&quot;edgeStyle&quot;:&quot;entityRelationEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;,&quot;segment&quot;:10,&quot;curved&quot;:1,&quot;sourcePerimeterSpacing&quot;:0,&quot;targetPerimeterSpacing&quot;:0};treeFolding=1;treeMoving=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;fillColor=#b0e3e6;strokeColor=#0e8088;" parent="1" vertex="1">
+                    <mxGeometry x="252" y="511" width="117" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="282" value="chassis" style="ellipse;whiteSpace=wrap;html=1;align=center;newEdgeStyle={&quot;edgeStyle&quot;:&quot;entityRelationEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;,&quot;segment&quot;:10,&quot;curved&quot;:1,&quot;sourcePerimeterSpacing&quot;:0,&quot;targetPerimeterSpacing&quot;:0};treeFolding=1;treeMoving=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;" parent="1" vertex="1">
+                    <mxGeometry x="418" y="631" width="117" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="293" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.608;entryY=0.097;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="68" target="278" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="307" y="369"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="297" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.925;exitDx=0;exitDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;exitPerimeter=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="367" y="539.75" as="targetPoint"/>
+                        <mxPoint x="419" y="539.75" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="407" y="527.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="302" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" parent="1" source="300" target="40" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="抬升dj3508" treeRoot="1" id="300">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                        <mxGeometry x="685" y="707" width="83" height="41" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="314" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;strokeColor=#82b366;strokeWidth=3;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#d5e8d4;" edge="1" parent="1" source="251" target="91">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <UserObject label="M3508" treeRoot="1" id="316">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" vertex="1" parent="1">
+                        <mxGeometry x="22" y="942" width="90" height="50" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="318" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 12px; background-color: rgb(251, 251, 251);&quot;&gt;滑环（电源，双板通信，裁判系统）&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="266" y="628" width="102" height="104" as="geometry"/>
+                </mxCell>
+                <mxCell id="326" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;startArrow=none;endArrow=none;" edge="1" parent="1" source="319" target="316">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="319" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 12px; background-color: rgb(251, 251, 251);&quot;&gt;滑环(can线，电调线)&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="144" y="927" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="329" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;startArrow=none;endArrow=none;" edge="1" parent="1" source="320" target="321">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="320" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 12px; background-color: rgb(251, 251, 251);&quot;&gt;滑环(can线，电调线)&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=default;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="742" y="927" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <UserObject label="M3508" treeRoot="1" id="321">
+                    <mxCell style="whiteSpace=wrap;html=1;align=center;treeFolding=1;treeMoving=1;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;startArrow&quot;:&quot;none&quot;,&quot;endArrow&quot;:&quot;none&quot;};" vertex="1" parent="1">
+                        <mxGeometry x="831" y="942" width="90" height="50" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="337" value="航空线" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="184" y="579.9999999999998" as="geometry">
+                        <mxPoint x="-22" y="-35" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="339" value="航空线" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="202" y="540.9999999999998" as="geometry">
+                        <mxPoint x="-43" y="-67" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="340" value="航空线" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="230" y="606.9999999999998" as="geometry">
+                        <mxPoint x="-70" y="-195" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="341" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;exitX=0.145;exitY=0;exitDx=0;exitDy=4.35;exitPerimeter=0;strokeColor=#6c8ebf;strokeWidth=4;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;startArrow=none;endArrow=none;fillColor=#dae8fc;" edge="1" parent="1" source="318">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="285" y="574" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="342" value="航空线*4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="160" y="601.9999999999998" as="geometry">
+                        <mxPoint x="114" y="-12" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="343" value="电源线" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="167" y="628.9999999999998" as="geometry">
+                        <mxPoint x="140" y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="344" value="信号线（双板，裁判串口）" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="272" y="601.9999999999998" as="geometry">
+                        <mxPoint x="114" y="-12" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="348" style="edgeStyle=elbowEdgeStyle;shape=connector;curved=0;rounded=1;html=1;startArrow=none;endArrow=none;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.145;entryY=1;entryDx=0;entryDy=-4.35;entryPerimeter=0;strokeColor=#6c8ebf;strokeWidth=4;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;fillColor=#dae8fc;" edge="1" parent="1" source="61" target="318">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="349" value="航空线*4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="158" y="758.9999999999998" as="geometry">
+                        <mxPoint x="114" y="-12" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
