@@ -60,6 +60,9 @@ private:
     ChassisCtrlMsg_s chassisCtrlMsg_{};
     Publisher<ChassisCtrlMsg_s> *chassisCtrlPub_;
 
+    ArmorLoaderCtrlMsg_s armorLoaderCtrlMsg_{};
+    Publisher<ArmorLoaderCtrlMsg_s> *shooterCtrlPub_;
+
     FILTER::LPF outFilrPitch_{ PITCH_MOTOR_FREQ, 1000.f };
     FILTER::LPF outFilrYaw_{ YAW_MOTOR_FREQ, 1000.f };
 

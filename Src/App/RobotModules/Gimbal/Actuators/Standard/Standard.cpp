@@ -19,6 +19,8 @@ Standard::Standard()
 #if !APP_USE_COMM
     // NOLINTBEGIN
     chassisCtrlPub_ = new Publisher<ChassisCtrlMsg_s>(&TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
+    shooterCtrlPub_ =
+            new Publisher<ArmorLoaderCtrlMsg_s>(&TopicRouter::instance().armorLoaderCtrlTopic, &armorLoaderCtrlMsg_);
     // NOLINTEND
 #endif
 
@@ -82,6 +84,10 @@ void Standard::update(void *_param)
 
     chassisCtrlMsg_.deltaYaw = motors_.yaw->posNorm();
     chassisCtrlPub_->publish();
+
+    armorLoaderCtrlMsg_.control = vision.data().control;
+    armorLoaderCtrlMsg_.fire = vision.data().fire;
+    shooterCtrlPub_->publish();
 
     // vision send
     vision.setData().roll = insData_.roll;

@@ -68,6 +68,9 @@ public:
 private:
     Motors_u motors_;
 
+    ArmorLoaderCtrlMsg_s armorLoaderCtrlMsg_;
+    Subscriber<ArmorLoaderCtrlMsg_s> *armorLoaderCtrlSub_;
+
     FILTER::IIR2 velFltr_;
 
     float vel_; // rad/s

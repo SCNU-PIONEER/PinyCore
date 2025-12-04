@@ -64,6 +64,11 @@ struct ChassisCtrlMsg_s : public Msg {
     float deltaYaw;
 };
 
+struct ArmorLoaderCtrlMsg_s : public Msg {
+    bool control;
+    bool fire;
+};
+
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct ChassisTxMsg_s {
     CHASSIS::FSMState_e state;

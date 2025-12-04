@@ -14,4 +14,6 @@ public:
     Topic<INSEularMsg_s> gimbalEularTopic{ "GimbalEular" };
 
     Topic<ChassisCtrlMsg_s> chassisCtrlTopic{ "ChassisCtrl" };
+
+    Topic<ArmorLoaderCtrlMsg_s> armorLoaderCtrlTopic{ "ArmorLoaderCtrl" };
 };

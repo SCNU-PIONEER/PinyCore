@@ -16,6 +16,11 @@ using namespace PINYMOTOR;
 
 Dial::Dial()
 {
+    // NOLINTBEGIN
+    armorLoaderCtrlSub_ = new Subscriber<ArmorLoaderCtrlMsg_s>(1, &TopicRouter::instance().armorLoaderCtrlTopic,
+                                                               &armorLoaderCtrlMsg_);
+    // NOLINTEND
+
     InitConfig_s dialConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
@@ -54,6 +59,10 @@ void Dial::update(void *_param)
 {
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &msg, 0) == pdTRUE) {
     };
+
+    if (armorLoaderCtrlSub_->receive()) {
+        msg.fire &= (armorLoaderCtrlMsg_.control) ? armorLoaderCtrlMsg_.fire : true;
+    }
 
     vel_ = velFltr_.process(dial()->vel());
 

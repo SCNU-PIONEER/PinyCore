@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FSMState.hpp"
-#include "MsgImpl.hpp"
+#include "TopicRouter.hpp"
 
 namespace ARMORLOADER {
 enum class FSMState_e : uint8_t { STOP = 1, SINGLE, AUTO, BLOCK };
