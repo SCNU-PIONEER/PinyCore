@@ -6,24 +6,21 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "event_groups.h"
+#include "Task.hpp"
 
-#define MOTOR_PARSE_EVENT_MAST 0xFFFFFFFF
 namespace PINYMOTOR {
+
 class IMotor;
-class MotorManager {
+class MotorManager : public Task<MotorManager, 512> {
 public:
     MotorManager(const MotorManager &) = delete;
     MotorManager &operator=(const MotorManager &) = delete;
 
     static MotorManager *instance();
 
-    void init();
-
     void parseMsg();
 
-    void ctrlTask();
-
-    void taskCreate();
+    void task();
 
     uint8_t assignId();
 
@@ -31,11 +28,12 @@ public:
     std::unordered_map<uint8_t, IMotor *> &motors() { return motorList_; }
 
 private:
-    MotorManager() = default;
+    MotorManager() : Task("MotorTask", TaskPriority_e::HIGH2) {};
 
     const float motorTaskFreq_ = 1000.f;
 
     std::unordered_map<uint8_t, IMotor *> motorList_;
     uint8_t registedNum_ = 0;
 };
+
 } // namespace PINYMOTOR

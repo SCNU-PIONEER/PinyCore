@@ -45,16 +45,7 @@ Daemons::Daemons()
     });
 }
 
-Daemons &Daemons::instance()
-{
-    static Daemons instance;
-    return instance;
-}
-
-void Daemons::schedule(std::function<void()> _func)
-{
-    cb.push_back(std::move(_func));
-}
+void Daemons::schedule(std::function<void()> _func) { cb.push_back(std::move(_func)); }
 
 void Daemons::update()
 {

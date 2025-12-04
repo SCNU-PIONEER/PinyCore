@@ -7,9 +7,6 @@
 #include "StmLog.hpp"
 
 class CommManager {
-    static constexpr int MAX_TX_NUM = 3;
-    static constexpr int MAX_RX_NUM = 3;
-
 public:
     static CommManager &instance()
     {

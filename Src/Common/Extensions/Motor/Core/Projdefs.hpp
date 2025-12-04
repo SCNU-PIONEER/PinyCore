@@ -10,16 +10,7 @@ namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
 
-enum class MotorCmdType_e : uint8_t {
-    SET_MIT,
-    SET_POS,
-    SET_VEL,
-    SET_POSVEL,
-    SET_TORQ,
-    SET_ELEC,
-    ON,
-    OFF
-};
+enum class MotorCmdType_e : uint8_t { SET_MIT, SET_POS, SET_VEL, SET_POSVEL, SET_TORQ, SET_ELEC, ON, OFF };
 
 enum class WorkMode_e : uint8_t {
     TRIP_VOLT,
@@ -49,8 +40,6 @@ struct CmdBus_s {
     };
     // auxiliary command structure
     struct {
-        // default -1.f means no limit
-        float velMax = -1.f;
         // default posMax and posMin are 0.f, which means no limit
         float posMin = 0.f;
         float posMax = 0.f;
@@ -101,9 +90,8 @@ struct Cmd_s {
     bool prevSW;
     MotorCmdType_e curCmdType = MotorCmdType_e::OFF;
 
-    float velMax = -1.f; // rad/s
-    float posMax = 0.f;  // rad
-    float posMin = 0.f;  // rad
+    float posMax = 0.f; // rad
+    float posMin = 0.f; // rad
     struct {
         float pos;
         float vel;

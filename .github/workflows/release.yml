@@ -5,15 +5,16 @@ on:
       - master
 
 permissions:
-      contents: write
-      pull-requests: write
+  contents: write
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-                fetch-depth: '0'
+          fetch-depth: '0'
 
       - name: Bump version and push tag
         id: tag_version
@@ -23,11 +24,17 @@ jobs:
           default_bump: false
           default_prerelease_bump: false
           release_branches: master
-          custom_release_rules: "ci:prerelease,refactor:prerelease,chore:prerelease,docs:prepatch,style:prerelease,build:prerelease,test:prerelease"
-          append_to_pre_release_tag: nightly
+          custom_release_rules: "ci:patch,refactor:patch,chore:patch,docs:patch,style:patch,build:patch,test:patch"
           fetch_all_tags: true
 
+      - name: Debug tag output
+        if: steps.tag_version.outputs.new_tag != ''
+        run: |
+          echo "New tag: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Changelog: ${{ steps.tag_version.outputs.changelog }}"
+
       - name: Create a GitHub release
+        if: steps.tag_version.outputs.new_tag != ''
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}

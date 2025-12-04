@@ -1,4 +1,5 @@
 #ifdef BSP_USE_UART
+#define UI_UART huart1
 #define RC_UART huart3
 #define REFEREE_UART huart6
 #endif

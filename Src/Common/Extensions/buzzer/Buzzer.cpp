@@ -82,4 +82,10 @@ void Buzzer::callBackFromISR(TIM_HandleTypeDef *_htim)
     _buzzer.delay_--;
 }
 
+void Buzzer::task()
+{
+    playPinyCore();
+    vTaskDelete(nullptr);
 }
+
+} // namespace BUZZER

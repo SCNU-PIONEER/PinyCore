@@ -13,6 +13,10 @@
 1. app层
 2. cmd输入的逻辑配置
 
+****
+
+👉 [Click here to view details](./.docs/profile.md)
+
 # 🎯Requirements
 
 1. cmake >= 3.24
@@ -29,15 +33,30 @@ we also suggest to install following software:
 # 🌟Getting started
 ## 🏗️Build
 
+**构建**
+
 ```sh
 cmake -B build -G Ninja
+```
+
+**编译**
+
+```sh
 ninja -C build
 ```
 
-### menuconfig
+****
+
+支持基于Kconfig对项目进行配置
 
 ```sh
 cmake --build ./build --target menuconfig
+```
+
+支持直接根据预制的配置文件来构建项目 (应存在于根目录，本例文件名为"yourconfig")
+
+```sh
+cmake -B build -G Ninja -DCONFIG_NAME=yourconfig
 ```
 
 ## 🐞Debug
@@ -47,9 +66,14 @@ cmake --build ./build --target menuconfig
 3. Ozone 3.24
 4. systemview
 
-## 📝Note
+## ⚠️Notice
 
-1. 全局变量构造不要有 hal 库的操作，但可以初始化 hal 指针，因为 hal 是在 main 中初始化，而全局变量是在 main 之前构造!
+1. 在main函数执行之前调用HAL库函数是危险的！请避免使调用HAL库的构造函数的类对象成为全局变量（可以创建全局的指针，或使用./Src/Utils/Lazy中的工具，并在初始化阶段构造）；
+1. 首次构建时，本项目会自动从github拉取第三方库，请确保网络可用。
+
+## 🧩Framework
+
+![frame](.docs/frame.png)
 
 # 🙌Contributing
 

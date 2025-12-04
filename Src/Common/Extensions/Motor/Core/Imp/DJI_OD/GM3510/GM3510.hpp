@@ -9,7 +9,8 @@ private:
 
 public:
     static constexpr float VOLT_TX_CODE_SPAN = 29000.f;
-    static constexpr float TORQ_RX_CODE_SPAN = 8192.f;
+    static constexpr float TORQ_RX_CODE_SPAN =
+            8192.f; // 手册中没有注明，需实验检测！
 
     static constexpr float CURR_RATED = 1.3f;
     static constexpr float TORQ_RATED = 0.14f;
