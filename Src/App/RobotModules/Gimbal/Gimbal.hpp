@@ -4,16 +4,12 @@
 #include "TopicRouter.hpp"
 
 namespace GIMBAL {
-enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, AUTO };
 }
 
 class Gimbal {
 public:
-    Gimbal()
-            : insSub_(new Subscriber<INS_SYS::INSData_s>(
-                      2, &TopicRouter::instance().insTopic, &insData_))
-    {
-    }
+    Gimbal() : insSub_(new Subscriber<INS_SYS::INSData_s>(2, &TopicRouter::instance().insTopic, &insData_)) {}
 
     const INS_SYS::INSData_s &ins() const { return insData_; }
 

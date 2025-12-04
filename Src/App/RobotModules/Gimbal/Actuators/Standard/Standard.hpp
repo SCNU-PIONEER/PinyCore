@@ -8,6 +8,8 @@
 
 #include "LPF.hpp"
 
+#include "Vision.hpp"
+
 namespace GIMBAL {
 
 union Motors_u {
@@ -16,15 +18,6 @@ union Motors_u {
         PINYMOTOR::IMotor *yaw;
     };
     PINYMOTOR::IMotor *_[2];
-};
-
-union States_u {
-    struct {
-        float pos;
-        float vel;
-        float torq;
-    };
-    float _[2];
 };
 
 class Standard : public Gimbal {
@@ -41,13 +34,17 @@ public:
 
     Standard();
 
+    Vision vision;
+
     PINYMOTOR::IMotor *pitch() const;
     PINYMOTOR::IMotor *yaw() const;
 
     void ctrlPitchSmooth(PID *_angPID, PID *_velPID, float _pos, float _step);
+    void ctrlPitchAuto(PID *_angPID, PID *_velPID, float _pos);
     void ctrlPitch(PID *_angPID, PID *_velPID, float _pos);
 
     void ctrlYawSmooth(PID *_angPID, PID *_velPID, float _pos, float _step);
+    void ctrlYawAuto(PID *_angPID, PID *_velPID, float _pos);
     void ctrlYaw(PID *_angPID, PID *_velPID, float _pos);
 
     void stop();
@@ -65,6 +62,9 @@ private:
 
     FILTER::LPF outFilrPitch_{ PITCH_MOTOR_FREQ, 1000.f };
     FILTER::LPF outFilrYaw_{ YAW_MOTOR_FREQ, 1000.f };
+
+    float calcPitchTorq(float _ang, float _vel, float _acc);
+    float calcYawTorq(float _vel, float _acc);
 };
 
 } // namespace GIMBAL
