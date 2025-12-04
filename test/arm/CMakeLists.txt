@@ -1,9 +1,9 @@
 file(GLOB_RECURSE UTIL_SOURCES CMAKE_CONFIGURE_DEPENDS
-     "../../Src/App/RobotModules/Arm/*.cpp")
+     "../../Src/App/RobotModules/Arm/ArmKinematic.cpp")
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${UTIL_SOURCES} test_arm.cpp)
-target_include_directories(${CMAKE_PROJECT_NAME}
-                           PRIVATE ../../Src/App/RobotModules/Arm
-                        ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(
+  ${CMAKE_PROJECT_NAME} PRIVATE ../../Src/App/RobotModules/Arm
+                                ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE TEST)
 
