@@ -5,10 +5,7 @@
 
 namespace REFEREE {
 
-RefReceiver::RefReceiver(UART_HandleTypeDef *_huart)
-        : uart_(_huart), rxBuffer_(nullptr)
-{
-}
+RefReceiver::RefReceiver(UART_HandleTypeDef *_huart) : uart_(_huart), rxBuffer_(nullptr) {}
 
 RefReceiver::~RefReceiver()
 {
@@ -23,9 +20,7 @@ void RefReceiver::init(EventGroupHandle_t _event)
     rxBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * REFEREE_RX_BUFFER_LEN);
 
     uart_.recvDmaMultiBufInit((uint32_t *)&rxBuffer_[0], REFEREE_RX_BUFFER_LEN);
-    uart_.registerCallback([this](UART_HandleTypeDef *_huart, uint16_t _size) {
-        this->uartIdleCallback(_huart);
-    });
+    uart_.registerCallback([this](UART_HandleTypeDef *_huart, uint16_t _size) { this->uartIdleCallback(_huart); });
 }
 
 void RefReceiver::uartIdleCallback(UART_HandleTypeDef *_huart)
@@ -33,8 +28,7 @@ void RefReceiver::uartIdleCallback(UART_HandleTypeDef *_huart)
     if (_huart->Instance != uart_.huart_->Instance)
         return;
 
-    uint16_t dmaRxPos =
-            REFEREE_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(_huart->hdmarx);
+    uint16_t dmaRxPos = REFEREE_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(_huart->hdmarx);
     int32_t lenDif = dmaRxPos - lastPos;
     dataLen = (lenDif >= 0) ? lenDif : (REFEREE_RX_BUFFER_LEN + lenDif);
 
@@ -50,38 +44,29 @@ void RefReceiver::readRefereeData()
     uint16_t frameStartPos, nextPos, frameLen;
     uint16_t maxLen = dataLen + lastPos;
 
-    for (frameStartPos = lastPos; frameStartPos < maxLen;
-         frameStartPos = nextPos) {
+    for (frameStartPos = lastPos; frameStartPos < maxLen; frameStartPos = nextPos) {
         while (frameStartPos < maxLen && rxBuffer_[frameStartPos] != SOF)
             frameStartPos++;
         if (frameStartPos + sizeof(FrameHeader_s) > maxLen)
             break;
 
-        FrameHeader_s *header = (FrameHeader_s *)&rxBuffer_[frameStartPos];
-        frameLen =
-                sizeof(FrameHeader_s) + LEN_CMDID + header->dataLen + LEN_TAIL;
+        const FrameHeader_s *header = (FrameHeader_s *)&rxBuffer_[frameStartPos];
+        frameLen = sizeof(FrameHeader_s) + LEN_CMDID + header->dataLen + LEN_TAIL;
 
-        if (header->dataLen > 128 ||
-            (!Verify_CRC8_Check_Sum((uint8_t *)header,
-                                    sizeof(FrameHeader_s))) ||
+        if (header->dataLen > 128 || (!Verify_CRC8_Check_Sum(&rxBuffer_[frameStartPos], sizeof(FrameHeader_s))) ||
             (!Verify_CRC16_Check_Sum(&rxBuffer_[frameStartPos], frameLen))) {
             nextPos = frameStartPos + 1;
             continue;
         } else
             nextPos = frameStartPos + frameLen;
 
-        uint16_t cmdId = *(
-                (uint16_t *)&rxBuffer_[frameStartPos + sizeof(FrameHeader_s)]);
+        uint16_t cmdId = *((uint16_t *)&rxBuffer_[frameStartPos + sizeof(FrameHeader_s)]);
 
         for (auto i : INFO) {
             if (static_cast<CmdId_e>(cmdId) == i.cmdId) {
                 rxCnt_++;
-                void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_) +
-                                i.offsetByte;
-                memcpy(dataPtr,
-                       &rxBuffer_[frameStartPos + sizeof(FrameHeader_s) +
-                                  LEN_CMDID],
-                       i.size);
+                void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_) + i.offsetByte;
+                memcpy(dataPtr, &rxBuffer_[frameStartPos + sizeof(FrameHeader_s) + LEN_CMDID], i.size);
             }
         }
     }
@@ -92,8 +77,7 @@ void RefReceiver::rxFreqCalc()
 {
     static uint32_t lastTick = 0;
     if ((xTaskGetTickCount() - lastTick) >= pdMS_TO_TICKS(1000)) {
-        rxFreq_ = static_cast<float>(rxCnt_) /
-                  (static_cast<float>(xTaskGetTickCount() - lastTick) / 1000.f);
+        rxFreq_ = static_cast<float>(rxCnt_) / (static_cast<float>(xTaskGetTickCount() - lastTick) / 1000.f);
         rxCnt_ = 0;
         lastTick = xTaskGetTickCount();
     }
@@ -101,8 +85,7 @@ void RefReceiver::rxFreqCalc()
 
 RefTransmitter::RefTransmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
 
-uint16_t RefTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
-                                  uint16_t _dataLen)
+uint16_t RefTransmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLen)
 {
     uint16_t totalSize;
     FrameHeader_s txHeader;
@@ -114,8 +97,7 @@ uint16_t RefTransmitter::sendData(uint16_t _cmdId, uint8_t *_data,
     txHeader.sof = SOF;
     txHeader.dataLen = _dataLen;
     txHeader.seq = 0;
-    txHeader.crc8 = Get_CRC8_Check_Sum((uint8_t *)&txHeader,
-                                       sizeof(FrameHeader_s) - 1, 0xff);
+    txHeader.crc8 = Get_CRC8_Check_Sum((uint8_t *)&txHeader, sizeof(FrameHeader_s) - 1, 0xff);
 
     memcpy(&txBuffer_, &txHeader, sizeof(FrameHeader_s));
     *(uint16_t *)&txBuffer_[sizeof(FrameHeader_s)] = _cmdId;
