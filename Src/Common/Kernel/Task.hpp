@@ -29,10 +29,7 @@ public:
     TaskHandle_t &getTaskHandler() { return htask_; }
 
 protected:
-    static void taskBase(void *_params)
-    {
-        static_cast<Task *>(_params)->loopBase();
-    }
+    static void taskBase(void *_params) { static_cast<Task *>(_params)->loopBase(); }
 
 private:
     // to avoid constructor as a regular template class in CRTP
@@ -48,7 +45,6 @@ private:
 
 class App : public Task<App, 128> {
 public:
-    App(const char *const _name, TaskPriority_e _priority)
-            : Task(_name, _priority) {};
+    App(const char *const _name, TaskPriority_e _priority) : Task(_name, _priority) {};
     void task() {}
 };
