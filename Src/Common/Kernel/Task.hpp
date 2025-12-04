@@ -37,10 +37,8 @@ protected:
 private:
     // to avoid constructor as a regular template class in CRTP
     Task(const char *const _name, TaskPriority_e _priority)
-    {
-        xTaskCreateStatic(taskBase, _name, N, this,
-                          static_cast<uint8_t>(_priority), stask, &TCB);
-    }
+            : htask_(xTaskCreateStatic(taskBase, _name, N, this, static_cast<uint8_t>(_priority), stask, &TCB)) {};
+
     friend Derived;
 
     StackType_t stask[N];
