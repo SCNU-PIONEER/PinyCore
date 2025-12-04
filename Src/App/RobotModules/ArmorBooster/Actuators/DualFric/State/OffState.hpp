@@ -7,10 +7,7 @@
 namespace ARMORBOOSTER {
 class OffState : public FSMState<FSMState_e> {
 public:
-    OffState(DualFric *_armorBooster)
-            : FSMState<FSMState_e>(FSMState_e::OFF), booster_(_armorBooster)
-    {
-    }
+    OffState(DualFric *_armorBooster) : FSMState<FSMState_e>(FSMState_e::OFF), booster_(_armorBooster) {}
 
     void enter() final { LOG::info("ArmorBoosterOff", " enter"); }
 

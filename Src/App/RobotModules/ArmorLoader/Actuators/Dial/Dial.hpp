@@ -55,18 +55,9 @@ public:
      * 
      * @param _posPID 
      * @param _velPID 
-     * @param _ang single circle ang in rad
-     */
-    void ctrlSingl(PID *_posPID, PID *_velPID, float _ang);
-
-    /**
-     * @brief ctrl dial rotate to _ang
-     * 
-     * @param _posPID 
-     * @param _velPID 
      * @param _ang multiple circle ang in rad
      */
-    void ctrlMulti(PID *_posPID, PID *_velPID, float _ang);
+    void ctrl(PID *_posPID, PID *_velPID, float _ang);
 
     void stop();
     void enter();

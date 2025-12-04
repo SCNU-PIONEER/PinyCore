@@ -18,19 +18,20 @@ class AutoState : public FSMState<FSMState_e> {
         PID *_[1];
     };
 
-    static constexpr float DIAL_VEL_18HZ =
-            18.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
-    static constexpr float DIAL_VEL_10HZ =
-            10.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
+    static constexpr float DIAL_VEL_18HZ = 18.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
+    static constexpr float DIAL_VEL_10HZ = 10.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
 
 public:
-    AutoState(Dial *_armorLoader)
-            : FSMState<FSMState_e>(FSMState_e::AUTO), loader_(_armorLoader)
+    AutoState(Dial *_armorLoader) : FSMState<FSMState_e>(FSMState_e::AUTO), loader_(_armorLoader)
     {
         pids_.dialVelPid = &autoDialVelPID;
     }
 
-    void enter() final { LOG::info("ArmorLoaderAuto", " enter"); }
+    void enter() final
+    {
+        loader_->enter();
+        LOG::info("ArmorLoaderAuto", " enter");
+    }
 
     void run() final
     {

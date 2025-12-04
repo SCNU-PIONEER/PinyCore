@@ -27,19 +27,13 @@ Dial::Dial()
         .isReverse = DIAL_REVERSE,
     };
     motors_.dial = new DJIMOTOR::M2006("M2006", dialConfig);
-    motors_.dial->overrideReductionRatio(DJIMOTOR::M2006::ORIGINAL_GEARBOX_RR *
-                                         OUTER_RR);
+    motors_.dial->overrideReductionRatio(DJIMOTOR::M2006::ORIGINAL_GEARBOX_RR * OUTER_RR);
 
-    this->stateFactory_.addState(FSMState_e::AUTO,
-                                 std::make_unique<AutoState>(this));
-    this->stateFactory_.addState(FSMState_e::BLOCK,
-                                 std::make_unique<BlockState>(this));
-    this->stateFactory_.addState(FSMState_e::SINGLE,
-                                 std::make_unique<SingleState>(this));
-    this->stateFactory_.addState(FSMState_e::STOP,
-                                 std::make_unique<StopState>(this));
-    this->stateFactory_.init(
-            this->stateFactory_.getNextState(FSMState_e::STOP));
+    this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
+    this->stateFactory_.addState(FSMState_e::BLOCK, std::make_unique<BlockState>(this));
+    this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
+    this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
+    this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 }
 
 void Dial::stop()
@@ -58,14 +52,12 @@ void Dial::enter()
 
 void Dial::update(void *_param)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &msg, 0) ==
-        pdTRUE) {
+    if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &msg, 0) == pdTRUE) {
     };
 
     vel_ = velFltr_.process(dial()->vel());
 
-    if (std::fabs(dial()->data().curr) > BLOCK_CURRENT &&
-        std::fabs(dial()->vel()) < BLOCK_SPEED_MIN) {
+    if (std::fabs(dial()->data().curr) > BLOCK_CURRENT && std::fabs(dial()->vel()) < BLOCK_SPEED_MIN) {
         blockCnt = blockCnt < BLOCK_CNT_MAX ? blockCnt + 1 : BLOCK_CNT_MAX;
     } else {
         blockCnt = blockCnt > 0 ? blockCnt - 1 : 0;
@@ -79,20 +71,11 @@ IMotor *Dial::dial() const { return motors_.dial; }
 
 void Dial::ctrl(float _torq) { dial()->cmdTorq(_torq); }
 
-void Dial::ctrl(PID *_velPID, float _vel)
-{
-    dial()->cmdTorq(_velPID->calc(_vel, vel_));
-}
+void Dial::ctrl(PID *_velPID, float _vel) { dial()->cmdTorq(_velPID->calc(_vel, vel_)); }
 
-void Dial::ctrlSingl(PID *_posPID, PID *_velPID, float _ang)
+void Dial::ctrl(PID *_posPID, PID *_velPID, float _ang)
 {
-    float v = _velPID->calc(_ang, dial()->pos());
-    dial()->cmdTorq(_velPID->calc(v, vel_));
-}
-
-void Dial::ctrlMulti(PID *_posPID, PID *_velPID, float _ang)
-{
-    float v = _velPID->calc(_ang, dial()->posNorm());
+    float v = _posPID->calc(_ang, dial()->pos());
     dial()->cmdTorq(_velPID->calc(v, vel_));
 }
 

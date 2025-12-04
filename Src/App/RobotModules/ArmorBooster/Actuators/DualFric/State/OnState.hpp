@@ -7,10 +7,7 @@
 namespace ARMORBOOSTER {
 class OnState : public FSMState<FSMState_e> {
 public:
-    OnState(DualFric *_armorBooster)
-            : FSMState<FSMState_e>(FSMState_e::ON), booster_(_armorBooster)
-    {
-    }
+    OnState(DualFric *_armorBooster) : FSMState<FSMState_e>(FSMState_e::ON), booster_(_armorBooster) {}
 
     void enter() final
     {
