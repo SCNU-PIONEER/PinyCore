@@ -7,9 +7,7 @@
 
 #include "MotorCommonMacros.hpp"
 
-static PositionalPid idleFollowVelPid{
-    6.f, 1.f, 0.20f, 0.001f, 0.2f, 6.f, 0.03f
-};
+static PositionalPid idleFollowVelPid{ 3.f, 1.f, 0.10f, 0.001f, 0.1f, 6.f, 0.0f };
 
 namespace CHASSIS {
 
@@ -17,10 +15,7 @@ class IdleState : public FSMState<FSMState_e> {
     static constexpr float ACC = 0.5f;
 
 public:
-    IdleState(Omni *_chassis)
-            : FSMState<FSMState_e>(FSMState_e::IDLE)
-            , chassis_(_chassis)
-            , wzAngPid_(&idleFollowVelPid)
+    IdleState(Omni *_chassis) : FSMState<FSMState_e>(FSMState_e::IDLE), chassis_(_chassis), wzAngPid_(&idleFollowVelPid)
     {
     }
 
@@ -33,16 +28,11 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC,
-                           std::fmin(chassis_->msg.vx,
-                                     chassis_->getSpeed().vx + ACC));
+        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
-        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC,
-                           std::fmin(chassis_->msg.vy,
-                                     chassis_->getSpeed().vy + ACC));
+        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
         float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
-        ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw,
-                                                           targetYaw));
+        ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw, targetYaw));
         // ref.wz = 0;
         chassis_->ctrl(ref);
     }

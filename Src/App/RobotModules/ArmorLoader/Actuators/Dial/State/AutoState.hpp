@@ -6,7 +6,7 @@
 #include "PidBasic.hpp"
 #include "MotorCommonMacros.hpp"
 
-static IncrementalPid autoDialVelPID(0, 0, 0, 0, 0);
+static IncrementalPid autoDialVelPID(0.2f, 0.0015f, 0.2f, 4.5f, 0);
 
 namespace ARMORLOADER {
 
@@ -36,7 +36,7 @@ public:
     void run() final
     {
         if (loader_->msg.fire)
-            loader_->ctrl(pids_.dialVelPid, DIAL_VEL_10HZ);
+            loader_->ctrl(pids_.dialVelPid, DIAL_VEL_18HZ);
         else
             loader_->ctrl(pids_.dialVelPid, 0.f);
     }
@@ -55,12 +55,13 @@ public:
     {
         if (loader_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (loader_->msg.state == FSMState_e::AUTO)
-            return FSMState_e::AUTO;
+
+        if (loader_->isBlock())
+            return FSMState_e::BLOCK;
         else if (loader_->msg.state == FSMState_e::SINGLE)
             return FSMState_e::SINGLE;
         else
-            return FSMState_e::STOP;
+            return FSMState_e::AUTO;
     }
 
 private:

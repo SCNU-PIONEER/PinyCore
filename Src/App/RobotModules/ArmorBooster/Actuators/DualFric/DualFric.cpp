@@ -16,10 +16,11 @@
 using namespace ARMORBOOSTER;
 using namespace PINYMOTOR;
 
-PositionalPid fricLPid{ 0.8f, 0.004f, 0.f, 0.001f, 0, 0.157 };
+PositionalPid fricLPid{ 0.003f, 0.001f, 2.0e-5f, 0.001f, 0.05f, 0.157f };
 PositionalPid fricRPid{ fricLPid };
+PositionalPid fricDelPid{ 0.f, 0.f, 0.f, 0.001f, 0.f, 0.1f };
 
-DualFric::DualFric()
+DualFric::DualFric() : fricDelPid_(&fricDelPid)
 {
     InitConfig_s fricLConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -57,6 +58,7 @@ void DualFric::stop()
 {
     fricPid_[0]->reset();
     fricPid_[1]->reset();
+    fricDelPid_->reset();
 
     for (auto &i : motors_._) {
         i->cmd(MotorCmdType_e::OFF);
@@ -81,17 +83,17 @@ void DualFric::update(void *_param)
 
 void DualFric::ctrl(float _vel)
 {
-    for (uint8_t i = 0; i < 2; i++) {
-        float velErr = _vel - velFltr_[i].process(motors_._[i]->vel());
-        float pidOut = fricPid_[i]->calc(velErr, 0);
-        motors_._[i]->cmdTorq(pidOut);
-    }
+    float velL = velFltr_[0].process(motors_._[0]->vel());
+    float velR = velFltr_[1].process(motors_._[1]->vel());
+    float tau = fricDelPid_->calc(velL, velR);
+    motors_._[0]->cmdTorq(fricPid_[0]->calc(_vel, velL) - tau);
+    motors_._[1]->cmdTorq(fricPid_[1]->calc(_vel, velR) + tau);
 }
 
 void DualFric::on()
 {
-    float constTarget = SLOW_FRIC_RATE;
-    SMOOTH::slopeFollowing(&constTarget, &targetVel_, 5.f);
+    float constTarget = FAST_FRIC_RATE;
+    SMOOTH::slopeFollowing(&constTarget, &targetVel_, 0.1f);
     ctrl(targetVel_);
 }
 
@@ -101,7 +103,7 @@ void DualFric::off()
         stop();
     } else {
         float constZero = 0;
-        SMOOTH::slopeFollowing(&constZero, &targetVel_, 5.f);
+        SMOOTH::slopeFollowing(&constZero, &targetVel_, 0.1f);
         ctrl(targetVel_);
     }
 }

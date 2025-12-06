@@ -23,7 +23,7 @@ union Motors_u {
 class Standard : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 2.08033204f;
-    static constexpr float YAW_LAUNCH_ANG = 1.28333163f;
+    static constexpr float YAW_LAUNCH_ANG = 4.44295073f;
 
     static constexpr float PITCH_MOTOR_FREQ = 500.f;
     static constexpr float YAW_MOTOR_FREQ = 500.f;

@@ -25,9 +25,9 @@ public:
 
     static constexpr float FRIC_STOP_THRESHOLD = 1.f;
 
-    static constexpr float FRIC_MOTOR_FREQ = 10.f;
+    static constexpr float FRIC_MOTOR_FREQ = 1000.f;
 
-    static constexpr bool FRIC_REVERSE = true;
+    static constexpr bool FRIC_REVERSE = false;
 
     DualFric();
 
@@ -46,6 +46,7 @@ private:
     float targetVel_ = SLOW_FRIC_RATE;
 
     PID *fricPid_[2];
+    PID *fricDelPid_;
 
     void ctrl(float _vel);
 };

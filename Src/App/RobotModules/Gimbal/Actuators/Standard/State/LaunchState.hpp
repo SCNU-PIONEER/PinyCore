@@ -12,9 +12,9 @@ static volatile float launchPitchStep = 0.6f;
 static volatile float launchYawStep = 0.5f;
 
 static PositionalPid launchPitchAngPID(15.f, 0.f, 0.001f, 0.001f, 0.f, 5.f, 0.f);
-static PositionalPid launchPitchVelPID(0.2f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
+static PositionalPid launchPitchVelPID(0.5f, 0.f, 0.f, 0.001f, 0.f, 2.23f, 0.f);
 static PositionalPid launchYawAngPID(10.f, 0.f, 0.f, 0.001f, 0.f, 10.f, 0.f);
-static PositionalPid launchYawVelPID(0.2f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
+static PositionalPid launchYawVelPID(0.5f, 0.f, 0.f, 0.001f, 0.f, 2.23f, 0.f);
 
 namespace GIMBAL {
 

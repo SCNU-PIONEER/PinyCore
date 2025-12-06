@@ -7,10 +7,10 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 
-static PositionalPid autoPitchAngPID(20.f, 0.f, 0.f, 0.001f, 0.f, 20.f, 0.f);
-static PositionalPid autoPitchVelPID(0.35f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
+static PositionalPid autoPitchAngPID(40.f, 5.f, 0.f, 0.001f, 0.5f, 20.f, 0.f);
+static PositionalPid autoPitchVelPID(0.9f, 0.f, 0.f, 0.001f, 0.f, 2.23f, 0.f);
 static PositionalPid autoYawAngPID(20.f, 50.f, 0.1f, 0.001f, 0.1f, 30.f, 0.f);
-static PositionalPid autoYawVelPID(0.35f, 0.f, 0.f, 0.001f, 0.f, 1.2f, 0.f);
+static PositionalPid autoYawVelPID(0.6f, 0.f, 0.f, 0.001f, 0.f, 2.23f, 0.f);
 
 namespace GIMBAL {
 

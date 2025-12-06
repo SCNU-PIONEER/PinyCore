@@ -23,7 +23,7 @@ public:
 
     static constexpr float DIAL_MOTOR_FREQ = 500.f;
 
-    static constexpr bool DIAL_REVERSE = false;
+    static constexpr bool DIAL_REVERSE = true;
 
     static constexpr float BLOCK_CURRENT = 1.f;   // A
     static constexpr float BLOCK_SPEED_MIN = 1.f; // rad/s
