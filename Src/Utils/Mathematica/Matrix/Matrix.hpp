@@ -6,18 +6,11 @@
 
 template <int _rows, int _cols> class Matrix {
 public:
-    Matrix() : rows_(_rows), cols_(_cols)
-    {
-        arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_);
-    }
+    Matrix() : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
 
-    Matrix(float _data[_rows * _cols]) : Matrix()
-    {
-        memcpy(this->data_, _data, _rows * _cols * sizeof(float));
-    }
+    Matrix(float _data[_rows * _cols]) : Matrix() { memcpy(this->data_, _data, _rows * _cols * sizeof(float)); }
 
-    Matrix(std::initializer_list<std::initializer_list<float> > _initList)
-            : Matrix()
+    Matrix(std::initializer_list<std::initializer_list<float> > _initList) : Matrix()
     {
         int row = 0;
         for (const auto &rowList : _initList) {
@@ -50,12 +43,9 @@ public:
 
     uint32_t cols() const { return _cols; }
 
-    float *operator[](const int &_row) { return &this->data_[_row * _cols]; }
+    float &operator()(int _row, int _col) { return data_[(_row * _cols) + _col]; }
 
-    const float *operator[](const int &_row) const
-    {
-        return &this->data_[_row * _cols];
-    }
+    const float &operator()(int _row, int _col) const { return data_[(_row * _cols) + _col]; }
 
     Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
     {
@@ -110,8 +100,7 @@ public:
         return res;
     }
 
-    friend Matrix<_rows, _cols> operator*(const float &_val,
-                                          const Matrix<_rows, _cols> &_mat)
+    friend Matrix<_rows, _cols> operator*(const float &_val, const Matrix<_rows, _cols> &_mat)
     {
         arm_status s;
         Matrix<_rows, _cols> res;
@@ -127,8 +116,7 @@ public:
     }
 
     template <int cols2>
-    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &_mat1,
-                                          const Matrix<_cols, cols2> &_mat2)
+    friend Matrix<_rows, cols2> operator*(const Matrix<_rows, _cols> &_mat1, const Matrix<_cols, cols2> &_mat2)
     {
         Matrix<_rows, cols2> res;
         arm_mat_mult_f32(&_mat1.arm_mat_, &_mat2.arm_mat_, &res.arm_mat_);
@@ -145,27 +133,19 @@ public:
     }
 
     // Submatrix
-    template <int rows, int cols>
-    Matrix<rows, cols> block(const int &_start_row, const int &_start_col) const
+    template <int rows, int cols> Matrix<rows, cols> block(const int &_start_row, const int &_start_col) const
     {
         Matrix<rows, cols> res;
         for (int row = _start_row; row < _start_row + rows; row++) {
-            memcpy((float *)res[0] + ((row - _start_row) * cols),
-                   (float *)this->data_ + (row * _cols) + _start_col,
+            memcpy((float *)res[0] + ((row - _start_row) * cols), (float *)this->data_ + (row * _cols) + _start_col,
                    cols * sizeof(float));
         }
         return res;
     }
 
-    Matrix<1, _cols> row(const int &_row) const
-    {
-        return block<1, _cols>(_row, 0);
-    } //返回指定列
+    Matrix<1, _cols> row(const int &_row) const { return block<1, _cols>(_row, 0); } //返回指定列
 
-    Matrix<_rows, 1> col(const int &_col) const
-    {
-        return block<_rows, 1>(0, _col);
-    } //返回指定行
+    Matrix<_rows, 1> col(const int &_col) const { return block<_rows, 1>(0, _col); } //返回指定行
 
     Matrix<_cols, _rows> trans() const //转置矩阵
     {
@@ -245,13 +225,13 @@ public:
     static auto cross(const Matrix<3, 1> &_a, const Matrix<3, 1> &_b)
     {
         Matrix<3, 1> result;
-        result[0][0] = _a[1][0] * _b[2][0] - _a[2][0] * _b[1][0];
-        result[1][0] = _a[2][0] * _b[0][0] - _a[0][0] * _b[2][0];
-        result[2][0] = _a[0][0] * _b[1][0] - _a[1][0] * _b[0][0];
+        result(0, 0) = _a(1, 0) * _b(2, 0) - _a(2, 0) * _b(1, 0);
+        result(1, 0) = _a(2, 0) * _b(0, 0) - _a(0, 0) * _b(2, 0);
+        result(2, 0) = _a(0, 0) * _b(1, 0) - _a(1, 0) * _b(0, 0);
         return result;
     }
-    static auto dot(const Matrix<_rows, 1> &_a, const Matrix<_rows, 1> &_b)
-            -> float
+
+    static auto dot(const Matrix<_rows, 1> &_a, const Matrix<_rows, 1> &_b) -> float
     {
         float result = 0.0f;
         for (size_t i = 0; i < _rows; ++i) {
@@ -270,10 +250,7 @@ protected:
 public:
     class RowProxy {
     public:
-        RowProxy(Matrix<_rows, _cols> &_mat, int _row)
-                : matrix_(_mat), row_(_row)
-        {
-        }
+        RowProxy(Matrix<_rows, _cols> &_mat, int _row) : matrix_(_mat), row_(_row) {}
 
         RowProxy &operator<<(float _val)
         {
@@ -296,10 +273,7 @@ public:
 
     class ColProxy {
     public:
-        ColProxy(Matrix<_rows, _cols> &_mat, int _col)
-                : matrix_(_mat), col_(_col)
-        {
-        }
+        ColProxy(Matrix<_rows, _cols> &_mat, int _col) : matrix_(_mat), col_(_col) {}
 
         ColProxy &operator<<(float _val)
         {

@@ -45,8 +45,7 @@ public:
 protected:
     static constexpr float VCAP_MAX = 26.f;
     static constexpr float VCAP_MIN = 5.f;
-    static constexpr float VOLTAGE_RANGE =
-            (VCAP_MAX * VCAP_MAX) - (VCAP_MIN * VCAP_MIN);
+    static constexpr float VOLTAGE_RANGE = (VCAP_MAX * VCAP_MAX) - (VCAP_MIN * VCAP_MIN);
 
     uint8_t motorNum_; //电机数量
 
@@ -59,9 +58,8 @@ protected:
     std::vector<float> cmdPower; // 原闭环控制器所设定的功率
     float chassisRawPower = 0.f; // 未经过功率控制的原始底盘功率
 
-    std::vector<float> relPower; // 根据电机数据拟合出的实际功率
-    float chassisRealPower =
-            0.f; // 根据模型算出的实际输出功率（与超电反馈功率比较反映模型拟合程度）
+    std::vector<float> relPower;  // 根据电机数据拟合出的实际功率
+    float chassisRealPower = 0.f; // 根据模型算出的实际输出功率（与超电反馈功率比较反映模型拟合程度）
     float capFeedbackPower = 0.f; // 实际输出功率
 
     std::vector<float> setIq;    // 最终设定输出电流
