@@ -9,93 +9,76 @@ QuadricycleController::QuadricycleController(ChassisType_e _chassisType, CAP *_c
 
 void QuadricycleController::cmdPowerCalc(const float *_motorSpeed, IMotor *_motor[4], const float *_cmd)
 {
-    float motorCmdRads[4] = { 0, 0, 0, 0 };
-    float powerSum = 0;
+    chassisRawPower_ = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
-        motorCmdRads[i] = _motorSpeed[i] * _motor[i]->rr();
-        cmdPower[i] = (M3508.KN * _cmd[i] * motorCmdRads[i] + M3508.MLC * motorCmdRads[i] * motorCmdRads[i] +
-                       M3508.ESR * _cmd[i] * _cmd[i] + M3508.LeakagePower);
-        powerSum += cmdPower[i];
+        const float cmdVel = _motorSpeed[i] * _motor[i]->rr();
+        cmdPower_[i] = Wheel.power(_cmd[i], cmdVel);
+        chassisRawPower_ += cmdPower_[i];
     }
-    chassisRawPower = powerSum;
 }
 
 void QuadricycleController::relPowerCalc(IMotor *_motor[4])
 {
-    float motorRelRads[4] = { 0, 0, 0, 0 };
-    float powerSum = 0;
+    chassisRealPower_ = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
-        Data_s motorData = _motor[i]->data();
-        motorRelRads[i] = motorData.spdRadps * _motor[i]->rr();
-        relPower[i] = (M3508.KN * motorData.curr * motorRelRads[i] + M3508.MLC * motorRelRads[i] * motorRelRads[i] +
-                       M3508.ESR * motorData.curr * motorData.curr + M3508.LeakagePower);
-        powerSum += relPower[i];
+        const float relVel = _motor[i]->vel() * _motor[i]->rr();
+        relPower_[i] = Wheel.power(_motor[i]->torq(), relVel);
+        chassisRealPower_ += relPower_[i];
     }
-    chassisRealPower = powerSum;
 }
 
-void QuadricycleController::currentCalc(IMotor *_motor[4], const float *_cmd)
+void QuadricycleController::torqueCalc(IMotor *_motor[4], const float *_cmd)
 {
-    float motorRelRads[4] = { 0, 0, 0, 0 };
     for (uint8_t i = 0; i < motorNum_; i++) {
-        motorRelRads[i] = _motor[i]->data().spdRadps * _motor[i]->rr();
-
-        float discriminant =
-                std::max((M3508.KN * M3508.KN * motorRelRads[i] * motorRelRads[i]) -
-                                 (4 * M3508.ESR *
-                                  (M3508.MLC * motorRelRads[i] * motorRelRads[i] + M3508.LeakagePower - setPower[i])),
-                         0.0f);
+        const float cmdVel = _motor[i]->vel() * _motor[i]->rr();
+        float discriminant = std::max(Wheel.delta(cmdVel, setPower_[i]), 0.f);
         float sign = (_cmd[i] == 0) ? 0.f : ((_cmd[i] > 0) ? 1.f : -1.f);
-        setIq[i] = (sign >= 0) ?
-                           (std::clamp((-(M3508.KN * motorRelRads[i]) + sign * sqrtf(discriminant)) / (2 * M3508.ESR),
-                                       0.f, _cmd[i])) :
-                           std::clamp((-(M3508.KN * motorRelRads[i]) + sign * sqrtf(discriminant)) / (2 * M3508.ESR),
-                                      _cmd[i], 0.f);
+        setIq_[i] = (sign >= 0) ? (std::clamp((-(Wheel.K0 * cmdVel) + sign * sqrtf(discriminant)) / (2 * Wheel.ESR),
+                                              0.f, _cmd[i])) :
+                                  std::clamp((-(Wheel.K0 * cmdVel) + sign * sqrtf(discriminant)) / (2 * Wheel.ESR),
+                                             _cmd[i], 0.f);
     }
 }
 
 void QuadricycleController::rlsUpdate(IMotor *_motor[4])
 {
-    float motorRelRads[4] = { 0, 0, 0, 0 };
     float vectorValue[3] = { 0, 0, 0 };
     for (uint8_t i = 0; i < motorNum_; i++) {
-        Data_s motorData = _motor[i]->data();
-        motorRelRads[i] = motorData.spdRadps * _motor[i]->rr();
-        vectorValue[0] += motorData.curr * motorRelRads[i];
-        vectorValue[1] += motorRelRads[i] * motorRelRads[i];
-        vectorValue[2] += motorData.curr * motorData.curr;
+        const float vel = _motor[i]->vel() * _motor[i]->rr();
+        vectorValue[0] += _motor[i]->torq() * vel;
+        vectorValue[1] += vel * vel;
+        vectorValue[2] += _motor[i]->torq() * _motor[i]->torq();
     }
     Matrix<3, 1> inputVector(vectorValue);
-    wheelRLS_.update(inputVector, capFeedbackPower - (M3508.LeakagePower * 4.f));
+    wheelRLS_.update(inputVector, capFeedbackPower_ - (Wheel.LeakagePower * 4.f));
     Matrix<3, 1> params = wheelRLS_.getEstVector();
 
     if (params(0, 0) > 0 && params(1, 0) > 0 && params(2, 0) > 0) {
-        M3508.KN = params(0, 0);
-        M3508.MLC = params(1, 0);
-        M3508.ESR = params(2, 0);
+        Wheel.K0 = params(0, 0);
+        Wheel.MLC = params(1, 0);
+        Wheel.ESR = params(2, 0);
     }
 }
 
 std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed, IMotor *_motor[4], const float *_cmd,
-                                                    RefereeMsg_s _msg)
+                                                    const RefereeMsg_s &_msg)
 {
     update(_msg);
 
     cmdPowerCalc(_motorSpeed, _motor, _cmd);
-    if (chassisRawPower > maxPower) //限制最大输出功率
-        powerRatio = maxPower / chassisRawPower;
+    if (chassisRawPower_ > maxPower_) //限制最大输出功率
+        powerRatio_ = maxPower_ / chassisRawPower_;
     else
-        powerRatio = 1.f;
+        powerRatio_ = 1.f;
 
-    float powerSum = 0;
+    chassisSetPower = 0;
     static float lastSetPower = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
-        setPower[i] = cmdPower[i] * powerRatio;
-        powerSum += setPower[i];
+        setPower_[i] = cmdPower_[i] * powerRatio_;
+        chassisSetPower += setPower_[i];
     }
-    chassisSetPower = powerSum;
 
-    currentCalc(_motor, _cmd);
+    torqueCalc(_motor, _cmd);
     relPowerCalc(_motor);
 
 #if POWERCTRL_USE_RLS
@@ -106,7 +89,7 @@ std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed, IM
     lastSetPower = chassisSetPower;
     taskTick = xTaskGetTickCount();
     if (cap_ != nullptr)
-        cap_->chargeCmdPower = std::clamp(limitPower - (0.01f * setPowerDot), 30.f, 120.f);
+        cap_->chargeCmdPower = std::clamp(limitPower_ - (0.01f * setPowerDot), 30.f, 120.f);
 
-    return setIq;
+    return setIq_;
 }
