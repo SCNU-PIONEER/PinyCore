@@ -4,6 +4,7 @@ include(CTest)
 enable_testing()
 
 include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git

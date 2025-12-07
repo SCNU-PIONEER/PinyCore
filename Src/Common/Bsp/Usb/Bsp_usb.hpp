@@ -12,19 +12,21 @@ void usbParse(uint8_t *_data, uint16_t _len);
 }
 
 #include "BspBase.hpp"
-#include "FreeRTOS.h"
-#include "semphr.h"
 #include <functional>
 #include <vector>
+#include "Task.hpp"
+#include "semphr.h"
 
-class Usb : public BspBase<Usb> {
+class Usb : public BspBase<Usb>, public Task<Usb, 256> {
 public:
     void parse(uint8_t *_data, uint16_t _len);
     int8_t send(const uint8_t *_data, uint16_t _len);
     int8_t registerCallback(std::function<void(uint8_t *, uint16_t)> _cb);
 
+
 private:
     friend class BspBase<Usb>;
+    friend class Task<Usb, 256>;
 
     static constexpr uint8_t TX_MAX_SIZE = 64;
     static constexpr uint8_t TX_TIMEOUT_MS = 10;
@@ -38,7 +40,7 @@ private:
     };
 
     Usb();
-    static void task(void *_arg);
+    void task();
 
     std::vector<std::function<void(uint8_t *, uint16_t)> > cbList_;
     RxStats_s rx_;

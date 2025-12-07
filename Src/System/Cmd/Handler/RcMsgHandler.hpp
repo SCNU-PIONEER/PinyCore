@@ -3,6 +3,7 @@
 #include "DT7.hpp"
 #include "ET08A.hpp"
 #include "Handler.hpp"
+#include <bitset>
 
 class RcMsgHandler : public Handler {
     static constexpr float ROCKER_VX_GAIN = 2.f;

@@ -7,6 +7,7 @@
 
 #include "Topic.hpp"
 #include "Bmi088.hpp"
+#include "Task.hpp"
 
 #define ROTATION_MATRIX_PITCH_ONLY 0
 
@@ -49,11 +50,11 @@ struct INSData_s {
     } earth;
 };
 
-class INS {
+class INS : public Task<INS, 384> {
 public:
     INS(SPI_HandleTypeDef *_spi);
 
-    static void task(void *_param);
+    void task();
 
     void init(SPI_HandleTypeDef *_spi);
 

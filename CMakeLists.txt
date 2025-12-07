@@ -32,6 +32,7 @@ add_subdirectory(Lib/Eigen3)
 add_subdirectory(Src/App)
 add_subdirectory(Src/Common/Extensions)
 add_subdirectory(Src/Common/Bsp)
+add_subdirectory(Src/Common/Kernel)
 add_subdirectory(Src/System)
 add_subdirectory(Src/Utils)
 
@@ -45,7 +46,13 @@ target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC
 
 target_link_libraries(
   ${CMAKE_PROJECT_NAME} Extensions Bsp utils freertos_kernel
+  etl::etl
   # TinyMPC
 )
+
+if(NOT RTOS_DEBUG)
+  target_compile_options(freertos_kernel PRIVATE -O3 -g0)
+  target_compile_options(freertos_kernel_port PRIVATE -O3 -g0)
+endif()
 
 showmessage()

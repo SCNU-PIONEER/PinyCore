@@ -1,6 +1,5 @@
 #include "AppManager.hpp"
 #include "sdkconfig.h"
-#include "MotorManager.hpp"
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
@@ -9,8 +8,7 @@
 #endif
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
-#include "UI/UIApp.hpp"
-#include "test/TestModule.hpp"
+#include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include CHASSIS_FILE
 // #include GIMBAL_FILE
@@ -18,6 +16,7 @@
 
 #if APP_USE_DAEMONS
 #include "Daemons/Daemons.hpp"
+Lazy<Daemons> daemon;
 #endif
 
 
@@ -47,8 +46,7 @@ Lazy<UI::App> ui;
 void AppManager::initApp()
 {
     // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL,
-                                       BEEP_APB_FREQ);
+    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
@@ -66,11 +64,11 @@ void AppManager::initApp()
 
 #if APP_USE_UI
     ui.init(UI_ROBOT_ID);
-    schedule([]() { ui.task(); });
+    schedule([]() { ui->task(); });
 #endif
-
 #if APP_USE_DAEMONS
-    schedule([]() { Daemons::instance().update(); });
+    daemon.init();
+    schedule([]() { daemon->update(); });
 #endif
     chassis = new CHASSIS::Swerve();
     schedule([]() { chassis->update(); });
@@ -90,29 +88,14 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback)
-{
-    tasks.push_back(std::move(_callback));
-}
+void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {
-    // Robot-Ctrl Continuous Task
-    xTaskCreate(AppManager::ctrlTask, "ctrl_task", 512, this, 10, nullptr);
-
     // Test-Module Continuous Task
     if constexpr (APP_USE_TEST) {
-        xTaskCreate(
-                [](void *_param) -> void { TestModule::instance()->task(); },
-                "test_task", 256, nullptr, 5, nullptr);
+        TestModule::instance();
     }
-
-    // Motor-Sending Continuous Task
-    xTaskCreate(
-            [](void *_param) -> void {
-                PINYMOTOR::MotorManager::instance()->ctrlTask();
-            },
-            "motor_task", 512, nullptr, 6, nullptr);
 
     // Buzzer Once Task
     xTaskCreate(
@@ -126,11 +109,10 @@ void AppManager::createApp()
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);
 }
 
-void AppManager::ctrlTask(void *_param)
+void AppManager::task()
 {
-    auto app = static_cast<AppManager *>(_param);
     while (true) {
-        for (auto &task : app->tasks) {
+        for (auto &task : this->tasks) {
             task();
         }
         vTaskDelay(1);

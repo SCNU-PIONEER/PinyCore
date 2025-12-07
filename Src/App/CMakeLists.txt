@@ -20,7 +20,7 @@ list(APPEND SOURCES ${CHASSIS_SOURCES})
 # chassis power control
 if(APP_USE_POWERCTRL)
   file(GLOB_RECURSE POWERCTRL_SOURCES CMAKE_CONFIGURE_DEPENDS
-       "RobotModules/Chassis/PowerControl/*.cpp")
+       "RobotModules/Chassis/PowerCtrl/*.cpp")
   list(APPEND SOURCES ${POWERCTRL_SOURCES})
 endif()
 

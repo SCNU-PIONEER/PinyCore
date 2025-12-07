@@ -1,0 +1,29 @@
+name: 'pull request'
+
+on:
+  pull_request:
+    types: [opened, edited, ready_for_review]
+
+jobs:
+  task-check:
+    name: 'Check PR Tasks Completion'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: 'Validate task completion'
+        uses: kentaro-m/task-completed-checker-action@v0.1.2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  add-reviews:
+    name: 'Auto Assign Reviewers'
+    runs-on: ubuntu-latest
+    needs: task-check
+    if: |
+      github.event.pull_request.draft == false &&
+      (github.event.action == 'opened' || github.event.action == 'ready_for_review')
+    steps:
+      - name: 'Assign reviewers'
+        uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          configuration-path: '.github/auto_assign.yml'

@@ -59,23 +59,18 @@ public:
 
     MotorTypeDef_e cmd(MotorCmdType_e _type);
 
-    MotorTypeDef_e cmdPos(float _pos, float _velMax = -1.f, float _posMin = 0.f,
-                          float _posMax = 0.f);
+    MotorTypeDef_e cmdPos(float _pos, float _posMin = 0.f, float _posMax = 0.f);
 
-    MotorTypeDef_e cmdVel(float _vel, float _velMax = -1.f);
+    MotorTypeDef_e cmdVel(float _vel);
 
     MotorTypeDef_e cmdTorq(float _torq);
 
     MotorTypeDef_e cmdElec(float _elec);
 
-    MotorTypeDef_e cmdPosVel(float _pos, float _vel, float _velMax = -1.f,
-                             float _posMin = 0.f, float _posMax = 0.f);
+    MotorTypeDef_e cmdPosVel(float _pos, float _vel, float _posMin = 0.f, float _posMax = 0.f);
 
-    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq,
-                          float _velMax = -1.f, float _posMin = 0.f,
-                          float _posMax = 0.f);
+    MotorTypeDef_e cmdMIT(float _pos, float _vel, float _torq, float _posMin = 0.f, float _posMax = 0.f);
 
-    void clampVel(float _velMax);
     void clampPos(float _posMin, float _posMax);
     void disableClampPos();
 
