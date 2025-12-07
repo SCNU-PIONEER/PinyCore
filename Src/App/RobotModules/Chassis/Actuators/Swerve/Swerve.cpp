@@ -96,10 +96,10 @@ void Swerve::enter()
 }
 
 
-void Swerve::update()
+void Swerve::update(void *_param)
 {
-    xQueueReceive(cmd.getMsgBus()->chassisQueue, &msg, 0);
-
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
+    };
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRpm;
         curDir._[i] = motors_._[i + 4]->data().ang;

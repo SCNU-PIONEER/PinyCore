@@ -1,0 +1,22 @@
+menu "ArmorBooster config"
+    depends on APP_USE_ARMORBOOSTER
+
+    choice
+
+        prompt "ArmorBooster type"
+        default APP_USE_DUAL
+
+        config APP_USE_DUAL
+            bool "dual"
+
+    endchoice
+
+    config ARMORBOOSTER_TYPE
+        string
+        default "DualFric" if APP_USE_DUAL
+
+    config ARMORBOOSTER_FILE
+        string
+        default '"DualFric.hpp"' if APP_USE_DUAL
+
+endmenu

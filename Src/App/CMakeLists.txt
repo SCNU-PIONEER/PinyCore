@@ -14,13 +14,13 @@ elseif(APP_USE_SWERVE)
 endif()
 
 file(GLOB_RECURSE CHASSIS_SOURCES CMAKE_CONFIGURE_DEPENDS
-     "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
+  "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
 list(APPEND SOURCES ${CHASSIS_SOURCES})
 
 # chassis power control
 if(APP_USE_POWERCTRL)
   file(GLOB_RECURSE POWERCTRL_SOURCES CMAKE_CONFIGURE_DEPENDS
-       "RobotModules/Chassis/PowerCtrl/*.cpp")
+    "RobotModules/Chassis/PowerCtrl/*.cpp")
   list(APPEND SOURCES ${POWERCTRL_SOURCES})
 endif()
 
@@ -34,6 +34,24 @@ endif()
 file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
   "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp")
 list(APPEND SOURCES ${GIMBAL_SOURCES})
+
+# ArmorLoader
+if(APP_USE_DIAL)
+  set(ARMORLOADER_TYPE "Dial")
+endif()
+
+file(GLOB_RECURSE ARMORLOADER_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/ArmorLoader/Actuators/${ARMORLOADER_TYPE}/*.cpp")
+list(APPEND SOURCES ${ARMORLOADER_SOURCES})
+
+# ArmorBooster
+if(APP_USE_BOOSTER)
+  set(ARMORBOOSTER_TYPE "DualFric")
+endif()
+
+file(GLOB_RECURSE ARMORBOOSTER_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/ArmorBooster/Actuators/${ARMORBOOSTER_TYPE}/*.cpp")
+list(APPEND SOURCES ${ARMORBOOSTER_SOURCES})
 
 # ui
 if(APP_USE_UI)

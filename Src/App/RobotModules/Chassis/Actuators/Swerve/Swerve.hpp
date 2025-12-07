@@ -78,7 +78,7 @@ public:
 
     void stop();
     void enter();
-    void update();
+    void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
 
 protected:

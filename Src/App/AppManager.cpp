@@ -31,9 +31,28 @@ Lazy<INS_SYS::INS> ins;
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
+
+#if APP_USE_MINIPC
 Lazy<MINIPC::PcManager> miniPcManager;
-Lazy<CHASSIS::Swerve> chassis;
-Lazy<GIMBAL::DualStage> gimbal;
+#endif
+
+#ifdef CHASSIS_TYPE
+#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+#include CHASSIS_FILE
+Lazy<CHASSIS::CHASSIS_TYPE> chassis;
+#include ARMORLOADER_FILE
+Lazy<ARMORLOADER::ARMORLOADER_TYPE> armorLoader;
+#endif
+#endif
+#ifdef GIMBAL_TYPE
+#if !APP_USE_COMM || APP_GIMBAL_MASTER
+#include GIMBAL_FILE
+Lazy<GIMBAL::GIMBAL_TYPE> gimbal;
+#include ARMORBOOSTER_FILE
+Lazy<ARMORBOOSTER::ARMORBOOSTER_TYPE> armorBooster;
+#endif
+#endif
+
 
 //---------------------------------------------------------------------------------------------------
 
@@ -72,9 +91,19 @@ void AppManager::initApp()
     daemon.init();
     schedule([]() { daemon->update(); });
 #endif
-    schedule([]() { chassis->update(); });
-    schedule([]() { gimbal->update(&cmd); });
 
+#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+    chassis.init();
+    schedule([]() { chassis->update(cmd->getMsgBus()); });
+    armorLoader.init();
+    schedule([]() { armorLoader->update(cmd->getMsgBus()); });
+#endif
+#if !APP_USE_COMM || APP_GIMBAL_MASTER
+    gimbal.init();
+    schedule([]() { gimbal->update(cmd->getMsgBus()); });
+    armorBooster.init();
+    schedule([]() { armorBooster->update(cmd->getMsgBus()); });
+#endif
     // TestModule
     if constexpr (APP_USE_TEST) {
         TestModule::instance()->init();

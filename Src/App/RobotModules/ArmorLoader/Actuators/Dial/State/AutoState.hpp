@@ -1,0 +1,74 @@
+#pragma once
+#include "Dial.hpp"
+#include "FSMState.hpp"
+#include "StmLog.hpp"
+
+#include "PidBasic.hpp"
+#include "MotorCommonMacros.hpp"
+
+static IncrementalPid autoDialVelPID(0, 0, 0, 0, 0);
+
+namespace ARMORLOADER {
+
+class AutoState : public FSMState<FSMState_e> {
+    union Pids_u {
+        struct {
+            PID *dialVelPid;
+        };
+        PID *_[1];
+    };
+
+    static constexpr float DIAL_VEL_18HZ =
+            18.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
+    static constexpr float DIAL_VEL_10HZ =
+            10.f / static_cast<float>(Dial::BULLET_NUM_ROUND) * 2.f * PI;
+
+public:
+    AutoState(Dial *_armorLoader)
+            : FSMState<FSMState_e>(FSMState_e::AUTO), loader_(_armorLoader)
+    {
+        pids_.dialVelPid = &autoDialVelPID;
+    }
+
+    void enter() final
+    {
+        loader_->enter();
+        LOG::info("ArmorLoaderAuto", " enter");
+    }
+
+    void run() final
+    {
+        if (loader_->msg.fire)
+            loader_->ctrl(pids_.dialVelPid, DIAL_VEL_10HZ);
+        else
+            loader_->ctrl(pids_.dialVelPid, 0.f);
+    }
+
+    void exit() final
+    {
+        for (auto &i : pids_._) {
+            i->reset();
+        }
+        loader_->lastState = FSMState_e::AUTO;
+        LOG::info("ArmorLoaderAuto", " exit");
+    }
+
+
+    FSMState_e checkChange() final
+    {
+        if (loader_->msg.state == FSMState_e::STOP)
+            return FSMState_e::STOP;
+        else if (loader_->msg.state == FSMState_e::AUTO)
+            return FSMState_e::AUTO;
+        else if (loader_->msg.state == FSMState_e::SINGLE)
+            return FSMState_e::SINGLE;
+        else
+            return FSMState_e::STOP;
+    }
+
+private:
+    Dial *loader_;
+
+    Pids_u pids_;
+};
+} // namespace ARMORLOADER

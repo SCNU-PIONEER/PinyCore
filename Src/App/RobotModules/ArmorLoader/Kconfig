@@ -1,0 +1,22 @@
+menu "ArmorLoader config"
+    depends on APP_USE_ARMORLOADER
+
+    choice
+
+        prompt "ArmorLoader type"
+        default APP_USE_DIAL
+
+        config APP_USE_DIAL
+            bool "dial"
+
+    endchoice
+
+    config ARMORLOADER_TYPE
+        string
+        default "Dial" if APP_USE_DIAL
+
+    config ARMORLOADER_FILE
+        string
+        default '"Dial.hpp"' if APP_USE_DIAL
+
+endmenu

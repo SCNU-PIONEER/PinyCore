@@ -143,4 +143,39 @@ public:
     }
 };
 
+class ArmorBoosterPacket {
+public:
+    static constexpr uint8_t LEN = 4;
+    static constexpr uint16_t ID = 0x22;
+    struct ProtoData_s {
+        uint8_t state;
+        bool fire;
+    };
+    union Data_u {
+        struct Data_s {
+            uint8_t state : 8;
+            bool fire : 1;
+            uint32_t reversed : 23;
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+    static Data_u compress(const ProtoData_s &_protoData)
+    {
+        Data_u data;
+        Data_u::Data_s &d = data.content;
+        d.state = _protoData.state;
+        d.fire = _protoData.fire;
+        d.reversed = 0;
+        return data;
+    }
+    static ProtoData_s decompress(const Data_u &_data)
+    {
+        ProtoData_s protoData;
+        protoData.state = _data.content.state;
+        protoData.fire = _data.content.fire;
+        return protoData;
+    }
+};
+
+
 } // namespace COMM
