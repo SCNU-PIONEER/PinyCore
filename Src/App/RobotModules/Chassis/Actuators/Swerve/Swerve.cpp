@@ -25,22 +25,16 @@ using namespace PINYMOTOR;
 constexpr float F_PI = std::numbers::pi_v<float>;
 
 //以下数组均可调，未测试
-static PositionalPid swervePosPid[4] = {
-    PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    PositionalPid(15.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f)
-};
-static PositionalPid swerveVelPid[4] = {
-    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f)
-};
+static PositionalPid swervePosPid[4] = { PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+                                         PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+                                         PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+                                         PositionalPid(15.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f) };
+static PositionalPid swerveVelPid[4] = { PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+                                         PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+                                         PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+                                         PositionalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f) };
 //此滤波并没有调参
-static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f),
-                                          FILTER::LPF(1000.f, 4.f),
-                                          FILTER::LPF(1000.f, 4.f),
+static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f), FILTER::LPF(1000.f, 4.f), FILTER::LPF(1000.f, 4.f),
                                           FILTER::LPF(1000.f, 4.f) };
 
 Swerve::Swerve()
@@ -77,14 +71,10 @@ Swerve::Swerve()
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
 
-    this->stateFactory_.addState(FSMState_e::RUN,
-                                 std::make_unique<RunState>(this));
-    this->stateFactory_.addState(FSMState_e::STOP,
-                                 std::make_unique<StopState>(this));
-    this->stateFactory_.addState(FSMState_e::TEST,
-                                 std::make_unique<TestState>(this));
-    this->stateFactory_.init(
-            this->stateFactory_.getNextState(FSMState_e::STOP));
+    this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(this));
+    this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
+    this->stateFactory_.addState(FSMState_e::TEST, std::make_unique<TestState>(this));
+    this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
     // if constexpr (APP_USE_POWERCTRL) {
     //
@@ -153,17 +143,16 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     cosAng[3] = cos(curDir.S_RF);
 
 
-    speed.vx = (wheelComVel[0] * cosAng[0] + wheelComVel[1] * cosAng[1] +
-                wheelComVel[2] * cosAng[2] + wheelComVel[3] * cosAng[3]) /
+    speed.vx = (wheelComVel[0] * cosAng[0] + wheelComVel[1] * cosAng[1] + wheelComVel[2] * cosAng[2] +
+                wheelComVel[3] * cosAng[3]) /
                4;
-    speed.vy = (wheelComVel[0] * sinAng[0] + wheelComVel[1] * sinAng[1] +
-                wheelComVel[2] * sinAng[2] + wheelComVel[3] * sinAng[3]) /
+    speed.vy = (wheelComVel[0] * sinAng[0] + wheelComVel[1] * sinAng[1] + wheelComVel[2] * sinAng[2] +
+                wheelComVel[3] * sinAng[3]) /
                4;
-    speed.wz = (wheelComVel[0] * (rX * sinAng[0] - rY * cosAng[0]) +
-                wheelComVel[1] * (-rX * sinAng[1] - rY * cosAng[1]) +
-                wheelComVel[2] * (-rX * sinAng[2] + rY * cosAng[2]) +
-                wheelComVel[3] * (rX * sinAng[3] + rY * cosAng[3])) /
-               powf(carRadius, 2) / 4;
+    speed.wz =
+            (wheelComVel[0] * (rX * sinAng[0] - rY * cosAng[0]) + wheelComVel[1] * (-rX * sinAng[1] - rY * cosAng[1]) +
+             wheelComVel[2] * (-rX * sinAng[2] + rY * cosAng[2]) + wheelComVel[3] * (rX * sinAng[3] + rY * cosAng[3])) /
+            powf(carRadius, 2) / 4;
 
     return speed;
 }
@@ -187,32 +176,28 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     //LF:0
     wheelVx[0] = _speed.vx - _speed.wz * rY;
     wheelVy[0] = _speed.vy + _speed.wz * rX;
-    wheelComVel[0] =
-            sqrtf((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]));
+    wheelComVel[0] = sqrtf((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]));
 
     expDir.S_LF = atan2(wheelVy[0], wheelVx[0]);
 
     //LB:1
     wheelVx[1] = _speed.vx - _speed.wz * rY;
     wheelVy[1] = _speed.vy - _speed.wz * rX;
-    wheelComVel[1] =
-            sqrtf((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]));
+    wheelComVel[1] = sqrtf((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]));
 
     expDir.S_LB = atan2(wheelVy[1], wheelVx[1]);
 
     //RB:2
     wheelVx[2] = _speed.vx + _speed.wz * rY;
     wheelVy[2] = _speed.vy - _speed.wz * rX;
-    wheelComVel[2] =
-            sqrtf((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]));
+    wheelComVel[2] = sqrtf((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]));
 
     expDir.S_RB = atan2(wheelVy[2], wheelVx[2]);
 
     //RF:3
     wheelVx[3] = _speed.vx + _speed.wz * rY;
     wheelVy[3] = _speed.vy + _speed.wz * rX;
-    wheelComVel[3] =
-            sqrtf((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]));
+    wheelComVel[3] = sqrtf((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]));
 
     expDir.S_RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
 
@@ -257,8 +242,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     for (uint8_t i = 0; i < 4; i++) {
         tempDir._[i] = expDir._[i];
         //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
-        if (fabs(getMinorArc(expDir._[i], motors_._[i + 4]->posNorm())) >=
-            F_PI / 2) {
+        if (fabs(getMinorArc(expDir._[i], motors_._[i + 4]->posNorm())) >= F_PI / 2) {
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
@@ -272,8 +256,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         if (_refSpeed.vx == 0 && _refSpeed.vy == 0 && _refSpeed.wz == 0) {
             motors_._[i + 4]->cmdTorq(0);
         } else {
-            motors_._[i + 4]->cmdTorq(
-                    swerveFilterOutput_._[i]->process(torq[i]));
+            motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(torq[i]));
         }
         //3508
         motors_._[i]->cmdVel(refWSpeed._[i]);

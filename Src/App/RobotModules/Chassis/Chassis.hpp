@@ -12,10 +12,7 @@ enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, TEST };
 }
 class Chassis {
 public:
-    Chassis()
-            : gimbalYawSub_(new Subscriber<GimbalYawMsg_s>(
-                      1, &TopicRouter::instance().gimbalYawTopic,
-                      &gimbalYawMsg))
+    Chassis() : gimbalYawSub_(new Subscriber<GimbalYawMsg_s>(1, &TopicRouter::instance().gimbalYawTopic, &gimbalYawMsg))
     {
     }
 
@@ -23,8 +20,7 @@ public:
     {
         // Master Board method
         if (gimbalYawSub_->receive()) {
-            deltaYaw = PINYMOTOR::getMinorArc(gimbalYawMsg.followYaw,
-                                              gimbalYawMsg.chassisYaw);
+            deltaYaw = PINYMOTOR::getMinorArc(gimbalYawMsg.followYaw, gimbalYawMsg.chassisYaw);
         }
         // TODO: Slave Board method
         // gimbalYawMsg.chassisYaw came from Chassis Board's ins

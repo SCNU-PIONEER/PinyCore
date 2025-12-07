@@ -12,6 +12,8 @@ Cmd::Cmd()
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
     msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
     msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
+    msgBus_.visionQueue = xQueueCreate(30, sizeof(VisionMsg_s));
+    msgBus_.navigationQueue = xQueueCreate(30, sizeof(NavMsg_s));
 
     masks_.reset();
 
@@ -27,14 +29,18 @@ Cmd::Cmd()
     masks_ = masks_ | std::bitset<32>(REFEREE_READY_EVENT);
 #endif
 
+#if defined APP_USE_MINIPC
+    miniPcHandler_.init(&msgBus_, eventGroup_);
+    masks_ = masks_ | std::bitset<32>(MINIPC_READY_EVENT);
+#endif
+
     LOG::info("cmd", "init success");
 }
 
 
 void Cmd::parseMsg()
 {
-    EventBits_t xBits = xEventGroupWaitBits(eventGroup_, masks_.to_ulong(),
-                                            pdTRUE, pdFALSE, portMAX_DELAY);
+    EventBits_t xBits = xEventGroupWaitBits(eventGroup_, masks_.to_ulong(), pdTRUE, pdFALSE, portMAX_DELAY);
     if (xBits & (RC_READY_EVENT | ET08A_READY_EVENT)) {
         rcHandler_.handle();
     }
@@ -49,7 +55,7 @@ void Cmd::parseMsg()
 
 #if defined APP_USE_MINIPC
     if (xBits & MINIPC_READY_EVENT) {
-        MiniPcHandler_.handle();
+        miniPcHandler_.handle();
     }
 #endif
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MiniPcHandler.hpp"
 #include "MsgImpl.hpp"
 #include "Task.hpp"
 #include "queue.h"
@@ -28,5 +29,5 @@ private:
     RcMsgHandler rcHandler_;
     RTTMsgHandler rttHandler_;
     RefereeHandler refereeHandler_;
-    MiniPcHandler MiniPcHandler_;
+    MiniPcHandler miniPcHandler_;
 };

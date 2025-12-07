@@ -37,7 +37,4 @@ void MiniPcHandler::handle()
 #endif
 }
 
-void MiniPcHandler::notify(Msg *_msg, QueueHandle_t _queue)
-{
-    xQueueSend(_queue, _msg, 0);
-}
+void MiniPcHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }

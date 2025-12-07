@@ -11,7 +11,7 @@
 #include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include CHASSIS_FILE
-// #include GIMBAL_FILE
+#include GIMBAL_FILE
 #include "Lazy.hpp"
 
 #if APP_USE_DAEMONS
@@ -31,8 +31,10 @@ Lazy<INS_SYS::INS> ins;
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
-CHASSIS::Swerve *chassis;
-// GIMBAL::DualStage *gimbal;
+Lazy<MINIPC::PcManager> miniPcManager;
+Lazy<CHASSIS::Swerve> chassis;
+Lazy<GIMBAL::DualStage> gimbal;
+
 //---------------------------------------------------------------------------------------------------
 
 
@@ -70,10 +72,8 @@ void AppManager::initApp()
     daemon.init();
     schedule([]() { daemon->update(); });
 #endif
-    chassis = new CHASSIS::Swerve();
     schedule([]() { chassis->update(); });
-    // gimbal = new GIMBAL::DualStage();
-    // schedule([]() { gimbal->update(&cmd); });
+    schedule([]() { gimbal->update(&cmd); });
 
     // TestModule
     if constexpr (APP_USE_TEST) {
