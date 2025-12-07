@@ -51,6 +51,7 @@ public:
     void stop();
     void enter();
     void update(void *_param);
+    float curYawAng() const { return _curYawAng; }
 
     FILTER::LPF outFilrPitch{ PITCH_MOTOR_FREQ, 4.f };
     FILTER::LPF outFilrYaw{ YAW_MOTOR_FREQ, 3.f };
@@ -59,6 +60,7 @@ private:
     void updateCtrlYawAng();
     void updateBaseYaw();
 
+    float _curYawAng;
     Motors_u motors_;
 };
 

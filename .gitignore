@@ -11,3 +11,4 @@ sdkconfig.cmake
 .vscode/launch.json
 */*.log
 __pycache__/
+Debug

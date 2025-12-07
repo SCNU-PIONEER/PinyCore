@@ -70,6 +70,7 @@ public:
     static constexpr float W_FRONT_REAR = 0.298f; //前后轮距/m
     static constexpr float W_LEFT_RIGHT = 0.298f; //左右轮距
     static constexpr float W_DIAMETER = 0.098f;   //轮子直径
+    static constexpr float W_RADIUS = (W_DIAMETER / 2.0f);
     static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
     static constexpr float CAR_RADIUS = 0.210f; //车体旋转半径
 

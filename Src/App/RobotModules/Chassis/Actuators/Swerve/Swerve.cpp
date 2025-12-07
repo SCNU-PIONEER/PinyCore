@@ -9,7 +9,7 @@
 #include "M3508.hpp"
 
 #include "QuadricycleController.hpp"
-
+#include "./State/TestState.hpp"
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
 #include "Cmd.hpp"
@@ -72,7 +72,7 @@ Swerve::Swerve()
             .offsetId = i,
             .txFreq = 100.0f,
             .posPID = nullptr,
-            .velPID = new IncrementalPid(0.5f, 0.005f, 0.f, 4.f, 0.f),
+            .velPID = new IncrementalPid(0.0005f, 0.00f, 0.0000001f, 4.f, 0.f),
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
     }
@@ -81,9 +81,10 @@ Swerve::Swerve()
                                  std::make_unique<RunState>(this));
     this->stateFactory_.addState(FSMState_e::STOP,
                                  std::make_unique<StopState>(this));
+    this->stateFactory_.addState(FSMState_e::TEST,
+                                 std::make_unique<TestState>(this));
     this->stateFactory_.init(
             this->stateFactory_.getNextState(FSMState_e::STOP));
-
 
     // if constexpr (APP_USE_POWERCTRL) {
     //
@@ -220,11 +221,16 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
             i += 2 * F_PI; //[0,2pi]
         }
     }
-
+    //传回轮速rpm
     refWheels.M_LF = -wheelComVel[0] / W_CIRCUMFERENCE * 60;
     refWheels.M_LB = wheelComVel[1] / W_CIRCUMFERENCE * 60;
     refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
     refWheels.M_RF = -wheelComVel[3] / W_CIRCUMFERENCE * 60;
+    // //传rad/s
+    // refWheels.M_LF = -wheelComVel[0] / W_RADIUS;
+    // refWheels.M_LB = wheelComVel[1] / W_RADIUS;
+    // refWheels.M_RB = wheelComVel[2] / W_RADIUS;
+    // refWheels.M_RF = -wheelComVel[3] / W_RADIUS;
 
     return refWheels;
 }

@@ -8,7 +8,7 @@
 #include "dsp/fast_math_functions.h"
 
 namespace CHASSIS {
-enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, TEST };
 }
 class Chassis {
 public:

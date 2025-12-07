@@ -77,7 +77,7 @@ public:
         // ctrl
         gimbal_->ctrlPitch(pids_.pitchAngPid, pids_.pitchVelPid,
                            cmdMotorPitchAng_);
-        gimbal_->curYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
+        // gimbal_->curYaw(pids_.yawAngPid, pids_.yawVelPid, cmdMotorYawAng_);
     }
 
     void exit() final
