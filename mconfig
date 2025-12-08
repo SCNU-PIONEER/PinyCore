@@ -1,3 +1,5 @@
+CONFIG_TARGET_MASTER=y
+# CONFIG_TARGET_SLAVE is not set
 
 #
 # Soc config
@@ -20,7 +22,15 @@ CONFIG_APP_USE_OMNI=y
 # CONFIG_APP_USE_SWERVE is not set
 CONFIG_CHASSIS_TYPE="Omni"
 CONFIG_CHASSIS_FILE="\"Omni.hpp\""
-# CONFIG_APP_USE_POWERCTRL is not set
+CONFIG_APP_USE_POWERCTRL=y
+
+#
+# power control settings
+#
+CONFIG_POWERCTRL_USE_RLS=y
+# CONFIG_POWERCTRL_USE_REFEREE is not set
+# end of power control settings
+
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 
@@ -35,6 +45,26 @@ CONFIG_GIMBAL_TYPE="Standard"
 CONFIG_GIMBAL_FILE="\"Standard.hpp\""
 # end of gimbal config
 
+CONFIG_APP_USE_ARMORLOADER=y
+
+#
+# ArmorLoader config
+#
+CONFIG_APP_USE_DIAL=y
+CONFIG_ARMORLOADER_TYPE="Dial"
+CONFIG_ARMORLOADER_FILE="\"Dial.hpp\""
+# end of ArmorLoader config
+
+CONFIG_APP_USE_ARMORBOOSTER=y
+
+#
+# ArmorBooster config
+#
+CONFIG_APP_USE_DUAL=y
+CONFIG_ARMORBOOSTER_TYPE="DualFric"
+CONFIG_ARMORBOOSTER_FILE="\"DualFric.hpp\""
+# end of ArmorBooster config
+
 # CONFIG_APP_USE_TEST is not set
 CONFIG_APP_USE_INS=y
 
@@ -44,10 +74,21 @@ CONFIG_APP_USE_INS=y
 # CONFIG_INS_ACCEL_CALIBRATION is not set
 # end of INS config
 
-# CONFIG_APP_USE_DAEMONS is not set
-# CONFIG_APP_USE_COMM is not set
-# CONFIG_USE_VSCODE_XRTOS is not set
-# CONFIG_APP_USE_REFEREE is not set
+CONFIG_APP_USE_DAEMONS=y
+CONFIG_APP_USE_COMM=y
+CONFIG_APP_USE_REFEREE=y
+
+#
+# UI config
+#
+# CONFIG_APP_USE_UI is not set
+
+#
+# UI config
+#
+CONFIG_UI_ROBOT_ID=0
+# end of UI config
+# end of UI config
 # end of app config
 
 #
@@ -74,15 +115,15 @@ CONFIG_EXTENSION_LED=y
 #
 # LEDDriver config
 #
-CONFIG_LED_WS2812_SPI=y
+# CONFIG_LED_WS2812_SPI is not set
 # CONFIG_LED_WS2812_PWM is not set
-# CONFIG_LED_RGBLED is not set
+CONFIG_LED_RGBLED=y
 # end of LEDDriver config
 
 CONFIG_EXTENSION_MOTOR=y
 CONFIG_EXTENSION_REFEREE=y
 CONFIG_EXTENSION_SENSOR=y
-# CONFIG_EXTENSION_SUPERCAP is not set
+CONFIG_EXTENSION_SUPERCAP=y
 # end of extension config
 
 #
@@ -96,3 +137,10 @@ CONFIG_USE_STM_LOG=y
 CONFIG_USE_VOFA=y
 CONFIG_USE_LAZY=y
 # end of utils config
+
+#
+# Kernel hacking
+#
+CONFIG_RTOS_DEBUG=y
+# CONFIG_USE_VSCODE_XRTOS is not set
+# end of Kernel hacking

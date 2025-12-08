@@ -28,22 +28,14 @@ Lazy<Cmd> cmd;
 
 //---------------------------------------------------------------------------------------------------
 
-#ifdef CHASSIS_TYPE
-#if !APP_USE_COMM || APP_CHASSIS_SLAVE
 #include ARMORLOADER_FILE
 Lazy<ARMORLOADER::ARMORLOADER_TYPE> armorLoader;
 #include CHASSIS_FILE
 Lazy<CHASSIS::CHASSIS_TYPE> chassis;
-#endif
-#endif
-#ifdef GIMBAL_TYPE
-#if !APP_USE_COMM || APP_GIMBAL_MASTER
 #include ARMORBOOSTER_FILE
 Lazy<ARMORBOOSTER::ARMORBOOSTER_TYPE> armorBooster;
 #include GIMBAL_FILE
 Lazy<GIMBAL::GIMBAL_TYPE> gimbal;
-#endif
-#endif
 
 //---------------------------------------------------------------------------------------------------
 
@@ -79,19 +71,15 @@ void AppManager::initApp()
     schedule([]() { daemon->update(); });
 #endif
 
-#if !APP_USE_COMM || APP_CHASSIS_SLAVE
     armorLoader.init();
-    schedule([]() { armorLoader->update(cmd->getMsgBus()); });
+    // schedule([]() { armorLoader->update(cmd->getMsgBus()); });
     chassis.init();
-    schedule([]() { chassis->update(cmd->getMsgBus()); });
-#endif
+    // schedule([]() { chassis->update(cmd->getMsgBus()); });
 
-#if !APP_USE_COMM || APP_GIMBAL_MASTER
     armorBooster.init();
-    schedule([]() { armorBooster->update(cmd->getMsgBus()); });
+    // schedule([]() { armorBooster->update(cmd->getMsgBus()); });
     gimbal.init();
     schedule([]() { gimbal->update(cmd->getMsgBus()); });
-#endif
 
     // TestModule
     if constexpr (APP_USE_TEST) {

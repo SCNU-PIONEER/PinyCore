@@ -16,13 +16,11 @@ using namespace PINYMOTOR;
 
 Standard::Standard()
 {
-#if !APP_USE_COMM
     // NOLINTBEGIN
     chassisCtrlPub_ = new Publisher<ChassisCtrlMsg_s>(&TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
     shooterCtrlPub_ =
             new Publisher<ArmorLoaderCtrlMsg_s>(&TopicRouter::instance().armorLoaderCtrlTopic, &armorLoaderCtrlMsg_);
     // NOLINTEND
-#endif
 
     InitConfig_s pitchGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),

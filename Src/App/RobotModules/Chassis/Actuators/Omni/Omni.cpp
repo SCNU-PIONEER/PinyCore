@@ -23,12 +23,9 @@ constexpr float SQRT_2 = std::numbers::sqrt2_v<float>;
 
 Omni::Omni()
 {
-#if !APP_USE_COMM
     // NOLINTBEGIN
-    chassisCtrlSub_ = new Subscriber<ChassisCtrlMsg_s>(
-            1, &TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
+    chassisCtrlSub_ = new Subscriber<ChassisCtrlMsg_s>(1, &TopicRouter::instance().chassisCtrlTopic, &chassisCtrlMsg_);
     // NOLINTEND
-#endif
 
     for (uint8_t i = 1; i <= 4; i++) {
         InitConfig_s m3508Config = {
@@ -41,20 +38,14 @@ Omni::Omni()
             .velPID = new IncrementalPid(0.6f, 0.0035f, 0.f, 4.5f, 0.f),
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
-        motors_._[i - 1]->overrideReductionRatio(
-                DJIMOTOR::M3508::ORIGINAL_GEARBOX_RR);
+        motors_._[i - 1]->overrideReductionRatio(DJIMOTOR::M3508::ORIGINAL_GEARBOX_RR);
     }
 
-    this->stateFactory_.addState(FSMState_e::SPIN,
-                                 std::make_unique<SpinState>(this));
-    this->stateFactory_.addState(FSMState_e::TANK,
-                                 std::make_unique<TankState>(this));
-    this->stateFactory_.addState(FSMState_e::IDLE,
-                                 std::make_unique<IdleState>(this));
-    this->stateFactory_.addState(FSMState_e::STOP,
-                                 std::make_unique<StopState>(this));
-    this->stateFactory_.init(
-            this->stateFactory_.getNextState(FSMState_e::STOP));
+    this->stateFactory_.addState(FSMState_e::SPIN, std::make_unique<SpinState>(this));
+    this->stateFactory_.addState(FSMState_e::TANK, std::make_unique<TankState>(this));
+    this->stateFactory_.addState(FSMState_e::IDLE, std::make_unique<IdleState>(this));
+    this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
+    this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
     if constexpr (APP_USE_POWERCTRL) {
         // TODO:
@@ -77,8 +68,7 @@ void Omni::enter()
 
 void Omni::update(void *_param)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) ==
-        pdTRUE) {
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
 
     // TODO: yaw
@@ -100,14 +90,9 @@ void Omni::update(void *_param)
 Speed_u Omni::forward(const WheelsSpeed_u &_wSpeed)
 {
     Speed_u speed;
-    speed.vx = W_CIRCUMFERENCE *
-               (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) *
-               (SQRT_2 / 4.f / 60.f);
-    speed.vy = W_CIRCUMFERENCE *
-               (-_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB + _wSpeed.M_RB) *
-               (SQRT_2 / 4.f / 60.f);
-    speed.wz = (W_DIAMETER / 2.f) *
-               (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) *
+    speed.vx = W_CIRCUMFERENCE * (_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB - _wSpeed.M_RB) * (SQRT_2 / 4.f / 60.f);
+    speed.vy = W_CIRCUMFERENCE * (-_wSpeed.M_LF - _wSpeed.M_RF + _wSpeed.M_LB + _wSpeed.M_RB) * (SQRT_2 / 4.f / 60.f);
+    speed.wz = (W_DIAMETER / 2.f) * (_wSpeed.M_RF + _wSpeed.M_LF + _wSpeed.M_LB + _wSpeed.M_RB) *
                (1.f / (4.f / CHASSIS_R * 30.f / F_PI));
     return speed;
 }
@@ -116,14 +101,10 @@ Speed_u Omni::forward(const WheelsSpeed_u &_wSpeed)
 WheelsSpeed_u Omni::reverse(const Speed_u &_speed)
 {
     WheelsSpeed_u refWheels;
-    refWheels.M_RF = (1.f / W_RADIUS) * (-_speed.vx - _speed.vy) / SQRT_2 +
-                     CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
-    refWheels.M_LF = (1.f / W_RADIUS) * (_speed.vx - _speed.vy) / SQRT_2 +
-                     CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
-    refWheels.M_LB = (1.f / W_RADIUS) * (_speed.vx + _speed.vy) / SQRT_2 +
-                     CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
-    refWheels.M_RB = (1.f / W_RADIUS) * (-_speed.vx + _speed.vy) / SQRT_2 +
-                     CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
+    refWheels.M_RF = (1.f / W_RADIUS) * (-_speed.vx - _speed.vy) / SQRT_2 + CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
+    refWheels.M_LF = (1.f / W_RADIUS) * (_speed.vx - _speed.vy) / SQRT_2 + CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
+    refWheels.M_LB = (1.f / W_RADIUS) * (_speed.vx + _speed.vy) / SQRT_2 + CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
+    refWheels.M_RB = (1.f / W_RADIUS) * (-_speed.vx + _speed.vy) / SQRT_2 + CHASSIS_R / (W_DIAMETER / 2.f) * _speed.wz;
     return refWheels;
 }
 

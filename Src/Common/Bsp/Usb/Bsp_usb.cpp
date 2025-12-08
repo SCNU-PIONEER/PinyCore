@@ -12,15 +12,9 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 #define USB_DEVICE hUsbDeviceFS
 #endif
 
-Usb::Usb() : Task("UsbTask", TaskPriority_e::MID1)
-{
-    rx_.semphr = xSemaphoreCreateBinary();
-}
+Usb::Usb() : Task("UsbTask", TaskPriority_e::MID1) { rx_.semphr = xSemaphoreCreateBinary(); }
 
-void usbParse(uint8_t *_data, uint16_t _len)
-{
-    Usb::instance().parse(_data, _len);
-}
+void usbParse(uint8_t *_data, uint16_t _len) { Usb::instance().parse(_data, _len); }
 
 void Usb::parse(uint8_t *_data, uint16_t _len)
 {
@@ -43,7 +37,7 @@ int8_t Usb::send(const uint8_t *_data, uint16_t _len)
 #endif
 
     if (status != USBD_OK) {
-        LOG::error("Usb", "send fucking failed");
+        // LOG::error("Usb", "send fucking failed");
         return -1;
     }
     return 0;

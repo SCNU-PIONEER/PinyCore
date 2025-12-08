@@ -50,8 +50,8 @@ public:
 
     void run() final
     {
-        cmdImuPitchAng_ = gimbal_->vision.data().pitch;
-        cmdImuYawAng_ = gimbal_->vision.data().yaw;
+        cmdImuPitchAng_ = gimbal_->vision.data().targetPitch;
+        cmdImuYawAng_ = gimbal_->vision.data().targetYaw;
 
         cmdImuPitchAng_ = PINYMOTOR::clampArc(cmdImuPitchAng_, IMU_PITCH_START_ANG, IMU_PITCH_END_ANG);
 
