@@ -2,6 +2,7 @@
 #include "MotorCommonMacros.hpp"
 #include <algorithm>
 #include "Bsp_can.hpp"
+#include <sys/reent.h>
 
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
@@ -32,13 +33,13 @@ MotorTypeDef_e LKMotor::init()
     return MOTOR_OK;
 }
 
-void LKMotor::overrideStats(const Status_s &newStats)
+void LKMotor::overrideStats(const Status_s &_newStats)
 {
-    this->status_ = newStats;
-    this->regInfo_.model.rxBaseId = newStats.rxBaseId;
-    this->regInfo_.model.txBaseId = newStats.txCurrId;
-    this->regInfo_.model.reductionRatio = newStats.reductionRatio;
-    this->regInfo_.model.measureMax = static_cast<int>(newStats.encoderSpan);
+    this->status_ = _newStats;
+    this->regInfo_.model.rxBaseId = _newStats.rxBaseId;
+    this->regInfo_.model.txBaseId = _newStats.txCurrId;
+    this->regInfo_.model.reductionRatio = _newStats.reductionRatio;
+    this->regInfo_.model.measureMax = static_cast<int>(_newStats.encoderSpan);
     this->updateTxId();
 }
 
@@ -58,10 +59,10 @@ uint16_t LKMotor::uid() const { return this->canId(); }
 void LKMotor::registerRecvCallback()
 {
     Can::instance().registerCallback(reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), this->canId(),
-                                     [this](const uint8_t *rxBuf) {
+                                     [this](const uint8_t *_rxBuf) {
                                          BaseType_t higherPriorityTaskWoken = pdFALSE;
                                          RxBus_s::CANRxBuf_s<8> buf;
-                                         memcpy(buf.data, rxBuf, 8);
+                                         memcpy(buf.data, _rxBuf, 8);
                                          xQueueSendFromISR(this->AUX_.rxQueue, &buf, &higherPriorityTaskWoken);
                                          portYIELD_FROM_ISR(higherPriorityTaskWoken);
                                      });
@@ -80,29 +81,29 @@ void LKMotor::updateTxId()
     LOG::info("LKMotor", "%s: TX ID set to 0x%hx (QUAD_CURR)", this->regInfo_.name, this->currentTxId_);
 }
 
-MotorTypeDef_e LKMotor::send(uint16_t sendId, uint8_t *txBuf, uint8_t len)
+MotorTypeDef_e LKMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 {
     if (this->group_ == nullptr) {
         LOG::error("LKMotor", "%s: Group not found", this->regInfo_.name);
         return MOTOR_ERROR;
     }
 
-    if (sendId != this->status_.txCurrId) {
+    if (_sendId != this->status_.txCurrId) {
         LOG::error("LKMotor", "%s: Invalid TX ID (only 0x%hx allowed)", this->regInfo_.name, this->status_.txCurrId);
         return MOTOR_ERROR;
     }
 
     if (this->checkGroupSend(this->group_)) {
         return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), sendId, txBuf, len));
+                reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), _sendId, _txBuf, _len));
     }
     return MOTOR_OK;
 }
 
-MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &rxBuf)
+MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &)
 {
     Feedback_s fb;
-    const uint8_t *data = rxBuf.data;
+    const uint8_t *data = rxBuf_.data;
     fb.cmd = data[0];
     fb.temperature = data[1];
     fb.current = static_cast<int16_t>((data[2] << 8) | data[3]);
@@ -121,9 +122,9 @@ MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &rxBuf)
     this->data_.spdRadps = this->data_.spdRpm * PI / 180.0f;
 
     float angle = static_cast<float>(fb.angle) / this->status_.encoderSpan * 2.0f * PI;
-    this->data_.rawAng = this->regInfo_.isReverse ? (2.0f * PI - angle) : angle;
+    this->data_.rawAng = this->regInfo_.isReverse ? ((2.0f * PI) - angle) : angle;
     float del = this->data_.rawAng - this->data_.zeroAng;
-    this->data_.ang = del < 0 ? del + 2.0f * PI : del;
+    this->data_.ang = del < 0 ? del + (2.0f * PI) : del;
 
     this->data_.tempture = fb.temperature;
 

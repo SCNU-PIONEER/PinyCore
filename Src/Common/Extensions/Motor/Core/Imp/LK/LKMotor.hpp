@@ -41,17 +41,17 @@ struct Status_s {
 
     Status_s() = default;
 
-    Status_s(float tqDataMax, float tqMax, float currDataMax, float currMax, float tqConst, float rr, float encSpan,
-             uint16_t txCurrId, uint16_t rxBase)
-            : torqueDataMax(tqDataMax)
-            , torqueMax(tqMax)
-            , currentDataMax(currDataMax)
-            , currentMax(currMax)
-            , torqueConstant(tqConst)
-            , reductionRatio(rr)
-            , encoderSpan(encSpan)
-            , txCurrId(txCurrId)
-            , rxBaseId(rxBase)
+    Status_s(float _tqDataMax, float _tqMax, float _currDataMax, float _currMax, float _tqConst, float _rr,
+             float _encSpan, uint16_t _txCurrId, uint16_t _rxBase)
+            : torqueDataMax(_tqDataMax)
+            , torqueMax(_tqMax)
+            , currentDataMax(_currDataMax)
+            , currentMax(_currMax)
+            , torqueConstant(_tqConst)
+            , reductionRatio(_rr)
+            , encoderSpan(_encSpan)
+            , txCurrId(_txCurrId)
+            , rxBaseId(_rxBase)
     {
     }
 };
