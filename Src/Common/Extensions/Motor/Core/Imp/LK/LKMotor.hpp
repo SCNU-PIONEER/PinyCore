@@ -1,3 +1,11 @@
+/*
+ * @File         : LKMotor.hpp
+ * @Brief        : 
+ * @Version      : 
+ * @Author       : Yewentao-1
+ * @LastEditTime : 2025-12-09 22:02:34
+ * Copyright 2025 by SCNU-PIONEER (c), All Rights Reserved.
+ */
 #pragma once
 #include "../Base/MotorBase.hpp"
 #include "Bsp_can.hpp"
@@ -16,7 +24,7 @@ namespace PINYMOTOR::LKMOTOR {
 
 #pragma pack(push, 1)
 struct Feedback_s {
-    uint8_t cmd;         // 命令字节
+    uint8_t cmd;         // 命令
     uint8_t temperature; // 电机温度
     int16_t current;     // 转矩电流编码值
     int16_t speed;       // 转子角速度
