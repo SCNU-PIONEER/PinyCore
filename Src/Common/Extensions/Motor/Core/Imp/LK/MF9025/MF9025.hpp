@@ -1,6 +1,5 @@
 #pragma once
-#include "LKMotor.hpp"
-#include "../Base/MotorBase.hpp"
+#include "../LKMotor.hpp"
 
 namespace PINYMOTOR::LKMOTOR {
 
@@ -25,14 +24,13 @@ public:
     static constexpr float TORQ_CONSTANT = 0.32f;   // 转矩常数
     static constexpr float REDUCTION_RATIO = 19.0f; // 减速比
     static constexpr float ENCODER_SPAN = 8192.f;   // 编码器范围
-    static constexpr uint16_t TX_CURR_ID = 0x280U;  // 电流控制发送ID
-    static constexpr uint16_t RX_BASE_ID = 0x140U;  // 接收基础ID
+    static constexpr uint16_t TX_CURR_ID = 0x280;   // 电流控制发送ID
+    static constexpr uint16_t RX_BASE_ID = 0x140;   // 接收基础ID
 
     /**
      * @brief 构造函数
      */
-    MF9025(const char *_name, InitConfig_s _config, uint8_t index);
-    ~MF9025() override = default;
+    MF9025(const char _name[16], InitConfig_s _config);
 };
 
 } // namespace PINYMOTOR::LKMOTOR

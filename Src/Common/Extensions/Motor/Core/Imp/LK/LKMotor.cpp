@@ -1,12 +1,13 @@
 #include "LKMotor.hpp"
 #include "MotorCommonMacros.hpp"
 #include <algorithm>
+#include "Bsp_can.hpp"
 
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
-LKMotor::LKMotor(const char *name, InitConfig_s config, uint8_t index)
-        : Base(name, config), currentTxId_(0), motorIndex_(index)
+LKMotor::LKMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+
 {
     this->AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>));
     this->cmdQueue_ = xQueueCreate(4, sizeof(Cmd_s));
@@ -14,8 +15,8 @@ LKMotor::LKMotor(const char *name, InitConfig_s config, uint8_t index)
     this->registerRecvCallback();
     this->updateTxId();
 
-    LOG::info("LKMotor", "%s: Instance created (index: %d, group ID: 0x%hx)",
-              this->regInfo_.name, index, this->getGroupId());
+    LOG::info("LKMotor", "%s: Instance created (index: %d, group ID: 0x%hx)", this->regInfo_.name, index,
+              this->getGroupId());
 }
 
 MotorTypeDef_e LKMotor::init()
@@ -45,14 +46,10 @@ void LKMotor::overrideReductionRatio(float _newReductionRatio)
 {
     this->status_.reductionRatio = _newReductionRatio;
     this->regInfo_.model.reductionRatio = _newReductionRatio;
-    LOG::info("LKMotor", "%s: Reduction ratio updated to %.2f",
-              this->regInfo_.name, _newReductionRatio);
+    LOG::info("LKMotor", "%s: Reduction ratio updated to %.2f", this->regInfo_.name, _newReductionRatio);
 }
 
-uint16_t LKMotor::canId() const
-{
-    return this->status_.rxBaseId + this->motorIndex_;
-}
+uint16_t LKMotor::canId() const { return this->status_.rxBaseId + this->motorIndex_; }
 
 uint16_t LKMotor::masterId() const { return this->status_.rxBaseId; }
 
@@ -60,34 +57,27 @@ uint16_t LKMotor::uid() const { return this->canId(); }
 
 void LKMotor::registerRecvCallback()
 {
-    Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(this->regInfo_.pComHandle),
-            this->canId(), [this](const uint8_t *rxBuf) {
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                RxBus_s::CANRxBuf_s<8> buf;
-                memcpy(buf.data, rxBuf, 8);
-                xQueueSendFromISR(this->AUX_.rxQueue, &buf,
-                                  &higherPriorityTaskWoken);
-                portYIELD_FROM_ISR(higherPriorityTaskWoken);
-            });
-    LOG::info("LKMotor", "%s: Recv callback registered (CAN ID: 0x%hx)",
-              this->regInfo_.name, this->canId());
+    Can::instance().registerCallback(reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), this->canId(),
+                                     [this](const uint8_t *rxBuf) {
+                                         BaseType_t higherPriorityTaskWoken = pdFALSE;
+                                         RxBus_s::CANRxBuf_s<8> buf;
+                                         memcpy(buf.data, rxBuf, 8);
+                                         xQueueSendFromISR(this->AUX_.rxQueue, &buf, &higherPriorityTaskWoken);
+                                         portYIELD_FROM_ISR(higherPriorityTaskWoken);
+                                     });
+    LOG::info("LKMotor", "%s: Recv callback registered (CAN ID: 0x%hx)", this->regInfo_.name, this->canId());
 }
 
 void LKMotor::cancelRecvCallback()
 {
-    Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(this->regInfo_.pComHandle),
-            this->canId());
-    LOG::info("LKMotor", "%s: Recv callback canceled (CAN ID: 0x%hx)",
-              this->regInfo_.name, this->canId());
+    Can::instance().unregisterCallback(reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), this->canId());
+    LOG::info("LKMotor", "%s: Recv callback canceled (CAN ID: 0x%hx)", this->regInfo_.name, this->canId());
 }
 
 void LKMotor::updateTxId()
 {
     this->currentTxId_ = this->status_.txCurrId;
-    LOG::info("LKMotor", "%s: TX ID set to 0x%hx (QUAD_CURR)",
-              this->regInfo_.name, this->currentTxId_);
+    LOG::info("LKMotor", "%s: TX ID set to 0x%hx (QUAD_CURR)", this->regInfo_.name, this->currentTxId_);
 }
 
 MotorTypeDef_e LKMotor::send(uint16_t sendId, uint8_t *txBuf, uint8_t len)
@@ -98,15 +88,13 @@ MotorTypeDef_e LKMotor::send(uint16_t sendId, uint8_t *txBuf, uint8_t len)
     }
 
     if (sendId != this->status_.txCurrId) {
-        LOG::error("LKMotor", "%s: Invalid TX ID (only 0x%hx allowed)",
-                   this->regInfo_.name, this->status_.txCurrId);
+        LOG::error("LKMotor", "%s: Invalid TX ID (only 0x%hx allowed)", this->regInfo_.name, this->status_.txCurrId);
         return MOTOR_ERROR;
     }
 
     if (this->checkGroupSend(this->group_)) {
         return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                reinterpret_cast<canHandle *>(this->regInfo_.pComHandle),
-                sendId, txBuf, len));
+                reinterpret_cast<canHandle *>(this->regInfo_.pComHandle), sendId, txBuf, len));
     }
     return MOTOR_OK;
 }
@@ -122,21 +110,17 @@ MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &rxBuf)
     fb.angle = static_cast<uint16_t>((data[6] << 8) | data[7]);
 
     // 电流转换
-    float current = fb.current / this->status_.currentDataMax *
-                    this->status_.currentMax;
+    float current = fb.current / this->status_.currentDataMax * this->status_.currentMax;
     this->data_.curr = this->regInfo_.isReverse ? -current : current;
 
     // 扭矩转换
     this->data_.torq = this->data_.curr * this->status_.torqueConstant;
 
     // 速度/角度解析
-    this->data_.spdRpm = this->regInfo_.isReverse ?
-                                 -static_cast<float>(fb.speed) :
-                                 static_cast<float>(fb.speed);
+    this->data_.spdRpm = this->regInfo_.isReverse ? -static_cast<float>(fb.speed) : static_cast<float>(fb.speed);
     this->data_.spdRadps = this->data_.spdRpm * PI / 180.0f;
 
-    float angle = static_cast<float>(fb.angle) / this->status_.encoderSpan *
-                  2.0f * PI;
+    float angle = static_cast<float>(fb.angle) / this->status_.encoderSpan * 2.0f * PI;
     this->data_.rawAng = this->regInfo_.isReverse ? (2.0f * PI - angle) : angle;
     float del = this->data_.rawAng - this->data_.zeroAng;
     this->data_.ang = del < 0 ? del + 2.0f * PI : del;
@@ -144,17 +128,13 @@ MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &rxBuf)
     this->data_.tempture = fb.temperature;
 
     // 在线状态检测
-    if (this->globalState == GlobalState_e::OFFLINE &&
-        this->data_.angLast != this->data_.rawAng) {
+    if (this->globalState == GlobalState_e::OFFLINE && this->data_.angLast != this->data_.rawAng) {
         this->globalState = GlobalState_e::ONLINE;
-        this->data_.multipCirAng =
-                this->data_.rawAng / this->status_.reductionRatio;
+        this->data_.multipCirAng = this->data_.rawAng / this->status_.reductionRatio;
     }
 
     // 多圈角度计算
-    float angDiff =
-            getMinorArc(this->data_.rawAng, this->data_.angLast, 2.0f * PI) /
-            this->status_.reductionRatio;
+    float angDiff = getMinorArc(this->data_.rawAng, this->data_.angLast, 2.0f * PI) / this->status_.reductionRatio;
     this->data_.angLast = this->data_.rawAng;
     this->data_.multipCirAng += angDiff;
     this->data_.cirNum = this->data_.multipCirAng / (2.0f * PI);
@@ -170,19 +150,14 @@ MotorTypeDef_e LKMotor::ctrl()
 
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_ELEC:
-        ctrlCmd = static_cast<int16_t>(this->cmd_.elec /
-                                       this->status_.currentMax *
-                                       this->status_.currentDataMax);
+        ctrlCmd = static_cast<int16_t>(this->cmd_.elec / this->status_.currentMax * this->status_.currentDataMax);
         break;
     case MotorCmdType_e::SET_TORQ:
-        ctrlCmd = static_cast<int16_t>(
-                (this->cmd_.torq / this->status_.torqueConstant) /
-                this->status_.currentMax * this->status_.currentDataMax);
+        ctrlCmd = static_cast<int16_t>((this->cmd_.torq / this->status_.torqueConstant) / this->status_.currentMax *
+                                       this->status_.currentDataMax);
         break;
     default:
-        LOG::error("LKMotor",
-                   "%s: Unsupported cmd type (only SET_ELEC/SET_TORQ)",
-                   this->regInfo_.name);
+        LOG::error("LKMotor", "%s: Unsupported cmd type (only SET_ELEC/SET_TORQ)", this->regInfo_.name);
         result = MOTOR_ERROR;
         break;
     }
@@ -191,8 +166,7 @@ MotorTypeDef_e LKMotor::ctrl()
         ctrlCmd = -ctrlCmd;
     }
 
-    ctrlCmd = std::clamp(ctrlCmd,
-                         static_cast<int16_t>(-this->status_.currentDataMax),
+    ctrlCmd = std::clamp(ctrlCmd, static_cast<int16_t>(-this->status_.currentDataMax),
                          static_cast<int16_t>(this->status_.currentDataMax));
 
     this->txBuf_.data[this->motorIndex_] = ctrlCmd;
@@ -211,8 +185,7 @@ MotorTypeDef_e LKMotor::update()
     if (xQueueReceive(this->cmdQueue_, &this->cmd_, 0) == pdTRUE) {
         this->parseCmd();
         if (this->regInfo_.workMode != WorkMode_e::QUAD_CURR) {
-            LOG::warn("LKMotor", "%s: Work mode forced to QUAD_CURR",
-                      this->regInfo_.name);
+            LOG::warn("LKMotor", "%s: Work mode forced to QUAD_CURR", this->regInfo_.name);
             this->regInfo_.workMode = WorkMode_e::QUAD_CURR;
         }
         this->updateTxId();
@@ -220,8 +193,7 @@ MotorTypeDef_e LKMotor::update()
 
     MotorTypeDef_e ctrlResult = this->ctrl();
     if (ctrlResult == MOTOR_OK) {
-        this->send(this->currentTxId_,
-                   reinterpret_cast<uint8_t *>(&this->txBuf_.data), 8);
+        this->send(this->currentTxId_, reinterpret_cast<uint8_t *>(&this->txBuf_.data), 8);
     }
 
     return ctrlResult;
@@ -230,8 +202,7 @@ MotorTypeDef_e LKMotor::update()
 void LKMotor::mountToBroadcastFrame(Transmit_s &broadcastFrame)
 {
     if (this->txBuf_.sendFlag) {
-        broadcastFrame.data[this->motorIndex_] =
-                this->txBuf_.data[this->motorIndex_];
+        broadcastFrame.data[this->motorIndex_] = this->txBuf_.data[this->motorIndex_];
     } else {
         broadcastFrame.data[this->motorIndex_] = 0;
     }
