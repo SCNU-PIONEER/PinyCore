@@ -1,11 +1,3 @@
-/*
- * @File         : MG4005.hpp
- * @Brief        : 
- * @Version      : 
- * @Author       : Yewentao-1
- * @LastEditTime : 2025-12-09 19:50:22
- * Copyright 2025 by SCNU-PIONEER (c), All Rights Reserved.
- */
 #pragma once
 #include "../LKMotor.hpp"
 
@@ -24,7 +16,7 @@ private:
     void initModelParams() override;
 
 public:
-    // MG4005硬件固定参数
+    // MG4005硬件固定参数（不确定完全正确）
     static constexpr float TRQE_DATA_MAX = 2000.f;  // 扭矩最大编码值
     static constexpr float TRQE_MAX = 2.4f;         // 扭矩最大值
     static constexpr float CURR_DATA_MAX = 2048.f;  // 电流最大编码值
