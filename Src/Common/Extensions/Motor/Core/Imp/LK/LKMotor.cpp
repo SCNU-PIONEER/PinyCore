@@ -36,7 +36,10 @@ MotorTypeDef_e LKMotor::init()
 void LKMotor::overrideStats(const Status_s &_newStats)
 {
     this->status_ = _newStats;
-    this->regInfo_.model.rxBaseId = _newStats.rxBaseId;
+    this->regInfo_.model.rxBaseId =
+
+
+            _newStats.rxBaseId;
     this->regInfo_.model.txBaseId = _newStats.txCurrId;
     this->regInfo_.model.reductionRatio = _newStats.reductionRatio;
     this->regInfo_.model.measureMax = static_cast<int>(_newStats.encoderSpan);
