@@ -7,6 +7,7 @@ if(USE_ALGORITHM)
   target_sources(utils PRIVATE ${ALGORITHM_SOURCES})
   target_include_directories(
     utils
+    PRIVATE ../../Lib/CMSIS-DSP/Include
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/PID
            ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Filter
            ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Smooth
