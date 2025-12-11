@@ -13,7 +13,7 @@ protected:
     using ProtoData = typename PacketType::ProtoData_s;
 
 public:
-    TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq) { start(); }
+    explicit TxPacket(float _txFreq = 100.f) : txFreq_(_txFreq) { start(); }
 
     virtual ~TxPacket() { stop(); };
 
@@ -54,11 +54,11 @@ public:
      * 
      * @param _data 
      */
-    void loadFull(ProtoData *_data) { memcpy(&data_, &_data, sizeof(ProtoData)); }
+    void loadFull(ProtoData &&_data) { data_ = std::move(_data); }
 
     ProtoData &setData() { return data_; }
 
-    uint16_t uid() const { return PacketType::ID; }
+    uint16_t uid() const noexcept { return PacketType::ID; }
 
 protected:
     ProtoData data_{};

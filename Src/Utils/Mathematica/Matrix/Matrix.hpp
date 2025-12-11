@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dsp/matrix_functions.h"
+#include "dsp/fast_math_functions.h"
 #include <initializer_list>
 
 
@@ -39,15 +40,15 @@ public:
 
     ~Matrix() {}
 
-    uint32_t rows() const { return _rows; }
+    constexpr uint32_t rows() const { return _rows; }
 
-    uint32_t cols() const { return _cols; }
+    constexpr uint32_t cols() const { return _cols; }
 
     float &operator()(int _row, int _col) { return data_[(_row * _cols) + _col]; }
 
     const float &operator()(int _row, int _col) const { return data_[(_row * _cols) + _col]; }
 
-    Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> _mat)
+    Matrix<_rows, _cols> &operator=(const Matrix<_rows, _cols> &_mat)
     {
         if (this == &_mat)
             return *this; // 检查自赋值
@@ -137,7 +138,7 @@ public:
     {
         Matrix<rows, cols> res;
         for (int row = _start_row; row < _start_row + rows; row++) {
-            memcpy((float *)res[0] + ((row - _start_row) * cols), (float *)this->data_ + (row * _cols) + _start_col,
+            memcpy(res.data_ + ((row - _start_row) * cols), this->data_ + (row * _cols) + _start_col,
                    cols * sizeof(float));
         }
         return res;
@@ -164,7 +165,16 @@ public:
         return res;
     }
 
-    float norm() const { return sqrtf((this->trans() * *this)[0][0]); }
+    float norm() const
+    {
+        float sum = 0.0f;
+        for (int i = 0; i < _rows * _cols; i++) {
+            sum += data_[i] * data_[i];
+        }
+        float result;
+        arm_sqrt_f32(sum, &result);
+        return result;
+    }
 
     Matrix<_cols, _rows> inv() const //求逆矩阵
     {
@@ -180,11 +190,7 @@ public:
         return res;
     }
 
-    static Matrix<_rows, _cols> zeros()
-    {
-        float data[_rows * _cols] = { 0 };
-        return Matrix<_rows, _cols>(data);
-    }
+    static constexpr Matrix<_rows, _cols> zeros() { return Matrix<_rows, _cols>(); }
 
     static Matrix<_rows, _cols> ones()
     {
@@ -195,13 +201,14 @@ public:
         return Matrix<_rows, _cols>(data);
     }
 
-    static Matrix<_rows, _cols> eye() //unit matrix
+    static Matrix<_rows, _cols> eye()
     {
-        float data[_rows * _cols] = { 0 };
-        for (int i = 0; i < std::min(_rows, _cols); i++) {
-            data[(i * _cols) + i] = 1;
+        Matrix<_rows, _cols> res = zeros();
+        const int dim = std::min(_rows, _cols);
+        for (int i = 0; i < dim; i++) {
+            res(i, i) = 1.0f;
         }
-        return Matrix<_rows, _cols>(data);
+        return res;
     }
 
     static Matrix<_rows, _cols> diag(Matrix<_rows, 1> _vec)
@@ -245,7 +252,7 @@ public:
 
 protected:
     int rows_, cols_;
-    float data_[_rows * _cols];
+    float data_[_rows * _cols]{};
 
 public:
     class RowProxy {
