@@ -78,7 +78,8 @@ private:
 
     std::function<void()> transmitFunc_{ [this]() {
         if (checkSend()) {
-            Data txBuf = PacketType::compress(this->data_);
+            Data txBuf;
+            PacketType::compress(this->data_, txBuf);
             this->transmit(txBuf.bytes, PacketType::LEN);
         }
     } };
