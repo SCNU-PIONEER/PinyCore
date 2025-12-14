@@ -1,13 +1,11 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
+#include "dsp/fast_math_functions.h"
 #if INS_ACCEL_CALIBRATION
 #include "AccelCali.hpp"
 #endif
 
-
 using namespace INS_SYS;
-
-// static INSData_s ansINS;
 
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = {
@@ -36,8 +34,7 @@ static constexpr float IMU_OFFSET_Y = (-35.19f * 0.001f);
 
 INS::INS(SPI_HandleTypeDef *_spi)
         : Task<INS, 384>("insTask", TaskPriority_e::HIGH3)
-        , insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic,
-                                           &insDat_))
+        , insPub_(new Publisher<INSData_s>(&TopicRouter::instance().insTopic, &insDat_))
 {
     init(_spi);
 
@@ -49,8 +46,7 @@ void INS::init(SPI_HandleTypeDef *_spi)
     while (bmi088_.init(_spi))
         // wait for ACK from BMI088
         ;
-    imuCali_.init(ACC_CALI, GYRO_CALI, bmi088_.getAccelMappingVaule(),
-                  bmi088_.getGyroMappingVaule());
+    imuCali_.init(ACC_CALI, GYRO_CALI, bmi088_.getAccelMappingVaule(), bmi088_.getGyroMappingVaule());
     DCM_.init();
 }
 
@@ -65,18 +61,14 @@ void INS::task()
         bmi088.read();    // serialize data to real format
 
 #if INS_ACCEL_CALIBRATION
-        AccelCali::instance().update(
-                bmi088.getRawAccelX(), bmi088.getRawAccelY(),
-                bmi088.getRawAccelZ(), bmi088.getRawGyroX(),
-                bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
-                bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
+        AccelCali::instance().update(bmi088.getRawAccelX(), bmi088.getRawAccelY(), bmi088.getRawAccelZ(),
+                                     bmi088.getRawGyroX(), bmi088.getRawGyroY(), bmi088.getRawGyroZ(),
+                                     bmi088.getAccelMappingVaule(), bmi088.getGyroMappingVaule());
 #else
         // update IMU calibration
         cali.updateTemperature(bmi088.getTemperature());
-        cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(),
-                      bmi088.getRawAccelZ());
-        cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(),
-                      bmi088.getRawGyroZ());
+        cali.correctA(bmi088.getRawAccelX(), bmi088.getRawAccelY(), bmi088.getRawAccelZ());
+        cali.correctG(bmi088.getRawGyroX(), bmi088.getRawGyroY(), bmi088.getRawGyroZ());
         if constexpr (CORRECT_IMU_DATA) {
             cali.steadyStateDetection();
         }
@@ -98,17 +90,11 @@ void INS::task()
         // Yaw: Clockwise decrease(-) when viewed from above
         auto &data = rawDat_;
         data = {
-            .a = { .x = cali.getOutput().ax,
-                   .y = cali.getOutput().ay,
-                   .z = -cali.getOutput().az },
-            .g = { .x = -cali.getOutput().gx,
-                   .y = -cali.getOutput().gy,
-                   .z = cali.getOutput().gz },
+            .a = { .x = cali.getOutput().ax, .y = cali.getOutput().ay, .z = -cali.getOutput().az },
+            .g = { .x = -cali.getOutput().gx, .y = -cali.getOutput().gy, .z = cali.getOutput().gz },
         };
-        data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y -
-                               data.g.z * data.g.z * IMU_OFFSET_X);
-        data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X -
-                               data.g.x * data.g.z * IMU_OFFSET_Y);
+        data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y - data.g.z * data.g.z * IMU_OFFSET_X);
+        data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X - data.g.x * data.g.z * IMU_OFFSET_Y);
 
         // update INS
         update(bmi088_.getTimestamp());
@@ -123,13 +109,11 @@ void INS::update(float _dt)
     this->dt_ = _dt; // update time interval
 
     // Update DCM algorithm
-    DCM_.update(rawDat_.g.x, rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y,
-                rawDat_.a.z, this->dt_);
+    DCM_.update(rawDat_.g.x, rawDat_.g.y, rawDat_.g.z, rawDat_.a.x, rawDat_.a.y, rawDat_.a.z, this->dt_);
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
-    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2],
-          z = insDat_.q[3];
+    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2], z = insDat_.q[3];
 
     // Get the Euler angles
     insDat_.roll = DCM_.getRoll();
@@ -145,54 +129,57 @@ void INS::update(float _dt)
     insDat_.body.az = rawDat_.a.z;
 
     // Update Rotation Matrix
-#if ROTATION_MATRIX_PITCH_ONLY
-    R_[0][0] = cosf(insDat_.pitch);
-    R_[0][1] = 0.0f;
-    R_[0][2] = sinf(insDat_.pitch);
-    R_[1][0] = 0.0f;
-    R_[1][1] = 1.0f;
-    R_[1][2] = 0.0f;
-    R_[2][0] = -sinf(insDat_.pitch);
-    R_[2][1] = 0.0f;
-    R_[2][2] = cosf(insDat_.pitch);
+#if ROTATION_MATRIX_PITCH_ROLL_ONLY
+    float cp = arm_cos_f32(insDat_.pitch);
+    float sp = arm_sin_f32(insDat_.pitch);
+    float cr = arm_cos_f32(insDat_.roll);
+    float sr = arm_sin_f32(insDat_.roll);
+    // Ry = cp,  0,   sp
+    //      0,   1,   0
+    //     -sp,  0,   cp
+    //
+    // Rx = 1,   0,   0
+    //      0,  cr, -sr
+    //      0,  sr,  cr
+    //
+    // R = Ry * Rx
+    R_(0, 0) = cp;
+    R_(0, 1) = sp * sr;
+    R_(0, 2) = sp * cr;
+    R_(1, 0) = 0.f;
+    R_(1, 1) = cr;
+    R_(1, 2) = -sr;
+    R_(2, 0) = -sp;
+    R_(2, 1) = cp * sr;
+    R_(2, 2) = cp * cr;
 #else
-    R_[0][0] = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
-    R_[0][1] = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
-    R_[0][2] = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy
-    R_[1][0] = 2.f * x * y + 2.f * w * z;       // 2xy + 2wz
-    R_[1][1] = 1.f - 2.f * x * x - 2.f * z * z; // 1-2x^2-2z^2
-    R_[1][2] = 2.f * y * z - 2.f * w * x;       // 2yz - 2wx
-    R_[2][0] = 2.f * x * z - 2.f * w * y;       // 2xz - 2wy
-    R_[2][1] = 2.f * y * z + 2.f * w * x;       // 2xy + 2wz
-    R_[2][2] = 1.f - 2.f * x * x - 2.f * y * y; // 1-2x^2-2y^2
+    R_(0, 0) = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
+    R_(0, 1) = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
+    R_(0, 2) = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy
+    R_(1, 0) = 2.f * x * y + 2.f * w * z;       // 2xy + 2wz
+    R_(1, 1) = 1.f - 2.f * x * x - 2.f * z * z; // 1-2x^2-2z^2
+    R_(1, 2) = 2.f * y * z - 2.f * w * x;       // 2yz - 2wx
+    R_(2, 0) = 2.f * x * z - 2.f * w * y;       // 2xz - 2wy
+    R_(2, 1) = 2.f * y * z + 2.f * w * x;       // 2xy + 2wz
+    R_(2, 2) = 1.f - 2.f * x * x - 2.f * y * y; // 1-2x^2-2y^2
 #endif
 
     // Transform body axis data to earth axis system using the rotation matrix
-    bodyVectorT_[0][0] = insDat_.body.ax;
-    bodyVectorT_[1][0] = insDat_.body.ay;
-    bodyVectorT_[2][0] = insDat_.body.az;
+    bodyVectorT_(0, 0) = insDat_.body.ax;
+    bodyVectorT_(1, 0) = insDat_.body.ay;
+    bodyVectorT_(2, 0) = insDat_.body.az;
     earthVectorT_ = R_ * bodyVectorT_;
-    insDat_.earth.ax = earthVectorT_[0][0];
-    insDat_.earth.ay = earthVectorT_[1][0];
-    insDat_.earth.az = earthVectorT_[2][0];
+    insDat_.earth.ax = earthVectorT_(0, 0);
+    insDat_.earth.ay = earthVectorT_(1, 0);
+    insDat_.earth.az = earthVectorT_(2, 0);
 
-    bodyVectorT_[0][0] = insDat_.body.gx;
-    bodyVectorT_[1][0] = insDat_.body.gy;
-    bodyVectorT_[2][0] = insDat_.body.gz;
+    bodyVectorT_(0, 0) = insDat_.body.gx;
+    bodyVectorT_(1, 0) = insDat_.body.gy;
+    bodyVectorT_(2, 0) = insDat_.body.gz;
     earthVectorT_ = R_ * bodyVectorT_;
-    insDat_.earth.gx = earthVectorT_[0][0];
-    insDat_.earth.gy = earthVectorT_[1][0];
-    insDat_.earth.gz = earthVectorT_[2][0];
-
-    // bodyVectorT_[0][0] = insDat_.body.mx;
-    // bodyVectorT_[1][0] = insDat_.body.my;
-    // bodyVectorT_[2][0] = insDat_.body.mz;
-    // earthVectorT_ = R_ * bodyVectorT_;
-    // insDat_.earth.mx = earthVectorT_[0][0];
-    // insDat_.earth.my = earthVectorT_[1][0];
-    // insDat_.earth.mz = earthVectorT_[2][0];
-
-    // memcpy(&ansINS, &insDat_, sizeof(INSData_s));
+    insDat_.earth.gx = earthVectorT_(0, 0);
+    insDat_.earth.gy = earthVectorT_(1, 0);
+    insDat_.earth.gz = earthVectorT_(2, 0);
 
     // send queue
     insPub_->publish();
