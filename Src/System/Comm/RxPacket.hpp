@@ -61,6 +61,8 @@ public:
 
     uint16_t uid() const { return PacketType::ID; }
 
+    float freq() const { return rxFreq_; }
+
 protected:
     QueueHandle_t queue_;
 

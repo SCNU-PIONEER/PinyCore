@@ -30,7 +30,7 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static Data_u compress(const ProtoData_s &_protoData)
+    static constexpr Data_u compress(const ProtoData_s &_protoData)
     {
         Data_u data;
         Data_u::Data_s &d = data.content;
@@ -40,7 +40,7 @@ public:
         d.reversed = 0;
         return data;
     }
-    static ProtoData_s decompress(const Data_u &_data)
+    static constexpr ProtoData_s decompress(const Data_u &_data)
     {
         ProtoData_s protoData;
         protoData.syncID = _data.content.syncID;
@@ -75,7 +75,7 @@ public:
         uint8_t bytes[LEN];
     };
 #pragma pack(pop)
-    static Data_u compress(const ProtoData_s &_protoData)
+    static constexpr Data_u compress(const ProtoData_s &_protoData)
     {
         Data_u data;
         Data_u::Data_s &d = data.content;
@@ -85,7 +85,7 @@ public:
         d.reversed = 0;
         return data;
     }
-    static ProtoData_s decompress(const Data_u &_data)
+    static constexpr ProtoData_s decompress(const Data_u &_data)
     {
         ProtoData_s protoData;
         protoData.syncID = _data.content.syncID;
@@ -121,7 +121,7 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static Data_u compress(const ProtoData_s &_protoData)
+    static constexpr Data_u compress(const ProtoData_s &_protoData)
     {
         Data_u data;
         Data_u::Data_s &d = data.content;
@@ -132,7 +132,7 @@ public:
         d.reversed = 0;
         return data;
     }
-    static ProtoData_s decompress(const Data_u &_data)
+    static constexpr ProtoData_s decompress(const Data_u &_data)
     {
         ProtoData_s protoData;
         protoData.gimbalReset = _data.content.gimbalReset;

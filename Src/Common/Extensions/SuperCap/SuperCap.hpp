@@ -46,17 +46,15 @@ public:
     static constexpr float DATA_RX_FREQ = 1000.f;  //  应与底盘控制频率相同
     static constexpr float BATTERY_VOLTAGE = 24.f; // 电池电压
 
-    CAP(CAN_HandleTypeDef *_hcan);
+    CAP(canHandle *_hcan);
 
     void registerCapCallback();
     void praseCapData(const uint8_t *_rxbuf);
     bool checkSend();
-    void capTask(float _capChargePower, bool _capEnableFlag, bool _enableCharge,
-                 uint16_t _chassisPower);
+    void capTask(float _capChargePower, bool _capEnableFlag, bool _enableCharge, uint16_t _chassisPower);
     void rxFreqCalc();
 
-    uint8_t capDataSend(float _capChargePower, bool _capEnableFlag,
-                        bool _enableFeedforward, uint16_t _chassisPower);
+    uint8_t capDataSend(float _capChargePower, bool _capEnableFlag, bool _enableFeedforward, uint16_t _chassisPower);
 
     CapData_s &getCapData() { return capData_; }
     float getRxFreq() { return rxFreq_; }
@@ -64,7 +62,7 @@ public:
     float chargeCmdPower = 0.f; //期望电容充电功率
 
 private:
-    CAN_HandleTypeDef *hcan_;
+    canHandle *hcan_;
 
     CapData_s capData_;
     RawCapData_s rawCapData_;

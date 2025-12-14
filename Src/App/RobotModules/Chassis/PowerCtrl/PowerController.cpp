@@ -1,7 +1,6 @@
 #include "PowerController.hpp"
 
-PowerController::PowerController(ChassisType_e _chassisType, CAP *_cap)
-        : cap_(_cap), chassisType_(_chassisType)
+PowerController::PowerController(ChassisType_e _chassisType, CAP *_cap) : cap_(_cap), chassisType_(_chassisType)
 {
     const uint8_t motorNum = static_cast<uint8_t>(chassisType_);
     motorNum_ = motorNum;
@@ -35,19 +34,15 @@ void PowerController::update(RefereeMsg_s _msg)
 
 void PowerController::dynamicPower(float _capVoltage)
 {
-    float bufferDP =
-            std::clamp(energyPid.calc(expPowerBuffer, powerBuffer), -1.f, 1.f);
-    capRealRatio =
-            (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
+    float bufferDP = std::clamp(energyPid.calc(expPowerBuffer, powerBuffer), -1.f, 1.f);
+    capRealRatio = (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
 
     float ratioErr = capRealRatio - capCmdRatio;
-    float capExpRatio =
-            std::clamp(capCmdRatio + (ratioErr * bufferDP), 0.f, 1.f);
+    float capExpRatio = std::clamp(capCmdRatio + (ratioErr * bufferDP), 0.f, 1.f);
 
     offsetPower = powerPid.calc(capExpRatio, capRealRatio);
 
-    maxPower = std::clamp(limitPower - offsetPower, limitPower,
-                          (_capVoltage * CAP_CURRENT_MAX) + limitPower);
+    maxPower = std::clamp(limitPower - offsetPower, limitPower, (_capVoltage * CAP_CURRENT_MAX) + limitPower);
 }
 
 void PowerController::updateReferee(RefereeMsg_s _msg)
@@ -72,7 +67,5 @@ void PowerController::errorCheck(float _refereeFreq, float _capFreq)
     errorState_ = (capError && refereeError) ?
                           ErrorCode_e::ALL_DISCONNECT :
                           (capError ? ErrorCode_e::CAP_DISCONNECT :
-                                      (refereeError ?
-                                               ErrorCode_e::REFREEE_DISCONNECT :
-                                               ErrorCode_e::NO_ERROR));
+                                      (refereeError ? ErrorCode_e::REFREEE_DISCONNECT : ErrorCode_e::NO_ERROR));
 }
