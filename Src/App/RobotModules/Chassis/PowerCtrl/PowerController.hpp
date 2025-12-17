@@ -1,4 +1,6 @@
 #pragma once
+#include "IIR.hpp"
+#include <cstdint>
 #include <vector>
 #include "IMotor.hpp"
 #include "PidBasic.hpp"
@@ -8,21 +10,28 @@
 #include "MsgImpl.hpp"
 
 struct PowerModel_s {
-    float K0;           // k0 Transmit constant（转化系数）
-    float MLC;          // k1 Mechanical loss coefficient （机械损耗系数）
-    float ESR;          // k2 Equivalent Series Resistance（等效串联电阻）
-    float LeakagePower; // k3 静态功耗
+    static constexpr const uint8_t FIT_RANK = 3; //拟合参数个数
+    struct ModelParam_s {
+        float K0;           // k0 Transmit constant（转化系数）
+        float MLC;          // k1 Mechanical loss coefficient （机械损耗系数）
+        float ESR;          // k2 Equivalent Series Resistance（等效串联电阻）
+        float LeakagePower; // k3 静态功耗
+    } modelParams;
+
+    void overrideParams(const ModelParam_s &_params) { modelParams = _params; }
 
     float power(float _tau, float _omega)
     {
         // P = k0 * τ * ω + k1 * ω² + k2 * τ² + k3
-        return (K0 * _tau * _omega) + (MLC * _omega * _omega) + (ESR * _tau * _tau) + LeakagePower;
+        return (modelParams.K0 * _tau * _omega) + (modelParams.MLC * _omega * _omega) +
+               (modelParams.ESR * _tau * _tau) + modelParams.LeakagePower;
     }
 
     float delta(float _omega, float _p)
     {
         // Δ = (k0 * ω)^2 - 4 * k2 * (k1 * ω^2 + k3 - P)
-        return (K0 * _omega * K0 * _omega) - (4.f * ESR * (MLC * _omega * _omega + LeakagePower - _p));
+        return (modelParams.K0 * _omega * modelParams.K0 * _omega) -
+               (4.f * modelParams.ESR * (modelParams.MLC * _omega * _omega + modelParams.LeakagePower - _p));
     }
 };
 
@@ -69,7 +78,7 @@ protected:
     float chassisRealPower_ = 0.f; // 根据模型算出的实际输出功率（与超电反馈功率比较反映模型拟合程度）
     float capFeedbackPower_ = 0.f; // 实际输出功率
 
-    std::vector<float> setIq_;    // 最终设定输出电流
+    std::vector<float> setTorq_;  // 最终设定输出力矩
     std::vector<float> setPower_; // 功率控制后所得的功率
     float powerRatio_ = 1.f;
 

@@ -6,7 +6,7 @@ PowerController::PowerController(ChassisType_e _chassisType, CAP *_cap) : cap_(_
 
     cmdPower_.resize(motorNum_, 0);
     relPower_.resize(motorNum_, 0);
-    setIq_.resize(motorNum_, 0);
+    setTorq_.resize(motorNum_, 0);
     setPower_.resize(motorNum_, 0);
 }
 
@@ -44,7 +44,7 @@ void PowerController::updateReferee(const RefereeMsg_s &_msg)
     limitPower_ = _msg.chassisPowerLimit;
 #else
     powerBuffer_ = 60.f;
-    limitPower_ = 45.f;
+    limitPower_ = 50.f;
 #endif
 }
 

@@ -9,9 +9,17 @@ public:
                                  const RefereeMsg_s &_msg);
 
 private:
-    PowerModel_s Wheel = { .K0 = 0.0001f, .MLC = 0.0001f, .ESR = 0.0001f, .LeakagePower = 4.7f / (float)motorNum_ };
-    RLS<3> wheelRLS_ = RLS<3>(0.999f);
-
+    static constexpr float VEL_THESHOLD = 200.f;
+    PowerModel_s Wheel{};
+    PowerModel_s::ModelParam_s LaunchMotion = { .K0 = 0.001f,
+                                                .MLC = 0.001f,
+                                                .ESR = 0.001f,
+                                                .LeakagePower = 2.5f / (float)motorNum_ };
+    PowerModel_s::ModelParam_s UniformMotion = { .K0 = 0.001f,
+                                                 .MLC = 0.001f,
+                                                 .ESR = 0.001f,
+                                                 .LeakagePower = 2.5f / (float)motorNum_ };
+    RLS<PowerModel_s::FIT_RANK> *wheelRLS_;
     void cmdPowerCalc(const float *_motorSpeed, PINYMOTOR::IMotor *_motor[4], const float *_cmd);
     void relPowerCalc(PINYMOTOR::IMotor *_motor[4]);
     void torqueCalc(PINYMOTOR::IMotor *_motor[4], const float *_cmd);
