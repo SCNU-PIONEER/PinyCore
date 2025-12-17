@@ -10,7 +10,8 @@ Cmd::Cmd()
 {
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
-    msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
+    msgBus_.armorBoosterQueue = xQueueCreate(10, sizeof(ArmorBoosterMsg_s));
+    msgBus_.armorLoaderQueue = xQueueCreate(10, sizeof(ArmorLoaderMsg_s));
     msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
     msgBus_.visionQueue = xQueueCreate(30, sizeof(VisionMsg_s));
     msgBus_.navigationQueue = xQueueCreate(30, sizeof(NavMsg_s));

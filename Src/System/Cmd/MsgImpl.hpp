@@ -28,7 +28,6 @@ enum class FSMState_e : uint8_t;
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
-    QueueHandle_t armQueue;
     QueueHandle_t armorBoosterQueue;
     QueueHandle_t armorLoaderQueue;
     QueueHandle_t refereeQueue;
@@ -45,10 +44,6 @@ struct ChassisMsg_s : public Msg {
 struct GimbalMsg_s : public Msg {
     GIMBAL::FSMState_e state;
     float wRoll, wPitch, wYaw;
-};
-
-struct ArmMsg_s : public Msg {
-    float j1, j2, j3, j4, j5, j6;
 };
 
 struct ArmorBoosterMsg_s : public Msg {

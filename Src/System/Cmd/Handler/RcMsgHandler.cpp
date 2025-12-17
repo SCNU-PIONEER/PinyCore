@@ -1,4 +1,6 @@
 #include "RcMsgHandler.hpp"
+#include "ArmorBooster.hpp"
+#include "ArmorLoader.hpp"
 #include <algorithm>
 #include "sdkconfig.h"
 
@@ -13,8 +15,7 @@
 #include <cstring>
 
 
-RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart,
-                           EventGroupHandle_t &_event)
+RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event)
 {
 #if EXTENSION_DT7 == 1
     rc = std::make_unique<Rc>(_huart, _event);
@@ -72,71 +73,78 @@ void RcMsgHandler::handle()
     masterHandle();
 }
 
-void RcMsgHandler::chassisHandle()
-{
-    if (rcMsg_.rSwitch == RC_SW_DOWN) {
-        cmsg_.state = CHASSIS::FSMState_e::STOP;
-        cmsg_.vx = 0.f;
-        cmsg_.vy = 0.f;
-        cmsg_.yaw = 0.f;
-    } else if (rcMsg_.rSwitch == RC_SW_MID) {
-        cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx =
-                SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100); // Scale to m/s
-        cmsg_.vy =
-                -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100); // Scale to m/s
-        float dyaw =
-                SMOOTH::sCurve(ROCKER_WZ_GAIN, rcMsg_.lx, 100); // Scale to m/s
-        cmsg_.yaw += dyaw;
-        constexpr float TWO_PI = 2.0f * M_PI;
-        if (cmsg_.yaw > M_PI) {
-            cmsg_.yaw -= TWO_PI;
-        } else if (cmsg_.yaw < -M_PI) {
-            cmsg_.yaw += TWO_PI;
-        }
-    } else {
-        return;
-    }
-    notify(&cmsg_, msgBus_->chassisQueue);
-}
+void RcMsgHandler::chassisHandle() {}
 
 void RcMsgHandler::masterHandle()
 {
     if (rcMsg_.rSwitch == RC_SW_DOWN) {
         // gimbal
-        gmsg_.state = GIMBAL::FSMState_e::STOP;
-        gmsg_.wPitch = gmsg_.wYaw = 0.f;
+        gimbalMsg_.state = GIMBAL::FSMState_e::STOP;
+        gimbalMsg_.wPitch = gimbalMsg_.wYaw = 0.f;
         // chassis
-        cmsg_.state = CHASSIS::FSMState_e::STOP;
-        cmsg_.vx = cmsg_.vy = 0.f;
+        chassisMsg_.state = CHASSIS::FSMState_e::STOP;
+        chassisMsg_.vx = chassisMsg_.vy = 0.f;
+        // ArmorLoader
+        armorLoaderMsg_.state = ARMORLOADER::FSMState_e::STOP;
+        armorLoaderMsg_.fire = false;
+        // ArmorBooster
+        armorBoosterMsg_.state = ARMORBOOSTER::FSMState_e::OFF;
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
-        // gimbal
-        gmsg_.state = GIMBAL::FSMState_e::RUN;
-        gmsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, 100);
-        gmsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, 100);
-        // chassis
-        cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100);
-        cmsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100);
+        chassisMsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
+        chassisMsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+        if (rcMsg_.lSwitch == RC_SW_DOWN) {
+            // gimbal
+            gimbalMsg_.state = GIMBAL::FSMState_e::RUN;
+            // chassis
+            chassisMsg_.state = CHASSIS::FSMState_e::RUN;
+            // ArmorLoader
+            armorLoaderMsg_.state = ARMORLOADER::FSMState_e::STOP;
+            // ArmorBooster
+            armorBoosterMsg_.state = ARMORBOOSTER::FSMState_e::OFF;
+        } else if (rcMsg_.lSwitch == RC_SW_MID) {
+            // gimbal
+            gimbalMsg_.state = GIMBAL::FSMState_e::PATROL;
+            // chassis
+            chassisMsg_.state = CHASSIS::FSMState_e::RUN;
+            // ArmorLoader
+            armorLoaderMsg_.state = ARMORLOADER::FSMState_e::AUTO;
+            // ArmorBooster
+            armorBoosterMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+        } else if (rcMsg_.lSwitch == RC_SW_UP) {
+            // ArmorLoader
+            armorLoaderMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+            // ArmorBooster
+            armorBoosterMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+        }
+        armorLoaderMsg_.fire = rcMsg_.wheelRocker > WHEEL_THESHORLD || rcMsg_.wheelRocker < -WHEEL_THESHORLD;
+        gimbalMsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
+
     } else if (rcMsg_.rSwitch == RC_SW_UP) {
         // gimbal
-        gmsg_.state = GIMBAL::FSMState_e::PATROL;
-        gmsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, 100);
-        gmsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, 100);
+        gimbalMsg_.state = GIMBAL::FSMState_e::RUN;
+        gimbalMsg_.wPitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg_.wYaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
         // chassis
-        cmsg_.state = CHASSIS::FSMState_e::RUN;
-        cmsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, 100);
-        cmsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, 100);
-    }
-
-    else {
+        if (rcMsg_.lSwitch == RC_SW_DOWN) {
+            chassisMsg_.state = CHASSIS::FSMState_e::RUN;
+        } else {
+            // chassisMsg_.state = CHASSIS::FSMState_e::SPIN;
+        }
+        chassisMsg_.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
+        chassisMsg_.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+        // ArmorLoader
+        armorLoaderMsg_.state = ARMORLOADER::FSMState_e::STOP;
+        armorLoaderMsg_.fire = false;
+        // ArmorBooster
+        armorBoosterMsg_.state = ARMORBOOSTER::FSMState_e::OFF;
+    } else {
         return;
     }
-    notify(&cmsg_, msgBus_->chassisQueue);
-    notify(&gmsg_, msgBus_->gimbalQueue);
+    notify(&chassisMsg_, msgBus_->chassisQueue);
+    notify(&gimbalMsg_, msgBus_->gimbalQueue);
+    notify(&armorLoaderMsg_, msgBus_->armorLoaderQueue);
+    notify(&armorBoosterMsg_, msgBus_->armorBoosterQueue);
 }
 
-void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
-{
-    xQueueSend(_queue, _msg, 0);
-}
+void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }

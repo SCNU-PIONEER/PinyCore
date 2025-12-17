@@ -12,42 +12,42 @@ namespace MINIPC {
 
 #pragma pack(push, 1)
 typedef struct {
-    uint8_t visionHeader; // 0x5A
-    uint8_t localColor : 1;
+    uint8_t header;
+    uint8_t detectColor : 1;
     uint8_t taskMode : 2;
     bool resetTracker : 1;
-    uint8_t isPlay : 1;
-    bool targetChange : 1;
+    bool isPlay : 1;
+    bool changeTarget : 1;
     uint8_t reserved : 2;
     float roll;
     float pitch;
-    float yaw; // 主要需要两个轴的角度数据
-    float aimX;
-    float aimY;
-    float aimZ; // aim的三个参数主要可以提供给视觉调试时使用，可不发送数据
-    uint16_t gameTime;
-    uint32_t sTimestamp;
-    uint16_t checkSum;
+    float yaw;
+    float aimX;        // unuse
+    float aimY;        // unuse
+    float aimZ;        // unuse
+    uint16_t gameTime; // s [0,450]
+    uint32_t timestamp;
+    uint16_t checksum;
 } EcToVision_s;
 
 typedef struct {
-    uint8_t visionHeader; // 0xA5
-    uint8_t target : 2;
-    uint8_t idNum : 3;
-    uint8_t armorNum : 3;
-    float x, y,
-            z; // 在世界坐标系（imu的坐标系中的位置），z的值为当前瞄准装甲板的高度
-    float yaw; // 当前瞄准的装甲板朝向（在imu坐标系中的角度）
-    float vx;
-    float vy;
-    float vz;
-    float vYaw;          // 小陀螺速度
-    float r1;            // 当前瞄准的装甲板与车身中心的水平距离
-    float r2;            // 另一侧装甲板与车身中心的水平距离
-    float dz;            // 另一侧装甲板的高度
-    uint32_t rTimestamp; //(ms)frame capture time
-    uint16_t firstPhase; //(ms) speed_t offset
-    uint16_t checkSum;
+    uint8_t header; // 0xA5
+    uint8_t control;
+    uint8_t fire;
+    float targetYaw;
+    float targetPitch;
+    float yaw;
+    float yawVel;
+    float yawAcc;
+    float pitch;
+    float pitchVel;
+    float pitchAcc;
+    float yawDiff;
+    float pitchDiff;
+    float distance;
+    uint32_t capTimestamp;
+    uint16_t tOffset;
+    uint16_t checksum;
 } VisionToEc_s;
 #pragma pack(pop)
 
@@ -66,7 +66,8 @@ public:
 
     void rxFreqCalc();
     float getRxFreq() { return rxFreq_; }
-    VisionToEc_s &getVisionToEcDataPtr() { return visionToEcDatas_; };
+    VisionToEc_s &visionToEData() { return visionToEcDatas_; };
+    EcToVision_s &eToVData() { return ecToVisionDatas_; };
 
 private:
     VisionToEc_s visionToEcDatas_;

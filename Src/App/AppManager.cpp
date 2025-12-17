@@ -10,8 +10,6 @@
 #include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
 #include "Bsp.hpp"
-#include CHASSIS_FILE
-#include GIMBAL_FILE
 #include "Lazy.hpp"
 
 #if APP_USE_DAEMONS
@@ -37,7 +35,7 @@ Lazy<MINIPC::PcManager> miniPcManager;
 #endif
 
 #ifdef CHASSIS_TYPE
-#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+#if !APP_USE_COMM || TARGET_SLAVE
 #include CHASSIS_FILE
 Lazy<CHASSIS::CHASSIS_TYPE> chassis;
 #include ARMORLOADER_FILE
@@ -45,7 +43,7 @@ Lazy<ARMORLOADER::ARMORLOADER_TYPE> armorLoader;
 #endif
 #endif
 #ifdef GIMBAL_TYPE
-#if !APP_USE_COMM || APP_GIMBAL_MASTER
+#if !APP_USE_COMM || TARGET_MASTER
 #include GIMBAL_FILE
 Lazy<GIMBAL::GIMBAL_TYPE> gimbal;
 #include ARMORBOOSTER_FILE
@@ -92,13 +90,13 @@ void AppManager::initApp()
     schedule([]() { daemon->update(); });
 #endif
 
-#if !APP_USE_COMM || APP_CHASSIS_SLAVE
+#if !APP_USE_COMM || TARGET_SLAVE
     chassis.init();
     schedule([]() { chassis->update(cmd->getMsgBus()); });
     armorLoader.init();
     schedule([]() { armorLoader->update(cmd->getMsgBus()); });
 #endif
-#if !APP_USE_COMM || APP_GIMBAL_MASTER
+#if !APP_USE_COMM || TARGET_MASTER
     gimbal.init();
     schedule([]() { gimbal->update(cmd->getMsgBus()); });
     armorBooster.init();

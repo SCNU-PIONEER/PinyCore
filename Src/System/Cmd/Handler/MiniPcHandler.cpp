@@ -21,18 +21,15 @@ void MiniPcHandler::handle()
 #if APP_USE_VISION
     vision->parseData();
     vision->rxFreqCalc();
-    visionMsg_.x = vision->getVisionToEcDataPtr().x;
-    visionMsg_.y = vision->getVisionToEcDataPtr().y;
-    visionMsg_.z = vision->getVisionToEcDataPtr().z;
     notify(&visionMsg_, msgBus_->visionQueue);
 #endif
 #if APP_USE_NAV
     nav->parseData();
     nav->rxFreqCalc();
-    navMsg_.decision = nav->getNavToEcDataPtr().decision;
-    navMsg_.vx = nav->getNavToEcDataPtr().vx;
-    navMsg_.vy = nav->getNavToEcDataPtr().vy;
-    navMsg_.wz = nav->getNavToEcDataPtr().wz;
+    navMsg_.decision = nav->navToEData().decision;
+    navMsg_.vx = nav->navToEData().vx;
+    navMsg_.vy = nav->navToEData().vy;
+    navMsg_.wz = nav->navToEData().wz;
     notify(&navMsg_, msgBus_->navigationQueue);
 #endif
 }

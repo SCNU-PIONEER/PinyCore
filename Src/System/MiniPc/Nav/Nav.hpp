@@ -53,7 +53,8 @@ public:
 
     void rxFreqCalc();
     float getRxFreq() { return rxFreq_; }
-    NavToEc_s &getNavToEcDataPtr() { return navToEcDatas_; };
+    NavToEc_s &navToEData() { return navToEcDatas_; };
+    EcToNav_s &ecToNavData() { return ecToNavDatas_; };
 
 private:
     NavToEc_s navToEcDatas_;

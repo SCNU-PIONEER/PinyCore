@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-enum class MsgType_e : uint8_t { CHASSIS = 0, GIMBAL, ARM, VISION, NAV };
+enum class MsgType_e : uint8_t { CHASSIS = 0, GIMBAL, VISION, NAV };
 
 class Msg {
 public:

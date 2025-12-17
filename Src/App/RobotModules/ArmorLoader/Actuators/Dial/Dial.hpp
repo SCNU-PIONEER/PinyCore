@@ -11,7 +11,7 @@
 
 namespace ARMORLOADER {
 
-class ShooterCtrlRxPacket : public COMM::RxPacket<COMM::ArmorBoosterPacket, 1> {
+class ShooterCtrlRxPacket : public COMM::RxPacket<COMM::ArmorBoosterPacketType, 1> {
     friend class Dial;
     ShooterCtrlRxPacket() { registerCallback(); }
     void registerCallback() final;
