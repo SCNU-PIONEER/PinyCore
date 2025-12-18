@@ -2,6 +2,7 @@
 
 #include "./utils.hpp"
 #include <cstring>
+#include <cmath>
 
 namespace COMM {
 
@@ -152,17 +153,19 @@ public:
         uint8_t state;
         float vx;
         float vy;
+        float wz;
         float deltaYaw;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
             bool gimbalReset : 1;
-            int16_t vx : 16;
-            int16_t vy : 16;
+            int16_t vx : 14;
+            int16_t vy : 14;
+            int16_t wz : 14;
             int16_t deltaYaw : 16;
-            uint8_t state : 8;
-            uint16_t reversed : 7;
+            uint8_t state : 3;
+            uint16_t reversed : 2;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -172,8 +175,9 @@ public:
         Data_u data;
         Data_u::Data_s &d = data.content;
         d.gimbalReset = _protoData.gimbalReset;
-        d.vx = static_cast<int16_t>(_protoData.vx * 1000.f);
-        d.vy = static_cast<int16_t>(_protoData.vy * 1000.f);
+        d.vx = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.vx * 1000.f)));
+        d.vy = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.vy * 1000.f)));
+        d.wz = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.wz * 1000.f)));
         d.state = _protoData.state;
         d.deltaYaw = convertToInt16(_protoData.deltaYaw);
         d.reversed = 0;
@@ -185,6 +189,7 @@ public:
         protoData.gimbalReset = _data.content.gimbalReset;
         protoData.vx = static_cast<float>(_data.content.vx) / 1000.f;
         protoData.vy = static_cast<float>(_data.content.vy) / 1000.f;
+        protoData.wz = static_cast<float>(_data.content.wz) / 1000.f;
         protoData.state = _data.content.state;
         protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
         return protoData;

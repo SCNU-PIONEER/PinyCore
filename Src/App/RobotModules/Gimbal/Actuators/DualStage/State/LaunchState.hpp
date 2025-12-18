@@ -9,16 +9,12 @@
 #include "IIR.hpp"
 #include <cstdint>
 
-static PositionalPid gLauPosPid[3] = {
-    PositionalPid(40.f, 0.1f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(60.f, 1.f, 0.01f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-    PositionalPid(45.f, 0.7f, 0.005f, 1.f / 1000.f, 1.f, 120.f, 0.f)
-};
-static PositionalPid gLauVelPid[3] = {
-    PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.02f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-    PositionalPid(0.015f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f)
-};
+static PositionalPid gLauPosPid[3] = { PositionalPid(40.f, 0.1f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+                                       PositionalPid(60.f, 1.f, 0.01f, 1.f / 1000.f, 1.f, 120.f, 0.f),
+                                       PositionalPid(45.f, 0.7f, 0.005f, 1.f / 1000.f, 1.f, 120.f, 0.f) };
+static PositionalPid gLauVelPid[3] = { PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+                                       PositionalPid(0.02f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+                                       PositionalPid(0.015f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f) };
 
 namespace GIMBAL {
 
@@ -33,8 +29,7 @@ class LaunchState : public FSMState<FSMState_e> {
     static constexpr float SECOND_YAW_LAUNCH_STEP = 0.05f;
 
 public:
-    LaunchState(DualStage *_gimbal)
-            : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
+    LaunchState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
     {
         for (uint8_t i = 0; i < 3; i++) {
             lauPosPid_._[i] = &gLauPosPid[i];
@@ -59,12 +54,9 @@ public:
         // determine if the target position (0) has been reached
         launchTotalTime_++;
 
-        if (std::fabs(PINYMOTOR::getMinorArc(0, cMA.Pitch)) <
-                    PITCH_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, cMA.FirstYaw)) <
-                    YAW_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, cMA.SecondYaw)) <
-                    YAW_LAUNCH_ANG_DEADBAND) {
+        if (std::fabs(PINYMOTOR::getMinorArc(0, cMA.Pitch)) < PITCH_LAUNCH_ANG_DEADBAND &&
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA.FirstYaw)) < YAW_LAUNCH_ANG_DEADBAND &&
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA.SecondYaw)) < YAW_LAUNCH_ANG_DEADBAND) {
             launchFinishTime_++;
         } else {
             launchFinishTime_ = 0;
@@ -80,7 +72,7 @@ public:
     void exit() final
     {
         finishLaunching_ = true;
-        gimbal_->gimbalYawMsg.isReset = true;
+        gimbal_->loadResetState(true);
 
         for (uint8_t i = 0; i < 3; i++) {
             lauPosPid_._[i]->reset();

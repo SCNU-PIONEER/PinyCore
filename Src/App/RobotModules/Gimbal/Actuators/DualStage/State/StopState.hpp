@@ -9,17 +9,14 @@ namespace GIMBAL {
 
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(DualStage *_gimbal)
-            : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal)
-    {
-    }
+    StopState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal) {}
 
     void enter() final
     {
         for (auto &i : gimbal_->gimbalFilter()->_) {
             i->reset();
         }
-        gimbal_->gimbalYawMsg.isReset = false;
+        gimbal_->loadResetState(false);
         gimbal_->stop();
         LOG::info("GimbalStop", "enter");
     }

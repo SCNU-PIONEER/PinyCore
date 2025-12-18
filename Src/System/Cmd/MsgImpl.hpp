@@ -38,7 +38,7 @@ struct MsgBus_s {
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct ChassisMsg_s : public Msg {
     CHASSIS::FSMState_e state;
-    float vx, vy, yaw;
+    float vx, vy, wz;
 };
 
 struct GimbalMsg_s : public Msg {

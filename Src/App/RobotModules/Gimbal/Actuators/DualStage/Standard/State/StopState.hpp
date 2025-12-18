@@ -3,22 +3,16 @@
 #include "Standard.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
-
 namespace GIMBAL {
 
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Standard *_gimbal)
-            : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal)
-    {
-    }
+    StopState(Standard *_gimbal) : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal) {}
 
     void enter() final
     {
-        gimbal_->outFilrYaw.reset();
-        gimbal_->outFilrPitch.reset();
-        gimbal_->gimbalYawMsg.isReset = false;
-        gimbal_->stop();
+        gimbal_->loadResetState(false);
+
         LOG::info("GimbalStop", "enter");
     }
 
@@ -40,4 +34,4 @@ private:
     Standard *gimbal_;
 };
 
-}  // namespace GIMBAL
+} // namespace GIMBAL
