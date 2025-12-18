@@ -9,6 +9,10 @@
 #include "IIR.hpp"
 #include "LPF.hpp"
 
+#include "TxPacket.hpp"
+#include "RxPacket.hpp"
+#include "PacketImpl.hpp"
+
 namespace CHASSIS {
 
 //以下两个模板专为舵向电机使用(控制较为复杂)
@@ -64,6 +68,13 @@ union Motors_u {
     PINYMOTOR::IMotor *_[8];
 };
 
+class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
+    friend class Swerve;
+    // TODO: slightly cumbersome like this or CRTP
+    ChassisCtrlRxPacket() { registerCallback(); }
+    void registerCallback() final;
+};
+
 //喵板
 class Swerve : public Chassis {
 public:
@@ -80,6 +91,11 @@ public:
     void enter();
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
+
+    void loadDeltaYaw();
+    bool isGimbalReset() const;
+
+    float deltaYaw = 0.f;
 
 protected:
     /*
@@ -101,14 +117,45 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
-    //舵轮零位角度，用于回正方向,rad
-    float SwerveZero[4] = { 3.6206367f, 0.556135f, 4.248f, 3.03151608f };
+    ChassisCtrlRxPacket chassisCtrlRxPacket_;
 
-    Swerve_u<float> curDir;                       //舵轮当前方向角
-    Swerve_u<float> expDir;                       //舵轮期望方向角
-    SwervePtr_u<PositionalPid> swervePosPid_;     //舵轮位置环
-    SwervePtr_u<PositionalPid> swerveVelPid_;     //舵轮速度环
-    SwervePtr_u<FILTER::LPF> swerveFilterOutput_; //舵轮输出滤波器
+    Subscriber<INS_SYS::INSData_s> *insSub_;
+    INS_SYS::INSData_s insData_ = {};
+
+    float cosYaw_ = 0.f;
+    float sinYaw_ = 0.f;
+
+    //舵轮零位角度，用于回正方向,rad
+    float SwerveZero[4] = {
+        3.6206367f,
+        0.556135f,
+        4.248f,
+        3.03151608f,
+    };
+
+    Swerve_u<float> curDir; //舵轮当前方向角
+    Swerve_u<float> expDir; //舵轮期望方向角
+    //舵轮位置环
+    SwervePtr_u<PositionalPid> swervePosPid_ = {
+        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
+    };
+    //舵轮速度环
+    SwervePtr_u<PositionalPid> swerveVelPid_ = {
+        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    };
+    //舵轮输出滤波器
+    SwervePtr_u<FILTER::LPF> swerveFilterOutput_ = {
+        new FILTER::LPF(1000.f, 4.f),
+        new FILTER::LPF(1000.f, 4.f),
+        new FILTER::LPF(1000.f, 4.f),
+        new FILTER::LPF(1000.f, 4.f),
+    };
 };
 
 } // namespace CHASSIS

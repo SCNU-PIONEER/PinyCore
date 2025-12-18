@@ -7,10 +7,9 @@
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
-
+#include "PacketImpl.hpp"
 #include "TxPacket.hpp"
 #include "RxPacket.hpp"
-#include "PacketImpl.hpp"
 
 namespace GIMBAL {
 
@@ -39,15 +38,14 @@ static inline float rangeConversion(float _ang)
     return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
 };
 
-
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
-    friend class Standard;
+    friend class DualStage;
     // ChassisCtrlTxPacket() : TxPacket(200.f) {}
     void transmit(uint8_t *_buf, uint16_t _len) final;
 };
 
 class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
-    friend class Standard;
+    friend class DualStage;
     // ShooterCtrlTxPacket() : TxPacket(200.f) {}
     void transmit(uint8_t *_buf, uint16_t _len) final;
 };

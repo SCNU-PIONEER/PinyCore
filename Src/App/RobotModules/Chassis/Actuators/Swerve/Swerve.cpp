@@ -24,28 +24,17 @@ using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
 
-//以下数组均可调，未测试
-static PositionalPid swervePosPid[4] = { PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-                                         PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-                                         PositionalPid(12.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-                                         PositionalPid(15.f, 0.002f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f) };
-static PositionalPid swerveVelPid[4] = { PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-                                         PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-                                         PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-                                         PositionalPid(0.01f, 0.0015f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f) };
-//此滤波并没有调参
-static FILTER::LPF swerveFilterOutput[4]{ FILTER::LPF(1000.f, 4.f), FILTER::LPF(1000.f, 4.f), FILTER::LPF(1000.f, 4.f),
-                                          FILTER::LPF(1000.f, 4.f) };
+void ChassisCtrlRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(&HCAN1, uid(), [this](const uint8_t *_rxBuf) {
+        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+    });
+    LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
+}
 
 Swerve::Swerve()
 {
     for (uint8_t i = 1; i <= 4; i++) {
-        //输出滤波初始化
-        swerveFilterOutput_._[i - 1] = &swerveFilterOutput[i - 1];
-        //舵轮pid初始化
-        swervePosPid_._[i - 1] = &swervePosPid[i - 1];
-        swerveVelPid_._[i - 1] = &swerveVelPid[i - 1];
-
         InitConfig_s gm6020Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
             .comType = ComType_e::CAN,
@@ -95,11 +84,20 @@ void Swerve::enter()
     }
 }
 
-
 void Swerve::update(void *_param)
 {
+#if !APP_USE_COMM
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
+#else
+    msg.state = static_cast<FSMState_e>(chassisCtrlRxPacket_.data().state);
+    msg.vx = chassisCtrlRxPacket_.data().vx;
+    msg.vy = chassisCtrlRxPacket_.data().vy;
+    msg.wz = chassisCtrlRxPacket_.data().wz;
+    // TODO: yaw
+    loadDeltaYaw();
+#endif
+
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRpm;
         curDir._[i] = motors_._[i + 4]->data().ang;
@@ -267,3 +265,15 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     // powerCtrl_->powerCtrl(refWSpeed._);
     // }
 }
+
+void Swerve::loadDeltaYaw()
+{
+    // Master Board method
+    insSub_->receive();
+    deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
+
+    cosYaw_ = arm_cos_f32(deltaYaw);
+    sinYaw_ = arm_sin_f32(deltaYaw);
+};
+
+bool Swerve::isGimbalReset() const { return chassisCtrlRxPacket_.data().gimbalReset; }

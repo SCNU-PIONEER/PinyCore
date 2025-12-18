@@ -29,6 +29,17 @@ static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 5.f),
 };
 
+void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
+{
+    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+}
+
+void ShooterCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
+{
+    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+}
+
+
 DualStage::DualStage()
 {
     for (uint8_t i = 0; i < 3; i++) {
