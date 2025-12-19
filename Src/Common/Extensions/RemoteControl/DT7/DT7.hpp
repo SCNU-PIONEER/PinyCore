@@ -20,8 +20,6 @@
 #include "Bsp.hpp"
 #include "remoteControl.hpp"
 
-#define RC_READY_EVENT (1 << 1)
-
 class DT7 final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 18;
 
@@ -82,7 +80,7 @@ public:
     };
 #pragma pack(pop)
 
-    DT7(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
+    DT7(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event, uint32_t _eventBit);
     ~DT7() final;
     bool isOnline() final;
 
@@ -91,7 +89,7 @@ public:
 private:
     void parse() final;
     void convert(RcMsg_t &_msg) final;
-    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos) final;
+    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
 
     RcData_s data_;
 };

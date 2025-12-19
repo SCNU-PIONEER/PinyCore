@@ -18,9 +18,9 @@
 RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event)
 {
 #if EXTENSION_DT7 == 1
-    rc = std::make_unique<DT7>(_huart, _event);
+    rc = std::make_unique<DT7>(_huart, _event, this->bit_);
 #elif EXTENSION_ET08A == 1
-    rc = std::make_unique<ET08A>(_huart, _event);
+    rc = std::make_unique<ET08A>(_huart, _event, this->bit_);
 #endif
 };
 
@@ -39,8 +39,6 @@ void RcMsgHandler::handle()
 
     memcpy(&rcMsgPrev_, &rcMsg_, sizeof(RcMsg_t));
 }
-
-void RcMsgHandler::chassisHandle() {}
 
 void RcMsgHandler::masterHandle() {}
 

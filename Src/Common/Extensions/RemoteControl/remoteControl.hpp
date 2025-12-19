@@ -18,7 +18,7 @@ public:
     virtual void *getData() = 0;
 
 protected:
-    virtual void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos) = 0;
+    virtual void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) = 0;
 
     Uart uart_;
     uint8_t *buf_ = nullptr;

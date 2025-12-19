@@ -4,12 +4,12 @@
 #include "ET08A.hpp"
 #include "Handler.hpp"
 
-class RcMsgHandler : public Handler {
+class RcMsgHandler final : public Handler {
 public:
     RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
-    void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
-    void handle() override;
-    void notify(Msg *_msg, QueueHandle_t _queue) override;
+    void init(MsgBus_s *_bus, EventGroupHandle_t _event) final;
+    void handle() final;
+    void notify(Msg *_msg, QueueHandle_t _queue) final;
 
 private:
     RcMsg_t rcMsg_ = {};
@@ -18,10 +18,5 @@ private:
 
     MsgBus_s *msgBus_;
 
-    void chassisHandle();
     void masterHandle();
-
-    ChassisMsg_s cmsg_;
-
-    UART_HandleTypeDef *_uart;
 };

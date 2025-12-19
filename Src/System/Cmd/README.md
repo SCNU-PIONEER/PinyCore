@@ -12,7 +12,7 @@ Cmd 处于应用层，它本身不直接处理底层硬件协议，而是：
 
 # 数据流总结
 1. 中断：遥控器串口接收完成一帧数据。
-2. Extensions：Rc 对象解析原始数据，设置 RC_READY_EVENT 事件。
+2. Extensions：Rc 对象解析原始数据，设置事件。
 3. Cmd：
     Cmd::task 检测到事件，调用 RcMsgHandler::handle()。
     handle() 方法读取并平滑摇杆数据。

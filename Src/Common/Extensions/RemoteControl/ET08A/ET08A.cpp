@@ -2,11 +2,14 @@
 #include "RcMsg.hpp"
 #include <cstring>
 
-ET08A::ET08A(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event) : RemoteControl(_huart, 2 * FRAME_LENGTH, _event)
+ET08A::ET08A(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event, uint32_t _eventBit)
+        : RemoteControl(_huart, 2 * FRAME_LENGTH, _event)
 {
+    // Should be executed after MX_USARTx_UART_Init()
     uart_.recvDmaMultiBufInit((uint32_t *)buf_, 2 * FRAME_LENGTH);
-    uart_.registerCallback(
-            [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) { callBackFromISR(_huart, _dataLength); });
+    uart_.registerCallback([this, _eventBit](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
+        callBackFromISR(_huart, _dataLength, _eventBit);
+    });
 
     rxLostCnt_ = RX_LOST_MAX;
 }
@@ -17,7 +20,7 @@ ET08A::~ET08A()
     uart_.unregisterCallback();
 }
 
-void ET08A::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
+void ET08A::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit)
 {
     uint16_t size = _huart->RxXferCount;
     // NOLINTBEGIN(readability-redundant-casting)
@@ -27,7 +30,7 @@ void ET08A::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
         __HAL_DMA_SET_COUNTER(_huart->hdmarx, 2 * FRAME_LENGTH);
         if (size == FRAME_LENGTH) {
             if (buf_[0] == 0x0f) {
-                xEventGroupSetBitsFromISR(event_, ET08A_READY_EVENT, nullptr);
+                xEventGroupSetBitsFromISR(event_, _eventBit, nullptr);
             }
         }
     } else {
@@ -36,7 +39,7 @@ void ET08A::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos)
         __HAL_DMA_SET_COUNTER(_huart->hdmarx, 2 * FRAME_LENGTH);
         if (size == FRAME_LENGTH) {
             if (buf_[0] == 0x0f) {
-                xEventGroupSetBitsFromISR(event_, ET08A_READY_EVENT, nullptr);
+                xEventGroupSetBitsFromISR(event_, _eventBit, nullptr);
             }
         }
     }

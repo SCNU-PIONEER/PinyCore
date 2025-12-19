@@ -22,8 +22,6 @@
 #include "event_groups.h"
 #include "remoteControl.hpp"
 
-#define ET08A_READY_EVENT (1 << 3)
-
 class ET08A final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 25;
 
@@ -52,7 +50,7 @@ public:
     };
 #pragma pack(pop)
 
-    ET08A(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
+    ET08A(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event, uint32_t _eventBit);
     ~ET08A() final;
     bool isOnline() final;
     void *getData() final;
@@ -60,7 +58,7 @@ public:
 private:
     void parse() final;
     void convert(RcMsg_t &_msg) final;
-    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos) final;
+    void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
 
     Sbus_s sbus_{};
     RcData_s data_{};
