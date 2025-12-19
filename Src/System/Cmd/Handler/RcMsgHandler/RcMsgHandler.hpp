@@ -1,8 +1,8 @@
 #pragma once
 #include "Bsp.hpp"
-#include "DT7.hpp"
-#include "ET08A.hpp"
 #include "Handler.hpp"
+
+#define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
 
 class RcMsgHandler final : public Handler {
 public:
@@ -12,10 +12,6 @@ public:
     void notify(Msg *_msg, QueueHandle_t _queue) final;
 
 private:
-    RcMsg_t rcMsg_ = {};
-
-    RcMsg_t rcMsgPrev_ = {};
-
     MsgBus_s *msgBus_;
 
     void masterHandle();

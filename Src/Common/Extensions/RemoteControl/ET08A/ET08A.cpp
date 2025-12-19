@@ -1,5 +1,4 @@
 #include "ET08A.hpp"
-#include "RcMsg.hpp"
 #include <cstring>
 
 ET08A::ET08A(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event, uint32_t _eventBit)
@@ -69,42 +68,6 @@ void ET08A::parse()
     data_.wheel = sbus_.ch[6];
 
     rxLostCnt_ = 0;
-}
-
-void ET08A::convert(RcMsg_t &_msg)
-{
-    memset(&_msg, 0, sizeof(RcMsg_t));
-
-    _msg.rx = static_cast<float>(data_.ch0) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.ry = static_cast<float>(data_.ch1) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.lx = static_cast<float>(data_.ch2) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.ly = static_cast<float>(data_.ch3) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-
-    switch (data_.switchRight) {
-    case Sw_e::UP:
-        _msg.rSwitch = RcSw_e::UP;
-        break;
-    case Sw_e::MID:
-        _msg.rSwitch = RcSw_e::MID;
-        break;
-    default:
-        _msg.rSwitch = RcSw_e::DOWN;
-        break;
-    }
-
-    switch (data_.switchLeft) {
-    case Sw_e::UP:
-        _msg.lSwitch = RcSw_e::UP;
-        break;
-    case Sw_e::MID:
-        _msg.lSwitch = RcSw_e::MID;
-    default:
-        break;
-        _msg.lSwitch = RcSw_e::DOWN;
-        break;
-    }
-
-    _msg.slider = static_cast<float>(data_.wheel - 1024) / WHEEL_VALUE_RANGE * RC_SLIDER_MAX;
 }
 
 bool ET08A::isOnline()

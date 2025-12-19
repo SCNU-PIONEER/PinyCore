@@ -24,16 +24,15 @@
 
 class ET08A final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 25;
-
-    static constexpr uint16_t CH_VALUE_OFFSET = 1024;
-    static constexpr uint16_t CH_VALUE_RANGE = 670;
-    static constexpr uint16_t WHEEL_VALUE_RANGE = (1694 - 353) / 2;
-
     static constexpr uint8_t RX_LOST_MAX = 15;
+
+public:
+    static constexpr uint16_t CH_VALUE_MIN = 353;
+    static constexpr uint16_t CH_VALUE_OFFSET = 1024;
+    static constexpr uint16_t CH_VALUE_MAX = 1694;
 
     enum class Sw_e : uint16_t { UP = 353, MID = 1024, DOWN = 1694 };
 
-public:
 #pragma pack(push, 1)
     struct Sbus_s {
         uint16_t ch[8];
@@ -57,7 +56,6 @@ public:
 
 private:
     void parse() final;
-    void convert(RcMsg_t &_msg) final;
     void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
 
     Sbus_s sbus_{};

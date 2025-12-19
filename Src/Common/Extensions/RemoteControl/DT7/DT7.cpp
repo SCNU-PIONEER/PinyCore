@@ -85,46 +85,6 @@ void DT7::parse()
     rxLostCnt_ = 0;
 }
 
-void DT7::convert(RcMsg_t &_msg)
-{
-    _msg.rx = static_cast<float>(data_.rc.ch0) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.ry = static_cast<float>(data_.rc.ch1) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.lx = static_cast<float>(data_.rc.ch2) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-    _msg.ly = static_cast<float>(data_.rc.ch3) / CH_VALUE_RANGE * RC_ROCKER_MAX;
-
-    switch (data_.rc.switchRight) {
-    case Sw_e::UP:
-        _msg.rSwitch = RcSw_e::UP;
-        break;
-    case Sw_e::MID:
-        _msg.rSwitch = RcSw_e::MID;
-        break;
-    default:
-        _msg.rSwitch = RcSw_e::DOWN;
-        break;
-    }
-
-    switch (data_.rc.switchLeft) {
-    case Sw_e::UP:
-        _msg.lSwitch = RcSw_e::UP;
-        break;
-    case Sw_e::MID:
-        _msg.lSwitch = RcSw_e::MID;
-        break;
-    default:
-        _msg.lSwitch = RcSw_e::DOWN;
-        break;
-    }
-
-    _msg.slider = static_cast<float>((data_.wheel) - 1024) / WHEEL_VALUE_RANGE * RC_SLIDER_MAX;
-
-    _msg.lPress = data_.mouse.pressLeft;
-    _msg.rPress = data_.mouse.pressRight;
-    _msg.xMove = data_.mouse.x;
-    _msg.yMove = data_.mouse.y;
-    _msg.zRoller = data_.mouse.z;
-}
-
 bool DT7::isOnline()
 {
     if (rxLostCnt_ < RX_LOST_MAX) {

@@ -3,7 +3,6 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
-#include "RcMsg.hpp"
 #include "Task.hpp"
 
 namespace TEST {
@@ -21,8 +20,6 @@ public:
     void update();
 
     void task();
-
-    RcMsg_t rcMsg;
 
     StateFactory<TEST::FSMState_e> stateFactory_;
 

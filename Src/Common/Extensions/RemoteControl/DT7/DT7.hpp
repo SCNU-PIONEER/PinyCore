@@ -22,16 +22,13 @@
 
 class DT7 final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 18;
+    static constexpr uint8_t RX_LOST_MAX = 15;
 
+public:
     static constexpr uint16_t CH_VALUE_MIN = 364;
     static constexpr uint16_t CH_VALUE_OFFSET = 1024;
     static constexpr uint16_t CH_VALUE_MAX = 1684;
-    static constexpr uint16_t CH_VALUE_RANGE = 660;
-    static constexpr uint16_t WHEEL_VALUE_RANGE = 660;
 
-    static constexpr uint8_t RX_LOST_MAX = 15;
-
-    // TODO: Not support PC keyboard yet
     static constexpr int16_t MOUSE_MAX_ABS = 32767;
 
     static constexpr uint16_t W = 0x01 << 0;
@@ -53,7 +50,6 @@ class DT7 final : public RemoteControl {
 
     enum class Sw_e : uint8_t { UP = 1, MID = 3, DOWN = 2 };
 
-public:
 #pragma pack(push, 1)
     struct RcData_s {
         struct {
@@ -88,7 +84,6 @@ public:
 
 private:
     void parse() final;
-    void convert(RcMsg_t &_msg) final;
     void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
 
     RcData_s data_;

@@ -27,8 +27,7 @@ private:
 
     RTTMsgHandler rttHandler_;
 
-#if defined APP_USE_REFEREE
+#if APP_USE_REFEREE
     RefereeHandler refereeHandler_;
-
 #endif
 };
