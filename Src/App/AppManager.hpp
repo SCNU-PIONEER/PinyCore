@@ -1,7 +1,9 @@
 #pragma once
 
-#include <functional>
 #include "Task.hpp"
+#include <initializer_list>
+#include "etl/delegate.h"
+#include <vector>
 
 class AppManager : public Task<AppManager, 512> {
 public:
@@ -16,7 +18,7 @@ public:
 
     void initApp();
 
-    void schedule(std::function<void()> _callback);
+    template <typename F> requires std::invocable<F> void schedule(F _callback) { tasks.push_back(_callback); }
 
     void task();
 
@@ -24,5 +26,5 @@ private:
     AppManager() : Task("AppTask", TaskPriority_e::HIGH1) {};
     void createApp();
 
-    std::vector<std::function<void()> > tasks;
+    std::vector<etl::delegate<void()> > tasks;
 };
