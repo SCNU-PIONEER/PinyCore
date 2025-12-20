@@ -7,6 +7,9 @@
 
 #define LOCATION std::source_location::current()
 
+
+extern "C" int _write(int _file, char *_ptr, int _len);
+
 namespace LOG {
 
 class Logger {
@@ -23,54 +26,37 @@ public:
     }
 
     template <typename... Args>
-    void info(std::source_location _loc, std::string_view _type,
-              const char *_format, Args &&..._args)
+    void info(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc,
-                       .type = _type,
-                       .format = _format,
-                       .level = Level::INFO },
+        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::INFO },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void debug(std::source_location _loc, std::string_view _type,
-               const char *_format, Args &&..._args)
+    void debug(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc,
-                       .type = _type,
-                       .format = _format,
-                       .level = Level::DEBUGGING },
+        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::DEBUGGING },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void warn(std::source_location _loc, std::string_view _type,
-              const char *_format, Args &&..._args)
+    void warn(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc,
-                       .type = _type,
-                       .format = _format,
-                       .level = Level::WARN },
+        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::WARN },
             std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void error(std::source_location _loc, std::string_view _type,
-               const char *_format, Args &&..._args)
+    void error(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc,
-                       .type = _type,
-                       .format = _format,
-                       .level = Level::ERROR },
+        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::ERROR },
             std::forward<Args>(_args)...);
     }
 
     /**
     * @brief 完美转发检验错误
     */
-    template <typename Func>
-    void check(std::source_location _loc, Func &&_operation)
+    template <typename Func> void check(std::source_location _loc, Func &&_operation)
     {
         stm_err_t err = _operation();
         if (unlikely(err != 0)) {
@@ -109,8 +95,7 @@ public:
     /**
     * @brief 完美转发打印函数,自带换行
     */
-    template <typename... Args>
-    void log(const LogParams &_params, Args &&..._args)
+    template <typename... Args> void log(const LogParams &_params, Args &&..._args)
     {
         if (!config.enable)
             return;
@@ -131,20 +116,16 @@ public:
         // 写入位置信息（如果启用）
         if (config.showlocation) [[likely]] {
             std::string_view file(_params.loc.file_name());
-            if (auto pos = file.find_last_of("/\\");
-                pos != std::string_view::npos) {
+            if (auto pos = file.find_last_of("/\\"); pos != std::string_view::npos) {
                 file = file.substr(pos + 1);
             }
-            size_t len =
-                    snprintf(ptr, end - ptr,
-                             " [%.*s:%ld]: ", static_cast<int>(file.size()),
-                             file.data(), _params.loc.line());
+            size_t len = snprintf(ptr, end - ptr, " [%.*s:%ld]: ", static_cast<int>(file.size()), file.data(),
+                                  _params.loc.line());
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
         // 写入日志类型
-        size_t len =
-                std::min(_params.type.size(), static_cast<size_t>(end - ptr));
+        size_t len = std::min(_params.type.size(), static_cast<size_t>(end - ptr));
         memcpy(ptr, _params.type.data(), len);
         ptr += len;
 
@@ -154,17 +135,14 @@ public:
         ptr += len;
 
         if (_params.level == Level::RAW) {
-            len = snprintf(ptr, end - ptr, _params.format,
-                           std::forward<Args>(_args)...);
+            len = snprintf(ptr, end - ptr, _params.format, std::forward<Args>(_args)...);
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         } else {
-            len = snprintf(ptr, end - ptr, _params.format,
-                           std::forward<Args>(_args)...);
+            len = snprintf(ptr, end - ptr, _params.format, std::forward<Args>(_args)...);
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
-        len = std::min(sizeof(RTT_CTRL_RESET "\r\n") - 1,
-                       static_cast<size_t>(end - ptr));
+        len = std::min(sizeof(RTT_CTRL_RESET "\r\n") - 1, static_cast<size_t>(end - ptr));
         memcpy(ptr, RTT_CTRL_RESET "\r\n", len);
         ptr += len;
 
@@ -189,61 +167,41 @@ template <typename... Args> struct info {
     constexpr info(std::string_view _type, const char *_format, Args &&..._args,
                    std::source_location _loc = std::source_location::current())
     {
-        Logger::instance().log(LogParams{ .loc = _loc,
-                                          .type = _type,
-                                          .format = _format,
-                                          .level = Level::INFO },
+        Logger::instance().log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::INFO },
                                std::forward<Args>(_args)...);
     }
 };
-template <typename... Args>
-info(std::string_view _type, const char *_format, Args &&..._args)
-        -> info<Args...>;
+template <typename... Args> info(std::string_view _type, const char *_format, Args &&..._args) -> info<Args...>;
 
 template <typename... Args> struct warn {
     constexpr warn(std::string_view _type, const char *_format, Args &&..._args,
                    std::source_location _loc = std::source_location::current())
     {
-        Logger::instance().log(LogParams{ .loc = _loc,
-                                          .type = _type,
-                                          .format = _format,
-                                          .level = Level::WARN },
+        Logger::instance().log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::WARN },
                                std::forward<Args>(_args)...);
     }
 };
-template <typename... Args>
-warn(std::string_view _type, const char *_format, Args &&..._args)
-        -> warn<Args...>;
+template <typename... Args> warn(std::string_view _type, const char *_format, Args &&..._args) -> warn<Args...>;
 
 template <typename... Args> struct error {
-    constexpr error(std::string_view _type, const char *_format,
-                    Args &&..._args,
+    constexpr error(std::string_view _type, const char *_format, Args &&..._args,
                     std::source_location _loc = std::source_location::current())
     {
-        Logger::instance().log(LogParams{ .loc = _loc,
-                                          .type = _type,
-                                          .format = _format,
-                                          .level = Level::ERROR },
+        Logger::instance().log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::ERROR },
                                std::forward<Args>(_args)...);
     }
 };
-template <typename... Args>
-error(std::string_view _type, const char *_format, Args &&..._args)
-        -> error<Args...>;
+template <typename... Args> error(std::string_view _type, const char *_format, Args &&..._args) -> error<Args...>;
 
 
-template <typename T>
-void CHECK(T &&_condition,
-           std::source_location _loc = std::source_location::current())
+template <typename T> void CHECK(T &&_condition, std::source_location _loc = std::source_location::current())
 {
     if constexpr (std::is_invocable_v<T>) {
         /* 处理可调用对象 */
         Logger::instance().check(_loc, std::forward<T>(_condition));
     } else {
         /* 处理原始值 */
-        Logger::instance().check(_loc, [&] {
-            return !static_cast<bool>(_condition);
-        });
+        Logger::instance().check(_loc, [&] { return !static_cast<bool>(_condition); });
     }
 }
 // NOLINTEND

@@ -2,29 +2,21 @@
 
 PowerController::PowerController(ChassisType_e _chassisType, CAP *_cap) : cap_(_cap), chassisType_(_chassisType)
 {
-    const uint8_t motorNum = static_cast<uint8_t>(chassisType_);
-    motorNum_ = motorNum;
+    motorNum_ = static_cast<uint8_t>(chassisType_);
 
-    cmdPower.resize(motorNum);
-    relPower.resize(motorNum);
-    setIq.resize(motorNum);
-    setPower.resize(motorNum);
-
-    for (int i = 0; i < motorNum; i++) {
-        cmdPower[i] = 0;
-        relPower[i] = 0;
-        setIq[i] = 0;
-        setPower[i] = 0;
-    }
+    cmdPower_.resize(motorNum_, 0);
+    relPower_.resize(motorNum_, 0);
+    setTorq_.resize(motorNum_, 0);
+    setPower_.resize(motorNum_, 0);
 }
 
-void PowerController::update(RefereeMsg_s _msg)
+void PowerController::update(const RefereeMsg_s &_msg)
 {
     float capFreq = 0.f;
 
     if (cap_ != nullptr) {
         CapData_s capData = cap_->getCapData();
-        capFeedbackPower = capData.inputVoltage * capData.outputCurrent;
+        capFeedbackPower_ = capData.inputVoltage * capData.outputCurrent;
         capFreq = cap_->getRxFreq();
         dynamicPower(capData.capVoltage);
     }
@@ -34,25 +26,25 @@ void PowerController::update(RefereeMsg_s _msg)
 
 void PowerController::dynamicPower(float _capVoltage)
 {
-    float bufferDP = std::clamp(energyPid.calc(expPowerBuffer, powerBuffer), -1.f, 1.f);
-    capRealRatio = (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
+    float bufferDP = std::clamp(energyPid_.calc(expPowerBuffer_, powerBuffer_), -1.f, 1.f);
+    capRealRatio_ = (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
 
-    float ratioErr = capRealRatio - capCmdRatio;
-    float capExpRatio = std::clamp(capCmdRatio + (ratioErr * bufferDP), 0.f, 1.f);
+    float ratioErr = capRealRatio_ - capCmdRatio_;
+    float capExpRatio = std::clamp(capCmdRatio_ + (ratioErr * bufferDP), 0.f, 1.f);
 
-    offsetPower = powerPid.calc(capExpRatio, capRealRatio);
+    offsetPower_ = powerPid_.calc(capExpRatio, capRealRatio_);
 
-    maxPower = std::clamp(limitPower - offsetPower, limitPower, (_capVoltage * CAP_CURRENT_MAX) + limitPower);
+    maxPower_ = std::clamp(limitPower_ - offsetPower_, limitPower_, (_capVoltage * CAP_CURRENT_MAX) + limitPower_);
 }
 
-void PowerController::updateReferee(RefereeMsg_s _msg)
+void PowerController::updateReferee(const RefereeMsg_s &_msg)
 {
 #if POWERCTRL_USE_REFEREE
-    powerBuffer = _msg.chassisPowerBuffer;
-    limitPower = _msg.chassisPowerLimit;
+    powerBuffer_ = _msg.chassisPowerBuffer;
+    limitPower_ = _msg.chassisPowerLimit;
 #else
-    powerBuffer = 60;
-    limitPower = 60;
+    powerBuffer_ = 60.f;
+    limitPower_ = 50.f;
 #endif
 }
 

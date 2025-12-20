@@ -35,7 +35,7 @@ public:
     bool receive()
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
-            data_ = PacketType::decompress(this->rxBuf_);
+            PacketType::decompress(this->rxBuf_, data_);
             rxFreq_ = Dwt::instance().getFreq(&recvCnt_);
             return true;
         } else
