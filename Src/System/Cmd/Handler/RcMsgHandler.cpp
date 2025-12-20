@@ -3,9 +3,7 @@
 
 #include "remoteControl.hpp"
 
-#ifdef CHASSIS_TYPE
-#include CHASSIS_FILE
-#endif
+#include "Chassis.hpp"
 #ifdef GIMBAL_TYPE
 #include GIMBAL_FILE
 #endif
@@ -16,8 +14,7 @@
 #include <cstring>
 
 
-RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart,
-                           EventGroupHandle_t &_event)
+RcMsgHandler::RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event)
 {
 #if EXTENSION_DT7 == 1
     rc = std::make_unique<Rc>(_huart, _event);
@@ -91,8 +88,7 @@ void RcMsgHandler::masterHandle()
     } else if (rcMsg_.rSwitch == RC_SW_MID) {
         // gimbal
         gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-        gimbalMsg.pitch =
-                -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg.pitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
         gimbalMsg.yaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
         // chassis
         chassisMsg.state = CHASSIS::FSMState_e::RUN;
@@ -102,8 +98,7 @@ void RcMsgHandler::masterHandle()
     } else if (rcMsg_.rSwitch == RC_SW_UP) {
         // gimbal
         gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-        gimbalMsg.pitch =
-                -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
+        gimbalMsg.pitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
         gimbalMsg.yaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
         // chassis
         if (rcMsg_.lSwitch == RC_SW_DOWN) {
@@ -119,7 +114,4 @@ void RcMsgHandler::masterHandle()
     notify(&gimbalMsg, msgBus_->gimbalQueue);
 }
 
-void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
-{
-    xQueueSend(_queue, _msg, 0);
-}
+void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
