@@ -8,6 +8,9 @@ menu "extension config"
 
         config EXTENSION_ET08A
         bool "remote control et08a"
+
+        config EXTENSION_VT13
+        bool "remote control vt13"
     endchoice
 
     config EXTENSION_BUZZER

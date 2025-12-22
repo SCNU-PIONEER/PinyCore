@@ -1,41 +1,45 @@
-# PowerCtrl v2.1.0
+# PowerCtrl v3.1.0
 
 ## 更新
-1. 函数多态取消
-2. 外部实例化超电
+1. 功率控制输出由电流变为力矩
+2. 增加模型参数切换
 3. 更新日志
 
 ## 主要成员变量
 ```c++
 PowerController抽象类里：
 
-std::vector<float> cmdPower; // 原闭环控制器所设定的功率
+std::vector<float> cmdPower_; // 原闭环控制器所设定的功率
 float powerRatio = 1.f;      // 功率分配比例
 float maxPower = 0.f;        // 允许最大输出功率
-std::vector<float> setPower; // 功率控制后所得的功率
-std::vector<float> setIq;    // 最终设定输出电流
+std::vector<float> setPower_; // 功率控制后所得的功率
+std::vector<float> setTorq_;  // 最终设定输出力矩
 CAP cap_{&HCAN1};
 ```
 派生类里(如QuadricycleController):
 ```c++
-MotorParam_s M3508  //3508的模型参数
-RLS<3> wheelRLS_    //RLS
-(如有不同型号电机需定义不同MotorParam_s和RLS)
+PowerModel_s Wheel            //底盘模型结构体
+PowerModel_s::ModelParam_s LaunchMotion 
+PowerModel_s::ModelParam_s UniformMotion   //底盘模型参数
+RLS<PowerModel_s::FIT_RANK> *wheelRLS_    
+
+static constexpr float VEL_THESHOLD = 200.f;  //切换模型参数速度阈值
+//RLS拟合的为整个机构的模型参数，如底盘有不同结构
+//如哨兵有舵则需定义不同PowerModel_s和RLS
 ```
 ## 控制逻辑
 1. 更新裁判系统缓冲能量，根据电容实际能量占比与期望能量占比计算允许最大输出功率
 2. 各型号电机计算各自原始功率，判断是否超功率，若超功率则按比例分配功率
-3. 依照比例分配完功率后，根据各型号电机的模型参数，计算最终设定输出电流
+3. 依照比例分配完功率后，根据各型号电机的模型参数，计算最终设定输出力矩
 4. RLS动态拟合，更新模型参数
 
 ## 函数
 ```c++
-update()    //更新最大输出功率和裁判系统数据
-
+update()          //更新最大输出功率和裁判系统数据
 cmdPowerCalc()    //计算模型原始功率
 relPowerCalc()    //计算模型实际功率(与反馈功率比较观察模型是否拟合)
-currentCalc()     //计算最终设定输出电流
-(不同型号电机需分别使用不同MotorParam_s计算功率再求和，电流也分别计算)
+torqueCalc()      //计算最终设定输出力矩
+rlsUpdate()       //RLS动态拟合
 ```
 
 ## 使用
@@ -70,80 +74,109 @@ cpp中
 
     float cmd[4];
     for (uint8_t i = 0; i < 4; i++) {
-        velPid_[i].elec =
+        velPid_[i].torq =
                 velPid_[i].pid->calc(refWSpeed._[i], wSpeed_._[i]);
-        cmd[i] = velPid_[i].elec;
+        cmd[i] = velPid_[i].torq;
     }
-    std::vector<float> elec;
-    elec = powerCtrl_->powerCtrl(refWSpeed._, &motors_._[0], cmd, rmsg);
+    std::vector<float> torq;
+    torq = powerCtrl_->powerCtrl(refWSpeed._, motors_._, cmd, rmsg);
 
     for (uint8_t i = 0; i < 4; i++) {
 #if APP_USE_POWERCTRL
-        motors_._[i]->cmdElec(elec[i]);
+        motors_._[i]->cmdTorq(torq[i]);
 #else
-        motors_._[i]->cmdElec(cmd[i]);
+        motors_._[i]->cmdTorq(cmd[i]);
 #endif
     }
 
     注意：
     powerCtrl_->powerCtrl(refWSpeed._, &motors_._[0], cmd, rmsg)的四个参数
     1.refWSpeed的单位需为rads/s，如单位为rpm则传入需变单位
-    2.&motors_._[0]为电机指针数组，需传入电机指针数组
-    3.cmd为pid计算得到的电流，单位为电流，而不是力矩，否则会使rawPower和relPower的数据差距过大，
-      导致功率控制效果变差
+    2. motors_._为电机指针数组
+    3.cmd为pid计算得到的力矩
     4.rmsg 裁判系统msg，需手动        
     if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &rmsg, 0) ==
             pdTRUE) {
         };   
 ```
 
-## 调试
+## 调试(建议使用本手册调试方法，确保功率控制效果)
 调试需在freemaster等软件中观察
 
 1. 调底盘pid参数，实际跟随效果要好，但不能太硬
-先使用正常pid输出的电流
+先使用正常pid输出的力矩
 ```c++
 #if APP_USE_POWERCTRL
-        motors_._[i]->cmdElec(cmd[i]);
+        motors_._[i]->cmdTorq(cmd[i]);
 #else
-        motors_._[i]->cmdElec(cmd[i]);
+        motors_._[i]->cmdTorq(cmd[i]);
 #endif
 注：调太软会让底盘达不到功率墙
+```
+2. 静态功耗参数
 
-2. 功率控制
-改回来
+首先先断控,看capFeedbackPower的值,填到PowerModel_s::ModelParam_s LaunchMotion 
+和UniformMotion的LeakagePower中(LeakagePower为静态功耗建议取中间值偏上，因为有噪声)
+
+LeakagePower的作用为在没有速度时保证拟合效果，此时需要拟合的参数数据此时趋近0
+而实际上有功耗，因此在减去静态功耗后就可以保证拟合效果
+
+如果像舵轮这种有两个底盘模块时需分别断电不同模块电机,分别填入对应的LeakagePower中
+
+3. LaunchMotion和UniformMotion的参数拟合
+### 说明
+车体运动的过程可以抽象看成起步过程和趋近匀速过程。
+起步过程车体需要克服静摩擦且需要较大加速度，因此需要电机输出更大的力矩，此时需要功率更大。
+而趋近匀速过程车体加速度小或者没有，只需要保持匀速，因此需要电机输出较小的力矩，此时需要功率小。
+所以两个过程的参数是不同的。
+
+而RLS在进行拟合的大部分参数来自趋近匀速过程，因此此时想要拟合预估功率与超电功率，电流项的参数就会增大。
+RLS的拟合需要时间，不可能在收敛出趋近匀速过程的参数后，在短时间的起步过程收敛出起步过程的参数。
+
+所以会出现在起步时，还是用趋近匀速过程的参数，此时预估功率与超电功率偏差较大，
+导致预估功率与超电功率偏差较大，导致超功率
+
+### 步骤
+####  LaunchMotion参数拟合（上场前要重新拟合一下确保没问题，因为整车重量变化参数会不一样）
+拟合LaunchMotion参数时还是使用
 ```c++
 #if APP_USE_POWERCTRL
-        motors_._[i]->cmdElec(elec[i]);
+        motors_._[i]->cmdTorq(cmd[i]);
 #else
-        motors_._[i]->cmdElec(cmd[i]);
+        motors_._[i]->cmdTorq(cmd[i]);
 #endif
 ```
-首先先断控,看capFeedbackPower的值,填到MotorParam_s M3508的LeakagePower中(LeakagePower为静态功耗)，
-取中值即可，若想功率限制的死一点，可以填峰值(capFeedbackPower会有噪声)
+freemaster中观察起步过程capFeedbackPower, chassisRawPower, chassisRelPower拟合效果
+拟合效果好，则将得到的参数填入PowerModel_s::ModelParam_s LaunchMotion中
+#注： 一定要是起步加减速过程，不能匀速，最好先停止拟合再抄（如四轮车断控，或者写debug模式）
 
-如果像舵轮这种使用了两类电机时需分别断电不同品种电机,分别填入对应的LeakagePower中
-
-在PowerController.hpp中修改limitPower为较小的值，
-然后观察capFeedbackPower, chassisRawPower, chassisSetPower, chassisRelPower的曲线
-![功率控制](功率控制.png)
-成功控制效果如图, setPower为chassisSetPower, relPower为capFeedbackPower, calcPower为chassisRelPower
-
-将此时rls的参数抄下来到（抄下来是为了场上不用花时间重新拟合）
+检验拟合效果：换回模型输出力矩
 ```c++
-    MotorParam_s M3508 = { .KN = 0.0001f,
-                           .MLC = 0.0001f,
-                           .ESR = 0.0001f,
-                           .LeakagePower = 4.7f / (float)motorNum_ };
-
-    注意刚开始M3508不能为0,即
-        MotorParam_s M3508 = { .KN = 0.f,
-                                .MLC = 0.f,
-                                .ESR = 0.f,
-                                .LeakagePower = 4.7f / (float)motorNum_ }
+#if APP_USE_POWERCTRL
+        motors_._[i]->cmdTorq(torq[i]);
+#else
+        motors_._[i]->cmdTorq(cmd[i]);
+#endif
 ```
+观察是否超功率，拟合好效果如图：(如果不行重新拟合)
+![起步拟合](<Pitures/LaunchMotion.png>)
 
-## 优化
+#### UniformMotion参数拟合
+UniformMotion的参数只需在匀速过程中记下参数填入即可（减少场上拟合时间）
+![匀速拟合](<Pitures/UniformMotion.png>)
+
+#### 速度阈值调整
+调试软件中观察功率波形以及实际轮子速度（注意为未经过减速箱速度）
+速度阈值一般为功率开始稳定时的速度，如上图第二段功率下降到稳定时的速度(下步为200)
+
+如果调完速度阈值后发现有尖峰，如图
+![起步拟合](<Pitures/Theshold.png>)则为阈值不够
+
+调好后如图
+![起步拟合](<Pitures/Success.png>)
+
+
+## 后续优化方向
 1. 功率分配算法优化
 不只使用比例分配，不同情况使用不同方法使功率分配更合理
 2. 错误状态处理
