@@ -72,12 +72,12 @@ void AppManager::initApp()
 #endif
 
     armorLoader.init();
-    // schedule([]() { armorLoader->update(cmd->getMsgBus()); });
+    schedule([]() { armorLoader->update(cmd->getMsgBus()); });
     chassis.init();
-    // schedule([]() { chassis->update(cmd->getMsgBus()); });
+    schedule([]() { chassis->update(cmd->getMsgBus()); });
 
     armorBooster.init();
-    // schedule([]() { armorBooster->update(cmd->getMsgBus()); });
+    schedule([]() { armorBooster->update(cmd->getMsgBus()); });
     gimbal.init();
     schedule([]() { gimbal->update(cmd->getMsgBus()); });
 
