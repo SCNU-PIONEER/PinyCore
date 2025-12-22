@@ -8,7 +8,6 @@
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
 #include "RefereeHandler.hpp"
-#include <bitset>
 
 class Cmd : public Task<Cmd, 256> {
 public:
@@ -23,9 +22,12 @@ protected:
 private:
     MsgBus_s msgBus_;
     EventGroupHandle_t eventGroup_;
-    std::bitset<32> masks_;
 
     RcMsgHandler rcHandler_;
+
     RTTMsgHandler rttHandler_;
+
+#if APP_USE_REFEREE
     RefereeHandler refereeHandler_;
+#endif
 };

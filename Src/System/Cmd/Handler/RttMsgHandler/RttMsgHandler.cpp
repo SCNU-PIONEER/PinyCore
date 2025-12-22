@@ -23,25 +23,20 @@ void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 }
 
 
-void RTTMsgHandler::parse(TimerHandle_t xTimer)
+void RTTMsgHandler::parse(TimerHandle_t _xTimer)
 {
     if (SEGGER_RTT_HasKey()) {
-        BaseType_t higher_priority_task_woken = pdFALSE;
-        RTTMsgHandler *handler =
-                static_cast<RTTMsgHandler *>(pvTimerGetTimerID(xTimer));
-        xEventGroupSetBitsFromISR(handler->event, RTT_READY_EVENT,
-                                  &higher_priority_task_woken);
-        portYIELD_FROM_ISR(higher_priority_task_woken);
+        BaseType_t higherPriorityTaskWoken = pdFALSE;
+        RTTMsgHandler *handler = static_cast<RTTMsgHandler *>(pvTimerGetTimerID(_xTimer));
+        xEventGroupSetBitsFromISR(handler->event, handler->bit_, &higherPriorityTaskWoken);
+        portYIELD_FROM_ISR(higherPriorityTaskWoken);
     }
 }
 
 void RTTMsgHandler::handle()
 {
-    memset(data, 0, sizeof(data));
-    SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+    memset(data_, 0, sizeof(data_));
+    SEGGER_RTT_Read(0, data_, sizeof(data_) - 1);
 }
 
-void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue)
-{
-    xQueueSend(_queue, _msg, 0);
-}
+void RTTMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
