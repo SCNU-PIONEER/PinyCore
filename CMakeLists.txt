@@ -10,7 +10,6 @@ include("tools/cmake/GccArmNoneEabi.cmake")
 include("tools/cmake/FindInclude.cmake")
 include("tools/cmake/ShowMessage.cmake")
 include("Src/Config/sdkconfig.cmake" OPTIONAL)
-include("tools/cmake/Warning.cmake")
 include("tools/cmake/Version.cmake")
 
 project(${CMAKE_PROJECT_NAME} VERSION ${PROJECT_VERSION})
@@ -21,6 +20,7 @@ include("tools/cmake/FindLib/FindLib.cmake")
 
 add_compile_options($<$<C_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
 add_compile_options($<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
+add_compile_options(-Wno-unused-function)
 
 add_executable(${CMAKE_PROJECT_NAME})
 
