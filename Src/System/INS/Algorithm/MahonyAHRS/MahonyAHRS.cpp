@@ -6,8 +6,7 @@ using namespace IMU_MAHONY_AHRS;
 #define twoKpDef (2.0f * 0.5f) // 2 * proportional gain
 #define twoKiDef (2.0f * 0.0f) // 2 * integral gain
 
-void Mahony::regiter(float _sampleFrequency, float _twoKp = (2.0f * 0.5f),
-                     float _twoKi = (2.0f * 0.0f))
+void Mahony::regiter(float _sampleFrequency, float _twoKp = (2.0f * 0.5f), float _twoKi = (2.0f * 0.0f))
 {
     twoKp = _twoKp;
     twoKi = _twoKi;
@@ -40,8 +39,8 @@ void Mahony::init(float _ax, float _ay, float _az)
     float recipNorm;
     float initYaw, initPitch, initRoll;
     float cr2, cp2, cy2, sr2, sp2, sy2;
-    float sinRoll, cosRoll, sinPitch, cosPitch;
-    float magX, magY;
+    // float sinRoll, cosRoll, sinPitch, cosPitch;
+    // float magX, magY;
 
     recipNorm = invSqrt((_ax * _ax) + (_ay * _ay) + (_az * _az));
     _ax *= recipNorm;
@@ -51,10 +50,10 @@ void Mahony::init(float _ax, float _ay, float _az)
     arm_atan2_f32(-_ax, _az, &initPitch);
     arm_atan2_f32(_ay, _az, &initRoll);
 
-    sinRoll = sinf(initRoll);
-    cosRoll = cosf(initRoll);
-    cosPitch = cosf(initPitch);
-    sinPitch = sinf(initPitch);
+    // sinRoll = sinf(initRoll);
+    // cosRoll = cosf(initRoll);
+    // cosPitch = cosf(initPitch);
+    // sinPitch = sinf(initPitch);
 
     initYaw = 0.0f;
 
@@ -78,8 +77,7 @@ void Mahony::init(float _ax, float _ay, float _az)
     q3 *= recipNorm;
 }
 
-void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay,
-                    float _az, float _dt)
+void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt)
 {
     // Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
     updateIMU(_gx, _gy, _gz, _ax, _ay, _az, _dt);
@@ -89,8 +87,7 @@ void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay,
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
-                       float _az, float _dt)
+void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt)
 {
     float recipNorm;
     float halfvx, halfvy, halfvz;
@@ -117,8 +114,7 @@ void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
 
         // Compute and apply integral feedback if enabled
         if (twoKi > 0.0f) {
-            integralFBx += twoKi * halfex *
-                           invSampleFreq; // integral error scaled by Ki
+            integralFBx += twoKi * halfex * invSampleFreq; // integral error scaled by Ki
             integralFBy += twoKi * halfey * invSampleFreq;
             integralFBz += twoKi * halfez * invSampleFreq;
             _gx += integralFBx; // apply integral feedback
@@ -158,12 +154,10 @@ void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
 
 void Mahony::computeAngles()
 {
-    arm_atan2_f32((q0 * q1) + (q2 * q3), 0.5f - (q1 * q1) - (q2 * q2),
-                  &edata_.roll);
+    arm_atan2_f32((q0 * q1) + (q2 * q3), 0.5f - (q1 * q1) - (q2 * q2), &edata_.roll);
     edata_.roll *= 57.29578f;
     edata_.pitch = 57.29578f * asinf(-2.0f * (q1 * q3 - q0 * q2));
-    arm_atan2_f32((q1 * q2) + (q0 * q3), 0.5f - (q2 * q2) - (q3 * q3),
-                  &edata_.yaw);
+    arm_atan2_f32((q1 * q2) + (q0 * q3), 0.5f - (q2 * q2) - (q3 * q3), &edata_.yaw);
     edata_.yaw *= 57.29578f;
     anglesComputed = 1;
 }
