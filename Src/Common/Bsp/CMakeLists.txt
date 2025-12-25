@@ -29,3 +29,6 @@ endif()
 target_link_libraries(Bsp PUBLIC Soc kernel utils)
 
 add_subdirectory(${soc_folder}/hal/cmake/stm32cubemx ${CMAKE_CURRENT_BINARY_DIR}/stm32cubemx)
+
+target_compile_options(STM32_Drivers PRIVATE -Wno-unused-parameter)
+

@@ -55,4 +55,12 @@ if(NOT RTOS_DEBUG)
   target_compile_options(freertos_kernel_port PRIVATE -O3 -g0)
 endif()
 
+if(BSP_USE_USB)
+  set(USB_CONF_SOURCES ${soc_folder}/hal/USB_DEVICE/Target/usbd_conf.c
+                       ${soc_folder}/hal/USB_DEVICE/App/usbd_cdc_if.c)
+
+  set_source_files_properties(${USB_CONF_SOURCES}
+                              PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+endif()
+
 showmessage()
