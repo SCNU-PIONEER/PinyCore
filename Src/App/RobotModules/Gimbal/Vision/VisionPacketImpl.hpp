@@ -44,7 +44,7 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static Data_u compress(const ProtoData_s &_protoData, Data_u &_data)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
         Data_u data{};
         Data_u::Data_s &d = data.content;
@@ -64,13 +64,8 @@ public:
         d.gameTime = _protoData.gameTime;
         d.timestamp = _protoData.timestamp;
         d.checksum = Get_CRC16_Check_Sum(data.bytes, LEN - 2, CRC16_INIT);
-        return data;
     }
-    static ProtoData_s decompress(const Data_u &_data, ProtoData_s &_protoData)
-    {
-        ProtoData_s protoData{}; // unsupported
-        return protoData;
-    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData) {}
 };
 
 class VisionRxPacket {
@@ -118,12 +113,8 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static Data_u compress(const ProtoData_s &_protoData, Data_u &_data)
-    {
-        Data_u data{}; // unsupported
-        return data;
-    }
-    static ProtoData_s decompress(const Data_u &_data, ProtoData_s &_protoData)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data) {}
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         ProtoData_s protoData{};
         if (_data.content.header == ID && Verify_CRC16_Check_Sum(_data.bytes, LEN)) {
@@ -144,6 +135,5 @@ public:
         } else {
             LOG::warn("Vision", "wrong SOF or CRC!");
         }
-        return protoData;
     }
 };
