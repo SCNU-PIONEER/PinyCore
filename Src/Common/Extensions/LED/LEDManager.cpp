@@ -71,8 +71,7 @@ void LEDs::off() { ctrl(CmdType_e::OFF, 0, instance().totalLEDs_); }
 
 void LEDs::show()
 {
-    for (LEDDriver *drv = LEDDriver::head(); drv != nullptr;
-         drv = drv->next()) {
+    for (LEDDriver *drv = LEDDriver::head(); drv != nullptr; drv = drv->next()) {
         drv->show(ledColors_);
     }
 }
@@ -80,7 +79,7 @@ void LEDs::show()
 void LEDs::handleOff(uint8_t _index, uint8_t _ctrlNum)
 {
     for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < ledColors_.size())
+        if (_index + i < static_cast<int>(ledColors_.size()))
             ledColors_[_index + i] = { 0, 0, 0 };
     }
     this->show();
@@ -89,7 +88,7 @@ void LEDs::handleOff(uint8_t _index, uint8_t _ctrlNum)
 void LEDs::handleOnInNormal(uint8_t _index, uint8_t _ctrlNum)
 {
     for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < ledColors_.size())
+        if (_index + i < static_cast<int>(ledColors_.size()))
             ledColors_[_index + i] = { 0, 255, 0 };
     }
     this->show();
@@ -97,15 +96,14 @@ void LEDs::handleOnInNormal(uint8_t _index, uint8_t _ctrlNum)
 
 void LEDs::handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum)
 {
-    static constexpr LEDDriver::Color RGB[3] = { LEDDriver::Color::Red,
-                                                 LEDDriver::Color::Green,
+    static constexpr LEDDriver::Color RGB[3] = { LEDDriver::Color::Red, LEDDriver::Color::Green,
                                                  LEDDriver::Color::Blue };
     uint8_t cnt = 0;
     uint8_t flowingFlag = 0;
     while (cnt++ < 3) {
         vTaskDelay(500 / portTICK_PERIOD_MS); // interval 500ms
         for (int i = 0; i < _ctrlNum; ++i) {
-            if (_index + i < ledColors_.size())
+            if (_index + i < static_cast<int>(ledColors_.size()))
                 ledColors_[_index + i].setColorCode(RGB[flowingFlag]);
         }
         this->show();
@@ -118,7 +116,7 @@ void LEDs::handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum)
     uint8_t r{}, g{}, b{};
     for (uint8_t i = 0; i < 255; ++i) {
         for (int j = 0; j < _ctrlNum; ++j) {
-            if (_index + j < ledColors_.size()) {
+            if (_index + j < static_cast<int>(ledColors_.size())) {
                 uint8_t p = 255 - ((i + j) & 255);
                 if (p < 85) {
                     r = 255 - p * 3;
