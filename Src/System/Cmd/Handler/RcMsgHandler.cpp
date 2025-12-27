@@ -69,11 +69,16 @@ void RcMsgHandler::handle()
     rcMsg_.yMove = 0;
     rcMsg_.zRoller = 0;
 #endif
+
+#if APP_USE_GIMBAL == 1
     masterHandle();
+#else
+    chassisHandle();
+#endif
 }
 
-void RcMsgHandler::chassisHandle() {}
 
+#if APP_USE_GIMBAL == 1
 void RcMsgHandler::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
@@ -113,5 +118,9 @@ void RcMsgHandler::masterHandle()
     notify(&chassisMsg, msgBus_->chassisQueue);
     notify(&gimbalMsg, msgBus_->gimbalQueue);
 }
+#else
+void RcMsgHandler::chassisHandle() {}
+
+#endif
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
