@@ -16,6 +16,7 @@ LEDs::LEDs() : queue_(xQueueCreate(3, sizeof(Cmd_s)))
 
 void LEDs::task(void *_param)
 {
+    (void)(_param);
     auto instance = &LEDs::instance();
 
     for (;;) {

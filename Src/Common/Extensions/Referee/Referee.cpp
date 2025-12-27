@@ -16,7 +16,7 @@ Receiver::Receiver(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event,
     // Should be executed after MX_USARTx_UART_Init()
     uart_.recvDmaMultiBufInit((uint32_t *)&rxBuffer_[0], REFEREE_RX_BUFFER_LEN);
     uart_.registerCallback([this, _event, _eventBit](UART_HandleTypeDef *_huart, uint16_t _size) {
-        this->uartIdleCallback(_huart, _event, _eventBit);
+        this->uartIdleCallback(_huart, _size, _event, _eventBit);
     });
 }
 
@@ -26,8 +26,10 @@ Receiver::~Receiver()
     uart_.unregisterCallback();
 }
 
-void Receiver::uartIdleCallback(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit)
+void Receiver::uartIdleCallback(UART_HandleTypeDef *_huart, uint16_t _size, const EventGroupHandle_t &_event,
+                                uint32_t _eventBit)
 {
+    (void)_size;
     if (_huart->Instance != uart_.huart_->Instance)
         return;
 

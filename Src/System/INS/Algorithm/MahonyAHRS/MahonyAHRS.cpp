@@ -77,17 +77,17 @@ void Mahony::init(float _ax, float _ay, float _az)
     q3 *= recipNorm;
 }
 
-void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt)
+void Mahony::update(float _gx, float _gy, float _gz, float _ax, float _ay, float _az)
 {
     // Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-    updateIMU(_gx, _gy, _gz, _ax, _ay, _az, _dt);
+    updateIMU(_gx, _gy, _gz, _ax, _ay, _az);
 
     computeAngles();
 }
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt)
+void Mahony::updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az)
 {
     float recipNorm;
     float halfvx, halfvy, halfvz;

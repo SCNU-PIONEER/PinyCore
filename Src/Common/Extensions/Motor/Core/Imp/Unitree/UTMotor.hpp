@@ -23,7 +23,7 @@ struct Status_s {
 
 class UTMotor : public IMotor {
 private:
-    MotorTypeDef_e send(uint16_t _sendId, TransmitMsg_s *_txBuf, uint8_t _len);
+    MotorTypeDef_e send(TransmitMsg_s *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(Feedback_s *_rxBuf);
     MotorTypeDef_e ctrl();
 
@@ -40,11 +40,10 @@ protected:
     Status_s status_;
 
     void registerRecvCallback();
-    void convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd);
+    void convert(TransmitMsg_s &_txBuf);
 
 public:
-    UTMotor(const char _name[16], InitConfig_s _config,
-            UART_HandleTypeDef *_huart);
+    UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart);
     ~UTMotor() override;
 
     void overrideStats(const Status_s &_newStats);
