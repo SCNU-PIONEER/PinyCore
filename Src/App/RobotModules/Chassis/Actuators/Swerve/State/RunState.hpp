@@ -23,9 +23,12 @@ public:
 
         ref.vx = chassis_.msg.vx;
         ref.vy = chassis_.msg.vy;
+#if APP_USE_GIMBAL == 1
         float targetYaw = (fabs(chassis_.deltaYaw) > PI / 2.f) ? PI : 0.f;
-        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_.deltaYaw,
-                                                          targetYaw));
+        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_.deltaYaw, targetYaw));
+#else
+        ref.wz = chassis_.msg.yaw;
+#endif
         chassis_.ctrl(ref);
     }
 
