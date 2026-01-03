@@ -7,7 +7,7 @@
 
 #include "MotorCommonMacros.hpp"
 
-static PositionalPid idleFollowVelPid{ 3.f, 1.f, 0.10f, 0.001f, 0.1f, 6.f, 0.0f };
+static PositionalPid idleFollowVelPid{ 7.f, 1.f, 0.10f, 0.001f, 0.1f, 6.f, 0.0f };
 
 namespace CHASSIS {
 

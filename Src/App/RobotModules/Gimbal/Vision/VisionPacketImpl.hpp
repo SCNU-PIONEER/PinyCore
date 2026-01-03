@@ -44,12 +44,12 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    static void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
-        Data_u data{};
-        Data_u::Data_s &d = data.content;
+        Data_u::Data_s &d = _data.content;
         d.header = ID;
-        d.detectColor = _protoData.detectColor;
+        // d.detectColor = _protoData.detectColor;
+        d.detectColor = 1;
         d.taskMode = _protoData.taskMode;
         d.resetTracker = _protoData.resetTracker;
         d.isPlay = _protoData.isPlay;
@@ -63,9 +63,9 @@ public:
         d.aimZ = 0;
         d.gameTime = _protoData.gameTime;
         d.timestamp = _protoData.timestamp;
-        d.checksum = Get_CRC16_Check_Sum(data.bytes, LEN - 2, CRC16_INIT);
+        d.checksum = Get_CRC16_Check_Sum(_data.bytes, LEN - 2, CRC16_INIT);
     }
-    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData) {}
+    static void decompress(const Data_u &_data, ProtoData_s &_protoData) {}
 };
 
 class VisionRxPacket {
@@ -113,25 +113,24 @@ public:
         uint8_t bytes[LEN];
     } data;
 #pragma pack(pop)
-    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data) {}
-    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    static void compress(const ProtoData_s &_protoData, Data_u &_data) {}
+    static void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
-        ProtoData_s protoData{};
         if (_data.content.header == ID && Verify_CRC16_Check_Sum(_data.bytes, LEN)) {
-            // protoData.fire = _data.content.fire;
-            // protoData.control = _data.content.control;
-            // protoData.targetYaw = _data.content.targetYaw;
-            // protoData.targetPitch = _data.content.targetPitch;
-            // protoData.yaw = _data.content.yaw;
-            // protoData.yawVel = _data.content.yawVel;
-            // protoData.yawAcc = _data.content.yawAcc;
-            // protoData.pitch = _data.content.pitch;
-            // protoData.pitchVel = _data.content.pitchVel;
-            // protoData.pitchAcc = _data.content.pitchAcc;
-            protoData.fire = _data.content.fire;
-            protoData.control = (_data.content.distance == -1) ? 0 : 1;
-            protoData.targetYaw = _data.content.targetYaw;
-            protoData.targetPitch = _data.content.targetPitch;
+            // _protoData.fire = _data.content.fire;
+            // _protoData.control = _data.content.control;
+            // _protoData.targetYaw = _data.content.targetYaw;
+            // _protoData.targetPitch = _data.content.targetPitch;
+            // _protoData.yaw = _data.content.yaw;
+            // _protoData.yawVel = _data.content.yawVel;
+            // _protoData.yawAcc = _data.content.yawAcc;
+            // _protoData.pitch = _data.content.pitch;
+            // _protoData.pitchVel = _data.content.pitchVel;
+            // _protoData.pitchAcc = _data.content.pitchAcc;
+            _protoData.fire = _data.content.fire;
+            _protoData.control = (_data.content.distance == -1) ? 0 : 1;
+            _protoData.targetYaw = _data.content.targetYaw;
+            _protoData.targetPitch = _data.content.targetPitch;
         } else {
             LOG::warn("Vision", "wrong SOF or CRC!");
         }

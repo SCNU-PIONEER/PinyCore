@@ -46,8 +46,8 @@ public:
     static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
     static constexpr float CHASSIS_R = 0.24911f;
 
-    static constexpr float MAX_VX_SPEED = 2.f;
-    static constexpr float MAX_VY_SPEED = 2.f;
+    static constexpr float MAX_VX_SPEED = 4.f;
+    static constexpr float MAX_VY_SPEED = 4.f;
     static constexpr float MAX_WZ_SPEED = 6.f;
 
     Omni();

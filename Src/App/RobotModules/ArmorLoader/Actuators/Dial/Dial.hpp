@@ -25,9 +25,9 @@ public:
 
     static constexpr bool DIAL_REVERSE = true;
 
-    static constexpr float BLOCK_CURRENT = 1.f;   // A
+    static constexpr float BLOCK_CURRENT = 2.5f;  // A
     static constexpr float BLOCK_SPEED_MIN = 1.f; // rad/s
-    static constexpr uint16_t BLOCK_CNT_MAX = 300.f;
+    static constexpr uint16_t BLOCK_CNT_MAX = 1500.f;
 
     FSMState_e lastState = FSMState_e::STOP;
 
