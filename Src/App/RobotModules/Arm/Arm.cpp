@@ -5,7 +5,6 @@
 #include "StmLog.hpp"
 #include "ArmNormalState.hpp"
 #include "ArmStopState.hpp"
-#include "Cmd.hpp"
 
 using namespace ARM;
 
@@ -29,3 +28,9 @@ void Arm::update(MsgBus_s *_param)
     motors.update();
     stateFactory_.update();
 }
+
+
+
+
+
+

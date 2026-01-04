@@ -12,6 +12,8 @@ public:
 
     void enter() override
     {
+        arm_.lifting.enable();
+        arm_.orebin.init();
         arm_.target_joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");
@@ -34,6 +36,7 @@ public:
 
     void run() override
     {
+        arm_.orebin.loop(arm_.msg);
         for (uint8_t i = 0; i < 7; i++) {
             arm_.target_joints[i] += arm_.msg.target[i];
         }

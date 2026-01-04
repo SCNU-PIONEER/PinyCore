@@ -72,9 +72,7 @@ endfunction()
 
 if(DEFINED CONFIG_NAME AND NOT EDIT_CONFIG)
   apply_config(${CONFIG_NAME})
-endif()
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/build.ninja" OR NOT EXISTS "${CMAKE_SOURCE_DIR}/Src/Config/sdkconfig.h")
+elseif(NOT EXISTS "${CMAKE_BINARY_DIR}/build.ninja" OR NOT EXISTS "${CMAKE_SOURCE_DIR}/Src/Config/sdkconfig.h")
     message(WARNING "No found build, Using default config")
 
     execute_process(

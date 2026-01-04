@@ -41,6 +41,7 @@ struct ArmMsg_s : public Msg {
     float j1, j2, j3, j4, j5, j6;
     ARM::Joint target;
     bool switch1; // ture: clamp, false: release
+    bool isStucked = false;
 };
 
 struct RefereeMsg_s : public Msg {

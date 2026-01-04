@@ -25,7 +25,8 @@ jobs:
             clang \
             arm-none-eabi-gcc \
             arm-none-eabi-newlib \
-            python-pip
+            python-pip \
+            eigen
           pip install kconfiglib==14.1.0 --break-system-packages
 
       # Fuck the issue with actions/checkout where the checkout repo is not mark as safe

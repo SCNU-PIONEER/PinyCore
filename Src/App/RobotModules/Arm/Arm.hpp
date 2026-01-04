@@ -5,6 +5,9 @@
 #include "MsgImpl.hpp"
 
 #include "./ArmHand.hpp"
+#include "./ArmLifting.hpp"
+#include "./ArmOreBin.hpp"
+
 
 namespace ARM {
 
@@ -46,6 +49,9 @@ public:
     bool moveC(const std::array<float, 3> &_xyz, const ARM::Joint &_pose);
 
     bool isEnabled = false;
+
+    ARM::OreBin orebin;
+    ARM::Lifting lifting;
 
 private:
 };

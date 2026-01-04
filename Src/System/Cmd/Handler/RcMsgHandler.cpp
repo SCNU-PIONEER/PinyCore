@@ -69,11 +69,16 @@ void RcMsgHandler::handle()
     rcMsg_.yMove = 0;
     rcMsg_.zRoller = 0;
 #endif
+
+#if APP_USE_GIMBAL == 1
     masterHandle();
+#else
+    chassisHandle();
+#endif
 }
 
-void RcMsgHandler::chassisHandle() {}
 
+#if APP_USE_GIMBAL == 1
 void RcMsgHandler::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
@@ -113,5 +118,29 @@ void RcMsgHandler::masterHandle()
     notify(&chassisMsg, msgBus_->chassisQueue);
     notify(&gimbalMsg, msgBus_->gimbalQueue);
 }
+#else
+void RcMsgHandler::chassisHandle()
+{
+    ChassisMsg_s chassisMsg{};
+    if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        chassisMsg.state = CHASSIS::FSMState_e::STOP;
+        chassisMsg.vx = 0.f;
+        chassisMsg.vy = 0.f;
+        chassisMsg.yaw = 0.f;
+    } else {
+        if (rcMsg_.lSwitch == RC_SW_DOWN) {
+            chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        } else {
+            chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+        }
+        chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
+        chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+        chassisMsg.yaw = SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
+    }
+    memcpy(&rcMsgPrev_, &rcMsg_, sizeof(rcMsg_));
+    notify(&chassisMsg, msgBus_->chassisQueue);
+}
+
+#endif
 
 void RcMsgHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
