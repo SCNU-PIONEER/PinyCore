@@ -12,25 +12,25 @@ endif()
 
 set(PYTHON_SCRIPT "${CMAKE_SOURCE_DIR}/tools/script/Kconfig2h.py")
 
-if(EXISTS "${CMAKE_BINARY_DIR}/.config_editing")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.config_editing")
     set(EDIT_CONFIG TRUE)
 else()
     set(EDIT_CONFIG FALSE)
 endif()
 
 add_custom_target(clean_all
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/build
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
     COMMAND ${CMAKE_COMMAND} -E remove .config
-    COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/.config_editing"
+    COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_SOURCE_DIR}/.config_editing"
     COMMENT "Removing build/ and .config"
 )
 
 add_custom_target(menuconfig
-  COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_BINARY_DIR}/.config_editing"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/.config" "${CMAKE_SOURCE_DIR}/.config_editing"
   COMMAND ${KCONFIG_MCONF} "${CMAKE_SOURCE_DIR}/Kconfig"
-  COMMAND ${Python_EXECUTABLE} ${PYTHON_SCRIPT} "${CMAKE_SOURCE_DIR}/.config"
+  COMMAND ${Python_EXECUTABLE} ${PYTHON_SCRIPT}
   COMMAND ${CMAKE_COMMAND} -B "${CMAKE_BINARY_DIR}" -G Ninja
-  COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/.config_editing"
+  COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_SOURCE_DIR}/.config_editing"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Launching menuconfig (Kconfig interface)"
   USES_TERMINAL

@@ -3,6 +3,7 @@ import re
 import subprocess
 
 config_file = ".config"  # Path to your .config file
+last_config_file = ".config_editing"  # Path to your .config_editing file
 cmake_file = "Src/Config/sdkconfig.cmake"  # Path to the generated kconfig.cmake file
 header_file = "Src/Config/sdkconfig.h"  # Path to the generated kconfig.h file
 
@@ -121,6 +122,15 @@ def append_macros_to_header(config_file, header_file):
         h_file.write("/* default Soc conf */\n")
         h_file.write(content)
 
+def campare_config(config_file, last_config_file):
+    if not os.path.exists(last_config_file):
+        return False
+    with open(config_file, "r") as f1, open(last_config_file, "r") as f2:
+        return f1.read() == f2.read()
+
+if campare_config(config_file, last_config_file):
+    print(".config file not changed, skip generate sdkconfig.h and sdkconfig.cmake")
+    exit(0)
 
 # Convert .config file to kconfig.h file
 convert_config_to_header(config_file, header_file)

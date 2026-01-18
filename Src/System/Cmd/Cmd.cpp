@@ -16,24 +16,10 @@ Cmd::Cmd()
     msgBus_.visionQueue = xQueueCreate(30, sizeof(VisionMsg_s));
     msgBus_.navigationQueue = xQueueCreate(30, sizeof(NavMsg_s));
 
-    masks_.reset();
+    for (auto i : Handler::getHandlerList()) {
+        i.handler->init(&msgBus_, eventGroup_);
+    }
 
-    rttHandler_.init(&msgBus_, eventGroup_);
-    masks_ = masks_ | std::bitset<32>(RTT_READY_EVENT);
-
-    rcHandler_.init(&msgBus_, eventGroup_);
-    masks_ = masks_ | std::bitset<32>(RC_READY_EVENT);
-    masks_ = masks_ | std::bitset<32>(ET08A_READY_EVENT);
-
-#if defined APP_USE_REFEREE
-    refereeHandler_.init(&msgBus_, eventGroup_);
-    masks_ = masks_ | std::bitset<32>(REFEREE_READY_EVENT);
-#endif
-
-#if defined APP_USE_MINIPC
-    miniPcHandler_.init(&msgBus_, eventGroup_);
-    masks_ = masks_ | std::bitset<32>(MINIPC_READY_EVENT);
-#endif
 
     LOG::info("cmd", "init success");
 }
@@ -41,18 +27,13 @@ Cmd::Cmd()
 
 void Cmd::parseMsg()
 {
-    EventBits_t xBits = xEventGroupWaitBits(eventGroup_, masks_.to_ulong(), pdTRUE, pdFALSE, portMAX_DELAY);
-    if (xBits & (RC_READY_EVENT | ET08A_READY_EVENT)) {
-        rcHandler_.handle();
+    EventBits_t xBits =
+            xEventGroupWaitBits(eventGroup_, Handler::getMasks().to_ulong(), pdTRUE, pdFALSE, portMAX_DELAY);
+    for (auto i : Handler::getHandlerList()) {
+        if (xBits & i.bit) {
+            i.handler->handle();
+        }
     }
-    if (xBits & RTT_READY_EVENT) {
-        rttHandler_.handle();
-    }
-#if defined APP_USE_REFEREE
-    if (xBits & REFEREE_READY_EVENT) {
-        refereeHandler_.handle();
-    }
-#endif
 
 #if defined APP_USE_MINIPC
     if (xBits & MINIPC_READY_EVENT) {

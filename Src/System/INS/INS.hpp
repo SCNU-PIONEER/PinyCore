@@ -9,7 +9,7 @@
 #include "Bmi088.hpp"
 #include "Task.hpp"
 
-#define ROTATION_MATRIX_PITCH_ONLY 0
+#define ROTATION_MATRIX_PITCH_ROLL_ONLY 1
 
 namespace INS_SYS {
 struct IMUSensorData_s {

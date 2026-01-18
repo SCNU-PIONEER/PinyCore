@@ -1,13 +1,11 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
+#include "dsp/fast_math_functions.h"
 #if INS_ACCEL_CALIBRATION
 #include "AccelCali.hpp"
 #endif
 
-
 using namespace INS_SYS;
-
-// static INSData_s ansINS;
 
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = {
@@ -131,16 +129,29 @@ void INS::update(float _dt)
     insDat_.body.az = rawDat_.a.z;
 
     // Update Rotation Matrix
-#if ROTATION_MATRIX_PITCH_ONLY
-    R_[0][0] = cosf(insDat_.pitch);
-    R_[0][1] = 0.0f;
-    R_[0][2] = sinf(insDat_.pitch);
-    R_[1][0] = 0.0f;
-    R_[1][1] = 1.0f;
-    R_[1][2] = 0.0f;
-    R_[2][0] = -sinf(insDat_.pitch);
-    R_[2][1] = 0.0f;
-    R_[2][2] = cosf(insDat_.pitch);
+#if ROTATION_MATRIX_PITCH_ROLL_ONLY
+    float cp = arm_cos_f32(insDat_.pitch);
+    float sp = arm_sin_f32(insDat_.pitch);
+    float cr = arm_cos_f32(insDat_.roll);
+    float sr = arm_sin_f32(insDat_.roll);
+    // Ry = cp,  0,   sp
+    //      0,   1,   0
+    //     -sp,  0,   cp
+    //
+    // Rx = 1,   0,   0
+    //      0,  cr, -sr
+    //      0,  sr,  cr
+    //
+    // R = Ry * Rx
+    R_(0, 0) = cp;
+    R_(0, 1) = sp * sr;
+    R_(0, 2) = sp * cr;
+    R_(1, 0) = 0.f;
+    R_(1, 1) = cr;
+    R_(1, 2) = -sr;
+    R_(2, 0) = -sp;
+    R_(2, 1) = cp * sr;
+    R_(2, 2) = cp * cr;
 #else
     R_(0, 0) = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
     R_(0, 1) = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
@@ -169,16 +180,6 @@ void INS::update(float _dt)
     insDat_.earth.gx = earthVectorT_(0, 0);
     insDat_.earth.gy = earthVectorT_(1, 0);
     insDat_.earth.gz = earthVectorT_(2, 0);
-
-    // bodyVectorT_[0][0] = insDat_.body.mx;
-    // bodyVectorT_[1][0] = insDat_.body.my;
-    // bodyVectorT_[2][0] = insDat_.body.mz;
-    // earthVectorT_ = R_ * bodyVectorT_;
-    // insDat_.earth.mx = earthVectorT_[0][0];
-    // insDat_.earth.my = earthVectorT_[1][0];
-    // insDat_.earth.mz = earthVectorT_[2][0];
-
-    // memcpy(&ansINS, &insDat_, sizeof(INSData_s));
 
     // send queue
     insPub_->publish();

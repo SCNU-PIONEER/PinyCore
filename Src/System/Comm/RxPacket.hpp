@@ -35,7 +35,7 @@ public:
     bool receive()
     {
         if (xQueueReceive(this->queue_, &this->rxBuf_, 0) == pdTRUE) {
-            data_ = PacketType::decompress(this->rxBuf_);
+            PacketType::decompress(this->rxBuf_, data_);
             rxFreq_ = Dwt::instance().getFreq(&recvCnt_);
             return true;
         } else
@@ -60,6 +60,8 @@ public:
     const ProtoData &data() const { return data_; }
 
     uint16_t uid() const { return PacketType::ID; }
+
+    float freq() const { return rxFreq_; }
 
 protected:
     QueueHandle_t queue_;

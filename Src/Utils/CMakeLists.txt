@@ -34,7 +34,7 @@ if(USE_HARDFAULT)
 endif()
 
 if(USE_STM_LOG)
-  target_sources(utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Log/StmLog.cpp)
+  target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/StmLog.cpp)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
 endif()
 

@@ -16,8 +16,6 @@
 #include "Bsp.hpp"
 #include <memory>
 
-#define REFEREE_READY_EVENT (1 << 2)
-
 namespace REFEREE {
 
 static constexpr uint8_t LEN_HEADER = 5;
@@ -25,16 +23,15 @@ static constexpr uint8_t LEN_CMDID = 2;
 static constexpr uint8_t LEN_TAIL = 2;
 static constexpr uint8_t SOF = 0xA5;
 
-class RefReceiver {
+class Receiver {
     static constexpr uint16_t REFEREE_RX_BUFFER_LEN = 256;
     static constexpr uint8_t REFEREE_SYS_MAX_LOST = 5;
 
 public:
-    RefReceiver(UART_HandleTypeDef *_huart);
-    ~RefReceiver();
-    void init(EventGroupHandle_t _event);
+    Receiver(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit);
+    ~Receiver();
 
-    void uartIdleCallback(UART_HandleTypeDef *_huart);
+    void uartIdleCallback(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit);
     void readRefereeData();
 
     void rxFreqCalc();
@@ -51,15 +48,13 @@ private:
     uint16_t rxCnt_ = 0;
     uint16_t lastPos = 0;
     uint16_t dataLen = 0;
-
-    EventGroupHandle_t event_;
 };
 
-class RefTransmitter {
+class Transmitter {
     static constexpr uint8_t REFEREE_TX_BUFFER_LEN = 128;
 
 public:
-    RefTransmitter(UART_HandleTypeDef *_huart);
+    Transmitter(UART_HandleTypeDef *_huart);
 
     uint16_t sendData(uint16_t _cmdId, uint8_t *_pStruct, uint16_t _len);
 
@@ -69,7 +64,13 @@ private:
     uint8_t txBuffer_[REFEREE_TX_BUFFER_LEN];
 };
 
+class Referee {
+public:
+    Referee(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit);
+    Receiver receiver;
+    Transmitter transmitter;
+};
+
 } // namespace REFEREE
 
-inline std::unique_ptr<REFEREE::RefReceiver> refereeRx;
-inline std::unique_ptr<REFEREE::RefTransmitter> refereeTx;
+inline std::unique_ptr<REFEREE::Referee> referee = nullptr;

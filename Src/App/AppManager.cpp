@@ -115,7 +115,6 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {
@@ -123,14 +122,6 @@ void AppManager::createApp()
     if constexpr (APP_USE_TEST) {
         TestModule::instance();
     }
-
-    // Buzzer Once Task
-    xTaskCreate(
-            [](void *_param) -> void {
-                BUZZER::Buzzer::getInstance().playPinyCore();
-                vTaskDelete(nullptr); // 否则会进ExistError
-            },
-            "buzzer_task", 128, nullptr, 3, nullptr);
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);
