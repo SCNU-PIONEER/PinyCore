@@ -1,4 +1,5 @@
 #include "Swerve.hpp"
+#include "Soc.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
@@ -16,6 +17,7 @@
 
 extern canHandle HCAN1;
 extern canHandle HCAN2;
+// extern canHandle HCAN3;
 
 extern Cmd cmd;
 
@@ -34,9 +36,11 @@ void ChassisCtrlRxPacket::registerCallback()
 
 Swerve::Swerve()
 {
+    insSub_ = new Subscriber<INS_SYS::INSData_s>(4, &TopicRouter::instance().insTopic, &insData_);
+
     for (uint8_t i = 1; i <= 4; i++) {
         InitConfig_s gm6020Config = {
-            .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+            .pComHandle = reinterpret_cast<uint32_t *>(&swerveCan._[i - 1]),
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
@@ -49,7 +53,7 @@ Swerve::Swerve()
         motors_._[i + 3]->setZeroAng(SwerveZero[i - 1]);
 
         InitConfig_s m3508Config = {
-            .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+            .pComHandle = reinterpret_cast<uint32_t *>(&wheelCan._[i - 1]),
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,

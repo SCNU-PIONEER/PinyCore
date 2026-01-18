@@ -2,16 +2,19 @@
 #include "Chassis.hpp"
 
 #include "IMotor.hpp"
+#include "INS.hpp"
 #include "Pid.hpp"
 #include "PidBasic.hpp"
+#include "Soc.hpp"
 #include "dsp/fast_math_functions.h"
+#include "TopicRouter.hpp"
 
-#include "IIR.hpp"
 #include "LPF.hpp"
 
 #include "TxPacket.hpp"
 #include "RxPacket.hpp"
 #include "PacketImpl.hpp"
+#include "main.h"
 
 namespace CHASSIS {
 
@@ -117,6 +120,9 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
+    Swerve_u<float> curDir; //舵轮当前方向角
+    Swerve_u<float> expDir; //舵轮期望方向角
+
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
@@ -133,8 +139,20 @@ private:
         3.03151608f,
     };
 
-    Swerve_u<float> curDir; //舵轮当前方向角
-    Swerve_u<float> expDir; //舵轮期望方向角
+    Swerve_u<canHandle> wheelCan = {
+        .S_LF = HCAN1,
+        .S_RF = HCAN2,
+        .S_RB = HCAN2,
+        .S_LB = HCAN1,
+    };
+
+    Swerve_u<canHandle> swerveCan = {
+        .S_LF = HCAN1,
+        .S_RF = HCAN2,
+        .S_RB = HCAN2,
+        .S_LB = HCAN1,
+    };
+
     //舵轮位置环
     SwervePtr_u<PositionalPid> swervePosPid_ = {
         new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),

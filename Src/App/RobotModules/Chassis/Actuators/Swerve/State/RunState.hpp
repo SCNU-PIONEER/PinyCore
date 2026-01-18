@@ -10,10 +10,7 @@
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
 public:
-    RunState(Swerve *_chassis)
-            : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis)
-    {
-    }
+    RunState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis) {}
 
     void enter() final
     {
