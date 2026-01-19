@@ -4,6 +4,8 @@ void dwtInit() { Dwt::instance(); }
 
 uint32_t dwtRead() { return Dwt::instance().read(); }
 
+void HAL_Delay(uint32_t _delay) { Dwt::instance().delayMs(_delay); }
+
 Dwt::Dwt()
 {
     /* 使能DWT外设 */
@@ -58,8 +60,7 @@ void Dwt::delayMs(uint32_t _ms) { delayUs(_ms * 1000); }
 float Dwt::getDt(uint32_t *_cnt_last)
 {
     volatile uint32_t cntNow = DWT->CYCCNT;
-    float dt = ((uint32_t)(cntNow - *_cnt_last)) /
-               ((float)(HAL_RCC_GetSysClockFreq()));
+    float dt = ((uint32_t)(cntNow - *_cnt_last)) / ((float)(HAL_RCC_GetSysClockFreq()));
     *_cnt_last = cntNow;
     return dt;
 }
@@ -67,8 +68,6 @@ float Dwt::getDt(uint32_t *_cnt_last)
 float Dwt::getFreq(uint32_t *_cnt_last)
 {
     volatile uint32_t cntNow = DWT->CYCCNT;
-    float freq = ((float)(HAL_RCC_GetSysClockFreq())) /
-                 (uint32_t)(cntNow - *_cnt_last);
+    float freq = ((float)(HAL_RCC_GetSysClockFreq())) / (uint32_t)(cntNow - *_cnt_last);
     *_cnt_last = cntNow;
-    return freq;
 }
