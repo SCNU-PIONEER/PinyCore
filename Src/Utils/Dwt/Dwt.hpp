@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include "Soc.hpp"
 
 #define DWT_CR           *(__IO uint32_t *)0xE0001000
 #define DWT_CYCCNT       *(__IO uint32_t *)0xE0001004
@@ -11,6 +12,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+//NOLINTBEGIN
+void HAL_Delay(uint32_t _delay);
+//NOLINTEND
 
 void dwtInit();
 uint32_t dwtRead();
