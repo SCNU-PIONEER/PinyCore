@@ -5,8 +5,8 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid singleDialAngPID(0, 0, 0, 0.001f, 0, 0, 0);
-static PositionalPid singleDialVelPID(0, 0, 0, 0.001f, 0, 0, 0);
+static PositionalPid singleDialAngPID(17.f, 3.f, 0.1f, 0.001f, 0.3f, 30.f, 0);
+static PositionalPid singleDialVelPID(4.f, 0, 0, 0.001f, 0, 4.5f, 0);
 
 namespace ARMORLOADER {
 
@@ -26,14 +26,12 @@ class SingleState : public FSMState<FSMState_e> {
     static constexpr float DEADBAND = 0.1f;
 
 public:
-    SingleState(Dial *_armorLoader)
-            : FSMState<FSMState_e>(FSMState_e::SINGLE), loader_(_armorLoader)
+    SingleState(Dial *_armorLoader) : FSMState<FSMState_e>(FSMState_e::SINGLE), loader_(_armorLoader)
     {
         runState_ = std::make_unique<RunState>(*this);
         stopState_ = std::make_unique<StopState>(*this);
         singleFSMFactory_.addState(SingleFSMState_e::RUN, std::move(runState_));
-        singleFSMFactory_.addState(SingleFSMState_e::STOP,
-                                   std::move(stopState_));
+        singleFSMFactory_.addState(SingleFSMState_e::STOP, std::move(stopState_));
     }
 
     void enter() final
@@ -72,24 +70,15 @@ private:
     // nested state - shoot
     class RunState : public FSMState<SingleFSMState_e> {
     public:
-        explicit RunState(SingleState &_parent)
-                : FSMState<SingleFSMState_e>(SingleFSMState_e::RUN)
-                , parent_(_parent)
+        explicit RunState(SingleState &_parent) : FSMState<SingleFSMState_e>(SingleFSMState_e::RUN), parent_(_parent)
         {
             pids_.dialAngPid = &singleDialAngPID;
             pids_.dialVelPid = &singleDialVelPID;
         }
 
-        void enter() final
-        {
-            fixAng_ = parent_.loader_->dial()->pos() + SINGLE_ANG;
-        }
+        void enter() final { fixAng_ = parent_.loader_->dial()->pos() + SINGLE_ANG; }
 
-        void run() final
-        {
-            parent_.loader_->ctrlMulti(pids_.dialAngPid, pids_.dialVelPid,
-                                       fixAng_ + SINGLE_ANG);
-        }
+        void run() final { parent_.loader_->ctrlMulti(pids_.dialAngPid, pids_.dialVelPid, fixAng_ + SINGLE_ANG); }
 
         void exit() final
         {
@@ -120,9 +109,7 @@ private:
     // nested state - finish shoot
     class StopState : public FSMState<SingleFSMState_e> {
     public:
-        explicit StopState(SingleState &_parent)
-                : FSMState<SingleFSMState_e>(SingleFSMState_e::RUN)
-                , parent_(_parent)
+        explicit StopState(SingleState &_parent) : FSMState<SingleFSMState_e>(SingleFSMState_e::RUN), parent_(_parent)
         {
         }
         void enter() final {}

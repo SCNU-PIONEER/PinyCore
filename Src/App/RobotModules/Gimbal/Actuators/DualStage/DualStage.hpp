@@ -91,7 +91,7 @@ public:
 
 protected:
     /**
-        * @brief 双轴云台就是yaw,大小yaw控制大yaw
+        * @brief 双轴云台就是大小yaw，控制大yaw
         * @note 上电后云台系与底盘系会有差角,(imu上电即为0,而云台当前角度不一定为0)
         *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
         */
@@ -100,10 +100,6 @@ protected:
     float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
     bool isConfirmYawZero_ = false; // 确认是否两系转换完成
 
-    /** 
-    * @note 上电后云台系与底盘系会有差角,(imu上电即为0,而云台当前角度不一定为0)
-    *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
-    */
     void compensateImuAngle();
     void updateBaseYaw();
 

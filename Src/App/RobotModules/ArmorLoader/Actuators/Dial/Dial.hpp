@@ -86,6 +86,8 @@ public:
 private:
     Motors_u motors_;
 
+    float torq_;
+
     FILTER::IIR2 velFltr_;
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;

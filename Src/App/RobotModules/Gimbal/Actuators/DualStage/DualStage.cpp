@@ -1,3 +1,4 @@
+#include "Bsp_uart.hpp"
 #include "Gimbal.hpp"
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
@@ -6,7 +7,8 @@
 #include "PidBasic.hpp"
 
 #include "GM6020.hpp"
-
+#include "DM4310.hpp"
+#include "Bsp_Usb.hpp"
 #include "Vision.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
@@ -53,28 +55,28 @@ DualStage::DualStage()
     InitConfig_s pitchGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
-        .offsetId = 3,
+        .workMode = WorkMode_e::MIT_TT,
+        .offsetId = 1,
         .txFreq = PITCH_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.Pitch = new DJIMOTOR::GM6020("Pitch", pitchGM6020Config);
+    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchGM6020Config);
     motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
     InitConfig_s firstYawGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
-        .offsetId = 1,
+        .workMode = WorkMode_e::MIT_TT,
+        .offsetId = 2,
         .txFreq = FIRST_YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DJIMOTOR::GM6020("Yaw", firstYawGM6020Config);
+    motors_.FirstYaw = new DMMOTOR::DM4310("Yaw", firstYawGM6020Config);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
@@ -82,7 +84,7 @@ DualStage::DualStage()
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::QUAD_CURR,
-        .offsetId = 2,
+        .offsetId = 3,
         .txFreq = SECOND_YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
