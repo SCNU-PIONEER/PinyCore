@@ -70,4 +70,5 @@ float Dwt::getFreq(uint32_t *_cnt_last)
     volatile uint32_t cntNow = DWT->CYCCNT;
     float freq = ((float)(HAL_RCC_GetSysClockFreq())) / (uint32_t)(cntNow - *_cnt_last);
     *_cnt_last = cntNow;
+    return freq;
 }
