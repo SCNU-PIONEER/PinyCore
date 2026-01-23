@@ -68,8 +68,8 @@ extern SPI_HandleTypeDef hspi2;
 extern FDCAN_HandleTypeDef hfdcan3;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan1;
-extern DMA_HandleTypeDef hdma_adc1;
-extern ADC_HandleTypeDef hadc1;
+// extern DMA_HandleTypeDef hdma_adc1;
+// extern ADC_HandleTypeDef hadc1;
   
 /* USER CODE END ET */
 
@@ -106,7 +106,6 @@ void MX_USART10_UART_Init(void);
 void MX_TIM13_Init(void);
 void MX_TIM7_Init(void);
 void MX_TIM3_Init(void);
-void MX_ADC1_Init(void);
 void MX_SPI6_Init(void);
 void MX_UART9_Init(void);
 
