@@ -6,10 +6,7 @@
 namespace CHASSIS {
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Swerve *_chassis)
-            : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis)
-    {
-    }
+    StopState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis) {}
 
     void enter() final
     {
@@ -28,6 +25,10 @@ public:
             return FSMState_e::STOP;
         else if (chassis_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
+        else if (chassis_->msg.state == FSMState_e::SPIN)
+            return FSMState_e::SPIN;
+        else if (chassis_->msg.state == FSMState_e::TANK)
+            return FSMState_e::TANK;
         else
             return FSMState_e::STOP;
     }

@@ -7,10 +7,14 @@
 
 #include "PidBasic.hpp"
 
+static PositionalPid gWzAP{ 5.f, 0.3f, 0.00f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.1f };
+
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
+    static constexpr float ACC = 0.5f;
+
 public:
-    RunState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis) {}
+    RunState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis), wzAngPid_(&gWzAP) {}
 
     void enter() final
     {
@@ -21,18 +25,18 @@ public:
     void run() final
     {
         Speed_u ref;
+        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
-        ref.vx = chassis_->msg.vx;
-        ref.vy = chassis_->msg.vy;
-        // ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_->msg.yaw,
-        //                                                   chassis_->yaw()));
-        ref.wz = 0;
+        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
+        // float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
+        // ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw, targetYaw));
+        ref.wz = chassis_->msg.wz * 0.1f;
         chassis_->ctrl(ref);
     }
 
     void exit() final
     {
-        wzAngPid_.reset();
+        wzAngPid_->reset();
         LOG::info("ChassisRun", " exit");
     }
 
@@ -43,12 +47,16 @@ public:
             return FSMState_e::STOP;
         else if (chassis_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
+        else if (chassis_->msg.state == FSMState_e::SPIN)
+            return FSMState_e::SPIN;
+        else if (chassis_->msg.state == FSMState_e::TANK)
+            return FSMState_e::TANK;
         else
             return FSMState_e::STOP;
     }
 
 private:
     Swerve *chassis_;
-    PositionalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
+    PositionalPid *wzAngPid_;
 };
 } // namespace CHASSIS

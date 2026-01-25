@@ -10,6 +10,7 @@
 #include "TopicRouter.hpp"
 
 #include "LPF.hpp"
+#include "IIR.hpp"
 
 #include "TxPacket.hpp"
 #include "RxPacket.hpp"
@@ -21,19 +22,19 @@ namespace CHASSIS {
 //以下两个模板专为舵向电机使用(控制较为复杂)
 template <typename T> union SwervePtr_u {
     struct {
-        T *S_LF;
-        T *S_RF;
-        T *S_RB;
-        T *S_LB;
+        T *RF;
+        T *LF;
+        T *LB;
+        T *RB;
     };
     T *_[4];
 };
 template <typename T> union Swerve_u {
     struct {
-        T S_LF;
-        T S_RF;
-        T S_RB;
-        T S_LB;
+        T RF;
+        T LF;
+        T LB;
+        T RB;
     };
     T _[4];
 };
@@ -48,25 +49,25 @@ union Speed_u {
 };
 union WheelsSpeed_u {
     struct {
-        float M_LF; // motor of the left front
         float M_RF; // motor of the right front
-        float M_RB; // motor of the right back
+        float M_LF; // motor of the left front
         float M_LB; // motor of the left back
+        float M_RB; // motor of the right back
     };
-    float _[4]; // rpm
+    float _[4]; // rad/s
 };
-
+//RF 1 ,LF 2 ,LB 3 ,RB 4
 union Motors_u {
     struct {
-        PINYMOTOR::IMotor *M_LF;
         PINYMOTOR::IMotor *M_RF;
-        PINYMOTOR::IMotor *M_RB;
+        PINYMOTOR::IMotor *M_LF;
         PINYMOTOR::IMotor *M_LB;
+        PINYMOTOR::IMotor *M_RB;
 
-        PINYMOTOR::IMotor *S_LF;
         PINYMOTOR::IMotor *S_RF;
-        PINYMOTOR::IMotor *S_RB;
+        PINYMOTOR::IMotor *S_LF;
         PINYMOTOR::IMotor *S_LB;
+        PINYMOTOR::IMotor *S_RB;
     };
     PINYMOTOR::IMotor *_[8];
 };
@@ -81,12 +82,16 @@ class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1
 //喵板
 class Swerve : public Chassis {
 public:
-    static constexpr float W_FRONT_REAR = 0.298f; //前后轮距/m
-    static constexpr float W_LEFT_RIGHT = 0.298f; //左右轮距
-    static constexpr float W_DIAMETER = 0.098f;   //轮子直径
+    static constexpr float W_FRONT_REAR = 0.36f; //前后轮距/m
+    static constexpr float W_LEFT_RIGHT = 0.36f; //左右轮距
+    static constexpr float W_DIAMETER = 0.116f;  //轮子直径
     static constexpr float W_RADIUS = (W_DIAMETER / 2.0f);
     static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
-    static constexpr float CAR_RADIUS = 0.210f; //车体旋转半径
+    static constexpr float CAR_RADIUS = 0.25456f; //车体旋转半径
+
+    static constexpr float MAX_VX_SPEED = 2.f;
+    static constexpr float MAX_VY_SPEED = 2.f;
+    static constexpr float MAX_WZ_SPEED = 10.f;
 
     Swerve();
 
@@ -97,6 +102,8 @@ public:
 
     void loadDeltaYaw();
     bool isGimbalReset() const;
+
+    const Speed_u &getSpeed() const { return curSpeed_; }
 
     float deltaYaw = 0.f;
 
@@ -120,6 +127,8 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
 
+    WheelsSpeed_u refWSpeed_; //期望轮速rad/s
+
     Swerve_u<float> curDir; //舵轮当前方向角
     Swerve_u<float> expDir; //舵轮期望方向角
 
@@ -131,49 +140,26 @@ private:
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;
 
+    float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
+
     //舵轮零位角度，用于回正方向,rad
-    float SwerveZero[4] = {
-        3.6206367f,
-        0.556135f,
-        4.248f,
-        3.03151608f,
-    };
+    Swerve_u<float> SwerveZero = { 4.993235064f, 5.60431623f, 6.08297634f, 1.35543776f };
 
-    Swerve_u<canHandle> wheelCan = {
-        .S_LF = HCAN1,
-        .S_RF = HCAN2,
-        .S_RB = HCAN2,
-        .S_LB = HCAN1,
-    };
-
-    Swerve_u<canHandle> swerveCan = {
-        .S_LF = HCAN1,
-        .S_RF = HCAN2,
-        .S_RB = HCAN2,
-        .S_LB = HCAN1,
-    };
+    canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
+    canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
 
     //舵轮位置环
-    SwervePtr_u<PositionalPid> swervePosPid_ = {
-        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-        new PositionalPid(15.f, 0.001f, 0.f, 1.f / 1000.f, 0.f, 35.f, 0.f),
-    };
+    SwervePtr_u<PositionalPid> swervePosPid_ = {};
     //舵轮速度环
-    SwervePtr_u<PositionalPid> swerveVelPid_ = {
-        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-        new PositionalPid(0.01f, 0.001f, 0.f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    };
+    SwervePtr_u<PositionalPid> swerveVelPid_ = {};
+
+    //舵轮输入滤波器
+    FILTER::IIR3 swerveFilterInput_[4];
     //舵轮输出滤波器
-    SwervePtr_u<FILTER::LPF> swerveFilterOutput_ = {
-        new FILTER::LPF(1000.f, 4.f),
-        new FILTER::LPF(1000.f, 4.f),
-        new FILTER::LPF(1000.f, 4.f),
-        new FILTER::LPF(1000.f, 4.f),
-    };
+    SwervePtr_u<FILTER::LPF> swerveFilterOutput_ = {};
+
+    //轮速度环
+    SwervePtr_u<PositionalPid> wheelVelPid_ = {};
 };
 
 } // namespace CHASSIS

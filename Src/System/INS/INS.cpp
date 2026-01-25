@@ -7,20 +7,18 @@
 
 using namespace INS_SYS;
 
+#if TARGET_SLAVE //下板
 // default accelerometer calibration
-static constexpr AccCaliParams_s ACC_CALI = {
-
-    .accelT = { { 1.004772f, 0.030028f, 0.002227f },
-                { 0.000336f, 1.008157f, 0.018832f },
-                { -0.003582f, 0.012065f, 1.005470f } },
-    .accelOffs = { 0.089142f, -0.059174f, 0.044562f }
-};
+static constexpr AccCaliParams_s ACC_CALI = { .accelT = { { 1.005345f, -0.006104f, -0.001893f },
+                                                          { -0.001565f, 1.004828f, 0.009408f },
+                                                          { -0.039249f, -0.035220f, 1.006196f } },
+                                              .accelOffs = { -0.048339f, -0.069532f, 0.000916f } };
 // default gyroscope calibration
 static constexpr GyroCaliParams_s GYRO_CALI = {
 
-    .gxBias = 2.67470956f,
-    .gyBias = 0.319893122f,
-    .gzBias = 0.747945726f,
+    .gxBias = -3.925f,
+    .gyBias = -1.1048f,
+    .gzBias = -2.6575f,
     .gxTcoK = 0.f,
     .gxTcoB0 = 0.f,
     .gyTcoK = 0.f,
@@ -29,8 +27,33 @@ static constexpr GyroCaliParams_s GYRO_CALI = {
     .gzTcoB0 = 0.f
 };
 
-static constexpr float IMU_OFFSET_X = 0;
-static constexpr float IMU_OFFSET_Y = 0;
+constexpr float IMU_OFFSET_X = (-3.58f * 0.001f);
+constexpr float IMU_OFFSET_Y = (-126.19f * 0.001f);
+#endif
+#if !APP_USE_COMM || TARGET_MASTER //上板
+// default accelerometer calibration
+static constexpr AccCaliParams_s ACC_CALI = { .accelT = { { 1.003820f, -0.009450f, -0.005791f },
+                                                          { 0.004973f, 1.005382f, -0.002911f },
+                                                          { 0.043781f, -0.027063f, 0.997329f } },
+                                              .accelOffs = { 0.004402f, -0.038406f, 0.078380f } };
+
+// default gyroscope calibration
+static constexpr GyroCaliParams_s GYRO_CALI = {
+
+    .gxBias = -1.53f,
+    .gyBias = -0.21f,
+    .gzBias = -0.73f,
+    .gxTcoK = 0.f,
+    .gxTcoB0 = 0.f,
+    .gyTcoK = 0.f,
+    .gyTcoB0 = 0.f,
+    .gzTcoK = 0.f,
+    .gzTcoB0 = 0.f
+};
+
+// constexpr float IMU_OFFSET_X = (15.66f * 0.001f);
+// constexpr float IMU_OFFSET_Y = (3.12f * 0.001f);
+#endif
 
 INS::INS(SPI_HandleTypeDef *_spi)
         : Task<INS, 384>("insTask", TaskPriority_e::HIGH3)

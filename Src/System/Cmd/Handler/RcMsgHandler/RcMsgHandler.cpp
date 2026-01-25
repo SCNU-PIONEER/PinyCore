@@ -85,6 +85,12 @@ void RcMsgHandler::masterHandle()
         gMsg_.wPitch = -static_cast<float>(rcData->rc.ch3) / CH_RANGE * INPUT_PITCH_MAX;
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
+#if !APP_USE_COMM
+        cMsg_.wz = gMsg_.wYaw;
+#else
+        // cMsg_.wz = 0.f;
+        cMsg_.wz = gMsg_.wYaw;
+#endif
         if (sl == SW::DOWN) {
             gMsg_.state = GIMBAL::FSMState_e::RUN;
             cMsg_.state = CHASSIS::FSMState_e::RUN;
@@ -105,7 +111,7 @@ void RcMsgHandler::masterHandle()
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
         if (sl == SW::DOWN) {
-            cMsg_.state = CHASSIS::FSMState_e::TANK;
+            cMsg_.state = CHASSIS::FSMState_e::SPIN;
         } else if (sl == SW::MID) {
             gMsg_.state = GIMBAL::FSMState_e::NAV;
             alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
@@ -141,6 +147,12 @@ void RcMsgHandler::masterHandle()
         gMsg_.wYaw = -static_cast<float>(rcData->ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - ET08A::CH_VALUE_OFFSET) / CH_RANGE) >
                       WHEEL_THESHORLD;
+
+#if !APP_USE_COMM
+        cMsg_.wz = gMsg_.wYaw;
+#else
+        cMsg_.wz = 0.f;
+#endif
         if (sl == SW::DOWN) {
             gMsg_.state = GIMBAL::FSMState_e::RUN;
             cMsg_.state = CHASSIS::FSMState_e::RUN;
