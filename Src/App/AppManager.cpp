@@ -9,7 +9,7 @@
 #include "Bsp.hpp"
 #include "Lazy.hpp"
 #include "INS.hpp"
-#include "Swerve.hpp"
+#include "Mecanum.hpp"
 #include "Standard.hpp"
 #include "UI/UIApp.hpp"
 #include "Arm.hpp"
@@ -28,10 +28,10 @@ Lazy<INS_SYS::INS> ins;
 
 Lazy<Cmd> cmd;
 
-Lazy<CHASSIS::Swerve> chassis;
+Lazy<CHASSIS::Mecanum> chassis;
 Lazy<GIMBAL::Standard> gimbal;
 // Lazy<Arm> arm;
-Arm* arm;
+Arm *arm;
 //---------------------------------------------------------------------------------------------------
 
 
