@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ArmKinematic.hpp"
+#include "ArmPlan.hpp"
 
 namespace ARM {
 
@@ -18,9 +18,9 @@ public:
 
     void setSpeed(const float _speed);
 
-    void setJointSpeedLimit(const float _time, const Joint _delta_ang);
+    void setJointSpeedLimit(const float _time, const Joint10 _delta_ang);
 
-    void setAllAngleLimit(Joint &_targetJoints);
+    void setAllAngleLimit(Joint10 &_targetJoints);
 
 
 private:
