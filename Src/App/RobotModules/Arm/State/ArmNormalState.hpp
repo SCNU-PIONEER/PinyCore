@@ -37,13 +37,29 @@ public:
     void run() override
     {
         arm_.orebin.loop(arm_.msg);
-        for (uint8_t i = 0; i < 7; i++) {
-            arm_.target_joints[i] += arm_.msg.target[i];
+
+        for (uint8_t i = 0; i < 2; i++) {
+            arm_.target_joints.joints[i] += arm_.msg.target[i];
+        }
+        if (arm_.msg.mode == ARM::ArmMode_e::LEFT) {
+            //左臂 j3,4,5,6
+            for (uint8_t i = 3; i < 7; i++) {
+                arm_.target_joints.joints[i] += arm_.msg.target[i];
+            }
+        } else if (arm_.msg.mode == ARM::ArmMode_e::RIGHT) {
+            //右臂 j7,8,9,10
+            for (uint8_t i = 7; i < 10; i++) {
+                arm_.target_joints.joints[i] += arm_.msg.target[i];
+            }
+        } else if (arm_.msg.mode == ARM::ArmMode_e::TWO) {
+            //双臂 j1,2,3,4,5,6,7,8,9,10
+            for (uint8_t i = 2; i < 10; i++) {
+                arm_.target_joints.joints[i] += arm_.msg.target[i];
+            }
         }
         arm_.motors.safety.setSpeed(1);
-        arm_.motors.safety.setAllAngleLimit(arm_.target_joints);
-        //output
-        arm_.motors.ctrl(arm_.target_joints);
+        arm_.motors.safety.setAllAngleLimit(arm_.target_joints.joints);
+        arm_.motors.ctrl(arm_.target_joints.joints);
     }
 
     void exit() override { LOG::info("Normal", "exit"); }
