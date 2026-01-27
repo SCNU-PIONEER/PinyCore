@@ -78,8 +78,7 @@ public:
 #pragma pack(pop)
     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
-        Data_u data;
-        Data_u::Data_s &d = data.content;
+        Data_u::Data_s &d = _data.content;
         d.gimbalReset = _protoData.gimbalReset;
         d.vx = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.vx * 1000.f)));
         d.vy = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.vy * 1000.f)));
@@ -90,13 +89,12 @@ public:
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
-        ProtoData_s protoData;
-        protoData.gimbalReset = _data.content.gimbalReset;
-        protoData.vx = static_cast<float>(_data.content.vx) / 1000.f;
-        protoData.vy = static_cast<float>(_data.content.vy) / 1000.f;
-        protoData.wz = static_cast<float>(_data.content.wz) / 1000.f;
-        protoData.state = _data.content.state;
-        protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
+        _protoData.gimbalReset = _data.content.gimbalReset;
+        _protoData.vx = static_cast<float>(_data.content.vx) / 1000.f;
+        _protoData.vy = static_cast<float>(_data.content.vy) / 1000.f;
+        _protoData.wz = static_cast<float>(_data.content.wz) / 1000.f;
+        _protoData.state = _data.content.state;
+        _protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
     }
 };
 
@@ -125,9 +123,8 @@ public:
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
-        ProtoData_s protoData;
-        protoData.state = _data.content.state;
-        protoData.fire = _data.content.fire;
+        _protoData.state = _data.content.state;
+        _protoData.fire = _data.content.fire;
     }
 };
 

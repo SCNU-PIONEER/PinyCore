@@ -28,7 +28,7 @@ public:
         ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
         // float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
         // ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw, targetYaw));
-        ref.wz = chassis_->msg.wz * 0.1f;
+        ref.wz = chassis_->msg.wz;
         chassis_->ctrl(ref);
     }
 

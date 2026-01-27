@@ -29,14 +29,13 @@ constexpr float F_PI = std::numbers::pi_v<float>;
 
 void ChassisCtrlRxPacket::registerCallback()
 {
-    Can::instance().registerCallback(&HCAN2, uid(), [this](const uint8_t *_rxBuf) {
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
         xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
     });
     LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
 }
 
 //以下数组可以塞到类内。但不好用free master
-//此滤波并没有调参
 //RF 0 ,LF 1 ,LB 2 ,RB 3
 FILTER::LPF swerveFilterOutput[4]{
     FILTER::LPF(1000.f, 4.f),
@@ -130,16 +129,16 @@ void Swerve::enter()
 
 void Swerve::update(void *_param)
 {
-    // #if !APP_USE_COMM
-    //     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
-    //     };
+#if !APP_USE_COMM
+    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
+    };
 
-    // #else
-    //     msg.state = static_cast<FSMState_e>(chassisCtrlRxPacket_.data().state);
-    //     msg.vx = chassisCtrlRxPacket_.data().vx;
-    //     msg.vy = chassisCtrlRxPacket_.data().vy;
-    //     msg.wz = chassisCtrlRxPacket_.data().wz;
-    // #endif
+#else
+    msg.state = static_cast<FSMState_e>(chassisCtrlRxPacket_.data().state);
+    msg.vx = chassisCtrlRxPacket_.data().vx;
+    msg.vy = chassisCtrlRxPacket_.data().vy;
+    msg.wz = chassisCtrlRxPacket_.data().wz;
+#endif
 
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
@@ -177,10 +176,10 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
     float carRadius = sqrtf((rX * rX) + (rY * rY));
 
-    wheelComVel[0] = -_wSpeed.M_LF * W_RADIUS; //m/s
-    wheelComVel[1] = -_wSpeed.M_LB * W_RADIUS; //m/s
-    wheelComVel[2] = _wSpeed.M_RB * W_RADIUS;  //m/s
-    wheelComVel[3] = _wSpeed.M_RF * W_RADIUS;  //m/s
+    wheelComVel[0] = _wSpeed.M_LF * W_RADIUS; //m/s
+    wheelComVel[1] = _wSpeed.M_LB * W_RADIUS; //m/s
+    wheelComVel[2] = _wSpeed.M_RB * W_RADIUS; //m/s
+    wheelComVel[3] = _wSpeed.M_RF * W_RADIUS; //m/s
 
     sinAng[0] = sin(curDir.LF);
     cosAng[0] = cos(curDir.LF);
@@ -263,8 +262,8 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     // refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
     // refWheels.M_RF = wheelComVel[3] / W_CIRCUMFERENCE * 60;
     // //传rad/s
-    refWheels.M_LF = -wheelComVel[0] / W_RADIUS;
-    refWheels.M_LB = -wheelComVel[1] / W_RADIUS;
+    refWheels.M_LF = wheelComVel[0] / W_RADIUS;
+    refWheels.M_LB = wheelComVel[1] / W_RADIUS;
     refWheels.M_RB = wheelComVel[2] / W_RADIUS;
     refWheels.M_RF = wheelComVel[3] / W_RADIUS;
 
@@ -280,7 +279,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir;
 
-
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
     float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.wz, MAX_WZ_SPEED));
@@ -289,7 +287,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
                          .wz = wz };
 
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
-
 
     for (uint8_t i = 0; i < 4; i++) {
         tempDir._[i] = expDir._[i];
@@ -309,11 +306,11 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //6020
 
-        // if (_refSpeed.vx == 0 && _refSpeed.vy == 0 && _refSpeed.wz == 0) {
-        //     motors_._[i + 4]->cmdTorq(0);
-        // } else {
-        motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));
-        // }
+        if (_refSpeed.vx == 0 && _refSpeed.vy == 0 && _refSpeed.wz == 0) {
+            motors_._[i + 4]->cmdTorq(0);
+        } else {
+            motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));
+        }
 
         // motors_.S_RF->cmdTorq(0);
         // motors_.S_LF->cmdTorq(0);
@@ -322,8 +319,8 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //3508
         wTorq[i] = wheelVelPid_._[i]->calc(refWSpeed._[i], motors_._[i]->vel());
-        // motors_._[i]->cmdTorq(wTorq[i]);
-        motors_._[i]->cmdTorq(0); //不动
+        motors_._[i]->cmdTorq(wTorq[i]);
+        // motors_._[i]->cmdTorq(0); //不动
 
         // motors_.M_RF->cmdTorq(0);
         // motors_.M_LF->cmdTorq(0);

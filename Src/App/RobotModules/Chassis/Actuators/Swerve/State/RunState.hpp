@@ -7,7 +7,7 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid gWzAP{ 5.f, 0.3f, 0.00f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.1f };
+static PositionalPid gWzAP{ 1.f, 0.1f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.1f };
 
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
@@ -28,9 +28,9 @@ public:
         ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
         ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
-        // float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
-        // ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw, targetYaw));
-        ref.wz = chassis_->msg.wz * 0.1f;
+        float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
+        ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(chassis_->deltaYaw, targetYaw));
+
         chassis_->ctrl(ref);
     }
 

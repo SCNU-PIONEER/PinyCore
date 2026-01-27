@@ -67,19 +67,26 @@ void DualFric::update(void *_param)
 
     // update state
     this->stateFactory_.update();
+
+    fricLvel_ = motors_.fricL->vel();
+    fricRvel_ = motors_.fricR->vel();
+    fricLrpm_ = motors_.fricL->data().spdRpm;
+    fricRrpm_ = motors_.fricR->data().spdRpm;
 }
 
 void DualFric::ctrl(float _vel)
 {
-    for (auto &i : motors_._) {
-        i->cmdVel(SLOW_FRIC_RATE);
+    for (uint8_t i = 0; i < 2; ++i) {
+        float velErr = _vel - velFltr_[i].process(motors_._[i]->vel());
+        float pidOut = fricPid_[i].calc(velErr, 0);
+        motors_._[i]->cmdTorq(pidOut);
     }
 }
 
 void DualFric::on()
 {
-    float constTarget = SLOW_FRIC_RATE;
-    SMOOTH::slopeFollowing(&constTarget, &targetVel_, 5.f);
+    float constTarget = FAST_FRIC_RATE;
+    SMOOTH::slopeFollowing(&constTarget, &targetVel_, 1.f);
     ctrl(targetVel_);
 }
 
@@ -89,7 +96,7 @@ void DualFric::off()
         stop();
     } else {
         float constZero = 0;
-        SMOOTH::slopeFollowing(&constZero, &targetVel_, 5.f);
+        SMOOTH::slopeFollowing(&constZero, &targetVel_, 1.f);
         ctrl(targetVel_);
     }
 }

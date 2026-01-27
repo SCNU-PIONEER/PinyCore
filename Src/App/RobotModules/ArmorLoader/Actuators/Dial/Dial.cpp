@@ -16,7 +16,7 @@ using namespace PINYMOTOR;
 
 void ShooterCtrlRxPacket::registerCallback()
 {
-    Can::instance().registerCallback(&HCAN1, uid(), [this](const uint8_t *_rxBuf) {
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
         xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
     });
     LOG::info("ShooterCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
@@ -25,7 +25,7 @@ void ShooterCtrlRxPacket::registerCallback()
 Dial::Dial()
 {
     InitConfig_s dialConfig = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::QUAD_CURR,
         .offsetId = 3,
