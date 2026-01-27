@@ -17,6 +17,8 @@
 #include "./State/LaunchState.hpp"
 #include "./State/RunState.hpp"
 #include "./State/PatrolState.hpp"
+#include "./State/AutoState.hpp"
+#include "./State/NavState.hpp"
 #include <cstdint>
 
 
@@ -28,17 +30,17 @@ using namespace PINYMOTOR;
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 5.f),
-    FILTER::LPF(1000.f, 5.f),
+    FILTER::LPF(1000.f, 4.f),
 };
 
 void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
 {
-    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+    Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
 }
 
 void ShooterCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
 {
-    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+    Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
 }
 
 
@@ -52,8 +54,8 @@ DualStage::DualStage()
     isGimbalResverse.FirstYaw = DualStage::FIRST_YAW_REVERSE;
     isGimbalResverse.SecondYaw = DualStage::SECOND_YAW_REVERSE;
 
-    InitConfig_s pitchGM6020Config = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+    InitConfig_s pitchDM4310Config = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
         .offsetId = 1,
@@ -62,12 +64,12 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchGM6020Config);
+    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
     motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
-    InitConfig_s firstYawGM6020Config = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+    InitConfig_s firstYawDM4310Config = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
         .offsetId = 2,
@@ -76,12 +78,12 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4310("Yaw", firstYawGM6020Config);
+    motors_.FirstYaw = new DMMOTOR::DM4310("Yaw", firstYawDM4310Config);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::QUAD_CURR,
         .offsetId = 3,
@@ -98,6 +100,8 @@ DualStage::DualStage()
     this->stateFactory_.addState(FSMState_e::LAUNCH, std::make_unique<LaunchState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
     this->stateFactory_.addState(FSMState_e::PATROL, std::make_unique<PatrolState>(this));
+    this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
+    this->stateFactory_.addState(FSMState_e::NAV, std::make_unique<NavState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 }
 

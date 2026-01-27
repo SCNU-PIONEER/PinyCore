@@ -9,23 +9,27 @@
 #include "IIR.hpp"
 #include <cstdint>
 
-static PositionalPid gLauPosPid[3] = { PositionalPid(40.f, 0.1f, 0.f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-                                       PositionalPid(60.f, 1.f, 0.01f, 1.f / 1000.f, 1.f, 120.f, 0.f),
-                                       PositionalPid(45.f, 0.7f, 0.005f, 1.f / 1000.f, 1.f, 120.f, 0.f) };
-static PositionalPid gLauVelPid[3] = { PositionalPid(0.01f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-                                       PositionalPid(0.02f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
-                                       PositionalPid(0.015f, 0.0f, 0.f, 1.f / 1000.f, 0.f, 1.2f, 0.f) };
+static PositionalPid gLauPosPid[3] = {
+    PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
+    PositionalPid(60.f, 100.f, 1.f, 0.001f, 3.f, 7.f, 0.f),
+    PositionalPid(45.f, 5.f, 0.05f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+};
+static PositionalPid gLauVelPid[3] = {
+    PositionalPid(0.55f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.4f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+};
 
 namespace GIMBAL {
 
 class LaunchState : public FSMState<FSMState_e> {
-    static constexpr uint16_t MAX_LAUNCH_TIME = 3000; // 3s
+    static constexpr uint16_t MAX_LAUNCH_TIME = 300; // 0.3s
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
     static constexpr float YAW_LAUNCH_ANG_DEADBAND = 0.1f;
 
-    static constexpr float PITCH_LAUNCH_STEP = 0.08f;
-    static constexpr float FIRST_YAW_LAUNCH_STEP = 0.05f;
+    static constexpr float PITCH_LAUNCH_STEP = 0.6f;
+    static constexpr float FIRST_YAW_LAUNCH_STEP = 0.5f;
     static constexpr float SECOND_YAW_LAUNCH_STEP = 0.05f;
 
 public:

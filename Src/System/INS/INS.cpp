@@ -51,8 +51,8 @@ static constexpr GyroCaliParams_s GYRO_CALI = {
     .gzTcoB0 = 0.f
 };
 
-// constexpr float IMU_OFFSET_X = (15.66f * 0.001f);
-// constexpr float IMU_OFFSET_Y = (3.12f * 0.001f);
+constexpr float IMU_OFFSET_X = (16.6f * 0.001f);
+constexpr float IMU_OFFSET_Y = (-18.51f * 0.001f);
 #endif
 
 INS::INS(SPI_HandleTypeDef *_spi)
@@ -113,8 +113,16 @@ void INS::task()
         // Yaw: Clockwise decrease(-) when viewed from above
         auto &data = rawDat_;
         data = {
-            .a = { .x = cali.getOutput().ax, .y = cali.getOutput().ay, .z = -cali.getOutput().az },
-            .g = { .x = -cali.getOutput().gx, .y = -cali.getOutput().gy, .z = cali.getOutput().gz },
+            .a={
+                    .x=cali.getOutput().ay,
+                    .y=-cali.getOutput().ax,
+                    .z=-cali.getOutput().az,
+            },
+            .g={
+                    .x=-cali.getOutput().gy,
+                    .y=cali.getOutput().gx,
+                    .z=cali.getOutput().gz,
+            },
         };
         data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y - data.g.z * data.g.z * IMU_OFFSET_X);
         data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X - data.g.x * data.g.z * IMU_OFFSET_Y);

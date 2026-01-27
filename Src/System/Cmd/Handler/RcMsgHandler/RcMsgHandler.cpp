@@ -85,12 +85,11 @@ void RcMsgHandler::masterHandle()
         gMsg_.wPitch = -static_cast<float>(rcData->rc.ch3) / CH_RANGE * INPUT_PITCH_MAX;
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
-#if !APP_USE_COMM
-        cMsg_.wz = gMsg_.wYaw;
-#else
-        // cMsg_.wz = 0.f;
-        cMsg_.wz = gMsg_.wYaw;
-#endif
+// #if !APP_USE_COMM
+//         cMsg_.wz = gMsg_.wYaw;
+// #else
+//         cMsg_.wz = 0.f;
+// #endif
         if (sl == SW::DOWN) {
             gMsg_.state = GIMBAL::FSMState_e::RUN;
             cMsg_.state = CHASSIS::FSMState_e::RUN;
@@ -100,9 +99,9 @@ void RcMsgHandler::masterHandle()
             gMsg_.state = GIMBAL::FSMState_e::AUTO;
             cMsg_.state = CHASSIS::FSMState_e::TANK;
             alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-            abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+            // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
         } else if (sl == SW::UP) {
-            alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+            // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
         }
     } else if (sr == SW::UP) {
         cMsg_.vx = static_cast<float>(rcData->rc.ch1) / CH_RANGE * INPUT_VX_MAX;
@@ -111,13 +110,14 @@ void RcMsgHandler::masterHandle()
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
         if (sl == SW::DOWN) {
+            gMsg_.state = GIMBAL::FSMState_e::PATROL;
             cMsg_.state = CHASSIS::FSMState_e::SPIN;
         } else if (sl == SW::MID) {
             gMsg_.state = GIMBAL::FSMState_e::NAV;
             alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-            abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+            // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
         } else if (sl == SW::UP) {
-            alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+            // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
         }
     } else {
         // TODO: Use keyboard

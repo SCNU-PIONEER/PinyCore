@@ -56,18 +56,18 @@ class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> 
  */
 class DualStage : public Gimbal {
 public:
-    static constexpr float PITCH_LAUNCH_ANG = 2.055018f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 6.22f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.1722f;
+    static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 1.667539f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.12077522f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
     static constexpr float SECOND_YAW_MOTOR_FREQ = 1000.f;
 
     // "REVERSE flag" is true when imu and motor have different direction
-    static constexpr bool PITCH_REVERSE = false;
+    static constexpr bool PITCH_REVERSE = true;
     static constexpr bool FIRST_YAW_REVERSE = false;
-    static constexpr bool SECOND_YAW_REVERSE = false;
+    static constexpr bool SECOND_YAW_REVERSE = true;
 
     DualStage();
 
