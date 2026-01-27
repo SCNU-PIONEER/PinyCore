@@ -1,5 +1,5 @@
 #pragma once
-#include "Swerve.hpp"
+#include "Mecanum.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
@@ -14,8 +14,7 @@ class SpinState : public FSMState<FSMState_e> {
     static constexpr float MAX_SPIN_SPEED = 5.0f;
 
 public:
-    SpinState(Swerve &_chassis)
-            : FSMState<FSMState_e>(FSMState_e::SPIN), chassis_(_chassis) {};
+    SpinState(Mecanum &_chassis) : FSMState<FSMState_e>(FSMState_e::SPIN), chassis_(_chassis) {};
 
     void enter() final
     {
@@ -26,13 +25,9 @@ public:
     void run() final
     {
         Speed_u ref{};
-        ref.vx = std::fmax(chassis_.getSpeed().vx - ACC,
-                           std::fmin(chassis_.msg.vx,
-                                     chassis_.getSpeed().vx + ACC));
+        ref.vx = std::fmax(chassis_.getSpeed().vx - ACC, std::fmin(chassis_.msg.vx, chassis_.getSpeed().vx + ACC));
 
-        ref.vy = std::fmax(chassis_.getSpeed().vy - ACC,
-                           std::fmin(chassis_.msg.vy,
-                                     chassis_.getSpeed().vy + ACC));
+        ref.vy = std::fmax(chassis_.getSpeed().vy - ACC, std::fmin(chassis_.msg.vy, chassis_.getSpeed().vy + ACC));
         ref.wz = getSpinVel(spinCnt_++);
         chassis_.ctrl(ref);
     }
@@ -40,8 +35,7 @@ public:
     void exit() final
     {
         spinCnt_ = 0;
-        spinDir_ = (spinDir_ == SpinDir_e::LEFT) ? SpinDir_e::RIGHT :
-                                                   SpinDir_e::LEFT;
+        spinDir_ = (spinDir_ == SpinDir_e::LEFT) ? SpinDir_e::RIGHT : SpinDir_e::LEFT;
         LOG::info("ChassisRun", " exit");
     }
 
@@ -65,7 +59,7 @@ public:
     }
 
 private:
-    Swerve &chassis_;
+    Mecanum &chassis_;
 
     SpinDir_e spinDir_ = SpinDir_e::LEFT;
     uint32_t spinCnt_ = 0;
