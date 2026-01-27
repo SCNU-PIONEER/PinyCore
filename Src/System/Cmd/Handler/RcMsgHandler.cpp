@@ -1,9 +1,11 @@
 #include "RcMsgHandler.hpp"
+#include "DT7Msg.hpp"
 #include "sdkconfig.h"
 
 #include "remoteControl.hpp"
 
 #include "Chassis.hpp"
+#include "Arm.hpp"
 #ifdef GIMBAL_TYPE
 #include GIMBAL_FILE
 #endif
@@ -30,6 +32,24 @@ void RcMsgHandler::updateRocker(float &_target, float _channel)
     _target += std::fmax(-S_CURVE_ACC, std::fmin(S_CURVE_ACC, delta));
 }
 
+void RcMsgHandler::kupdateRocker(float &_target, float _channel)
+{
+    float delta = (_channel * T_ACC_CNT) - _target;
+    _target += std::fmax(-S_CURVE_ACC, std::fmin(S_CURVE_ACC, delta));
+}
+
+uint32_t RcMsgHandler::isKeyPressed(uint16_t _key)
+{
+    RcRawMsg_t *rcData = static_cast<RcRawMsg_t *>(rc->getData());
+    return ((rcData->keyboard.keyCode & _key) == _key);
+}
+//TODO:更新过去遥控输入状态状态
+uint32_t RcMsgHandler::isKeyLastPressed(uint16_t _key)
+{
+    RcRawMsg_t *rcData = static_cast<RcRawMsg_t *>(rc->getData());
+    return ((rcData->keyboard.lastKeyCode & _key) == _key);
+}
+
 void RcMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     msgBus_ = _bus;
@@ -54,6 +74,11 @@ void RcMsgHandler::handle()
     rcMsg_.xMove = rcData->mouse.x;
     rcMsg_.yMove = rcData->mouse.y;
     rcMsg_.zRoller = rcData->mouse.z;
+    rcMsg_.rPress = rcData->mouse.pressRight;
+    rcMsg_.lPress = rcData->mouse.pressLeft;
+
+    rcMsg_.key = rcData->keyboard.keyCode;
+    rcMsg_.lastKey = rcData->keyboard.lastKeyCode;
 #elif EXTENSION_ET08A == 1
     ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc->getData());
 
@@ -77,13 +102,22 @@ void RcMsgHandler::handle()
 #endif
 }
 
-
+//TODO：键盘
 #if APP_USE_GIMBAL == 1
 void RcMsgHandler::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
     GimbalMsg_s gimbalMsg{};
+    ArmMsg_s armMsg{};
+
+    /*
+gimbal:STOP,RUN,
+chassis:STOP,RUN,SPIN
+arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
+*/
     if (rcMsg_.rSwitch == RC_SW_DOWN) {
+        //arm
+        armMsg.state = ARM::FSMState_e::STOP;
         // gimbal
         gimbalMsg.state = GIMBAL::FSMState_e::STOP;
         gimbalMsg.pitch = gimbalMsg.yaw = 0.f;
@@ -99,24 +133,78 @@ void RcMsgHandler::masterHandle()
         chassisMsg.state = CHASSIS::FSMState_e::RUN;
         chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
         chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
-
     } else if (rcMsg_.rSwitch == RC_SW_UP) {
-        // gimbal
-        gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-        gimbalMsg.pitch = -SMOOTH::sCurve(ROCKER_PITCH_GAIN, rcMsg_.ly, T_ACC_CNT);
-        gimbalMsg.yaw = -SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
-        // chassis
-        if (rcMsg_.lSwitch == RC_SW_DOWN) {
+        chassisMsg.state = CHASSIS::FSMState_e::RUN;
+
+        //机械臂控制使用自定义控制器
+        /*底盘——————————————————————————————————————————————————————————————————————————————————————————————*/
+        //加速
+        if (isKeyPressed(KEY_SHIFT))
+            accK_ = 1.5f;
+        else
+            accK_ = 1.f;
+
+        //前后左右
+        if (isKeyPressed(KEY_W)) {
+            kupdateRocker(rcMsg_.ry, 1); //加速向前，ry 增加并趋近于最大值。
+        } else if (isKeyPressed(KEY_S)) {
+            kupdateRocker(rcMsg_.ry, -1); //加速向后，ry 减少并趋近于最小值。
         } else {
-            chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+            kupdateRocker(rcMsg_.ry, 0); //自然减速回中，ry 向 0 值靠近。
         }
-        chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
-        chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
+
+        if (isKeyPressed(KEY_A)) {
+            kupdateRocker(rcMsg_.rx, -1);
+        } else if (isKeyPressed(KEY_D)) {
+            kupdateRocker(rcMsg_.rx, 1);
+        } else {
+            kupdateRocker(rcMsg_.rx, 0);
+        }
+
+        //旋转
+        if (rcMsg_.rPress == 1)
+            lx_command = 1;
+        else if (rcMsg_.lPress == 1)
+            lx_command = -1;
+        else
+            lx_command = 0;
+
+        kupdateRocker(rcMsg_.lx, lx_command);
+
+        chassisMsg.vx = SMOOTH::sCurve(accK_ * Chassis::MAX_VX_SPEED, rcMsg_.ry, T_ACC_CNT);  // Scale to m/s
+        chassisMsg.vy = SMOOTH::sCurve(accK_ * Chassis::MAX_VY_SPEED, -rcMsg_.rx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.yaw = SMOOTH::sCurve(accK_ * Chassis::MAX_WZ_SPEED, rcMsg_.lx, T_ACC_CNT); // Scale to m/s
+        /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
+        //单双臂
+        if (isKeyPressed(KEY_SHIFT)) {
+            if (isKeyLastPressed(KEY_Z) && !isKeyPressed(KEY_Z)) {
+                armMsg.mode = ARM::ArmMode_e::LEFT;
+            }
+            if (isKeyLastPressed(KEY_X) && !isKeyPressed(KEY_X)) {
+                armMsg.mode = ARM::ArmMode_e::RIGHT;
+            }
+            if (isKeyLastPressed(KEY_C) && !isKeyPressed(KEY_C)) {
+                armMsg.mode = ARM::ArmMode_e::TWO;
+            }
+        }
+        //一键: 取矿*3，从矿仓取矿，公路区跨越
+        if (isKeyPressed(KEY_Q))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
+        if (isKeyPressed(KEY_E))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
+        if (isKeyPressed(KEY_R))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
+        if (isKeyPressed(KEY_F))
+            armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
+        if (isKeyPressed(KEY_G))
+            armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+
     } else {
         return;
     }
     notify(&chassisMsg, msgBus_->chassisQueue);
     notify(&gimbalMsg, msgBus_->gimbalQueue);
+    notify(&armMsg, msgBus_->armQueue);
 }
 #else
 void RcMsgHandler::chassisHandle()

@@ -14,8 +14,10 @@ enum class FSMState_e : uint8_t;
 }
 
 namespace ARM {
+enum class OneClick_e : uint8_t;
+enum class ArmMode_e : uint8_t;
 enum class FSMState_e : uint8_t;
-using Joint = std::array<float, 6>;
+using Joint10 = std::array<float, 10>;
 }
 
 struct MsgBus_s {
@@ -37,9 +39,11 @@ struct GimbalMsg_s : public Msg {
 };
 
 struct ArmMsg_s : public Msg {
+    ARM::OneClick_e oneClick;
+    ARM::ArmMode_e mode;
     ARM::FSMState_e state;
-    float j1, j2, j3, j4, j5, j6;
-    ARM::Joint target;
+    float j1, j2, j3, j4, j5, j6, j7, j8, j9, j10;
+    ARM::Joint10 target;
     bool switch1; // ture: clamp, false: release
     bool isStucked = false;
 };

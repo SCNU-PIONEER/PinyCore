@@ -32,6 +32,11 @@ class RcMsgHandler : public Handler {
             int16_t yMove;
             int16_t zRoller;
         }; // TODO:
+
+        struct {
+            uint16_t key;
+            uint16_t lastKey;
+        };
     } RcMsg_t;
 
 public:
@@ -51,11 +56,17 @@ private:
     MsgBus_s *msgBus_;
 
     static void updateRocker(float &_target, float _channel);
+    static void kupdateRocker(float &_target, float _channel);
+    uint32_t isKeyPressed(uint16_t _key);
+    uint32_t isKeyLastPressed(uint16_t _key);
 
     void chassisHandle();
     void masterHandle();
 
     ChassisMsg_s cmsg_;
+
+    float lx_command = 0;
+    float accK_ = 1.f;
 
     UART_HandleTypeDef *_uart;
 };
