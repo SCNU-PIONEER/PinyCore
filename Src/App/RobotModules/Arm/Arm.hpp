@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ArmPlan.hpp"
 #include "FSMState.hpp"
 #include "./ArmMotor.hpp"
 #include "MsgImpl.hpp"
@@ -7,11 +8,15 @@
 #include "./ArmHand.hpp"
 #include "./ArmLifting.hpp"
 #include "./ArmOreBin.hpp"
+#include "Dwt.hpp"
 
 
 namespace ARM {
+enum class OneClick_e : uint8_t { ORE_BIN_EXTRACT = 0, HIGHWAY_CROSS, ORE_PICK1, ORE_PICK2, ORE_PICK3 };
 
-enum class FSMState_e : uint8_t { STOP = 0, NORMAL };
+enum class ArmMode_e : uint8_t { LEFT = 0, RIGHT, TWO };
+
+enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
 
 static constexpr float DEFAULT_JOINT_SPEED = 0.8f; // rad/s
 
@@ -25,7 +30,11 @@ public:
 
     void update(MsgBus_s *_param);
 
-    // void setTargetPose(const JointRoute_s _route);
+    void setTargetPose(const ARM::JointRoute_s _route);
+
+    void moveRoute();
+
+    ARM::JointState_e moveOneGoal(const ARM::Joint10D_s &_goal);
 
     ARM::JointState_e jointStateFlag = ARM::JointState_e::FINISH_STATE;
 
@@ -38,7 +47,9 @@ public:
 
     ARM::Hand hand;
 
-    ARM::Joint target_joints = {};
+    ARM::Joint10D_s target_joints = {};
+
+    ARM::JointRoute_s RouteDta = {};
 
     // TODO: Cubic polynomial trajectory planning in joint spaces
     // TODO: quintic polynomial trajectory planning in joint spaces
@@ -54,4 +65,6 @@ public:
     ARM::Lifting lifting;
 
 private:
+    Dwt dwt = Dwt::instance();
+    int16_t rateCnt = 0;
 };
