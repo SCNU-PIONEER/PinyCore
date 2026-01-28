@@ -1,13 +1,12 @@
 #pragma once
-#include "Swerve.hpp"
+#include "Mecanum.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
 namespace CHASSIS {
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Swerve &_chassis)
-            : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis) {};
+    StopState(Mecanum &_chassis) : FSMState<FSMState_e>(FSMState_e::STOP), chassis_(_chassis) {};
 
     void enter() final
     {
@@ -32,6 +31,6 @@ public:
     }
 
 private:
-    Swerve &chassis_;
+    Mecanum &chassis_;
 };
 } // namespace CHASSIS

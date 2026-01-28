@@ -1,5 +1,5 @@
 #pragma once
-#include "Swerve.hpp"
+#include "Mecanum.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 #include "PidBasic.hpp"
@@ -8,8 +8,7 @@
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
 public:
-    RunState(Swerve &_chassis)
-            : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis) {};
+    RunState(Mecanum &_chassis) : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis) {};
 
     void enter() final
     {
@@ -51,7 +50,7 @@ public:
     }
 
 private:
-    Swerve &chassis_;
+    Mecanum &chassis_;
     PositionalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
 };
 } // namespace CHASSIS

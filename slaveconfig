@@ -16,12 +16,12 @@ CONFIG_APP_USE_CHASSIS=y
 #
 # chassis config
 #
-# CONFIG_APP_USE_MECANUM is not set
+CONFIG_APP_USE_MECANUM=y
 # CONFIG_APP_USE_OMNI is not set
 # CONFIG_APP_USE_BIPEDAL is not set
-CONFIG_APP_USE_SWERVE=y
-CONFIG_CHASSIS_TYPE="Swerve"
-CONFIG_CHASSIS_FILE="\"Swerve.hpp\""
+# CONFIG_APP_USE_SWERVE is not set
+CONFIG_CHASSIS_TYPE="Mecanum"
+CONFIG_CHASSIS_FILE="\"Mecanum.hpp\""
 # CONFIG_APP_USE_POWERCTRL is not set
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
