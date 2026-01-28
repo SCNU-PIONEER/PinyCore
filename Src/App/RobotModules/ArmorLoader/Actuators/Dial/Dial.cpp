@@ -61,9 +61,7 @@ void Dial::enter()
 void Dial::update(void *_param)
 {
     msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
-
-    // if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &msg, 0) == pdTRUE) {
-    // }
+    msg.fire = shooterCtrlRxPacket_.data().fire;
 
     vel_ = velFltr_.process(dial()->vel());
 

@@ -143,7 +143,7 @@ private:
     float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
 
     //舵轮零位角度，用于回正方向,rad
-    Swerve_u<float> SwerveZero = { 4.99909f, 4.97684f, 6.0983181f, 1.38075113f };
+    Swerve_u<float> SwerveZero = { 5.0083f, 4.95766449f, 6.122f, 1.35620451f };
 
     canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
     canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };

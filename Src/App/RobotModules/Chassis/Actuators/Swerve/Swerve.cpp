@@ -54,14 +54,14 @@ PositionalPid swerveVelPid[4] = {
     PositionalPid(0.45f, 0.05f, 0.01f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
     PositionalPid(0.5f, 0.05f, 0.025f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
     PositionalPid(0.5f, 0.01f, 0.02f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.5f, 0.3f, 0.03f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.45f, 0.3f, 0.02f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
 };
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
     PositionalPid(0.48f, 0.000f, 0.f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
 };
 
 Swerve::Swerve()
@@ -176,10 +176,10 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
     float carRadius = sqrtf((rX * rX) + (rY * rY));
 
-    wheelComVel[0] = _wSpeed.M_LF * W_RADIUS; //m/s
-    wheelComVel[1] = _wSpeed.M_LB * W_RADIUS; //m/s
-    wheelComVel[2] = _wSpeed.M_RB * W_RADIUS; //m/s
-    wheelComVel[3] = _wSpeed.M_RF * W_RADIUS; //m/s
+    wheelComVel[0] = -_wSpeed.M_LF * W_RADIUS; //m/s
+    wheelComVel[1] = -_wSpeed.M_LB * W_RADIUS; //m/s
+    wheelComVel[2] = _wSpeed.M_RB * W_RADIUS;  //m/s
+    wheelComVel[3] = _wSpeed.M_RF * W_RADIUS;  //m/s
 
     sinAng[0] = sin(curDir.LF);
     cosAng[0] = cos(curDir.LF);
@@ -262,8 +262,8 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     // refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
     // refWheels.M_RF = wheelComVel[3] / W_CIRCUMFERENCE * 60;
     // //传rad/s
-    refWheels.M_LF = wheelComVel[0] / W_RADIUS;
-    refWheels.M_LB = wheelComVel[1] / W_RADIUS;
+    refWheels.M_LF = -wheelComVel[0] / W_RADIUS;
+    refWheels.M_LB = -wheelComVel[1] / W_RADIUS;
     refWheels.M_RB = wheelComVel[2] / W_RADIUS;
     refWheels.M_RF = wheelComVel[3] / W_RADIUS;
 
@@ -337,7 +337,7 @@ void Swerve::loadDeltaYaw()
 {
     // Master Board method
     insSub_->receive();
-    deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
+    deltaYaw = getMinorArc(0.f, chassisCtrlRxPacket_.data().deltaYaw);
 
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);

@@ -57,7 +57,7 @@ class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> 
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 1.667539f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.134615034f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 4.12077522f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;

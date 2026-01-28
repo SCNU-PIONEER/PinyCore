@@ -220,6 +220,9 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _ang
         }
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
+    // motors_.Pitch->cmdTorq(gimbalFilterOutput_._[0]->process(torq[0]));
+    // motors_.SecondYaw->cmdTorq(0.f);
+    // motors_.FirstYaw->cmdTorq(0.f);
 }
 
 void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStagePtr_u<PositionalPid> _angPID,
