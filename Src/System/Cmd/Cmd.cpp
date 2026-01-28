@@ -20,7 +20,6 @@ Cmd::Cmd()
         i.handler->init(&msgBus_, eventGroup_);
     }
 
-
     LOG::info("cmd", "init success");
 }
 
@@ -34,12 +33,6 @@ void Cmd::parseMsg()
             i.handler->handle();
         }
     }
-
-#if defined APP_USE_MINIPC
-    if (xBits & MINIPC_READY_EVENT) {
-        miniPcHandler_.handle();
-    }
-#endif
 }
 
 void Cmd::task()

@@ -8,7 +8,6 @@
 
 class MiniPcHandler : public Handler {
 public:
-public:
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) override;
     void handle() override;
     void notify(Msg *_msg, QueueHandle_t _queue) override;

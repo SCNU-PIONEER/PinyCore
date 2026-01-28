@@ -71,6 +71,9 @@ void RcMsgHandler::masterHandle()
     DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc->getData());
     SW &sr = rcData->rc.switchRight;
     SW &sl = rcData->rc.switchLeft;
+
+    float wheelRocker = ((float)rcData->wheel - 1024.f) / 660.f;
+
     if (sr == SW::DOWN) {
         gMsg_.state = GIMBAL::FSMState_e::STOP;
         gMsg_.wPitch = gMsg_.wYaw = 0.f;
@@ -85,11 +88,6 @@ void RcMsgHandler::masterHandle()
         gMsg_.wPitch = -static_cast<float>(rcData->rc.ch3) / CH_RANGE * INPUT_PITCH_MAX;
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
         alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
-        // #if !APP_USE_COMM
-        //         cMsg_.wz = gMsg_.wYaw;
-        // #else
-        //         cMsg_.wz = 0.f;
-        // #endif
         if (sl == SW::DOWN) {
             gMsg_.state = GIMBAL::FSMState_e::RUN;
             cMsg_.state = CHASSIS::FSMState_e::RUN;
@@ -98,27 +96,35 @@ void RcMsgHandler::masterHandle()
         } else if (sl == SW::MID) {
             gMsg_.state = GIMBAL::FSMState_e::RUN;
             cMsg_.state = CHASSIS::FSMState_e::TANK;
-            alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
+            // alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
             abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
         } else if (sl == SW::UP) {
-            alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+            // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
         }
+        // cMsg_.state = CHASSIS::FSMState_e::STOP;
+
     } else if (sr == SW::UP) {
         cMsg_.vx = static_cast<float>(rcData->rc.ch1) / CH_RANGE * INPUT_VX_MAX;
         cMsg_.vy = -static_cast<float>(rcData->rc.ch0) / CH_RANGE * INPUT_VY_MAX;
         gMsg_.wPitch = -static_cast<float>(rcData->rc.ch3) / CH_RANGE * INPUT_PITCH_MAX;
         gMsg_.wYaw = -static_cast<float>(rcData->rc.ch2) / CH_RANGE * INPUT_YAW_MAX;
-        alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
+        // alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - DT7::CH_VALUE_OFFSET) / CH_RANGE) > WHEEL_THESHORLD;
+        alMsg_.fire = wheelRocker > WHEEL_THESHORLD || wheelRocker < -WHEEL_THESHORLD;
         if (sl == SW::DOWN) {
-            gMsg_.state = GIMBAL::FSMState_e::PATROL;
-            cMsg_.state = CHASSIS::FSMState_e::SPIN;
-        } else if (sl == SW::MID) {
             gMsg_.state = GIMBAL::FSMState_e::NAV;
+            cMsg_.state = CHASSIS::FSMState_e::TANK;
+            // gMsg_.state = GIMBAL::FSMState_e::PATROL;
+            // cMsg_.state = CHASSIS::FSMState_e::SPIN;
+        } else if (sl == SW::MID) {
+            gMsg_.state = GIMBAL::FSMState_e::AUTO;
             alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-            // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+            abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
         } else if (sl == SW::UP) {
-            // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+            alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
         }
+
+        // cMsg_.state = CHASSIS::FSMState_e::STOP;
+
     } else {
         // TODO: Use keyboard
         return;

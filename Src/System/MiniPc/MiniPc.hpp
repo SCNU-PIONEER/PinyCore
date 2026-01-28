@@ -15,12 +15,13 @@ public:
     MiniPc() = default;
 
     virtual ~MiniPc() = default;
-    virtual void init(EventGroupHandle_t _event) = 0;
-    virtual void usbIdleCallback(uint8_t *_buf, uint16_t _len) = 0;
+    virtual void init(const EventGroupHandle_t &_event, uint32_t _eventBit) = 0;
+    virtual void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event,
+                                 uint32_t _eventBit) = 0;
     virtual void parseData() = 0;
     virtual void sendData() = 0;
 
-    EventGroupHandle_t event_;
+    // EventGroupHandle_t event_;
 };
 
 } // namespace MINIPC

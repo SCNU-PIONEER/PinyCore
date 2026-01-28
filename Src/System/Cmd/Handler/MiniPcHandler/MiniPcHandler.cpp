@@ -8,11 +8,11 @@ void MiniPcHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
     this->event = _event;
 #if APP_USE_VISION
     vision = std::make_unique<MINIPC::Vision>();
-    vision->init(_event);
+    vision->init(_event, this->bit_);
 #endif
 #if APP_USE_NAV
     nav = std::make_unique<MINIPC::Nav>();
-    nav->init(_event);
+    nav->init(_event, this->bit_);
 #endif
 }
 

@@ -5,9 +5,6 @@
 #include <cstdint>
 #include <memory>
 
-
-#define VISION_READY_EVENT (1 << 4)
-
 namespace MINIPC {
 
 #pragma pack(push, 1)
@@ -59,10 +56,11 @@ public:
     static constexpr uint16_t VISION_DATA_LEN = (sizeof(VisionToEc_s));
 
     Vision();
-    void init(EventGroupHandle_t _event) override;
+    void init(const EventGroupHandle_t &_event, uint32_t _eventBit) override;
+    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit) override;
     void parseData() override;
     void sendData() override;
-    void usbIdleCallback(uint8_t *_buf, uint16_t _len) override;
+
 
     void rxFreqCalc();
     float getRxFreq() { return rxFreq_; }

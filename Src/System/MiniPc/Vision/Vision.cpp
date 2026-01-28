@@ -14,19 +14,24 @@ Vision::Vision()
     memset(&ecToVisionDatas_, 0, sizeof(EcToVision_s));
 };
 
-void Vision::init(EventGroupHandle_t _event)
+void Vision::init(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
-    event_ = _event;
-    Usb::instance().registerCallback([this](uint8_t *_buf, uint16_t _len) { usbIdleCallback(_buf, _len); });
+    Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
+        {
+            usbIdleCallback(_buf, _len, _event, _eventBit);
+        };
+    });
 };
 
-void Vision::usbIdleCallback(uint8_t *_buf, uint16_t _len)
+void Vision::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
     if (_buf[0] == VISION_UART_CTRL_SOF && _len == VISION_DATA_LEN &&
         Verify_CRC16_Check_Sum(&_buf[0], VISION_DATA_LEN)) {
         memcpy(&rxBuffer_, _buf, VISION_DATA_LEN);
         rxCnt_++;
-        xEventGroupSetBitsFromISR(event_, VISION_READY_EVENT, nullptr);
+        xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
+    } else {
+        LOG::warn("Vision", "Invalid Vision data received via USB");
     }
 };
 
@@ -36,7 +41,7 @@ void Vision::sendData()
 {
     ecToVisionDatas_.header = VISION_UART_REQ_SOF;
     //TODO: send data
-    ecToVisionDatas_.pitch++;
+    // ecToVisionDatas_.pitch++;
     Append_CRC16_Check_Sum((uint8_t *)&ecToVisionDatas_, sizeof(EcToVision_s));
     Usb::instance().send((uint8_t *)&ecToVisionDatas_, sizeof(EcToVision_s));
 };

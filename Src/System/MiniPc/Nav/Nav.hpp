@@ -5,9 +5,6 @@
 #include <cstdint>
 #include <memory>
 
-
-#define NAV_READY_EVENT (1 << 5)
-
 namespace MINIPC {
 
 enum class SentryDecision_e : uint8_t {
@@ -46,8 +43,8 @@ public:
     static constexpr uint16_t NAV_DATA_LEN = (sizeof(NavToEc_s));
 
     Nav();
-    void init(EventGroupHandle_t _event) override;
-    void usbIdleCallback(uint8_t *_buf, uint16_t _len) override;
+    void init(const EventGroupHandle_t &_event, uint32_t _eventBit) override;
+    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit) override;
     void parseData() override;
     void sendData() override;
 

@@ -14,18 +14,23 @@ Nav::Nav()
     memset(&ecToNavDatas_, 0, sizeof(EcToNav_s));
 };
 
-void Nav::init(EventGroupHandle_t _event)
+void Nav::init(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
-    event_ = _event;
-    Usb::instance().registerCallback([this](uint8_t *_buf, uint16_t _len) { usbIdleCallback(_buf, _len); });
+    Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
+        {
+            usbIdleCallback(_buf, _len, _event, _eventBit);
+        };
+    });
 };
 
-void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len)
+void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
     if (_buf[0] == NAV_UART_CTRL_SOF && _len == NAV_DATA_LEN && Verify_CRC16_Check_Sum(&_buf[0], NAV_DATA_LEN)) {
         memcpy(&rxBuffer_, _buf, NAV_DATA_LEN);
         rxCnt_++;
-        xEventGroupSetBitsFromISR(event_, NAV_READY_EVENT, nullptr);
+        xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
+    } else {
+        LOG::warn("Nav", "Invalid Nav data received via USB");
     }
 };
 
@@ -38,8 +43,6 @@ void Nav::sendData()
     ecToNavDatas_.gameProgress = referee->receiver.getRefereeData().gameStatus.gameProgress;
     ecToNavDatas_.gameTime = referee->receiver.getRefereeData().gameStatus.stageRemainTime;
     ecToNavDatas_.navHPstate = referee->receiver.getRefereeData().gameRobotHP.red4RobotHP;
-    ecToNavDatas_.pitch--;
-    ecToNavDatas_.yaw++;
     Append_CRC16_Check_Sum((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
     Usb::instance().send((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
 };
