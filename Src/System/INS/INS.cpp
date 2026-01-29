@@ -1,7 +1,6 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
 #include "dsp/fast_math_functions.h"
-#include "dsp/fast_math_functions.h"
 #if INS_ACCEL_CALIBRATION
 #include "AccelCali.hpp"
 #endif
