@@ -86,7 +86,7 @@ public:
             return FSMState_e::RUN;
         else if (gimbal_->msg.state == FSMState_e::PATROL)
             return FSMState_e::PATROL;
-        else if (gimbal_->msg.state == FSMState_e::AUTO)
+        else if (gimbal_->msg.state == FSMState_e::AUTO || vision->v2eData().control)
             return FSMState_e::AUTO;
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;

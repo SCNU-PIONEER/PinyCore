@@ -23,11 +23,11 @@ public:
     {
         if (chassis_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
+        else if (chassis_->msg.state == FSMState_e::RUN && chassis_->isGimbalReset())
             return FSMState_e::RUN;
-        else if (chassis_->msg.state == FSMState_e::SPIN)
+        else if (chassis_->msg.state == FSMState_e::SPIN && chassis_->isGimbalReset())
             return FSMState_e::SPIN;
-        else if (chassis_->msg.state == FSMState_e::TANK)
+        else if (chassis_->msg.state == FSMState_e::TANK && chassis_->isGimbalReset())
             return FSMState_e::TANK;
         else
             return FSMState_e::STOP;

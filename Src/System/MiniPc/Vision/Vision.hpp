@@ -8,6 +8,7 @@
 namespace MINIPC {
 
 #pragma pack(push, 1)
+#pragma pack(push, 1)
 typedef struct {
     uint8_t header;
     uint8_t detectColor : 1;
@@ -26,9 +27,22 @@ typedef struct {
     uint32_t timestamp;
     uint16_t checksum;
 } EcToVision_s;
-
+//发来的原始数据
 typedef struct {
-    uint8_t header; // 0xA5
+    uint8_t header;
+    float targetYaw;
+    float targetPitch;
+    float yawDiff;
+    float pitchDiff;
+    float distance;
+    uint8_t fire;
+    uint32_t capTimestamp;
+    uint16_t tOffset;
+    uint16_t checksum;
+} VisionToEc_s;
+#pragma pack(pop)
+//处理后的数据
+typedef struct {
     uint8_t control;
     uint8_t fire;
     float targetYaw;
@@ -39,14 +53,7 @@ typedef struct {
     float pitch;
     float pitchVel;
     float pitchAcc;
-    float yawDiff;
-    float pitchDiff;
-    float distance;
-    uint32_t capTimestamp;
-    uint16_t tOffset;
-    uint16_t checksum;
-} VisionToEc_s;
-#pragma pack(pop)
+} V2EData_s;
 
 
 class Vision : public MiniPc {
@@ -61,15 +68,17 @@ public:
     void parseData() override;
     void sendData() override;
 
-
     void rxFreqCalc();
     float getRxFreq() { return rxFreq_; }
-    VisionToEc_s &visionToEData() { return visionToEcDatas_; };
+
     EcToVision_s &eToVData() { return ecToVisionDatas_; };
+    V2EData_s &v2eData() { return v2eDatas_; };
 
 private:
     VisionToEc_s visionToEcDatas_;
+    V2EData_s v2eDatas_;
     EcToVision_s ecToVisionDatas_;
+
     uint8_t rxBuffer_[VISION_DATA_LEN];
     float rxFreq_;
     uint16_t rxCnt_ = 0;

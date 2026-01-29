@@ -35,7 +35,25 @@ void Vision::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandl
     }
 };
 
-void Vision::parseData() { memcpy(&visionToEcDatas_, &rxBuffer_, VISION_DATA_LEN); }
+void Vision::parseData()
+{
+    memcpy(&visionToEcDatas_, &rxBuffer_, VISION_DATA_LEN);
+
+    // v2eDatas_.fire = visionToEcDatas_.fire;
+    // v2eDatas_.control = visionToEcDatas_.control;
+    // v2eDatas_.targetYaw = visionToEcDatas_.targetYaw;
+    // v2eDatas_.targetPitch = visionToEcDatas_.targetPitch;
+    // v2eDatas_.yaw = visionToEcDatas_.yaw;
+    // v2eDatas_.yawVel = visionToEcDatas_.yawVel;
+    // v2eDatas_.yawAcc = visionToEcDatas_.yawAcc;
+    // v2eDatas_.pitch = visionToEcDatas_.pitch;
+    // v2eDatas_.pitchVel = visionToEcDatas_.pitchVel;
+    // v2eDatas_.pitchAcc = visionToEcDatas_.pitchAcc;
+    v2eDatas_.fire = visionToEcDatas_.fire;
+    v2eDatas_.control = (visionToEcDatas_.distance == -1) ? 0 : 1;
+    v2eDatas_.targetYaw = visionToEcDatas_.targetYaw;
+    v2eDatas_.targetPitch = visionToEcDatas_.targetPitch;
+}
 
 void Vision::sendData()
 {

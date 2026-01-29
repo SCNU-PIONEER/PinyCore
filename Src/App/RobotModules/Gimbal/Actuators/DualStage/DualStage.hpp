@@ -3,7 +3,7 @@
 #include "Gimbal.hpp"
 
 #include "IMotor.hpp"
-
+#include "Vision.hpp"
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"

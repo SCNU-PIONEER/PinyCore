@@ -52,23 +52,28 @@ public:
     {
         DualStage_u<float> delArc = {};
 
-        eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
-        eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
-        eIA.SecondYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA.Pitch = vision->v2eData().targetPitch;
+        eIA.SecondYaw = vision->v2eData().targetYaw;
+        // eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
 
-        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
-        eIA.SecondYaw = PINYMOTOR::clampArc(eIA.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+        if (eIA.SecondYaw >= SECOND_YAW_MAX_ANG || eIA.SecondYaw <= SECOND_YAW_MIN_ANG) {
+            isVisionAngOver_ = true; //视觉角度超出小yaw范围，停止控制
+        } else {
+            isVisionAngOver_ = false;
+            eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+            eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+            eIA.SecondYaw = PINYMOTOR::clampArc(eIA.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
 
-        delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
-        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
-        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
+            delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
+            delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
+            delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
 
-        eMA.Pitch = PINYMOTOR::rangeMap(cMA.Pitch + delArc.Pitch);
-        eMA.FirstYaw = 0.f;
-        eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
+            eMA.Pitch = PINYMOTOR::rangeMap(cMA.Pitch + delArc.Pitch);
+            // eMA.FirstYaw = 0.f;
+            eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
 
-        gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
+            gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
+        }
     }
 
     void exit() final
@@ -85,11 +90,11 @@ public:
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (gimbal_->msg.state == FSMState_e::RUN)
+        else if (gimbal_->msg.state == FSMState_e::RUN || isVisionAngOver_)
             return FSMState_e::RUN;
         else if (gimbal_->msg.state == FSMState_e::PATROL)
             return FSMState_e::PATROL;
-        else if (gimbal_->msg.state == FSMState_e::AUTO)
+        else if (gimbal_->msg.state == FSMState_e::AUTO || vision->v2eData().control)
             return FSMState_e::AUTO;
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;
@@ -99,6 +104,8 @@ public:
 
 private:
     DualStage *gimbal_;
+
+    bool isVisionAngOver_ = false;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;

@@ -143,14 +143,19 @@ void DualStage::update(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->navigationQueue), &nmsg, 0) == pdTRUE) {
     };
 #if APP_USE_NAV
-    if (msg.state == FSMState_e::NAV) {
+    if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx + nmsg.vx;
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + nmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + nmsg.wz;
+        if (msg.state == FSMState_e::NAV) {
+            msg.wYaw = 0.5f;
+        }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
         chassisCtrlTxPacket_.setData().vy = cmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz;
+
+        nmsg = {};
     }
 #else
     chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -164,7 +169,8 @@ void DualStage::update(void *_param)
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
-    shooterCtrlTxPacket_.setData().fire &= true; // TODO: vision fire
+
+    shooterCtrlTxPacket_.setData().fire &= (vision->v2eData().control) ? vision->v2eData().fire : true;
 
     // vision send
     vision->eToVData().roll = insData_.roll;

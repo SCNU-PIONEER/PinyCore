@@ -1,4 +1,5 @@
 #include "Swerve.hpp"
+#include "Chassis.hpp"
 #include "Soc.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
@@ -282,10 +283,10 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
     float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.wz, MAX_WZ_SPEED));
+
     Speed_u refSpeed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
                          .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
                          .wz = wz };
-
     WheelsSpeed_u refWSpeed = reverse(_refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
@@ -337,8 +338,10 @@ void Swerve::loadDeltaYaw()
 {
     // Master Board method
     insSub_->receive();
-    deltaYaw = getMinorArc(0.f, chassisCtrlRxPacket_.data().deltaYaw);
-
+    deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
+    if (msg.state == FSMState_e::TANK) {
+        deltaYaw = 0.f;
+    }
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
 };
