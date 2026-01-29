@@ -1,13 +1,12 @@
 #pragma once
 
-#include "MiniPc.hpp"
-
+#include "FreeRTOS.h"
+#include "event_groups.h"
 #include <cstdint>
 #include <memory>
 
 namespace MINIPC {
 
-#pragma pack(push, 1)
 #pragma pack(push, 1)
 typedef struct {
     uint8_t header;
@@ -56,23 +55,23 @@ typedef struct {
 } V2EData_s;
 
 
-class Vision : public MiniPc {
+class Vision {
 public:
     static constexpr uint8_t VISION_UART_REQ_SOF = 0x5A;
     static constexpr uint8_t VISION_UART_CTRL_SOF = 0xA5;
     static constexpr uint16_t VISION_DATA_LEN = (sizeof(VisionToEc_s));
 
-    Vision();
-    void init(const EventGroupHandle_t &_event, uint32_t _eventBit) override;
-    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit) override;
-    void parseData() override;
-    void sendData() override;
+    Vision(const EventGroupHandle_t &_event, uint32_t _eventBit);
 
+    void sendData();
     void rxFreqCalc();
+    void parseData();
     float getRxFreq() { return rxFreq_; }
-
     EcToVision_s &eToVData() { return ecToVisionDatas_; };
     V2EData_s &v2eData() { return v2eDatas_; };
+
+protected:
+    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit);
 
 private:
     VisionToEc_s visionToEcDatas_;
@@ -85,4 +84,4 @@ private:
 };
 } // namespace MINIPC
 
-inline std::unique_ptr<MINIPC::Vision> vision;
+inline std::unique_ptr<MINIPC::Vision> vision = nullptr;

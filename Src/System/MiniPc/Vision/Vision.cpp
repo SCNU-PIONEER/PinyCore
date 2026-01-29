@@ -6,21 +6,16 @@
 #include "MiniPcManager.hpp"
 
 using namespace MINIPC;
-
-Vision::Vision()
+Vision::Vision(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
     PcManager::instance().registerTransmitter([this]() { sendData(); });
-    memset(&visionToEcDatas_, 0, VISION_DATA_LEN);
-    memset(&ecToVisionDatas_, 0, sizeof(EcToVision_s));
-};
-
-void Vision::init(const EventGroupHandle_t &_event, uint32_t _eventBit)
-{
     Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
         {
             usbIdleCallback(_buf, _len, _event, _eventBit);
         };
     });
+    memset(&visionToEcDatas_, 0, VISION_DATA_LEN);
+    memset(&ecToVisionDatas_, 0, sizeof(EcToVision_s));
 };
 
 void Vision::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit)

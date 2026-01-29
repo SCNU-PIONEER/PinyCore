@@ -7,7 +7,6 @@
 #include <vector>
 
 namespace MINIPC {
-
 class PcManager {
     static constexpr int MAX_TX_NUM = 2;
     static constexpr int MAX_RX_NUM = 2;
@@ -24,8 +23,7 @@ public:
     PcManager(const PcManager &) = delete;
     PcManager &operator=(const PcManager &) = delete;
 
-    void registerTransmitter( // NOLINTNEXTLINE
-            std::function<void()> _tx)
+    void registerTransmitter(std::function<void()> _tx)
     {
         if (txIndex_ < MAX_TX_NUM) {
             transmitter_.push_back(_tx);
@@ -40,7 +38,6 @@ public:
     }
 
 private:
-    // NOLINTNEXTLINE
     std::vector<std::function<void()> > transmitter_;
     uint8_t txIndex_ = 0;
 };

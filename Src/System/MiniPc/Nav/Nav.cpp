@@ -7,20 +7,16 @@
 
 using namespace MINIPC;
 
-Nav::Nav()
+Nav::Nav(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
     PcManager::instance().registerTransmitter([this]() { sendData(); });
-    memset(&navToEcDatas_, 0, NAV_DATA_LEN);
-    memset(&ecToNavDatas_, 0, sizeof(EcToNav_s));
-};
-
-void Nav::init(const EventGroupHandle_t &_event, uint32_t _eventBit)
-{
     Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
         {
             usbIdleCallback(_buf, _len, _event, _eventBit);
         };
     });
+    memset(&navToEcDatas_, 0, NAV_DATA_LEN);
+    memset(&ecToNavDatas_, 0, sizeof(EcToNav_s));
 };
 
 void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit)

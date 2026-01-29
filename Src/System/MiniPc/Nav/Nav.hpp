@@ -1,12 +1,10 @@
 #pragma once
-
-#include "MiniPc.hpp"
-
+#include "FreeRTOS.h"
+#include "event_groups.h"
 #include <cstdint>
 #include <memory>
 
 namespace MINIPC {
-
 enum class SentryDecision_e : uint8_t {
     IDLE = 0,
     SPIN,   // 小陀螺
@@ -36,22 +34,23 @@ typedef struct {
 #pragma pack(pop)
 
 
-class Nav : public MiniPc {
+class Nav {
 public:
     static constexpr uint8_t NAV_UART_REQ_SOF = 0x6A;
     static constexpr uint8_t NAV_UART_CTRL_SOF = 0xA6;
     static constexpr uint16_t NAV_DATA_LEN = (sizeof(NavToEc_s));
 
-    Nav();
-    void init(const EventGroupHandle_t &_event, uint32_t _eventBit) override;
-    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit) override;
-    void parseData() override;
-    void sendData() override;
+    Nav(const EventGroupHandle_t &_event, uint32_t _eventBit);
 
+    void sendData();
     void rxFreqCalc();
+    void parseData();
     float getRxFreq() { return rxFreq_; }
     NavToEc_s &navToEData() { return navToEcDatas_; };
     EcToNav_s &ecToNavData() { return ecToNavDatas_; };
+
+protected:
+    void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit);
 
 private:
     NavToEc_s navToEcDatas_;
@@ -60,5 +59,7 @@ private:
     float rxFreq_;
     uint16_t rxCnt_ = 0;
 };
+
 } // namespace MINIPC
-inline std::unique_ptr<MINIPC::Nav> nav;
+
+inline std::unique_ptr<MINIPC::Nav> nav = nullptr;

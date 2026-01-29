@@ -3,13 +3,12 @@
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
 
-#include "Nav.hpp"
 #include "PidBasic.hpp"
 
 #include "GM6020.hpp"
 #include "DM4310.hpp"
 #include "Bsp_Usb.hpp"
-#include "Vision.hpp"
+
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 
@@ -78,7 +77,7 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4310("Yaw", firstYawDM4310Config);
+    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
@@ -92,7 +91,7 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
-    motors_.SecondYaw = new DJIMOTOR::GM6020("Yaw", secondYawGM6020Config);
+    motors_.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
     motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);
 
@@ -226,9 +225,6 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _ang
         }
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
-    // motors_.Pitch->cmdTorq(gimbalFilterOutput_._[0]->process(torq[0]));
-    // motors_.SecondYaw->cmdTorq(0.f);
-    // motors_.FirstYaw->cmdTorq(0.f);
 }
 
 void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStagePtr_u<PositionalPid> _angPID,

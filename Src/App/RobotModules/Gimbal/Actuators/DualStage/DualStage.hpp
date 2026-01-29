@@ -4,6 +4,7 @@
 
 #include "IMotor.hpp"
 #include "Vision.hpp"
+#include "Nav.hpp"
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"

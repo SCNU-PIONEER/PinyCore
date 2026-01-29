@@ -1,29 +1,21 @@
 #include "MiniPcHandler.hpp"
+#include "Vision.hpp"
+#include "Nav.hpp"
 #include "sdkconfig.h"
 #include <memory>
+#include "MiniPcManager.hpp"
 
-void MiniPcHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
+using namespace MINIPC;
+
+void NavHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     this->msgBus_ = _bus;
     this->event = _event;
-#if APP_USE_VISION
-    vision = std::make_unique<MINIPC::Vision>();
-    vision->init(_event, this->bit_);
-#endif
-#if APP_USE_NAV
-    nav = std::make_unique<MINIPC::Nav>();
-    nav->init(_event, this->bit_);
-#endif
-}
+    nav = std::make_unique<Nav>(_event, this->bit_);
+};
 
-void MiniPcHandler::handle()
+void NavHandler::handle()
 {
-#if APP_USE_VISION
-    vision->parseData();
-    vision->rxFreqCalc();
-    notify(&visionMsg_, msgBus_->visionQueue);
-#endif
-#if APP_USE_NAV
     nav->parseData();
     nav->rxFreqCalc();
     navMsg_.decision = nav->navToEData().decision;
@@ -31,7 +23,20 @@ void MiniPcHandler::handle()
     navMsg_.vy = nav->navToEData().vy;
     navMsg_.wz = nav->navToEData().wz;
     notify(&navMsg_, msgBus_->navigationQueue);
-#endif
 }
 
-void MiniPcHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
+void NavHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
+
+void VisionHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
+{
+    this->msgBus_ = _bus;
+    this->event = _event;
+    vision = std::make_unique<Vision>(_event, this->bit_);
+}
+void VisionHandler::handle()
+{
+    vision->parseData();
+    vision->rxFreqCalc();
+    notify(&visionMsg_, msgBus_->visionQueue);
+}
+void VisionHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }
