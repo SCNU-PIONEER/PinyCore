@@ -1,4 +1,5 @@
 #pragma once
+#include "Smooth.hpp"
 #include "Swerve.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
@@ -16,6 +17,7 @@ public:
     void enter() final
     {
         chassis_->enter();
+        spinCnt_ = 0;
         LOG::info("ChassisSpin", " enter");
     }
 
@@ -26,7 +28,12 @@ public:
 
         ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
         // ref.wz = getSpinVel(spinCnt_++);
-        ref.wz = NORMAL_SPIN_SPEED;
+        if (spinCnt_ + 5 >= MAX_SPIN_CNT)
+            maxSpinCount = 0;
+        else if (spinCnt_ - 5 <= 0)
+            maxSpinCount = MAX_SPIN_CNT;
+        SMOOTH::slopeFollowing(&maxSpinCount, &spinCnt_, 1.f);
+        ref.wz =   NORMAL_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
         chassis_->ctrl(ref);
     }
 
@@ -62,8 +69,13 @@ public:
 
 private:
     Swerve *chassis_;
-
     bool spinDir_ = false; // true : left, false: right
-    uint32_t spinCnt_ = 0;
+    // uint32_t spinCnt_ = 0;
+    static constexpr float SPIN_FREQ = 1000.f; //hz,代码运行频率
+    static constexpr float PERIOD = 4;         //s
+    static constexpr float MAX_SPIN_CNT = PERIOD * SPIN_FREQ;
+    float spinCnt_ = 0;
+    float maxSpinCount = 0;
+    float omiga = 2 * PI / PERIOD / SPIN_FREQ; //rad/s
 };
 } // namespace CHASSIS

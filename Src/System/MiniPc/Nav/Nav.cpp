@@ -30,7 +30,6 @@ void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t
     }
 };
 
-
 void Nav::parseData() { memcpy(&navToEcDatas_, &rxBuffer_, NAV_DATA_LEN); }
 
 void Nav::sendData()
