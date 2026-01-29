@@ -26,5 +26,4 @@ private:
     ArmorBoosterMsg_s abMsg_ = {};
 
     void masterHandle();
-
 };

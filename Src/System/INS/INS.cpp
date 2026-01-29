@@ -1,12 +1,14 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
 #include "dsp/fast_math_functions.h"
+#include "dsp/fast_math_functions.h"
 #if INS_ACCEL_CALIBRATION
 #include "AccelCali.hpp"
 #endif
 
 using namespace INS_SYS;
 
+// static INSData_s ansINS;
 #if TARGET_SLAVE //下板
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = { .accelT = { { 1.005345f, -0.006104f, -0.001893f },

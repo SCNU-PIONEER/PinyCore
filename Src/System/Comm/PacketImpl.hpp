@@ -49,7 +49,7 @@ public:
         _protoData.gimbalYaw = convertToFloat(_data.content.gimbalYaw);
     }
 };
-
+;
 class ChassisCtrlPacketType {
 public:
     static constexpr uint8_t LEN = 8;
