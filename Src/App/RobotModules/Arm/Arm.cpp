@@ -6,7 +6,7 @@
 #include "StmLog.hpp"
 #include "ArmNormalState.hpp"
 #include "ArmStopState.hpp"
-#include "MotorCommonMacros.hpp"
+#include "Dwt.hpp"
 
 using namespace ARM;
 
@@ -34,7 +34,7 @@ void Arm::update(MsgBus_s *_param)
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
 void Arm::moveRoute()
 {
-    if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == jointStateFlag) { //bug
+    if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == jointStateFlag) {
         /*为了到达某点后停止一段时间*/
         if (RouteDta.pose[RouteDta.point_cnt]._delay != 0) {
             LOG::info("ARM", "Start move delay");
