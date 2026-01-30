@@ -33,10 +33,6 @@ class RcMsgHandler : public Handler {
             int16_t zRoller;
         }; // TODO:
 
-        struct {
-            uint16_t key;
-            uint16_t lastKey;
-        };
     } RcMsg_t;
 
 public:
@@ -48,6 +44,8 @@ public:
 private:
     static constexpr float S_CURVE_ACC = 2.0f;
     static constexpr uint8_t T_ACC_CNT = 100;
+
+    RcRawMsg_t *rcData = nullptr;
 
     RcMsg_t rcMsg_ = {};
 
@@ -64,9 +62,6 @@ private:
     void masterHandle();
 
     ChassisMsg_s cmsg_;
-
-    float lx_command = 0;
-    float accK_ = 1.f;
 
     UART_HandleTypeDef *_uart;
 };
