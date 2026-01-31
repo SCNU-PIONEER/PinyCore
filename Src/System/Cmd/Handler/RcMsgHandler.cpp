@@ -98,7 +98,7 @@ void RcMsgHandler::masterHandle()
     GimbalMsg_s gimbalMsg{};
     ArmMsg_s armMsg{};
 
-#if APP_USE_KEYATEACH == 1
+#if APP_USE_KEY == 1
     /*
 gimbal:STOP,RUN,
 chassis:STOP,RUN,SPIN
