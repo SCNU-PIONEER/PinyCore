@@ -32,6 +32,7 @@ class RcMsgHandler : public Handler {
             int16_t yMove;
             int16_t zRoller;
         }; // TODO:
+
     } RcMsg_t;
 
 public:
@@ -44,6 +45,8 @@ private:
     static constexpr float S_CURVE_ACC = 2.0f;
     static constexpr uint8_t T_ACC_CNT = 100;
 
+    RcRawMsg_t *rcData = nullptr;
+
     RcMsg_t rcMsg_ = {};
 
     RcMsg_t rcMsgPrev_ = {};
@@ -51,6 +54,9 @@ private:
     MsgBus_s *msgBus_;
 
     static void updateRocker(float &_target, float _channel);
+    static void kupdateRocker(float &_target, float _channel);
+    uint32_t isKeyPressed(uint16_t _key);
+    uint32_t isKeyLastPressed(uint16_t _key);
 
     void chassisHandle();
     void masterHandle();

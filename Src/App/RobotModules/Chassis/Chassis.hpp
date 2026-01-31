@@ -8,6 +8,11 @@ enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, SPIN };
 }
 class Chassis {
 public:
+    static constexpr float MAX_VX_SPEED = 18.f;
+    static constexpr float MAX_VY_SPEED = 18.f;
+    static constexpr float MAX_WZ_SPEED = 30.f;
+    static constexpr float MOUSE_CAL = 200.f;
+
     ChassisMsg_s msg = {};
 
     GimbalYawMsg_s gimbalYawMsg;

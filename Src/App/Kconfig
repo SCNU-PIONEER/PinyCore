@@ -48,4 +48,13 @@ menu "app config"
     config APP_USE_ARM
     bool "arm"
     default y
+
+    config APP_USE_KEY
+    bool "key"
+    default n
+
+    config APP_USE_TEACH
+    bool "teach"
+    default n
+
 endmenu
