@@ -52,40 +52,38 @@ protected:
 
     void calcNormcoeffs()
     {
-        double w = tan(std::numbers::pi_v<double> * coeffs_.cutoffFreq_ / coeffs_.sampleRate_);
-        double w2 = w * w;
-        double w3 = w2 * w;
+        float w = tanf(std::numbers::pi_v<float> * coeffs_.cutoffFreq_ / coeffs_.sampleRate_);
+        float w2 = w * w;
+        float w3 = w2 * w;
         switch (RANK) {
         case 2: {
-            double normCoeffs =
-                    (coeffs_.normParam_.a[0] * w2) + (coeffs_.normParam_.a[1] * w) + coeffs_.normParam_.a[2];
-            coeffs_.NUM[0] = (float)(w2 / normCoeffs);
+            float normCoeffs = (coeffs_.normParam_.a[0] * w2) + (coeffs_.normParam_.a[1] * w) + coeffs_.normParam_.a[2];
+            coeffs_.NUM[0] = w2 / normCoeffs;
             coeffs_.NUM[1] = 2 * coeffs_.NUM[0];
             coeffs_.NUM[2] = coeffs_.NUM[0];
             coeffs_.DEN[0] = 1.f;
-            coeffs_.DEN[1] = (float)((2 * coeffs_.normParam_.a[0] * w2 - 2 * coeffs_.normParam_.a[2]) / normCoeffs);
+            coeffs_.DEN[1] = (2 * coeffs_.normParam_.a[0] * w2 - 2 * coeffs_.normParam_.a[2]) / normCoeffs;
             coeffs_.DEN[2] =
-                    (float)((coeffs_.normParam_.a[0] * w2 - coeffs_.normParam_.a[1] * w + coeffs_.normParam_.a[2]) /
-                            normCoeffs);
+                    (coeffs_.normParam_.a[0] * w2 - coeffs_.normParam_.a[1] * w + coeffs_.normParam_.a[2]) / normCoeffs;
             break;
         }
         case 3: {
-            double normCoeffs = (coeffs_.normParam_.a[0] * w3) + (coeffs_.normParam_.a[1] * w2) +
-                                (coeffs_.normParam_.a[2] * w) + coeffs_.normParam_.a[3];
-            coeffs_.NUM[0] = (float)(w3 / normCoeffs);
+            float normCoeffs = (coeffs_.normParam_.a[0] * w3) + (coeffs_.normParam_.a[1] * w2) +
+                               (coeffs_.normParam_.a[2] * w) + coeffs_.normParam_.a[3];
+            coeffs_.NUM[0] = w3 / normCoeffs;
             coeffs_.NUM[1] = 3 * coeffs_.NUM[0];
             coeffs_.NUM[2] = 3 * coeffs_.NUM[0];
             coeffs_.NUM[3] = coeffs_.NUM[0];
             coeffs_.DEN[0] = 1.f;
-            coeffs_.DEN[1] = (float)((3 * coeffs_.normParam_.a[0] * w3 + coeffs_.normParam_.a[1] * w2 -
-                                      coeffs_.normParam_.a[2] * w - 3 * coeffs_.normParam_.a[3]) /
-                                     normCoeffs);
-            coeffs_.DEN[2] = (float)((3 * coeffs_.normParam_.a[0] * w3 - coeffs_.normParam_.a[1] * w2 -
-                                      coeffs_.normParam_.a[2] * w + 3 * coeffs_.normParam_.a[3]) /
-                                     normCoeffs);
-            coeffs_.DEN[3] = (float)((coeffs_.normParam_.a[0] * w3 - coeffs_.normParam_.a[1] * w2 +
-                                      coeffs_.normParam_.a[2] * w - coeffs_.normParam_.a[3]) /
-                                     normCoeffs);
+            coeffs_.DEN[1] = (3 * coeffs_.normParam_.a[0] * w3 + coeffs_.normParam_.a[1] * w2 -
+                              coeffs_.normParam_.a[2] * w - 3 * coeffs_.normParam_.a[3]) /
+                             normCoeffs;
+            coeffs_.DEN[2] = (3 * coeffs_.normParam_.a[0] * w3 - coeffs_.normParam_.a[1] * w2 -
+                              coeffs_.normParam_.a[2] * w + 3 * coeffs_.normParam_.a[3]) /
+                             normCoeffs;
+            coeffs_.DEN[3] = (coeffs_.normParam_.a[0] * w3 - coeffs_.normParam_.a[1] * w2 +
+                              coeffs_.normParam_.a[2] * w - coeffs_.normParam_.a[3]) /
+                             normCoeffs;
             break;
         }
         default:
