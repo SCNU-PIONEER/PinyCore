@@ -31,23 +31,6 @@ public:
 
     static constexpr int16_t MOUSE_MAX_ABS = 32767;
 
-    static constexpr uint16_t W = 0x01 << 0;
-    static constexpr uint16_t S = 0x01 << 1;
-    static constexpr uint16_t A = 0x01 << 2;
-    static constexpr uint16_t D = 0x01 << 3;
-    static constexpr uint16_t SHIFT = 0x01 << 4;
-    static constexpr uint16_t CTRL = 0x01 << 5;
-    static constexpr uint16_t Q = 0x01 << 6;
-    static constexpr uint16_t E = 0x01 << 7;
-    static constexpr uint16_t R = 0x01 << 8;
-    static constexpr uint16_t F = 0x01 << 9;
-    static constexpr uint16_t G = 0x01 << 10;
-    static constexpr uint16_t Z = 0x01 << 11;
-    static constexpr uint16_t X = 0x01 << 12;
-    static constexpr uint16_t C = 0x01 << 13;
-    static constexpr uint16_t V = 0x01 << 14;
-    static constexpr uint16_t B = 0x01 << 15;
-
     enum class Sw_e : uint8_t { UP = 1, MID = 3, DOWN = 2 };
 
 #pragma pack(push, 1)
@@ -61,16 +44,15 @@ public:
             Sw_e switchRight;
         } rc;
         struct {
-            int16_t x;
-            int16_t y;
-            int16_t z;
-            uint8_t pressLeft;
-            uint8_t pressRight;
-        } mouse;
-        struct {
-            uint16_t keyCode;
-            uint16_t lastKeyCode;
-        } keyboard;
+            int16_t mouseX;
+            int16_t mouseY;
+            int16_t mouseZ;
+            bool mouseLeft;
+            bool mouseRight;
+            bool mouseMiddle;
+            uint16_t key;
+            uint16_t lastKey;
+        };
         //1684 - 1024 - 364， 自动居中 1024
         int16_t wheel;
     };

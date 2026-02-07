@@ -70,15 +70,15 @@ void DT7::parse()
     data_.rc.switchLeft = static_cast<Sw_e>((static_cast<uint8_t>(buf_[5] >> 4) & 0x0C) >> 2);
     data_.rc.switchRight = static_cast<Sw_e>(static_cast<uint8_t>(buf_[5] >> 4) & 0x03);
 
+    data_.mouseX = static_cast<int16_t>((buf_[6]) | (buf_[7] << 8));
+    data_.mouseY = static_cast<int16_t>((buf_[8]) | (buf_[9] << 8));
+    data_.mouseZ = static_cast<int16_t>((buf_[10]) | (buf_[11] << 8));
 
-    data_.mouse.x = static_cast<int16_t>((buf_[6]) | (buf_[7] << 8));
-    data_.mouse.y = static_cast<int16_t>((buf_[8]) | (buf_[9] << 8));
-    data_.mouse.z = static_cast<int16_t>((buf_[10]) | (buf_[11] << 8));
+    data_.mouseLeft = buf_[12];
+    data_.mouseRight = buf_[13];
 
-    data_.mouse.pressLeft = buf_[12];
-    data_.mouse.pressRight = buf_[13];
-
-    data_.keyboard.keyCode = (((uint16_t)buf_[14]) | ((uint16_t)buf_[15] << 8));
+    data_.lastKey = data_.key;
+    data_.key = (((uint16_t)buf_[14]) | ((uint16_t)buf_[15] << 8));
 
     data_.wheel = static_cast<int16_t>((buf_[16]) | (buf_[17] << 8));
 

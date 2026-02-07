@@ -27,23 +27,6 @@ public:
     static constexpr int16_t MOUSE_VALUE_MIN = -32768;
     static constexpr int16_t MOUSE_VALUE_MAX = 32767;
 
-    static constexpr uint16_t W = 0x01 << 0;
-    static constexpr uint16_t S = 0x01 << 1;
-    static constexpr uint16_t A = 0x01 << 2;
-    static constexpr uint16_t D = 0x01 << 3;
-    static constexpr uint16_t SHIFT = 0x01 << 4;
-    static constexpr uint16_t CTRL = 0x01 << 5;
-    static constexpr uint16_t Q = 0x01 << 6;
-    static constexpr uint16_t E = 0x01 << 7;
-    static constexpr uint16_t R = 0x01 << 8;
-    static constexpr uint16_t F = 0x01 << 9;
-    static constexpr uint16_t G = 0x01 << 10;
-    static constexpr uint16_t Z = 0x01 << 11;
-    static constexpr uint16_t X = 0x01 << 12;
-    static constexpr uint16_t C = 0x01 << 13;
-    static constexpr uint16_t V = 0x01 << 14;
-    static constexpr uint16_t B = 0x01 << 15;
-
     enum class Sw_e : uint8_t { C = 0, N = 2, S = 1 };
 
 #pragma pack(push, 1)
@@ -89,6 +72,7 @@ public:
             bool mouseRight;
             bool mouseMiddle;
             uint16_t key;
+            uint16_t lastKey;
         };
     };
 #pragma pack(pop)
