@@ -44,7 +44,7 @@ public:
     static constexpr uint16_t V = 0x01 << 14;
     static constexpr uint16_t B = 0x01 << 15;
 
-    enum class Sw_e : uint8_t { C = 0, N = 2, S = 1 };
+    enum class Sw_e : uint8_t { C = 0, N = 1, S = 2 };
 
 #pragma pack(push, 1)
     struct RcRawData_s {
@@ -61,12 +61,14 @@ public:
         uint16_t wheel : 11;
         uint8_t trigger : 1;
 
+        uint8_t reserved1 : 3;
         int16_t mouseX;
         int16_t mouseY;
         int16_t mouseZ;
         uint8_t mouseLeft : 2;
         uint8_t mouseRight : 2;
         uint8_t mouseMiddle : 2;
+        uint8_t reserved2 : 2;
         uint16_t key;
         uint16_t crc16;
     };

@@ -63,6 +63,7 @@ void VT13::parse()
         data_.mouseRight = raw_->mouseRight;
         data_.mouseMiddle = raw_->mouseMiddle;
         data_.key = raw_->key;
+        rxLostCnt_ = 0;
     }
 }
 
