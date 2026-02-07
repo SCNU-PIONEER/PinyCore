@@ -21,9 +21,16 @@ protected:
 
 private:
     MsgBus_s msgBus_;
-    EventGroupHandle_t eventGroup_;
+    EventGroupHandle_t eventGroup_{ xEventGroupCreate() };
 
-    RcMsgHandler rcHandler_;
+#if EXTENSION_DT7
+    RcMsgHandler<RCDevType_e::DT7> rcDT7Handler_{ &SBUS_UART, eventGroup_ };
+#elif EXTENSION_ET08A
+    RcMsgHandler<RCDevType_e::ET08A> rcET08AHandler_{ &SBUS_UART, eventGroup_ };
+#endif
+#if EXTENSION_VT13
+    RcMsgHandler<RCDevType_e::VT13> rcVT13Handler_{ &VT03_UART, eventGroup_ };
+#endif
 
     RTTMsgHandler rttHandler_;
 
