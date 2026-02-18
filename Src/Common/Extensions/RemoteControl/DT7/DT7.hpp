@@ -78,6 +78,7 @@ public:
 
     DT7(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event, uint32_t _eventBit);
     ~DT7() final;
+
     bool isOnline() final;
 
     void *getData() final;
@@ -85,6 +86,5 @@ public:
 private:
     void parse() final;
     void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
-
     RcData_s data_;
 };

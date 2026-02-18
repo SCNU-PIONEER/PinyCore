@@ -2,10 +2,7 @@
 #include "MsgImpl.hpp"
 #include "StmLog.hpp"
 
-Cmd::Cmd()
-        : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
-        , eventGroup_(xEventGroupCreate())
-        , rcHandler_(&RC_UART, eventGroup_)
+Cmd::Cmd() : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
 
 {
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
