@@ -36,19 +36,19 @@ void RTTMsgHandler::parse(TimerHandle_t _xTimer)
 
 void RTTMsgHandler::handle()
 {
-    memset(data, 0, sizeof(data));
-    SEGGER_RTT_Read(0, data, sizeof(data) - 1);
+    memset(data_, 0, sizeof(data_));
+    SEGGER_RTT_Read(0, data_, sizeof(data_) - 1);
 
     ArmMsg_s armMsg{};
     armMsg.state = ARM::FSMState_e::NORMAL;
 
-    if (strcmp((const char *)data, "on\n") == 0) {
+    if (strcmp((const char *)data_, "on\n") == 0) {
         armMsg.switch1 = true;
-    } else if (strcmp((const char *)data, "off\n") == 0) {
+    } else if (strcmp((const char *)data_, "off\n") == 0) {
         armMsg.switch1 = false;
-    } else if (strcmp((const char *)data, "stop\n") == 0) {
+    } else if (strcmp((const char *)data_, "stop\n") == 0) {
         armMsg.state = ARM::FSMState_e::STOP;
-    } else if (strcmp((const char *)data, "run\n") == 0) {
+    } else if (strcmp((const char *)data_, "run\n") == 0) {
         armMsg.state = ARM::FSMState_e::NORMAL;
     }
 
