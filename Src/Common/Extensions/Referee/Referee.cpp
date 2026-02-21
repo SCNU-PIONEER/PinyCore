@@ -5,25 +5,28 @@
 
 namespace REFEREE {
 
-RefReceiver::RefReceiver(UART_HandleTypeDef *_huart) : uart_(_huart), rxBuffer_(nullptr) {}
+Referee::Referee(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit)
+        : receiver(_huart, _event, _eventBit), transmitter(_huart)
+{
+}
 
-RefReceiver::~RefReceiver()
+Receiver::Receiver(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit)
+        : uart_(_huart), rxBuffer_((uint8_t *)Dma::instance().ram_alloc(2 * REFEREE_RX_BUFFER_LEN))
+{
+    // Should be executed after MX_USARTx_UART_Init()
+    uart_.recvDmaMultiBufInit((uint32_t *)&rxBuffer_[0], REFEREE_RX_BUFFER_LEN);
+    uart_.registerCallback([this, _event, _eventBit](UART_HandleTypeDef *_huart, uint16_t _size) {
+        this->uartIdleCallback(_huart, _event, _eventBit);
+    });
+}
+
+Receiver::~Receiver()
 {
     Dma::instance().ram_free(rxBuffer_);
     uart_.unregisterCallback();
 }
 
-void RefReceiver::init(EventGroupHandle_t _event)
-{
-    event_ = _event;
-
-    rxBuffer_ = (uint8_t *)Dma::instance().ram_alloc(2 * REFEREE_RX_BUFFER_LEN);
-
-    uart_.recvDmaMultiBufInit((uint32_t *)&rxBuffer_[0], REFEREE_RX_BUFFER_LEN);
-    uart_.registerCallback([this](UART_HandleTypeDef *_huart, uint16_t _size) { this->uartIdleCallback(_huart); });
-}
-
-void RefReceiver::uartIdleCallback(UART_HandleTypeDef *_huart)
+void Receiver::uartIdleCallback(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
     if (_huart->Instance != uart_.huart_->Instance)
         return;
@@ -36,10 +39,10 @@ void RefReceiver::uartIdleCallback(UART_HandleTypeDef *_huart)
     if (lenDif < 0)
         memcpy(&rxBuffer_[REFEREE_RX_BUFFER_LEN], &rxBuffer_[0], dmaRxPos);
 
-    xEventGroupSetBitsFromISR(event_, REFEREE_READY_EVENT, nullptr);
+    xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
 }
 
-void RefReceiver::readRefereeData()
+void Receiver::readRefereeData()
 {
     uint16_t frameStartPos, nextPos, frameLen;
     uint16_t maxLen = dataLen + lastPos;
@@ -73,7 +76,7 @@ void RefReceiver::readRefereeData()
     lastPos = frameStartPos % REFEREE_RX_BUFFER_LEN;
 }
 
-void RefReceiver::rxFreqCalc()
+void Receiver::rxFreqCalc()
 {
     static uint32_t lastTick = 0;
     if ((xTaskGetTickCount() - lastTick) >= pdMS_TO_TICKS(1000)) {
@@ -83,9 +86,9 @@ void RefReceiver::rxFreqCalc()
     }
 }
 
-RefTransmitter::RefTransmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
+Transmitter::Transmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
 
-uint16_t RefTransmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLen)
+uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLen)
 {
     uint16_t totalSize;
     FrameHeader_s txHeader;

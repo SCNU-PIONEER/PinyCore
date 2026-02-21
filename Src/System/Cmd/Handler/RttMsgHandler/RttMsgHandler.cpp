@@ -24,13 +24,13 @@ void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 }
 
 
-void RTTMsgHandler::parse(TimerHandle_t xTimer)
+void RTTMsgHandler::parse(TimerHandle_t _xTimer)
 {
     if (SEGGER_RTT_HasKey()) {
-        BaseType_t higher_priority_task_woken = pdFALSE;
-        RTTMsgHandler *handler = static_cast<RTTMsgHandler *>(pvTimerGetTimerID(xTimer));
-        xEventGroupSetBitsFromISR(handler->event, RTT_READY_EVENT, &higher_priority_task_woken);
-        portYIELD_FROM_ISR(higher_priority_task_woken);
+        BaseType_t higherPriorityTaskWoken = pdFALSE;
+        RTTMsgHandler *handler = static_cast<RTTMsgHandler *>(pvTimerGetTimerID(_xTimer));
+        xEventGroupSetBitsFromISR(handler->event, handler->bit_, &higherPriorityTaskWoken);
+        portYIELD_FROM_ISR(higherPriorityTaskWoken);
     }
 }
 

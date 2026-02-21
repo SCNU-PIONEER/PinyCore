@@ -15,8 +15,7 @@
 #include "Arm.hpp"
 
 #if APP_USE_DAEMONS
-#include "Daemons/Daemons.hpp"
-Lazy<Daemons> daemon;
+#include "Daemons.hpp"
 #endif
 
 
@@ -61,8 +60,8 @@ void AppManager::initApp()
     schedule([]() { ui->task(); });
 #endif
 #if APP_USE_DAEMONS
-    daemon.init();
-    schedule([]() { daemon->update(); });
+    Daemons::instance().init();
+    schedule([]() { Daemons::instance().update(); });
 #endif
 
 #if APP_USE_CHASSIS
@@ -91,7 +90,6 @@ void AppManager::initApp()
     this->createApp();
 }
 
-void AppManager::schedule(std::function<void()> _callback) { tasks.push_back(std::move(_callback)); }
 
 void AppManager::createApp()
 {

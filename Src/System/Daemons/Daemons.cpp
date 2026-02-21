@@ -2,8 +2,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "StmLog.hpp"
-#include "remoteControl.hpp"
-
+#include "main.h"
 
 extern "C" void vApplicationMallocFailedHook()
 {
@@ -17,19 +16,8 @@ extern "C" void vApplicationStackOverflowHook()
     __BKPT(0x01);
 }
 
-Daemons::Daemons()
+void Daemons::init()
 {
-    /* rc */
-    schedule([]() {
-        static uint32_t updateCnt = 0;
-        if (!rc->isOnline()) {
-            if (xTaskGetTickCount() - updateCnt >= 2000) {
-                updateCnt = xTaskGetTickCount();
-                LOG::warn("Daemons", "RC offline");
-            }
-        }
-    });
-
     /* FreeRTOS heap size monitor */
     schedule([]() {
         static constexpr size_t MINHEAP = 1024;

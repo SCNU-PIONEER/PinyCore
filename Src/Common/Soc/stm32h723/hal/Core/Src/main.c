@@ -70,7 +70,7 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart10;
 DMA_HandleTypeDef hdma_uart5_rx;
-DMA_HandleTypeDef hdma_uart7_tx;
+DMA_HandleTypeDef hdma_uart7_rx;
 DMA_HandleTypeDef hdma_uart9_rx;
 DMA_HandleTypeDef hdma_uart9_tx;
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -78,6 +78,7 @@ DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart10_rx;
+DMA_HandleTypeDef hdma_usart10_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -1004,16 +1005,17 @@ void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
+  huart7.Init.BaudRate = 921600;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
-  huart7.Init.Mode = UART_MODE_TX_RX;
+  huart7.Init.Mode = UART_MODE_RX;
   huart7.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart7.Init.OverSampling = UART_OVERSAMPLING_16;
   huart7.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart7.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart7.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  huart7.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
+  huart7.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   if (HAL_UART_Init(&huart7) != HAL_OK)
   {
     Error_Handler();
@@ -1208,7 +1210,8 @@ void MX_USART10_UART_Init(void)
   huart10.Init.OverSampling = UART_OVERSAMPLING_16;
   huart10.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart10.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart10.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  huart10.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
+  huart10.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   if (HAL_UART_Init(&huart10) != HAL_OK)
   {
     Error_Handler();
@@ -1268,7 +1271,7 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
   /* DMA1_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 6, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA1_Stream4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 6, 0);
@@ -1277,7 +1280,7 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   /* DMA1_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
@@ -1297,6 +1300,9 @@ void MX_DMA_Init(void)
   /* DMA2_Stream4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream4_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream4_IRQn);
+  /* DMA2_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
 
 }
 

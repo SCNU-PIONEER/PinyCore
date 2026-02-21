@@ -19,7 +19,7 @@ if(USE_ALGORITHM)
 endif()
 
 if(USE_DWT)
-  target_sources(utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/Dwt.cpp)
+  target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt/Dwt.cpp)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Dwt)
 endif()
 

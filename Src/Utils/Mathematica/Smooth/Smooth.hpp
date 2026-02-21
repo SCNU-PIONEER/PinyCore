@@ -17,6 +17,19 @@ static inline void slopeFollowing(float *_exp, float *_cur, float _acc)
         *_cur = std::max(*_cur, *_exp);
     }
 }
+// 值传递和址传递的区别
+static inline float slopeFollowing(float _exp, float _cur, float _acc)
+{
+    if (_exp > _cur) {
+        _cur = _cur + _acc;
+        return _cur = std::min(_cur, _exp);
+    } else if (_exp < _cur) {
+        _cur = _cur - _acc;
+        return _cur = std::max(_cur, _exp);
+    }
+    return _cur;
+}
+
 // 二次函数计算速度曲线
 static float sCurve(float _vMax, float _cnt, float _tAccCnt)
 {

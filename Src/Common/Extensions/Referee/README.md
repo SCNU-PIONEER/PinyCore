@@ -31,26 +31,22 @@ struct RefereeProt_s {
 ```cpp
 void RefereeHandler::handle()
 {
-    refereeRx->readRefereeData();
-    refereeRx->rxFreqCalc();
+    ...
+    
+    msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
+    msg_.shooterHeatLimit = rx.getRefereeData().gameRobotStatus.shooterHeatLimit;
+    msg_.chassisPowerLimit = rx.getRefereeData().gameRobotStatus.chassisPowerLimit;
+    msg_.chassisPowerBuffer = rx.getRefereeData().powerHeatData.chassisPowerBuffer;
+    msg_.currentHP = rx.getRefereeData().gameRobotStatus.currentHP;
+    msg_.rxFreq = rx.getRxFreq();
 
-    msg_.bulletSpeed = refereeRx->getRefereeData().shootData.bulletSpeed;
-    msg_.shooterHeatLimit =
-            refereeRx->getRefereeData().gameRobotStatus.shooterHeatLimit;
-    msg_.chassisPowerLimit =
-            refereeRx->getRefereeData().gameRobotStatus.chassisPowerLimit;
-    msg_.chassisPowerBuffer =
-            refereeRx->getRefereeData().powerHeatData.chassisPowerBuffer;
-    msg_.currentHP = refereeRx->getRefereeData().gameRobotStatus.currentHP;
-    msg_.rxFreq = refereeRx->getRxFreq();
-
-    notify(&msg_, msgBus_->refereeQueue);
+    ...
 }
 ```
 
 
 裁判系统发送只需调用
-inline std::unique_ptr<REFEREE::RefTransmitter> refereeTx 中的send函数即可
+inline std::unique_ptr<REFEREE::Transmitter> refereeTx 中的send函数即可
 
 
 ## Update RefereeProt
