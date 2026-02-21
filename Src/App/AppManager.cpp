@@ -29,11 +29,13 @@ Lazy<INS_SYS::INS> ins;
 Lazy<Cmd> cmd;
 
 Lazy<CHASSIS::Mecanum> chassis;
-Lazy<GIMBAL::Standard> gimbal;
-// Lazy<Arm> arm;
-Arm *arm;
 //---------------------------------------------------------------------------------------------------
 
+#if APP_USE_GIMBAL
+Lazy<GIMBAL::Standard> gimbal;
+Lazy<Arm> arm;
+#endif
+//---------------------------------------------------------------------------------------------------
 
 Lazy<UI::App> ui;
 
@@ -63,14 +65,17 @@ void AppManager::initApp()
     schedule([]() { daemon->update(); });
 #endif
 
-#if APP_CHASSIS_SLAVE && APP_USE_SWERVE
+#if APP_USE_CHASSIS
     chassis.init();
     schedule([]() { chassis->update(); });
 #endif
 
-#if APP_GIMBAL_MASTER && APP_USE_GIMBAL
+#if APP_USE_GIMBAL
     gimbal.init();
     schedule([]() { gimbal->update((void *)cmd->getMsgBus()); });
+
+    arm.init();
+    schedule([]() { arm->update(cmd->getMsgBus()); });
 #endif
 
     // TestModule
@@ -81,9 +86,6 @@ void AppManager::initApp()
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
 #endif
-
-    arm = new Arm();
-    schedule([]() { arm->update(cmd->getMsgBus()); });
 
     // Generate threads at the end
     this->createApp();

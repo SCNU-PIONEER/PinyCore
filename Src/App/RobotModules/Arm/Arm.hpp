@@ -4,7 +4,7 @@
 #include "FSMState.hpp"
 #include "./ArmMotor.hpp"
 #include "MsgImpl.hpp"
-
+#include "./ArmKinematic.hpp"
 #include "./ArmHand.hpp"
 #include "./ArmLifting.hpp"
 #include "./ArmOreBin.hpp"
@@ -27,8 +27,6 @@ enum class ArmMode_e : uint8_t { LEFT = 0, RIGHT, TWO };
 
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
 
-static constexpr float DEFAULT_JOINT_SPEED = 0.8f; // rad/s
-
 enum class JointState_e : uint8_t { FINISH_STATE = 0, MOVING_STATE };
 
 } //namespace ARM
@@ -38,6 +36,7 @@ public:
     Arm();
 
     void update(MsgBus_s *_param);
+    void updatePose(const ARM::Joint &_joints);
 
     void setTargetPose(const ARM::JointRoute_s _route);
 
@@ -60,13 +59,18 @@ public:
 
     ARM::JointRoute_s RouteDta = {};
 
+    ARM::Pose_s pose = {};
+
+
     // TODO: Cubic polynomial trajectory planning in joint spaces
     // TODO: quintic polynomial trajectory planning in joint spaces
     // TODO: arc trajectory planning in Cartesian space
     // TODO: traight line trajectory planning in Cartesian space
-    bool moveJ(const ARM::Joint &_pos);
-    bool moveL(const std::array<float, 3> &_xyz, const ARM::Joint &_pose);
-    bool moveC(const std::array<float, 3> &_xyz, const ARM::Joint &_pose);
+    // void moveJ(const ARM::Joint &_pos);
+    // void moveJBlock(const ARM::Joint &_pos);
+    // void moveL(const std::array<float, 3> &_xyz, const std::array<float, 3> &_rpy, const ARM::Joint &_pose);
+    // void moveLBlock(const std::array<float, 3> &_xyz, const std::array<float, 3> &_rpy, const ARM::Joint &_pose);
+    // void moveC(const std::array<float, 3> &_xyz, const ARM::Joint &_pose);
 
     bool isEnabled = false;
 
@@ -75,4 +79,7 @@ public:
 
 private:
     int16_t rateCnt = 0;
+
+private:
+    // ARM::Kinematic kinematic;
 };

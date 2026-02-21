@@ -10,7 +10,23 @@
 
 using namespace ARM;
 
-Arm::Arm()
+
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// static std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
+// static std::array<float, 6> a = { 0.0f, 5.0f, 5.0f, 0.f, 0.0f, 0.0f };
+// static std::array<float, 6> alpha = { M_PI_2, 0.0f, 0.0f, M_PI_2, -M_PI_2, 0.0f };
+// static std::array<float, 6> d = { 0.0f, 0.0f, 0.0f, 1.f, 1.f, 1.f };
+// static std::array<float, 6> offset = { 0.0f, 0.0f, 0.0f, 0.f, 0.f, 0.f };
+//
+// static MDH mdh(theta, a, alpha, d, offset);
+
+// TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
+static Joint10 angleMin{};
+static Joint10 angleMax{};
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Arm::Arm() : motors(angleMin, angleMax)
 {
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
@@ -32,6 +48,7 @@ void Arm::update(MsgBus_s *_param)
 }
 
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
+
 void Arm::moveRoute()
 {
     if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == jointStateFlag) {
@@ -72,11 +89,7 @@ JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
             target_joints.joints[i] = _goal.joints[i];
         }
 
-        Joint10 initDeltaJoints = _goal.joints - motors.currentJoints;
-        float initMaxDeltaAngle = AbsMaxOf10(initDeltaJoints);
-
-        float maxTime = initMaxDeltaAngle / DEFAULT_JOINT_SPEED;
-        motors.safety.setJointSpeedLimit(maxTime, initDeltaJoints);
+        motors.safety.setJointSpeedLimit(motors.currentJoints, target_joints.joints);
         motors.safety.setAllAngleLimit(target_joints.joints);
 
         jointStateFlag = JointState_e::MOVING_STATE;
@@ -94,3 +107,35 @@ JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
 
     return jointStateFlag;
 }
+
+// void Arm::updatePose(const ARM::Joint &_joints)
+// {
+//     auto pose = kinematic.fkine2pose(_joints);
+//     this->pose = pose;
+// }
+//
+// void Arm::moveJ(const Joint &_pos) { motors.ctrl(_pos); }
+//
+// void Arm::moveJBlock(const ARM::Joint &_pos)
+// {
+//     moveJ(_pos);
+//
+//     while (!motors.isMoving(_pos)) {
+//         vTaskDelay(5);
+//     }
+// }
+//
+// void Arm::moveL(const std::array<float, 3> &_xyz, const std::array<float, 3> &_rpy, const ARM::Joint &_pose)
+// {
+//     const auto thetas = kinematic.ikinePose(_xyz, _rpy, _pose);
+//     motors.ctrl(thetas);
+// }
+//
+// void Arm::moveLBlock(const std::array<float, 3> &_xyz, const std::array<float, 3> &_rpy, const ARM::Joint &_pose)
+// {
+//     moveL(_xyz, _rpy, _pose);
+//
+//     while (!motors.isMoving(_pose)) {
+//         vTaskDelay(5);
+//     }
+// }

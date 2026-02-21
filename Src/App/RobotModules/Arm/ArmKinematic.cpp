@@ -69,18 +69,18 @@ Kinematic::Kinematic(const MDH &_mdh) : dh(_mdh)
     }
 }
 
-Matrix<3, 1> Kinematic::t2p(Matrix<4, 4> _t) { return _t.block<3, 1>(0, 3); }
+Matrix<3, 1> Kinematic::t2p(const Matrix<4, 4> _t) { return _t.block<3, 1>(0, 3); }
 
-Matrix<3, 3> Kinematic::t2r(Matrix<4, 4> _t) { return _t.block<3, 3>(0, 0); }
+Matrix<3, 3> Kinematic::t2r(const Matrix<4, 4> _t) { return _t.block<3, 3>(0, 0); }
 
-Matrix<4, 4> Kinematic::p2t(Matrix<3, 1> _p)
+Matrix<4, 4> Kinematic::p2t(const Matrix<3, 1> _p)
 {
     // T=[I,P;0,1]
     float t[16] = { 1, 0, 0, _p(0, 0), 0, 1, 0, _p(1, 0), 0, 0, 1, _p(2, 0), 0, 0, 0, 1 };
     return Matrix<4, 4>(t);
 }
 
-Matrix<4, 4> Kinematic::r2t(Matrix<3, 3> _r)
+Matrix<4, 4> Kinematic::r2t(const Matrix<3, 3> _r)
 {
     Matrix<4, 4> t = { { _r(0, 0), _r(0, 1), _r(0, 2), 0 },
                        { _r(1, 0), _r(1, 1), _r(1, 2), 0 },
@@ -89,7 +89,7 @@ Matrix<4, 4> Kinematic::r2t(Matrix<3, 3> _r)
     return t;
 }
 
-Matrix<4, 4> Kinematic::rp2t(Matrix<3, 3> _r, array<float, 3> _p)
+Matrix<4, 4> Kinematic::rp2t(const Matrix<3, 3> _r, const array<float, 3> _p)
 {
     Matrix<4, 4> t = { { _r(0, 0), _r(0, 1), _r(0, 2), _p[0] },
                        { _r(1, 0), _r(1, 1), _r(1, 2), _p[1] },
@@ -98,13 +98,13 @@ Matrix<4, 4> Kinematic::rp2t(Matrix<3, 3> _r, array<float, 3> _p)
     return t;
 }
 
-Matrix<3, 3> Kinematic::hat(Matrix<3, 1> _vec)
+Matrix<3, 3> Kinematic::hat(const Matrix<3, 1> _vec)
 {
     float hat[9] = { 0, -_vec(2, 0), _vec(1, 0), _vec(2, 0), 0, -_vec(0, 0), -_vec(1, 0), _vec(0, 0), 0 };
     return Matrix<3, 3>(hat);
 }
 
-Matrix<3, 1> Kinematic::cross(Matrix<3, 1> _vec1, Matrix<3, 1> _vec2) { return hat(_vec1) * _vec2; }
+Matrix<3, 1> Kinematic::cross(const Matrix<3, 1> _vec1, const Matrix<3, 1> _vec2) { return hat(_vec1) * _vec2; }
 
 Matrix<3, 3> Kinematic::euler2Rotation(const array<float, 3> &_rpy)
 {
@@ -246,6 +246,23 @@ array<float, 3> Kinematic::fkine2euler(const array<float, 6> &_theta)
     return euler;
 }
 
+Pose_s Kinematic::fkine2pose(const array<float, 6> &_theta)
+{
+    Pose_s pose{};
+    auto t = fkine2T(_theta);
+    Matrix<3, 3> rot = t2r(t);
+    auto euler = rotation2euler(rot);
+    pose.rpy.roll = euler[0];
+    pose.rpy.pitch = euler[1];
+    pose.rpy.yaw = euler[2];
+
+    auto p = t2p(t);
+    pose.xyz.x = p(0, 0);
+    pose.xyz.y = p(1, 0);
+    pose.xyz.z = p(2, 0);
+    return pose;
+}
+
 
 Matrix<6, 6> Kinematic::jacob0(const array<float, 6> &_q)
 {
@@ -296,7 +313,7 @@ Matrix<6, 6> Kinematic::jacob0(const array<float, 6> &_q)
  *
  * Algorithm 2: compute only one complete set of angles by FSM
  */
-array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose)
+Joint Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose)
 {
     //NOLINTBEGIN
     array<float, 6> target;
@@ -428,8 +445,7 @@ array<float, 6> Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &
     //NOLINTEND
 }
 
-array<float, 6> Kinematic::ikinePose(const array<float, 3> &_xyz, const std::array<float, 3> &_rpy,
-                                     const array<float, 6> &_pose)
+Joint Kinematic::ikinePose(const array<float, 3> &_xyz, const std::array<float, 3> &_rpy, const array<float, 6> &_pose)
 {
     auto rot = euler2Rotation(_rpy);
     auto t = rp2t(rot, _xyz);

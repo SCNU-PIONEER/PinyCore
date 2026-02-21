@@ -1,7 +1,5 @@
 #pragma once
-#include "IMotor.hpp"
 #include "DMMotor.hpp"
-#include "MotorManager.hpp"
 #include "./ArmKinematic.hpp"
 #include "./ArmSafety.hpp"
 #include "ArmPlan.hpp"
@@ -53,22 +51,20 @@ struct JointInfo_s {
 
 class Motors {
 public:
-    Motors();
+    Motors(Joint10 _angleMin, Joint10 _angleMax);
     bool init();
     void update();
     void stop();
     void enable();
-    void ctrl(const Joint10 &_target_joints);
-
+    void ctrl(const Joint10 &_targetJoints);
 
     bool checkGoal(Joint _goal);
+
+    bool isMoving(const Joint10 &_target);
 
     JointInfo_s jointInfos[10];
     Joint10 currentJoints = {};
     ArmSpeed_u ref_speed = {};
-    Joint angleMin; // motor min angle
-    Joint angleMax; // motor min angle
-
     Safety safety;
 
 private:
