@@ -71,7 +71,7 @@ void VT13::parse()
 bool VT13::isOnline()
 {
     if (rxLostCnt_ < RX_LOST_MAX) {
-        rxLostCnt_ = rxLostCnt_ + 1;
+        rxLostCnt_.fetch_add(1, std::memory_order_relaxed);
         return true;
     } else
         return false;
