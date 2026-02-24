@@ -21,6 +21,7 @@ ET08A::~ET08A()
 
 void ET08A::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit)
 {
+    (void)_pos;
     uint16_t size = _huart->RxXferCount;
     // NOLINTBEGIN(readability-redundant-casting)
     if (((((DMA_Stream_TypeDef *)_huart->hdmarx->Instance)->CR) & DMA_SxCR_CT) == RESET) {
