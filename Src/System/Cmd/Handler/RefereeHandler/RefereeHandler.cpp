@@ -19,7 +19,7 @@ void RefereeHandler::handle()
 
     msg_.robotId = rx.getRefereeData().gameRobotStatus.robotId;
     msg_.remainHeat = rx.getRefereeData().gameRobotStatus.shooterHeatLimit -
-                      ((msg_.robotId % 100 != 1) ? rx.getRefereeData().powerHeatData.shooter_42mmBarrelHeat :
+                      ((msg_.robotId % 100 == 1) ? rx.getRefereeData().powerHeatData.shooter_42mmBarrelHeat :
                                                    rx.getRefereeData().powerHeatData.shooter_17mmBarrelHeat);
     msg_.chassisPowerLimit = rx.getRefereeData().gameRobotStatus.chassisPowerLimit;
     msg_.chassisPowerBuffer = rx.getRefereeData().powerHeatData.chassisPowerBuffer;

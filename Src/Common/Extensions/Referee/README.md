@@ -33,11 +33,16 @@ void RefereeHandler::handle()
 {
     ...
     
-    msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
-    msg_.shooterHeatLimit = rx.getRefereeData().gameRobotStatus.shooterHeatLimit;
+    msg_.robotId = rx.getRefereeData().gameRobotStatus.robotId;
+    msg_.remainHeat = rx.getRefereeData().gameRobotStatus.shooterHeatLimit -
+                      ((msg_.robotId % 100 == 1) ? rx.getRefereeData().powerHeatData.shooter_42mmBarrelHeat :
+                                                   rx.getRefereeData().powerHeatData.shooter_17mmBarrelHeat);
     msg_.chassisPowerLimit = rx.getRefereeData().gameRobotStatus.chassisPowerLimit;
     msg_.chassisPowerBuffer = rx.getRefereeData().powerHeatData.chassisPowerBuffer;
+    msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
     msg_.currentHP = rx.getRefereeData().gameRobotStatus.currentHP;
+    msg_.gameTime = rx.getRefereeData().gameStatus.stageRemainTime;
+    msg_.isPlay = rx.getRefereeData().gameStatus.gameType == 0x01;
     msg_.rxFreq = rx.getRxFreq();
 
     ...
@@ -46,7 +51,7 @@ void RefereeHandler::handle()
 
 
 裁判系统发送只需调用
-inline std::unique_ptr<REFEREE::Transmitter> refereeTx 中的send函数即可
+inline std::unique_ptr<REFEREE::Referee> referee 中的Transmitter::sendData函数即可
 
 
 ## Update RefereeProt
@@ -63,10 +68,10 @@ enum class CmdId_e : uint16_t {
     GAME_ROBOT_HP = 0x0003,
     EVENT_DATA = 0x0101,
     -----------------
-    RADAR_TARGET_POSITIONX = 0x0305,
-    CUSTOMER_CTRL_TO_CLIENT_DATA = 0x0306,
-    AUTO_ROBOT_TO_CLIENT_MAP = 0x0307,
-    ROBOT_TO_CLIENT_MAP = 0x0308,
+    OPPONENT_BULLET_REMAINING = 0x0A03,
+    OPPONENT_MACRO_STATUS = 0x0A04,
+    OPPONENT_ROBOT_BUFF = 0x0A05,
+    OPPONENT_JAMMING_KEY = 0x0A06,
 };
 ```
 
@@ -77,39 +82,37 @@ struct RefereeProt_s {
     GameResult_s gameResult;
     GameRobotHP_s gameRobotHP;
     EventData_s eventData;
-    RefereeWarning_s refereeWarning;
-    DartRemainingTime_s dartRemainingTime;
-    GameRobotStatus_s gameRobotStatus;
-    PowerHeatData_s powerHeatData;
-    GameRobotPos_s gameRobotPos;
-    Buff_s buff;
-    RobotHurt_s robotHurt;
-    ShootData_s shootData;
-    BulletRemaining_s bulletRemaining;
-    RfidStatus_s rfidStatus;
-    VtData_s vtData;
+    -----------------
+    CustomRobotData_s customRobotData;
+    CustomInfo_s customInfo;
+    RobotCustomData_s robotCustomData;
+    Robot2ClientData_s robotToClientData;
+    Client2RobotData_s clientToRobotData;
 };
 ```
 
 然后在INFO中添加,注意一一对应，否则会数据错误
 ```cpp
 INFO_s constexpr INFO[INFO_NUM] = {
-    { .cmdId = CmdId_e::GAME_STATE,
-      .offsetByte = 0,
-      .size = sizeof(GameStatus_s) },
-    { .cmdId = CmdId_e::GAME_RESULT,
-      .offsetByte = offsetof(RefereeProt_s, gameResult),
-      .size = sizeof(GameResult_s) },
+    { .cmdId = CmdId_e::GAME_STATE, .offsetByte = 0, .size = sizeof(GameStatus_s) },
+    { .cmdId = CmdId_e::GAME_RESULT, .offsetByte = offsetof(RefereeProt_s, gameResult), .size = sizeof(GameResult_s) },
     { .cmdId = CmdId_e::GAME_ROBOT_HP,
       .offsetByte = offsetof(RefereeProt_s, gameRobotHP),
       .size = sizeof(GameRobotHP_s) },
-    -------------------------
-    { .cmdId = CmdId_e::RFID_STATUS,
-      .offsetByte = offsetof(RefereeProt_s, rfidStatus),
-      .size = sizeof(RfidStatus_s) },
-    { .cmdId = CmdId_e::VT_DATA,
-      .offsetByte = offsetof(RefereeProt_s, vtData),
-      .size = sizeof(VtData_s) },
+    { .cmdId = CmdId_e::EVENT_DATA, .offsetByte = offsetof(RefereeProt_s, eventData), .size = sizeof(EventData_s) },
+    -----------------
+    { .cmdId = CmdId_e::ROBOT_TO_CLIENT_MAP,
+      .offsetByte = offsetof(RefereeProt_s, customInfo),
+      .size = sizeof(CustomInfo_s) },
+    { .cmdId = CmdId_e::ROBOT_CUSTOM_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotCustomData),
+      .size = sizeof(RobotCustomData_s) },
+    { .cmdId = CmdId_e::ROBOT_TO_CLIENT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotToClientData),
+      .size = sizeof(Robot2ClientData_s) },
+    { .cmdId = CmdId_e::CLIENT_TO_ROBOT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, clientToRobotData),
+      .size = sizeof(Client2RobotData_s) },
 };
 ```
 
