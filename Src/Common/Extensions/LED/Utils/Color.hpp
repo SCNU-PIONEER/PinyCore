@@ -8,20 +8,18 @@
 namespace LED {
 
 struct RGB_s {
-    union {
-        struct {
-            union {
-                uint8_t r;   ///< Red channel value
-                uint8_t red; ///< @copydoc r
-            };
-            union {
-                uint8_t g;     ///< Green channel value
-                uint8_t green; ///< @copydoc g
-            };
-            union {
-                uint8_t b;    ///< Blue channel value
-                uint8_t blue; ///< @copydoc b
-            };
+    union RGB_u {
+        union {
+            uint8_t r;   ///< Red channel value
+            uint8_t red; ///< @copydoc rgb.r
+        };
+        union {
+            uint8_t g;     ///< Green channel value
+            uint8_t green; ///< @copydoc rgb.g
+        };
+        union {
+            uint8_t b;    ///< Blue channel value
+            uint8_t blue; ///< @copydoc rgb.b
         };
         /// Access the red, green, and blue data as an array.
         /// Where:
@@ -29,7 +27,7 @@ struct RGB_s {
         /// * `raw[1]` is the green value
         /// * `raw[2]` is the blue value
         uint8_t raw[3];
-    };
+    } rgb;
 
     /// Predefined RGB colors (HTMLColorCode)
     // NOLINTBEGIN
@@ -198,33 +196,35 @@ struct RGB_s {
     /// Array access operator to index into the RGB object
     /// @param x the index to retrieve (0-2)
     /// @returns the RGB::raw value for the given index
-    uint8_t &operator[](uint8_t _x) { return raw[_x]; }
+    uint8_t &operator[](uint8_t _x) { return rgb.raw[_x]; }
 
     /// @copydoc operator[]
-    const uint8_t &operator[](uint8_t _x) const { return raw[_x]; }
+    const uint8_t &operator[](uint8_t _x) const { return rgb.raw[_x]; }
 
     /// construct an RGB object with all values set to zero
     /// @param ir input red
     /// @param ig input green
     /// @param ib input blue
     RGB_s(uint8_t _ir = 0, uint8_t _ig = 0, uint8_t _ib = 0)
-            : r(_ir), g(_ig), b(_ib)
     {
+        rgb.r = _ir;
+        rgb.g = _ig;
+        rgb.b = _ib;
     }
 
     /// Allow construction from 32-bit (really 24-bit) bit 0xRRGGBB color code
     /// @param colorCode a packed 24 bit color code
     RGB_s(uint32_t _colorCode)
-            : r((_colorCode >> 16) & 0xFF)
-            , g((_colorCode >> 8) & 0xFF)
-            , b((_colorCode >> 0) & 0xFF)
     {
+        rgb.r = (_colorCode >> 16) & 0xFF;
+        rgb.g = (_colorCode >> 8) & 0xFF;
+        rgb.b = (_colorCode >> 0) & 0xFF;
     }
     RGB_s &operator=(const uint32_t _colorCode)
     {
-        r = (_colorCode >> 16) & 0xFF;
-        g = (_colorCode >> 8) & 0xFF;
-        b = (_colorCode >> 0) & 0xFF;
+        rgb.r = (_colorCode >> 16) & 0xFF;
+        rgb.g = (_colorCode >> 8) & 0xFF;
+        rgb.b = (_colorCode >> 0) & 0xFF;
         return *this;
     }
 
@@ -239,9 +239,9 @@ struct RGB_s {
     RGB_s &setRGB(uint8_t _nr, uint8_t _ng, uint8_t _nb)
 
     {
-        r = _nr;
-        g = _ng;
-        b = _nb;
+        rgb.r = _nr;
+        rgb.g = _ng;
+        rgb.b = _nb;
         return *this;
     }
 
@@ -249,9 +249,9 @@ struct RGB_s {
     /// @param colorCode a packed 24 bit color code
     RGB_s &setColorCode(uint32_t _colorCode)
     {
-        r = (_colorCode >> 16) & 0xFF;
-        g = (_colorCode >> 8) & 0xFF;
-        b = (_colorCode >> 0) & 0xFF;
+        rgb.r = (_colorCode >> 16) & 0xFF;
+        rgb.g = (_colorCode >> 8) & 0xFF;
+        rgb.b = (_colorCode >> 0) & 0xFF;
         return *this;
     }
 
@@ -260,51 +260,51 @@ struct RGB_s {
     RGB_s &setColorCode(Color_e _colorCode)
     {
         uint32_t c = static_cast<uint32_t>(_colorCode);
-        r = (c >> 16) & 0xFF;
-        g = (c >> 8) & 0xFF;
-        b = (c >> 0) & 0xFF;
+        rgb.r = (c >> 16) & 0xFF;
+        rgb.g = (c >> 8) & 0xFF;
+        rgb.b = (c >> 0) & 0xFF;
         return *this;
     }
 
     /// Add one RGB_s to another, saturating at 0xFF for each channel
     RGB_s &operator+=(const RGB_s &_rhs)
     {
-        r = qadd8(r, _rhs.r);
-        g = qadd8(g, _rhs.g);
-        b = qadd8(b, _rhs.b);
+        rgb.r = qadd8(rgb.r, _rhs.rgb.r);
+        rgb.g = qadd8(rgb.g, _rhs.rgb.g);
+        rgb.b = qadd8(rgb.b, _rhs.rgb.b);
         return *this;
     }
 
     /// Add a constant to each channel, saturating at 0xFF.
     /// @note This is NOT an operator+= overload because the compiler
     /// can't usefully decide when it's being passed a 32-bit
-    /// constant (e.g. RGB_s::Red) and an 8-bit one (RGB_s::Blue)
+    /// constant (e.rgb.g. RGB_s::Red) and an 8-bit one (RGB_s::Blue)
     RGB_s &addToRGB(uint8_t _d)
     {
-        r = qadd8(r, _d);
-        g = qadd8(g, _d);
-        b = qadd8(b, _d);
+        rgb.r = qadd8(rgb.r, _d);
+        rgb.g = qadd8(rgb.g, _d);
+        rgb.b = qadd8(rgb.b, _d);
         return *this;
     }
 
     /// Subtract one RGB_s from another, saturating at 0x00 for each channel
     RGB_s &operator-=(const RGB_s &_rhs)
     {
-        r = qsub8(r, _rhs.r);
-        g = qsub8(g, _rhs.g);
-        b = qsub8(b, _rhs.b);
+        rgb.r = qsub8(rgb.r, _rhs.rgb.r);
+        rgb.g = qsub8(rgb.g, _rhs.rgb.g);
+        rgb.b = qsub8(rgb.b, _rhs.rgb.b);
         return *this;
     }
 
     /// Subtract a constant from each channel, saturating at 0x00.
     /// @note This is NOT an operator+= overload because the compiler
     /// can't usefully decide when it's being passed a 32-bit
-    /// constant (e.g. RGB_s::Red) and an 8-bit one (RGB_s::Blue)
+    /// constant (e.rgb.g. RGB_s::Red) and an 8-bit one (RGB_s::Blue)
     RGB_s &subtractFromRGB(uint8_t _d)
     {
-        r = qsub8(r, _d);
-        g = qsub8(g, _d);
-        b = qsub8(b, _d);
+        rgb.r = qsub8(rgb.r, _d);
+        rgb.g = qsub8(rgb.g, _d);
+        rgb.b = qsub8(rgb.b, _d);
         return *this;
     }
 
@@ -341,18 +341,18 @@ struct RGB_s {
     /// Divide each of the channels by a constant
     RGB_s &operator/=(uint8_t _d)
     {
-        r /= _d;
-        g /= _d;
-        b /= _d;
+        rgb.r /= _d;
+        rgb.g /= _d;
+        rgb.b /= _d;
         return *this;
     }
 
     /// Right shift each of the channels by a constant
     RGB_s &operator>>=(uint8_t _d)
     {
-        r >>= _d;
-        g >>= _d;
-        b >>= _d;
+        rgb.r >>= _d;
+        rgb.g >>= _d;
+        rgb.b >>= _d;
         return *this;
     }
 
@@ -360,9 +360,9 @@ struct RGB_s {
     /// saturating each channel at 0xFF.
     RGB_s &operator*=(uint8_t _d)
     {
-        r = qmul8(r, _d);
-        g = qmul8(g, _d);
-        b = qmul8(b, _d);
+        rgb.r = qmul8(rgb.r, _d);
+        rgb.g = qmul8(rgb.g, _d);
+        rgb.b = qmul8(rgb.b, _d);
         return *this;
     }
 
@@ -374,7 +374,7 @@ struct RGB_s {
     /// @see nscale8x3Video
     RGB_s &nscale8Video(uint8_t _scaledown)
     {
-        nscale8x3Video(r, g, b, _scaledown);
+        nscale8x3Video(rgb.r, rgb.g, rgb.b, _scaledown);
         return *this;
     }
 
@@ -382,7 +382,7 @@ struct RGB_s {
     /// by "a percentage"
     RGB_s &operator%=(uint8_t _scaledown)
     {
-        nscale8x3Video(r, g, b, _scaledown);
+        nscale8x3Video(rgb.r, rgb.g, rgb.b, _scaledown);
         return *this;
     }
 
@@ -390,7 +390,7 @@ struct RGB_s {
     /// @param _fadefactor the amount to fade, sent to nscale8Video() as (255 - _fadefactor)
     RGB_s &fadeLightBy(uint8_t _fadefactor)
     {
-        nscale8x3Video(r, g, b, 255 - _fadefactor);
+        nscale8x3Video(rgb.r, rgb.g, rgb.b, 255 - _fadefactor);
         return *this;
     }
 
@@ -400,7 +400,7 @@ struct RGB_s {
     /// @see nscale8x3
     RGB_s &nscale8(uint8_t _scaledown)
     {
-        nscale8x3(r, g, b, _scaledown);
+        nscale8x3(rgb.r, rgb.g, rgb.b, _scaledown);
         return *this;
     }
 
@@ -410,9 +410,9 @@ struct RGB_s {
     /// @see ::scale8
     RGB_s &nscale8(const RGB_s &_scaledown)
     {
-        r = LED::scale8(r, _scaledown.r);
-        g = LED::scale8(g, _scaledown.g);
-        b = LED::scale8(b, _scaledown.b);
+        rgb.r = LED::scale8(rgb.r, _scaledown.rgb.r);
+        rgb.g = LED::scale8(rgb.g, _scaledown.rgb.g);
+        rgb.b = LED::scale8(rgb.b, _scaledown.rgb.b);
         return *this;
     }
 
@@ -420,7 +420,7 @@ struct RGB_s {
     RGB_s scale8(uint8_t _scaledown) const
     {
         RGB_s out = *this;
-        nscale8x3(out.r, out.g, out.b, _scaledown);
+        nscale8x3(out.rgb.r, out.rgb.g, out.rgb.b, _scaledown);
         return out;
     }
 
@@ -428,9 +428,9 @@ struct RGB_s {
     RGB_s scale8(const RGB_s &_scaledown) const
     {
         RGB_s out;
-        out.r = LED::scale8(r, _scaledown.r);
-        out.g = LED::scale8(g, _scaledown.g);
-        out.b = LED::scale8(b, _scaledown.b);
+        out.rgb.r = LED::scale8(rgb.r, _scaledown.rgb.r);
+        out.rgb.g = LED::scale8(rgb.g, _scaledown.rgb.g);
+        out.rgb.b = LED::scale8(rgb.b, _scaledown.rgb.b);
         return out;
     }
 
@@ -438,66 +438,62 @@ struct RGB_s {
     /// @param _fadefactor the amount to fade, sent to nscale8() as (255 - _fadefactor)
     RGB_s &fadeToBlackBy(uint8_t _fadefactor)
     {
-        nscale8x3(r, g, b, 255 - _fadefactor);
+        nscale8x3(rgb.r, rgb.g, rgb.b, 255 - _fadefactor);
         return *this;
     }
 
     /// "or" operator brings each channel up to the higher of the two values
     RGB_s &operator|=(const RGB_s &_rhs)
     {
-        r = std::max(_rhs.r, r);
-        g = std::max(_rhs.g, g);
-        b = std::max(_rhs.b, b);
+        rgb.r = std::max(_rhs.rgb.r, rgb.r);
+        rgb.g = std::max(_rhs.rgb.g, rgb.g);
+        rgb.b = std::max(_rhs.rgb.b, rgb.b);
         return *this;
     }
 
     /// @copydoc operator|=
     RGB_s &operator|=(uint8_t _d)
     {
-        r = std::max(_d, r);
-        g = std::max(_d, g);
-        b = std::max(_d, b);
+        rgb.r = std::max(_d, rgb.r);
+        rgb.g = std::max(_d, rgb.g);
+        rgb.b = std::max(_d, rgb.b);
         return *this;
     }
 
     /// "and" operator brings each channel down to the lower of the two values
     RGB_s &operator&=(const RGB_s &_rhs)
     {
-        r = std::min(_rhs.r, r);
-        g = std::min(_rhs.g, g);
-        b = std::min(_rhs.b, b);
+        rgb.r = std::min(_rhs.rgb.r, rgb.r);
+        rgb.g = std::min(_rhs.rgb.g, rgb.g);
+        rgb.b = std::min(_rhs.rgb.b, rgb.b);
         return *this;
     }
 
     /// @copydoc operator&=
     RGB_s &operator&=(uint8_t _d)
     {
-        r = std::min(_d, r);
-        g = std::min(_d, g);
-        b = std::min(_d, b);
+        rgb.r = std::min(_d, rgb.r);
+        rgb.g = std::min(_d, rgb.g);
+        rgb.b = std::min(_d, rgb.b);
         return *this;
     }
 
     /// This allows testing a RGB_s for zero-ness
-    explicit operator bool() const __attribute__((always_inline))
-    {
-        return r || g || b;
-    }
+    explicit operator bool() const __attribute__((always_inline)) { return rgb.r || rgb.g || rgb.b; }
 
     /// Converts a RGB_s to a 32-bit color having an alpha of 255.
     explicit operator uint32_t() const
     {
-        return uint32_t{ 0xff000000 } | (uint32_t{ r } << 16) |
-               (uint32_t{ g } << 8) | uint32_t{ b };
+        return uint32_t{ 0xff000000 } | (uint32_t{ rgb.r } << 16) | (uint32_t{ rgb.g } << 8) | uint32_t{ rgb.b };
     }
 
     /// Invert each channel
     RGB_s operator-() const
     {
         RGB_s retval;
-        retval.r = 255 - r;
-        retval.g = 255 - g;
-        retval.b = 255 - b;
+        retval.rgb.r = 255 - rgb.r;
+        retval.rgb.g = 255 - rgb.g;
+        retval.rgb.b = 255 - rgb.b;
         return retval;
     }
 
@@ -508,8 +504,7 @@ struct RGB_s {
         //Y' = 0.2126 R' + 0.7152 G' + 0.0722 B'
         //     54            183       18 (!)
 
-        uint8_t luma =
-                LED::scale8(r, 54) + LED::scale8(g, 183) + LED::scale8(b, 18);
+        uint8_t luma = LED::scale8(rgb.r, 54) + LED::scale8(rgb.g, 183) + LED::scale8(rgb.b, 18);
         return luma;
     }
 
@@ -517,8 +512,7 @@ struct RGB_s {
     uint8_t getAverageLight() const
     {
         const uint8_t eightyfive = 86;
-        uint8_t avg = LED::scale8(r, eightyfive) + LED::scale8(g, eightyfive) +
-                      LED::scale8(b, eightyfive);
+        uint8_t avg = LED::scale8(rgb.r, eightyfive) + LED::scale8(rgb.g, eightyfive) + LED::scale8(rgb.b, eightyfive);
         return avg;
     }
 
@@ -529,16 +523,16 @@ struct RGB_s {
     /// just the same difference in absolute values.
     void maximizeBrightness(uint8_t _limit = 255)
     {
-        uint8_t max = red;
-        max = std::max(green, max);
-        max = std::max(blue, max);
+        uint8_t max = rgb.red;
+        max = std::max(rgb.green, max);
+        max = std::max(rgb.blue, max);
 
         // stop div/0 when color is black
         if (max > 0) {
             uint16_t factor = ((uint16_t)(_limit) * 256) / max;
-            red = (red * factor) / 256;
-            green = (green * factor) / 256;
-            blue = (blue * factor) / 256;
+            rgb.red = (rgb.red * factor) / 256;
+            rgb.green = (rgb.green * factor) / 256;
+            rgb.blue = (rgb.blue * factor) / 256;
         }
     }
 
@@ -547,9 +541,9 @@ struct RGB_s {
     {
         RGB_s ret;
 
-        ret.r = lerp8by8(r, _other.r, _frac);
-        ret.g = lerp8by8(g, _other.g, _frac);
-        ret.b = lerp8by8(b, _other.b, _frac);
+        ret.rgb.r = lerp8by8(rgb.r, _other.rgb.r, _frac);
+        ret.rgb.g = lerp8by8(rgb.g, _other.rgb.g, _frac);
+        ret.rgb.b = lerp8by8(rgb.b, _other.rgb.b, _frac);
 
         return ret;
     }
@@ -559,9 +553,9 @@ struct RGB_s {
     {
         RGB_s ret;
 
-        ret.r = lerp16by16(r << 8, _other.r << 8, _frac) >> 8;
-        ret.g = lerp16by16(g << 8, _other.g << 8, _frac) >> 8;
-        ret.b = lerp16by16(b << 8, _other.b << 8, _frac) >> 8;
+        ret.rgb.r = lerp16by16(rgb.r << 8, _other.rgb.r << 8, _frac) >> 8;
+        ret.rgb.g = lerp16by16(rgb.g << 8, _other.rgb.g << 8, _frac) >> 8;
+        ret.rgb.b = lerp16by16(rgb.b << 8, _other.rgb.b << 8, _frac) >> 8;
 
         return ret;
     }
@@ -569,7 +563,7 @@ struct RGB_s {
     /// Returns 0 or 1, depending on the lowest bit of the sum of the color components.
     uint8_t getParity()
     {
-        uint8_t sum = r + g + b;
+        uint8_t sum = rgb.r + rgb.g + rgb.b;
         return (sum & 0x01);
     }
 
@@ -604,41 +598,41 @@ struct RGB_s {
 
         if (_parity) {
             // going 'up'
-            if ((b > 0) && (b < 255)) {
-                if (r == g && g == b) {
-                    ++r;
-                    ++g;
+            if ((rgb.b > 0) && (rgb.b < 255)) {
+                if (rgb.r == rgb.g && rgb.g == rgb.b) {
+                    ++rgb.r;
+                    ++rgb.g;
                 }
-                ++b;
-            } else if ((r > 0) && (r < 255)) {
-                ++r;
-            } else if ((g > 0) && (g < 255)) {
-                ++g;
+                ++rgb.b;
+            } else if ((rgb.r > 0) && (rgb.r < 255)) {
+                ++rgb.r;
+            } else if ((rgb.g > 0) && (rgb.g < 255)) {
+                ++rgb.g;
             } else {
-                if (r == g && g == b) {
-                    r ^= 0x01;
-                    g ^= 0x01;
+                if (rgb.r == rgb.g && rgb.g == rgb.b) {
+                    rgb.r ^= 0x01;
+                    rgb.g ^= 0x01;
                 }
-                b ^= 0x01;
+                rgb.b ^= 0x01;
             }
         } else {
             // going 'down'
-            if (b > 1) {
-                if (r == g && g == b) {
-                    --r;
-                    --g;
+            if (rgb.b > 1) {
+                if (rgb.r == rgb.g && rgb.g == rgb.b) {
+                    --rgb.r;
+                    --rgb.g;
                 }
-                --b;
-            } else if (g > 1) {
-                --g;
-            } else if (r > 1) {
-                --r;
+                --rgb.b;
+            } else if (rgb.g > 1) {
+                --rgb.g;
+            } else if (rgb.r > 1) {
+                --rgb.r;
             } else {
-                if (r == g && g == b) {
-                    r ^= 0x01;
-                    g ^= 0x01;
+                if (rgb.r == rgb.g && rgb.g == rgb.b) {
+                    rgb.r ^= 0x01;
+                    rgb.g ^= 0x01;
                 }
-                b ^= 0x01;
+                rgb.b ^= 0x01;
             }
         }
     }
@@ -647,21 +641,18 @@ struct RGB_s {
 /// Check if two RGB_s objects have the same color data
 inline bool operator==(const RGB_s &_lhs, const RGB_s &_rhs)
 {
-    return (_lhs.r == _rhs.r) && (_lhs.g == _rhs.g) && (_lhs.b == _rhs.b);
+    return (_lhs.rgb.r == _rhs.rgb.r) && (_lhs.rgb.g == _rhs.rgb.g) && (_lhs.rgb.b == _rhs.rgb.b);
 }
 
 /// Check if two RGB_s objects do *not* have the same color data
-inline bool operator!=(const RGB_s &_lhs, const RGB_s &_rhs)
-{
-    return !(_lhs == _rhs);
-}
+inline bool operator!=(const RGB_s &_lhs, const RGB_s &_rhs) { return !(_lhs == _rhs); }
 
 /// Check if the sum of the color channels in one RGB_s object is less than another
 inline bool operator<(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
-    sl = _lhs.r + _lhs.g + _lhs.b;
-    sr = _rhs.r + _rhs.g + _rhs.b;
+    sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
+    sr = _rhs.rgb.r + _rhs.rgb.g + _rhs.rgb.b;
     return sl < sr;
 }
 
@@ -669,8 +660,8 @@ inline bool operator<(const RGB_s &_lhs, const RGB_s &_rhs)
 inline bool operator>(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
-    sl = _lhs.r + _lhs.g + _lhs.b;
-    sr = _rhs.r + _rhs.g + _rhs.b;
+    sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
+    sr = _rhs.rgb.r + _rhs.rgb.g + _rhs.rgb.b;
     return sl > sr;
 }
 
@@ -678,8 +669,8 @@ inline bool operator>(const RGB_s &_lhs, const RGB_s &_rhs)
 inline bool operator>=(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
-    sl = _lhs.r + _lhs.g + _lhs.b;
-    sr = _rhs.r + _rhs.g + _rhs.b;
+    sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
+    sr = _rhs.rgb.r + _rhs.rgb.g + _rhs.rgb.b;
     return sl >= sr;
 }
 
@@ -687,8 +678,8 @@ inline bool operator>=(const RGB_s &_lhs, const RGB_s &_rhs)
 inline bool operator<=(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
-    sl = _lhs.r + _lhs.g + _lhs.b;
-    sr = _rhs.r + _rhs.g + _rhs.b;
+    sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
+    sr = _rhs.rgb.r + _rhs.rgb.g + _rhs.rgb.b;
     return sl <= sr;
 }
 
@@ -696,40 +687,37 @@ inline bool operator<=(const RGB_s &_lhs, const RGB_s &_rhs)
 /// @copydoc RGB_s::operator+=
 inline RGB_s operator+(const RGB_s &_p1, const RGB_s &_p2)
 {
-    return RGB_s(qadd8(_p1.r, _p2.r), qadd8(_p1.g, _p2.g), qadd8(_p1.b, _p2.b));
+    return RGB_s(qadd8(_p1.rgb.r, _p2.rgb.r), qadd8(_p1.rgb.g, _p2.rgb.g), qadd8(_p1.rgb.b, _p2.rgb.b));
 }
 
 /// @copydoc RGB_s::operator-=
 inline RGB_s operator-(const RGB_s &_p1, const RGB_s &_p2)
 {
-    return RGB_s(qsub8(_p1.r, _p2.r), qsub8(_p1.g, _p2.g), qsub8(_p1.b, _p2.b));
+    return RGB_s(qsub8(_p1.rgb.r, _p2.rgb.r), qsub8(_p1.rgb.g, _p2.rgb.g), qsub8(_p1.rgb.b, _p2.rgb.b));
 }
 
 /// @copydoc RGB_s::operator*=
 inline RGB_s operator*(const RGB_s &_p1, uint8_t _d)
 {
-    return RGB_s(qmul8(_p1.r, _d), qmul8(_p1.g, _d), qmul8(_p1.b, _d));
+    return RGB_s(qmul8(_p1.rgb.r, _d), qmul8(_p1.rgb.g, _d), qmul8(_p1.rgb.b, _d));
 }
 
 /// @copydoc RGB_s::operator/=
-inline RGB_s operator/(const RGB_s &_p1, uint8_t _d)
-{
-    return RGB_s(_p1.r / _d, _p1.g / _d, _p1.b / _d);
-}
+inline RGB_s operator/(const RGB_s &_p1, uint8_t _d) { return RGB_s(_p1.rgb.r / _d, _p1.rgb.g / _d, _p1.rgb.b / _d); }
 
 
 /// Combine two RGB_s objects, taking the smallest value of each channel
 inline RGB_s operator&(const RGB_s &_p1, const RGB_s &_p2)
 {
-    return RGB_s(_p1.r < _p2.r ? _p1.r : _p2.r, _p1.g < _p2.g ? _p1.g : _p2.g,
-                 _p1.b < _p2.b ? _p1.b : _p2.b);
+    return RGB_s(_p1.rgb.r < _p2.rgb.r ? _p1.rgb.r : _p2.rgb.r, _p1.rgb.g < _p2.rgb.g ? _p1.rgb.g : _p2.rgb.g,
+                 _p1.rgb.b < _p2.rgb.b ? _p1.rgb.b : _p2.rgb.b);
 }
 
 /// Combine two RGB_s objects, taking the largest value of each channel
 inline RGB_s operator|(const RGB_s &_p1, const RGB_s &_p2)
 {
-    return RGB_s(_p1.r > _p2.r ? _p1.r : _p2.r, _p1.g > _p2.g ? _p1.g : _p2.g,
-                 _p1.b > _p2.b ? _p1.b : _p2.b);
+    return RGB_s(_p1.rgb.r > _p2.rgb.r ? _p1.rgb.r : _p2.rgb.r, _p1.rgb.g > _p2.rgb.g ? _p1.rgb.g : _p2.rgb.g,
+                 _p1.rgb.b > _p2.rgb.b ? _p1.rgb.b : _p2.rgb.b);
 }
 
 /// Scale using RGB_s::nscale8_video()

@@ -75,8 +75,7 @@ public:
     * 
     * @return LEDDriver* Pointer to the created driver instance
     */
-    template <SPIChipsets_e Chip>
-    LEDDriver *create(SPI_HandleTypeDef *_handle, int _num)
+    template <SPIChipsets_e Chip> LEDDriver *create(SPI_HandleTypeDef *_handle, int _num)
     {
         switch (Chip) {
         case SPI_WS2812B:
@@ -98,8 +97,7 @@ public:
      * @return LEDDriver* Pointer to the created driver instance
      */
     template <IOChipsets_e Chip>
-    static LEDDriver *create(RGBLEDDriver::lightTuner _setR(uint8_t),
-                             RGBLEDDriver::lightTuner _setG(uint8_t),
+    static LEDDriver *create(RGBLEDDriver::lightTuner _setR(uint8_t), RGBLEDDriver::lightTuner _setG(uint8_t),
                              RGBLEDDriver::lightTuner _setB(uint8_t))
     {
         switch (Chip) {

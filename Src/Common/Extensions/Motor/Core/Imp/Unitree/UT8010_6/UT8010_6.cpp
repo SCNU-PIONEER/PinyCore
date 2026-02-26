@@ -4,8 +4,7 @@
 using namespace PINYMOTOR;
 using namespace UTMOTOR;
 
-UT80106::UT80106(const char _name[16], InitConfig_s _config,
-                 UART_HandleTypeDef *_huart)
+UT80106::UT80106(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart)
         : UTMotor(_name, _config, _huart)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
@@ -17,21 +16,22 @@ UT80106::UT80106(const char _name[16], InitConfig_s _config,
     regInfo_.model.txBaseId = 0;
     this->ctrlId_ = _config.offsetId;
 
-    this->status_ = Status_s{ .PMax = P_MAX,
-                              .VMax = V_MAX,
-                              .TMax = T_MAX,
-                              .KpMax = KP_MAX,
-                              .KdMax = KD_MAX,
-                              .currMax = CURR_MAX,
-                              .torqMax = TRQE_MAX,
-                              .speedMax = SPEED_MAX,
-                              .Kn = KN };
+    Status_s status = {};
+    status.PMax = P_MAX;
+    status.VMax = V_MAX;
+    status.TMax = T_MAX;
+    status.KpMax = KP_MAX;
+    status.KdMax = KD_MAX;
+    status.currMax = CURR_MAX;
+    status.torqMax = TRQE_MAX;
+    status.speedMax = SPEED_MAX;
+    status.Kn = KN;
+    this->status_ = status;
 
     this->registerRecvCallback();
 
 
-    LOG::info("UT8010_6", " %s: An instance of UT8010_6 created, ctrlId:0x%hx",
-              regInfo_.name, this->ctrlId_);
+    LOG::info("UT8010_6", " %s: An instance of UT8010_6 created, ctrlId:0x%hx", regInfo_.name, this->ctrlId_);
 }
 
 MotorTypeDef_e UT80106::checkBaseConfig()
@@ -40,14 +40,12 @@ MotorTypeDef_e UT80106::checkBaseConfig()
 
     if (regInfo_.comType != PINYMOTOR::ComType_e ::RS485) {
         rslt |= 1;
-        LOG::error("UT8010_6", " %s: only support RS485 comtype",
-                   regInfo_.name);
+        LOG::error("UT8010_6", " %s: only support RS485 comtype", regInfo_.name);
     }
 
     if (regInfo_.workMode != WorkMode_e::EMIT) {
         rslt |= 1;
-        LOG::error("UT8010_6", " %s: WorkMode only support EMIT",
-                   regInfo_.name);
+        LOG::error("UT8010_6", " %s: WorkMode only support EMIT", regInfo_.name);
     }
 
     if (regInfo_.offsetId > 15) {

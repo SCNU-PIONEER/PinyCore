@@ -82,7 +82,7 @@ public:
             bool fn2;
             int16_t wheel;
             bool trigger;
-        };
+        } gamepad;
         struct {
             int16_t mouseX;
             int16_t mouseY;
@@ -91,7 +91,7 @@ public:
             bool mouseRight;
             bool mouseMiddle;
             uint16_t key;
-        };
+        } KBM;
     };
 #pragma pack(pop)
 

@@ -23,7 +23,7 @@ public:
 
     void playNote(const Note &_note);
 
-    static void callBackFromISR(TIM_HandleTypeDef *_htim);
+    static void callBackFromISR();
 
     /**
     * @brief fdcan get Instance

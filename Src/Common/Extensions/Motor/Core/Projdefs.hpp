@@ -31,19 +31,15 @@ enum class MotorErrorCode_e : uint8_t { ERROR_NONE = 0u };
 
 struct CmdBus_s {
     // Basic command structure
-    struct {
-        MotorCmdType_e cmdType;
-        float posCmd;
-        float velCmd;
-        float torqCmd;
-        float elecCmd;
-    };
+    MotorCmdType_e cmdType;
+    float posCmd;
+    float velCmd;
+    float torqCmd;
+    float elecCmd;
     // auxiliary command structure
-    struct {
-        // default posMax and posMin are 0.f, which means no limit
-        float posMin = 0.f;
-        float posMax = 0.f;
-    };
+    // default posMax and posMin are 0.f, which means no limit
+    float posMin = 0.f;
+    float posMax = 0.f;
 };
 
 struct InitConfig_s {
@@ -92,12 +88,12 @@ struct Cmd_s {
 
     float posMax = 0.f; // rad
     float posMin = 0.f; // rad
-    struct {
-        float pos;
-        float vel;
-        float torq;
-        float elec; // common elecric input (current or voltage)
-    };
+
+    float pos;
+    float vel;
+    float torq;
+    float elec; // common elecric input (current or voltage)
+
     void clear()
     {
         SW = prevSW = false;

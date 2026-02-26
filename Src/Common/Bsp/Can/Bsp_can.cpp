@@ -20,8 +20,7 @@ HAL_StatusTypeDef Can::init()
 }
 
 
-HAL_StatusTypeDef Can::registerCallback(canHandle *_hcan, uint32_t _stdid,
-                                        callback _pCallback)
+HAL_StatusTypeDef Can::registerCallback(canHandle *_hcan, uint32_t _stdid, callback _pCallback)
 {
     struct Handler_s temp = { .stdid = _stdid, .func = _pCallback };
     if (_hcan == &HCAN1) {
@@ -92,14 +91,12 @@ struct DlcTable_s {
 };
 
 const DlcTable_s dlc[] = {
-    { .dlc = 0, .bytes = DLC(0) },   { .dlc = 1, .bytes = DLC(1) },
-    { .dlc = 2, .bytes = DLC(2) },   { .dlc = 3, .bytes = DLC(3) },
-    { .dlc = 4, .bytes = DLC(4) },   { .dlc = 5, .bytes = DLC(5) },
-    { .dlc = 6, .bytes = DLC(6) },   { .dlc = 7, .bytes = DLC(7) },
-    { .dlc = 8, .bytes = DLC(8) },   { .dlc = 12, .bytes = DLC(12) },
-    { .dlc = 16, .bytes = DLC(16) }, { .dlc = 20, .bytes = DLC(20) },
-    { .dlc = 24, .bytes = DLC(24) }, { .dlc = 32, .bytes = DLC(32) },
-    { .dlc = 48, .bytes = DLC(48) }, { .dlc = 64, .bytes = DLC(64) },
+    { .dlc = 0, .bytes = DLC(0) },   { .dlc = 1, .bytes = DLC(1) },   { .dlc = 2, .bytes = DLC(2) },
+    { .dlc = 3, .bytes = DLC(3) },   { .dlc = 4, .bytes = DLC(4) },   { .dlc = 5, .bytes = DLC(5) },
+    { .dlc = 6, .bytes = DLC(6) },   { .dlc = 7, .bytes = DLC(7) },   { .dlc = 8, .bytes = DLC(8) },
+    { .dlc = 12, .bytes = DLC(12) }, { .dlc = 16, .bytes = DLC(16) }, { .dlc = 20, .bytes = DLC(20) },
+    { .dlc = 24, .bytes = DLC(24) }, { .dlc = 32, .bytes = DLC(32) }, { .dlc = 48, .bytes = DLC(48) },
+    { .dlc = 64, .bytes = DLC(64) },
 };
 
 HAL_StatusTypeDef fdcanFilterInit(FDCAN_HandleTypeDef *_hcan, uint8_t _fifo)
@@ -112,22 +109,18 @@ HAL_StatusTypeDef fdcanFilterInit(FDCAN_HandleTypeDef *_hcan, uint8_t _fifo)
     sFilterConfig.FilterType = FDCAN_FILTER_MASK;
     if (_fifo == RX_FIFO0) {
         sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-        result = HAL_FDCAN_ActivateNotification(
-                _hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+        result = HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     } else if (_fifo == RX_FIFO1) {
         sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-        result = HAL_FDCAN_ActivateNotification(
-                _hcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
+        result = HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
     }
     sFilterConfig.FilterID1 = 0x00000000;
     sFilterConfig.FilterID2 = 0x00000000;
     result = HAL_FDCAN_ConfigFilter(_hcan, &sFilterConfig);
     if (_fifo == RX_FIFO0) {
-        result = HAL_FDCAN_ActivateNotification(
-                _hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+        result = HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     } else if (_fifo == RX_FIFO1) {
-        result = HAL_FDCAN_ActivateNotification(
-                _hcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
+        result = HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
     }
     return result;
 }
@@ -136,22 +129,20 @@ HAL_StatusTypeDef Can::initSelf(canHandle *_hcan, uint32_t _fifo)
 {
     HAL_StatusTypeDef result = HAL_OK;
     result = fdcanFilterInit(_hcan, _fifo);
-    result = HAL_FDCAN_ConfigGlobalFilter(
-            _hcan,                //fdcan FDCAN_Handle
-            FDCAN_REJECT,         //拒绝所有不匹配的标准ID数据帧
-            FDCAN_REJECT,         // 拒绝所有不匹配的扩展ID数据帧
-            FDCAN_FILTER_REMOTE,  //过滤掉所有标准ID远程帧
-            FDCAN_FILTER_REMOTE); //过滤掉所有扩展ID远程帧
+    result = HAL_FDCAN_ConfigGlobalFilter(_hcan,                //fdcan FDCAN_Handle
+                                          FDCAN_REJECT,         //拒绝所有不匹配的标准ID数据帧
+                                          FDCAN_REJECT,         // 拒绝所有不匹配的扩展ID数据帧
+                                          FDCAN_FILTER_REMOTE,  //过滤掉所有标准ID远程帧
+                                          FDCAN_FILTER_REMOTE); //过滤掉所有扩展ID远程帧
     HAL_FDCAN_ActivateNotification(_hcan, FDCAN_IT_BUS_OFF, 0);
     result = HAL_FDCAN_Start(_hcan);
     return result;
 }
 
-HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid,
-                                    uint8_t *_tx_data, uint32_t _len)
+HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid, uint8_t *_tx_data, uint32_t _len)
 {
     HAL_StatusTypeDef result = HAL_OK;
-    FDCAN_TxHeaderTypeDef txHeader = { 0 };
+    FDCAN_TxHeaderTypeDef txHeader;
     txHeader.Identifier = _stdid;
     txHeader.IdType = FDCAN_STANDARD_ID;
     txHeader.TxFrameType = FDCAN_DATA_FRAME;
@@ -165,12 +156,11 @@ HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid,
     return result;
 }
 
-HAL_StatusTypeDef Can::transmitBrsData(canHandle *_hcan, uint16_t _stdid,
-                                       uint8_t *_tx_data, uint32_t _len)
+HAL_StatusTypeDef Can::transmitBrsData(canHandle *_hcan, uint16_t _stdid, uint8_t *_tx_data, uint32_t _len)
 {
     if (HAL_FDCAN_GetTxFifoFreeLevel(_hcan) > 0) {
         HAL_StatusTypeDef result = HAL_OK;
-        FDCAN_TxHeaderTypeDef txHeader = {};
+        FDCAN_TxHeaderTypeDef txHeader;
         txHeader.Identifier = _stdid;
         txHeader.IdType = FDCAN_STANDARD_ID;
         txHeader.TxFrameType = FDCAN_DATA_FRAME;
@@ -236,20 +226,19 @@ inline void Can::callbackFromISR(canHandle *_hcan, uint32_t _rxFifo)
     }
 }
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *_hfdcan,
-                               uint32_t _rxFifo0ITs)
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *_hfdcan, uint32_t _rxFifo0ITs)
 {
+    UNUSED(_rxFifo0ITs);
     Can::instance().callbackFromISR(_hfdcan, RX_FIFO0);
 }
 
-void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *_hfdcan,
-                               uint32_t _rxFifo1ITs)
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *_hfdcan, uint32_t _rxFifo1ITs)
 {
+    UNUSED(_rxFifo1ITs);
     Can::instance().callbackFromISR(_hfdcan, RX_FIFO1);
 }
 
-void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *_hfdcan,
-                                   uint32_t _errorStatusITs)
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *_hfdcan, uint32_t _errorStatusITs)
 {
     if ((_errorStatusITs & FDCAN_IT_BUS_OFF) != RESET) {
         Can::instance().checkBus(_hfdcan);
@@ -277,11 +266,9 @@ HAL_StatusTypeDef canFilterInit(CAN_HandleTypeDef *_can, uint32_t _fifo)
     }
     result = HAL_CAN_ConfigFilter(_can, &canFilter);
     if (_fifo == 0) {
-        result =
-                HAL_CAN_ActivateNotification(_can, CAN_IT_RX_FIFO0_MSG_PENDING);
+        result = HAL_CAN_ActivateNotification(_can, CAN_IT_RX_FIFO0_MSG_PENDING);
     } else if (_fifo == 1) {
-        result =
-                HAL_CAN_ActivateNotification(_can, CAN_IT_RX_FIFO1_MSG_PENDING);
+        result = HAL_CAN_ActivateNotification(_can, CAN_IT_RX_FIFO1_MSG_PENDING);
     }
     return result;
 }
@@ -295,8 +282,7 @@ HAL_StatusTypeDef Can::initSelf(canHandle *_hcan, uint32_t _fifo)
     return result;
 }
 
-HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid,
-                                    uint8_t *_txData, uint32_t _len)
+HAL_StatusTypeDef Can::transmitData(canHandle *_hcan, uint16_t _stdid, uint8_t *_txData, uint32_t _len)
 {
     CAN_TxHeaderTypeDef txHeader;
     uint32_t canMailbox;
@@ -332,14 +318,8 @@ void Can::callbackFromISR(canHandle *_hcan, uint32_t _rxFifo)
     }
 }
 
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *_hcan)
-{
-    Can::instance().callbackFromISR(_hcan, RX_FIFO0);
-}
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *_hcan) { Can::instance().callbackFromISR(_hcan, RX_FIFO0); }
 
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *_hcan)
-{
-    Can::instance().callbackFromISR(_hcan, RX_FIFO1);
-}
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *_hcan) { Can::instance().callbackFromISR(_hcan, RX_FIFO1); }
 
 #endif
