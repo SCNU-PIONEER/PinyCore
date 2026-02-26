@@ -40,22 +40,14 @@ struct GameResult_s {
 
 /* 机器人血量数据：0x0003。发送频率：3Hz */
 struct GameRobotHP_s {
-    uint16_t red1RobotHP;
-    uint16_t red2RobotHP;
-    uint16_t red3RobotHP;
-    uint16_t red4RobotHP;
-    uint16_t reserved1;
-    uint16_t red7RobotHP;
-    uint16_t redOutpostHP;
-    uint16_t redBaseHP;
-    uint16_t blue1RobotHP;
-    uint16_t blue2RobotHP;
-    uint16_t blue3RobotHP;
-    uint16_t blue4RobotHP;
-    uint16_t reserved2;
-    uint16_t blue7RobotHP;
-    uint16_t blueOutpostHP;
-    uint16_t blueBaseHP;
+    uint16_t ally1RobotHP;
+    uint16_t ally2RobotHP;
+    uint16_t ally3RobotHP;
+    uint16_t ally4RobotHP;
+    uint16_t reserved;
+    uint16_t ally7RobotHP;
+    uint16_t allyOutpostHP;
+    uint16_t allyBaseHP;
 };
 
 /* 场地事件数据：0x0101。发送频率：1Hz */
@@ -96,9 +88,8 @@ struct PowerHeatData_s {
     uint16_t reserved2;
     float reserved3;
     uint16_t chassisPowerBuffer;
-    uint16_t shooterId1_17mmCoolingHeat;
-    uint16_t shooterId2_17mmCoolingHeat;
-    uint16_t shooterId1_42mmCoolingHeat;
+    uint16_t shooter_17mmBarrelHeat;
+    uint16_t shooter_42mmBarrelHeat;
 };
 
 /* 机器人位置：0x0203。发送频率：1Hz */
@@ -111,7 +102,7 @@ struct GameRobotPos_s {
 /* 机器人增益：0x0204。发送频率：3Hz */
 struct Buff_s {
     uint8_t recoveryBuff;
-    uint8_t coolingBuff;
+    uint16_t coolingBuff;
     uint8_t defenceBuff;
     uint8_t vulnerabilityBuff;
     uint16_t attackBuff;
@@ -142,6 +133,7 @@ struct BulletRemaining_s {
 /* 0x0209 机器人 RFID 状态，3Hz 周期发送 该RFID持有机器人*/
 struct RfidStatus_s {
     uint32_t rfidStatus;
+    uint8_t rfidStatus2; //新增，对方地形跨越增益点
 };
 
 /* 0x020A 飞镖发射器状态，3Hz 周期发送 */
@@ -168,7 +160,7 @@ struct GroundRobotPosition_s {
 
 /* 0x020C 雷达易伤标记数据，1Hz 周期发送 */
 struct RadarMarkData_s {
-    uint8_t markProgress;
+    uint16_t markProgress;
 };
 
 /* 0x020D 哨兵兑远程换数据，1Hz 周期发送 */
@@ -190,6 +182,11 @@ struct RobotInteractionData_s {
     uint8_t userData[112];
 };
 
+/* 0x0302 自定义控制器数据（向机器人发送），1Hz 周期发送 */
+struct CustomRobotData_s {
+    uint8_t data[30];
+};
+
 /* 0x0303 选手下发数据，1Hz 周期发送 */
 struct MapCommand_s {
     float targetPositionX;
@@ -209,11 +206,12 @@ struct MapRobotData_s {
     uint16_t infantry_3PositionY;
     uint16_t infantry_4PositionX;
     uint16_t infantry_4PositionY;
-    uint16_t infantry_5PositionX;
-    uint16_t infantry_5PositionY;
+    uint16_t reserved1;
+    uint16_t reserved2;
     uint16_t sentryPositionX;
     uint16_t sentryPositionY;
 };
+
 
 /* 0x0306 自定义模拟键鼠，30Hz 周期上限 */
 struct CustomClientData_s {
@@ -235,22 +233,6 @@ struct MapData_s {
     uint16_t senderId;
 };
 
-/* 0x0302 自定义控制器数据（向机器人发送），1Hz 周期发送 */
-struct CustomRobotData_s {
-    uint8_t data[30];
-};
-
-/* 0x0304 键鼠数据（图传链路），30Hz 周期发送 */
-struct VtData_s {
-    int16_t mouseX;
-    int16_t mouseY;
-    int16_t mouseZ;
-    int8_t leftButtonDown;
-    int8_t rightButtonDown;
-    uint16_t keyboardValue;
-    uint16_t reserved;
-};
-
 /* 0x0308 机器人向任意选手端发送，3Hz 周期接收 */
 struct CustomInfo_s {
     uint16_t senderId;
@@ -258,13 +240,116 @@ struct CustomInfo_s {
     uint8_t userData[30];
 };
 
-
 /* 0x0309 自定义控制器数据（机器人发送），10Hz接收 */
 struct RobotCustomData_s {
     uint8_t data[30];
 };
 
-uint8_t constexpr INFO_NUM = 20;
+/* 0x0310 机器人→自定义客户端数据，50Hz 周期发送 */
+struct Robot2ClientData_s {
+    uint8_t data[300];
+};
+
+/* 0x0311 自定义客户端→机器人指令，75Hz 周期发送 */
+struct Client2RobotData_s {
+    uint8_t data[30];
+};
+
+/* 0x0A01 对方机器人位置坐标，10Hz 周期发送 */
+struct OpponentRobotPosition_s {
+    uint16_t heroX;      // 对方英雄机器人x坐标（cm）
+    uint16_t heroY;      // 对方英雄机器人y坐标（cm）
+    uint16_t engineerX;  // 对方工程机器人x坐标（cm）
+    uint16_t engineerY;  // 对方工程机器人y坐标（cm）
+    uint16_t infantry3X; // 对方步兵3 x坐标（cm）
+    uint16_t infantry3Y; // 对方步兵3 y坐标（cm）
+    uint16_t infantry4X; // 对方步兵4 x坐标（cm）
+    uint16_t infantry4Y; // 对方步兵4 y坐标（cm）
+    uint16_t aerialX;    // 对方空中机器人x坐标（cm）
+    uint16_t aerialY;    // 对方空中机器人y坐标（cm）
+    uint16_t sentryX;    // 对方哨兵机器人x坐标（cm）
+    uint16_t sentryY;    // 对方哨兵机器人y坐标（cm）
+};
+
+/* 0x0A02 对方机器人血量信息，10Hz 周期发送 */
+struct OpponentRobotHP_s {
+    uint16_t heroHP;      // 对方英雄机器人血量
+    uint16_t engineerHP;  // 对方工程机器人血量
+    uint16_t infantry3HP; // 对方步兵3血量
+    uint16_t infantry4HP; // 对方步兵4血量
+    uint16_t reserved;    // 保留位
+    uint16_t sentryHP;    // 对方哨兵机器人血量
+};
+
+/* 0x0A03 对方机器人剩余发弹量信息，10Hz 周期发送 */
+struct OpponentBulletRemaining_s {
+    uint16_t heroRemaining;      // 对方英雄发弹量
+    uint16_t infantry3Remaining; // 对方步兵3发弹量
+    uint16_t infantry4Remaining; // 对方步兵4发弹量
+    uint16_t aerialRemaining;    // 对方空中发弹量
+    uint16_t sentryRemaining;    // 对方哨兵发弹量
+};
+
+/* 0x0A04 对方队伍宏观状态信息，10Hz 周期发送 */
+struct OpponentMacroStatus_s {
+    uint16_t coinRemain;                    // 对方剩余金币数量
+    uint16_t cumulativeCoin;                // 对方累计总金币数量
+    uint32_t cupplyStatus : 1;              // 对方补给区占领状态
+    uint32_t centralHighLandStatus : 2;     // 对方中心高地占领状态
+    uint32_t trapezoidalHighLandStatus : 1; // 对方梯形高地占领状态
+    uint32_t fortressBuffStatus : 2;        // 对方堡垒增益状态
+    uint32_t outpostBuffStatus : 2;         // 对方前哨站增益状态
+    uint32_t baseBuffStatus : 1;            // 对方基地增益状态
+    uint32_t opponentSlopeFrontStatus : 1;  // 对方一侧飞坡前增益点状态
+    uint32_t opponentSlopeBackStatus : 1;   // 对方一侧飞坡后增益点状态
+    uint32_t ourSlopeFrontStatus : 1;       // 我方一侧飞坡前增益点状态
+    uint32_t ourSlopeBackStatus : 1;        // 我方一侧飞坡后增益点状态
+    uint32_t highLandBuffState : 1;         // 对方高地增益状态
+    uint32_t flyingSlopeBuffState : 1;      // 对方飞坡增益状态
+    uint32_t highWayBuffState : 1;          // 对方高速路增益状态
+};
+
+/* 0x0A05 对方各机器人当前增益效果，10Hz 周期发送 */
+struct OpponentRobotBuff_s {
+    uint8_t heroRegenerationBuff;         // 对方英雄回血增益状态
+    uint16_t heroHeatCoolingBuff;         // 对方英雄射击热量冷却增益状态
+    uint8_t heroPositiveDefenceBuff;      // 对方英雄防御增益状态
+    uint8_t heroNegativeDefenceBuff;      // 对方英雄负防御增益状态
+    uint16_t heroAttackBuff;              // 对方英雄攻击增益状态
+    uint8_t engineerRegenerationBuff;     // 对方工程回血增益状态
+    uint16_t engineerHeatCoolingBuff;     // 对方工程射击热量冷却增益状态
+    uint8_t engineerPositiveDefenceBuff;  // 对方工程防御增益状态
+    uint8_t engineerNegativeDefenceBuff;  // 对方工程负防御增益状态
+    uint16_t engineerAttackBuff;          // 对方工程攻击增益状态
+    uint8_t infantry3RegenerationBuff;    // 对方步兵3回血增益状态
+    uint16_t infantry3HeatCoolingBuff;    // 对方步兵3射击热量冷却增益状态
+    uint8_t infantry3PositiveDefenceBuff; // 对方步兵3防御增益状态
+    uint8_t infantry3NegativeDefenceBuff; // 对方步兵3负防御增益状态
+    uint16_t infantry3AttackBuff;         // 对方步兵3攻击增益状态
+    uint8_t infantry4RegenerationBuff;    // 对方步兵4回血增益状态
+    uint16_t infantry4HeatCoolingBuff;    // 对方步兵4射击热量冷却增益状态
+    uint8_t infantry4PositiveDefenceBuff; // 对方步兵4防御增益状态
+    uint8_t infantry4NegativeDefenceBuff; // 对方步兵4负防御增益状态
+    uint16_t infantry4AttackBuff;         // 对方步兵4攻击增益状态
+    uint8_t sentryRegenerationBuff;       // 对方哨兵回血增益状态
+    uint16_t sentryHeatCoolingBuff;       // 对方哨兵射击热量冷却增益状态
+    uint8_t sentryPositiveDefenceBuff;    // 对方哨兵防御增益状态
+    uint8_t sentryNegativeDefenceBuff;    // 对方哨兵负防御增益状态
+    uint16_t sentryAttackBuff;            // 对方哨兵攻击增益状态
+    uint8_t sentryRefState;               // 对方哨兵当前状态
+};
+
+/* 0x0A06 对方干扰波密钥，10Hz 周期发送 */
+struct OpponentJammingKey_s {
+    uint8_t key1; // 密钥字节1
+    uint8_t key2; // 密钥字节2
+    uint8_t key3; // 密钥字节3
+    uint8_t key4; // 密钥字节4
+    uint8_t key5; // 密钥字节5
+    uint8_t key6; // 密钥字节6
+};
+
+uint8_t constexpr INFO_NUM = 29;
 
 enum class CmdId_e : uint16_t {
     GAME_STATE = 0x0001,
@@ -289,11 +374,19 @@ enum class CmdId_e : uint16_t {
     ROBOT_INTERACTION_DATA = 0x0301,
     CUSTOM_ROBOT_DATA = 0x0302,
     MAP_COMMAND = 0x0303,
-    VT_DATA = 0x0304,
     RADAR_TARGET_POSITIONX = 0x0305,
     CUSTOMER_CTRL_TO_CLIENT_DATA = 0x0306,
     AUTO_ROBOT_TO_CLIENT_MAP = 0x0307,
     ROBOT_TO_CLIENT_MAP = 0x0308,
+    ROBOT_CUSTOM_DATA = 0x0309,
+    ROBOT_TO_CLIENT_DATA = 0x0310,
+    CLIENT_TO_ROBOT_DATA = 0x0311,
+    OPPONENT_ROBOT_POSITION = 0x0A01,
+    OPPONENT_ROBOT_HP = 0x0A02,
+    OPPONENT_BULLET_REMAINING = 0x0A03,
+    OPPONENT_MACRO_STATUS = 0x0A04,
+    OPPONENT_ROBOT_BUFF = 0x0A05,
+    OPPONENT_JAMMING_KEY = 0x0A06,
 };
 
 struct RefereeProt_s {
@@ -311,7 +404,21 @@ struct RefereeProt_s {
     ShootData_s shootData;
     BulletRemaining_s bulletRemaining;
     RfidStatus_s rfidStatus;
-    VtData_s vtData;
+    DartClientCmd_s dartClientCmd;
+    GroundRobotPosition_s groundRobotPos;
+    RadarMarkData_s radarMarkData;
+    SentryInfo_s sentryInfo;
+    RadarInfo_s radarInfo;
+    RobotInteractionData_s robotInteractionData;
+    MapCommand_s mapCommand;
+    MapRobotData_s mapRobotData;
+    CustomClientData_s customClientData;
+    MapData_s mapData;
+    CustomRobotData_s customRobotData;
+    CustomInfo_s customInfo;
+    RobotCustomData_s robotCustomData;
+    Robot2ClientData_s robotToClientData;
+    Client2RobotData_s clientToRobotData;
 };
 struct INFO_s {
     CmdId_e cmdId;
@@ -348,7 +455,49 @@ INFO_s constexpr INFO[INFO_NUM] = {
       .offsetByte = offsetof(RefereeProt_s, bulletRemaining),
       .size = sizeof(BulletRemaining_s) },
     { .cmdId = CmdId_e::RFID_STATUS, .offsetByte = offsetof(RefereeProt_s, rfidStatus), .size = sizeof(RfidStatus_s) },
-    { .cmdId = CmdId_e::VT_DATA, .offsetByte = offsetof(RefereeProt_s, vtData), .size = sizeof(VtData_s) },
+    { .cmdId = CmdId_e::DART_CLIENT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, dartClientCmd),
+      .size = sizeof(DartClientCmd_s) },
+    { .cmdId = CmdId_e::GAME_GROUND_ROBOT_POS,
+      .offsetByte = offsetof(RefereeProt_s, groundRobotPos),
+      .size = sizeof(GroundRobotPosition_s) },
+    { .cmdId = CmdId_e::RADAR_MARKING_DATA,
+      .offsetByte = offsetof(RefereeProt_s, radarMarkData),
+      .size = sizeof(RadarMarkData_s) },
+    { .cmdId = CmdId_e::SENTRY_AUTONOMOUS_SYN,
+      .offsetByte = offsetof(RefereeProt_s, sentryInfo),
+      .size = sizeof(SentryInfo_s) },
+    { .cmdId = CmdId_e::RADAR_AUTONOMOUS_SYN,
+      .offsetByte = offsetof(RefereeProt_s, radarInfo),
+      .size = sizeof(RadarInfo_s) },
+    { .cmdId = CmdId_e::ROBOT_INTERACTION_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotInteractionData),
+      .size = sizeof(RobotInteractionData_s) },
+    { .cmdId = CmdId_e::MAP_COMMAND, .offsetByte = offsetof(RefereeProt_s, mapCommand), .size = sizeof(MapCommand_s) },
+    { .cmdId = CmdId_e::RADAR_TARGET_POSITIONX,
+      .offsetByte = offsetof(RefereeProt_s, mapRobotData),
+      .size = sizeof(MapRobotData_s) },
+    { .cmdId = CmdId_e::CUSTOMER_CTRL_TO_CLIENT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, customClientData),
+      .size = sizeof(CustomClientData_s) },
+    { .cmdId = CmdId_e::AUTO_ROBOT_TO_CLIENT_MAP,
+      .offsetByte = offsetof(RefereeProt_s, mapData),
+      .size = sizeof(MapData_s) },
+    { .cmdId = CmdId_e::CUSTOM_ROBOT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, customRobotData),
+      .size = sizeof(CustomRobotData_s) },
+    { .cmdId = CmdId_e::ROBOT_TO_CLIENT_MAP,
+      .offsetByte = offsetof(RefereeProt_s, customInfo),
+      .size = sizeof(CustomInfo_s) },
+    { .cmdId = CmdId_e::ROBOT_CUSTOM_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotCustomData),
+      .size = sizeof(RobotCustomData_s) },
+    { .cmdId = CmdId_e::ROBOT_TO_CLIENT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotToClientData),
+      .size = sizeof(Robot2ClientData_s) },
+    { .cmdId = CmdId_e::CLIENT_TO_ROBOT_DATA,
+      .offsetByte = offsetof(RefereeProt_s, clientToRobotData),
+      .size = sizeof(Client2RobotData_s) },
 };
 
 #pragma pack(pop)
