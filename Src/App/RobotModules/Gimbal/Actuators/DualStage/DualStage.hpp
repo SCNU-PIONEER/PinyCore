@@ -33,6 +33,12 @@ template <typename T> union DualStage_u {
     T _[3];
 };
 
+struct DualStageDebug_s {
+    bool visionControl;
+    bool visionFire;
+    float visionTargetYaw;
+};
+
 //转换为-pi~pi
 static inline float rangeConversion(float _ang)
 {
@@ -72,6 +78,9 @@ public:
 
     DualStage();
 
+    DualStageDebug_s debug{};
+
+    bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi

@@ -9,6 +9,7 @@
 #include "DM4310.hpp"
 #include "Bsp_Usb.hpp"
 
+#include "Vision.hpp"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 
@@ -19,6 +20,7 @@
 #include "./State/AutoState.hpp"
 #include "./State/NavState.hpp"
 #include <cstdint>
+#include <cstring>
 
 
 extern canHandle HCAN1;
@@ -180,6 +182,10 @@ void DualStage::update(void *_param)
     //nav send
     nav->ecToNavData().pitch = insData_.pitch;
     nav->ecToNavData().yaw = motors_.FirstYaw->posNorm();
+    //与云台控制无关，debug使用
+    memcpy(&debug.visionControl, &vision->v2eData().control, sizeof(bool));
+    memcpy(&debug.visionFire, &vision->v2eData().fire, sizeof(bool));
+    memcpy(&debug.visionTargetYaw, &vision->v2eData().targetYaw, sizeof(float));
 
     this->stateFactory_.update();
 }

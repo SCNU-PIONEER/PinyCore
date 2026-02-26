@@ -50,10 +50,14 @@ public:
     void run() final
     {
         DualStage_u<float> delArc = {};
-
         eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
         eIA.SecondYaw = 0.f; //run模式下小yaw不改变方向
+
+        if (gimbal_->isVisionAngOver_) {
+            eIA.Pitch = vision->v2eData().targetPitch;
+            eIA.FirstYaw = vision->v2eData().targetYaw;
+        }
 
         eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);

@@ -57,9 +57,9 @@ public:
         // eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
 
         if (eIA.SecondYaw >= SECOND_YAW_MAX_ANG || eIA.SecondYaw <= SECOND_YAW_MIN_ANG) {
-            isVisionAngOver_ = true; //视觉角度超出小yaw范围，停止控制
+            gimbal_->isVisionAngOver_ = true; //视觉角度超出小yaw范围，停止控制
         } else {
-            isVisionAngOver_ = false;
+            gimbal_->isVisionAngOver_ = false;
             eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
             eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
             eIA.SecondYaw = PINYMOTOR::clampArc(eIA.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
@@ -90,7 +90,7 @@ public:
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (gimbal_->msg.state == FSMState_e::RUN || isVisionAngOver_)
+        else if (gimbal_->msg.state == FSMState_e::RUN || gimbal_->isVisionAngOver_)
             return FSMState_e::RUN;
         else if (gimbal_->msg.state == FSMState_e::PATROL)
             return FSMState_e::PATROL;
@@ -104,8 +104,6 @@ public:
 
 private:
     DualStage *gimbal_;
-
-    bool isVisionAngOver_ = false;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
