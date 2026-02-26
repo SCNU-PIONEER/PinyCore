@@ -5,17 +5,17 @@
 #include <memory>
 
 namespace MINIPC {
-enum class SentryDecision_e : uint8_t {
+enum class SentryPosture_e : uint8_t {
     IDLE = 0,
-    SPIN,   // 小陀螺
-    NAVI,   // 导航，无自瞄
-    AIMING, // 巡检，自瞄
-};
+    ATTACK,  // 攻击，1
+    DEFENSE, // 防御，2
+    MOVE,    // 移动，3
+}; //默认姿态为移动
 
 #pragma pack(push, 1)
 typedef struct {
     uint8_t navHeader; // 0xA6
-    SentryDecision_e decision;
+    SentryPosture_e posture;
     float vx;
     float vy;
     float wz;

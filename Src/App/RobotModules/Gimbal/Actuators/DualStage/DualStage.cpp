@@ -164,6 +164,7 @@ void DualStage::update(void *_param)
     chassisCtrlTxPacket_.setData().wz = cmsg.wz;
 #endif
     chassisCtrlTxPacket_.setData().deltaYaw = motors_.FirstYaw->posNorm();
+    chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(nav->navToEData().posture);
 
     ArmorLoaderMsg_s almsg{};
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &almsg, 0) == pdTRUE) {

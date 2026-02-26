@@ -5,6 +5,7 @@
 #include "INS.hpp"
 #include "Pid.hpp"
 #include "PidBasic.hpp"
+#include "RefereeProt.hpp"
 #include "Soc.hpp"
 #include "dsp/fast_math_functions.h"
 #include "TopicRouter.hpp"
@@ -133,6 +134,7 @@ private:
     Swerve_u<float> expDir; //舵轮期望方向角
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
+    REFEREE::SentryCmd_s sentryCmd; //哨兵指令
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};

@@ -14,7 +14,7 @@ enum class FSMState_e : uint8_t;
 }
 
 namespace MINIPC {
-enum class SentryDecision_e : uint8_t;
+enum class SentryPosture_e : uint8_t;
 }
 
 namespace ARMORBOOSTER {
@@ -66,7 +66,7 @@ struct VisionMsg_s : public Msg {
 };
 
 struct NavMsg_s : public Msg {
-    MINIPC ::SentryDecision_e decision;
+    MINIPC ::SentryPosture_e posture;
     float vx;
     float vy;
     float wz;

@@ -190,6 +190,18 @@ struct RobotInteractionData_s {
     uint8_t userData[112];
 };
 
+/*哨兵自主决策指令：0x0120 */
+struct SentryCmd_s {
+    uint32_t reviveConfirm : 1;        // bit 0  : 哨兵是否确认复活（1确认，0不确认）
+    uint32_t instantReviveConfirm : 1; // bit 1  : 哨兵是否确认兑换立即复活（1确认，0不确认）
+    uint32_t ammoToExchange : 11;      // bit 2-12: 将要兑换的发弹量值（单调递增）
+    uint32_t remoteAmmoReq : 4;        // bit13-16: 远程兑换发弹量的请求次数（每次+1）
+    uint32_t remoteHealthReq : 4;      // bit17-20: 远程兑换血量的请求次数（每次+1）
+    uint32_t posture : 2;              // bit21-22: 哨兵姿态指令（1进攻，2防御，3移动，默认3）
+    uint32_t activateEnergy : 1;       // bit23   : 确认使能量机关进入激活状态（1确认，默认0）
+    uint32_t reserved : 8;             // bit24-31: 保留位
+};
+
 /* 0x0303 选手下发数据，1Hz 周期发送 */
 struct MapCommand_s {
     float targetPositionX;

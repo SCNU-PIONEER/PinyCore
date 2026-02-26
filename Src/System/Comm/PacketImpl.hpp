@@ -61,6 +61,7 @@ public:
         float vy;
         float wz;
         float deltaYaw;
+        uint8_t sentryPosture; //哨兵姿态系统
     };
 #pragma pack(push, 1)
     union Data_u {
@@ -71,7 +72,7 @@ public:
             int16_t wz : 14;
             int16_t deltaYaw : 16;
             uint8_t state : 3;
-            uint16_t reversed : 2;
+            uint8_t sentryPosture : 2; //哨兵姿态系统
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -85,7 +86,7 @@ public:
         d.wz = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.wz * 1000.f)));
         d.state = _protoData.state;
         d.deltaYaw = convertToInt16(_protoData.deltaYaw);
-        d.reversed = 0;
+        d.sentryPosture = _protoData.sentryPosture;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
@@ -95,6 +96,7 @@ public:
         _protoData.wz = static_cast<float>(_data.content.wz) / 1000.f;
         _protoData.state = _data.content.state;
         _protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
+        _protoData.sentryPosture = _data.content.sentryPosture;
     }
 };
 

@@ -18,7 +18,7 @@ void NavHandler::handle()
 {
     nav->parseData();
     nav->rxFreqCalc();
-    navMsg_.decision = nav->navToEData().decision;
+    navMsg_.posture = nav->navToEData().posture;
     navMsg_.vx = nav->navToEData().vx;
     navMsg_.vy = nav->navToEData().vy;
     navMsg_.wz = nav->navToEData().wz;
