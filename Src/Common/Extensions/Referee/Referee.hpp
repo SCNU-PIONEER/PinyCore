@@ -31,7 +31,8 @@ public:
     Receiver(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit);
     ~Receiver();
 
-    void uartIdleCallback(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit);
+    void uartIdleCallback(UART_HandleTypeDef *_huart, uint16_t _size, const EventGroupHandle_t &_event,
+                          uint32_t _eventBit);
     void readRefereeData();
 
     void rxFreqCalc();

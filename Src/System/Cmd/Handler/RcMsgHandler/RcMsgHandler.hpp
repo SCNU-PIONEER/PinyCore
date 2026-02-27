@@ -1,10 +1,18 @@
 #pragma once
 #include "Bsp.hpp"
 #include "Handler.hpp"
+#include <memory>
+#include "RemoteControl.hpp"
 
 #define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
 
-class RcMsgHandler final : public Handler {
+enum class RCDevType_e : uint8_t {
+    DT7 = 0,
+    ET08A = 1,
+    VT13 = 2,
+};
+
+template <RCDevType_e DEV_TYPE> class RcMsgHandler final : public Handler {
     static constexpr float INPUT_VX_MAX = 2.f;
     static constexpr float INPUT_VY_MAX = 2.f;
 
@@ -24,6 +32,12 @@ private:
     ChassisMsg_s cMsg_ = {};
     ArmorLoaderMsg_s alMsg_ = {};
     ArmorBoosterMsg_s abMsg_ = {};
+
+    std::unique_ptr<RemoteControl> rc_ = nullptr;
+
+    void createRcDev(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
+
+    void scheduleDaemon(const char *_format);
 
     void masterHandle();
 };

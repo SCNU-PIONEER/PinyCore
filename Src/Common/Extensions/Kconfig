@@ -12,6 +12,9 @@ menu "extension config"
         config EXTENSION_VT13
         bool "remote control vt13"
     endchoice
+    config EXTENSION_VT13
+    bool "remote control vt13"
+    default y
 
     config EXTENSION_BUZZER
     bool "buzzer"

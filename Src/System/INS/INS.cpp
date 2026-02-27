@@ -1,13 +1,12 @@
 #include "INS.hpp"
 #include "TopicRouter.hpp"
 #include "dsp/fast_math_functions.h"
+#include "dsp/fast_math_functions.h"
 #if INS_ACCEL_CALIBRATION
 #include "AccelCali.hpp"
 #endif
 
 using namespace INS_SYS;
-
-// static INSData_s ansINS;
 #if TARGET_SLAVE //下板
 // default accelerometer calibration
 static constexpr AccCaliParams_s ACC_CALI = { .accelT = { { 1.005345f, -0.006104f, -0.001893f },
@@ -145,7 +144,6 @@ void INS::update(float _dt)
 
     // Quaternion data
     DCM_.getQuaternion(insDat_.q);
-    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2], z = insDat_.q[3];
 
     // Get the Euler angles
     insDat_.roll = DCM_.getRoll();
@@ -185,6 +183,7 @@ void INS::update(float _dt)
     R_(2, 1) = cp * sr;
     R_(2, 2) = cp * cr;
 #else
+    float w = insDat_.q[0], x = insDat_.q[1], y = insDat_.q[2], z = insDat_.q[3];
     R_(0, 0) = 1.f - 2.f * y * y - 2.f * z * z; // 1-2y^2-2z^2
     R_(0, 1) = 2.f * x * y - 2.f * w * z;       // 2xy - 2wz
     R_(0, 2) = 2.f * x * z + 2.f * w * y;       // 2xz + 2wy

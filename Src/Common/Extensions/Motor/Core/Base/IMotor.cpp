@@ -79,7 +79,8 @@ MotorTypeDef_e IMotor::cancelMotor()
 MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
 {
     if (_type == MotorCmdType_e::ON || _type == MotorCmdType_e::OFF) {
-        CmdBus_s cmd = { .cmdType = _type };
+        CmdBus_s cmd = {};
+        cmd.cmdType = _type;
         memcpy(&AUX_.cmdBuf, &cmd, sizeof(CmdBus_s));
         return 0;
     } else {

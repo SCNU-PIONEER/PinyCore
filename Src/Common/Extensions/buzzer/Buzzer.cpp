@@ -2,15 +2,13 @@
 
 #include "BuzzerNote.hpp"
 #include <cstdint>
-#include <stdint.h>
 #include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
 namespace BUZZER {
 
-void Buzzer::init(TIM_HandleTypeDef *_htim, uint32_t _channel,
-                  uint32_t _timerFreq)
+void Buzzer::init(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq)
 {
     this->htim_ = _htim;
     this->channel_ = _channel;
@@ -49,8 +47,8 @@ void Buzzer::playNote(const Note &_note)
 void Buzzer::playAllNotes()
 {
     __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (uint8_t i = 0; i < sizeof(allNote) / sizeof(Note); i++) {
-        playNote(allNote[i]);
+    for (auto i : allNote) {
+        playNote(i);
         playNote({ NOTE_REST, 500 }); // Rest for 500ms between notes
     }
     __HAL_TIM_SetCompare(htim_, channel_, 0);
@@ -59,8 +57,8 @@ void Buzzer::playAllNotes()
 void Buzzer::playPinyCore()
 {
     __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (uint8_t i = 0; i < sizeof(PinyCore) / sizeof(Note); i++) {
-        playNote(PinyCore[i]);
+    for (auto i : PinyCore) {
+        playNote(i);
     }
     __HAL_TIM_SetCompare(htim_, channel_, 0);
 }
@@ -68,18 +66,18 @@ void Buzzer::playPinyCore()
 void Buzzer::playDJI()
 {
     __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (uint8_t i = 0; i < sizeof(dji) / sizeof(Note); i++) {
-        playNote(dji[i]);
+    for (auto i : dji) {
+        playNote(i);
     }
     __HAL_TIM_SetCompare(htim_, channel_, 0);
 }
 
-void Buzzer::callBackFromISR(TIM_HandleTypeDef *_htim)
+void Buzzer::callBackFromISR()
 {
-    Buzzer &_buzzer = Buzzer::getInstance();
-    if (_buzzer.delay_)
-        __HAL_TIM_SetCompare(_buzzer.htim_, _buzzer.channel_, _buzzer.freq_);
-    _buzzer.delay_--;
+    Buzzer &buzzer = Buzzer::getInstance();
+    if (buzzer.delay_)
+        __HAL_TIM_SetCompare(buzzer.htim_, buzzer.channel_, buzzer.freq_);
+    buzzer.delay_--;
 }
 
 void Buzzer::task()

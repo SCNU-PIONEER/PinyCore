@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "Bsp.hpp"
 #include "FreeRTOS.h"
 #include "event_groups.h"
@@ -22,5 +21,3 @@ protected:
     EventGroupHandle_t &event_;
     volatile uint8_t rxLostCnt_;
 };
-
-inline std::unique_ptr<RemoteControl> rc = nullptr;

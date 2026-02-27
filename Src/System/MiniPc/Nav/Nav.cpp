@@ -35,9 +35,9 @@ void Nav::parseData() { memcpy(&navToEcDatas_, &rxBuffer_, NAV_DATA_LEN); }
 void Nav::sendData()
 {
     ecToNavDatas_.navHeader = NAV_UART_REQ_SOF;
-    ecToNavDatas_.gameProgress = referee->receiver.getRefereeData().gameStatus.gameProgress;
-    ecToNavDatas_.gameTime = referee->receiver.getRefereeData().gameStatus.stageRemainTime;
-    ecToNavDatas_.navHPstate = referee->receiver.getRefereeData().gameRobotHP.red4RobotHP;
+    // ecToNavDatas_.gameProgress = referee->receiver.getRefereeData().gameStatus.gameProgress;
+    // ecToNavDatas_.gameTime = referee->receiver.getRefereeData().gameStatus.stageRemainTime;
+    // ecToNavDatas_.navHPstate = referee->receiver.getRefereeData().gameRobotHP.red4RobotHP;
     Append_CRC16_Check_Sum((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
     Usb::instance().send((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
 };

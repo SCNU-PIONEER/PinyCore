@@ -13,8 +13,7 @@ public:
     void regiter(float _sampleFrequency, float _twoKp, float _twoKi);
     void init(float _ax, float _ay, float _az);
 
-    void update(float _gx, float _gy, float _gz, float _ax, float _ay,
-                float _az, float _dt);
+    void update(float _gx, float _gy, float _gz, float _ax, float _ay, float _az);
 
     EData_s getEdata();
 
@@ -24,8 +23,7 @@ public:
 
 protected:
     float invSqrt(float _x);
-    void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay,
-                   float _az, float _dt);
+    void updateIMU(float _gx, float _gy, float _gz, float _ax, float _ay, float _az);
     void computeAngles();
 
 private:

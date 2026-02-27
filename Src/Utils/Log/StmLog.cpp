@@ -28,8 +28,12 @@ void Logger::float2Str(char *_str, size_t _buffer_size, float _va)
         snprintf(_str, _buffer_size, "%d.%03d", head, point);
     }
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 extern "C" int _write(int _file, char *_ptr, int _len)
 {
     SEGGER_RTT_Write(0, _ptr, _len);
     return _len;
 }
+#pragma GCC diagnostic pop
