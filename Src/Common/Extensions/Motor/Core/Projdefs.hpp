@@ -16,12 +16,19 @@ enum class WorkMode_e : uint8_t {
     TRIP_VOLT,
     QUAD_CURR,
     QUAD_VOLT,
+    VOLT,
     MIT_TT,
     MIT_VDES,
     MIT_VDESPDES,
     PDESVDES,
     VDES,
-    EMIT
+    EMIT,
+    SINGLE_PDES,
+    SINGLE_PDESVDES,
+    MULTI_PDES,
+    MULTI_PDESVDES,
+    INC_PDES,
+    INC_PDESVDES
 };
 enum class ComType_e : uint8_t { NONE, FDCAN, CAN, RS485 };
 
@@ -65,12 +72,12 @@ struct Model_s {
 
 struct Data_s {
     float rawAng;  // 原生编码角度的映射 零点由电机内部编码器决定 映射为rad
-    float zeroAng; // 零点角度值 rad
-    float ang;     // 相对零点的角度 rad
+    float zeroAng; // 软件设置的零点角度值 rad
+    float ang;     // 相对零点的转子侧角度 rad
     float angLast; // 上一时刻的相对零点的角度 rad
 
-    float singleCirAng; // 相对零点单圈值 rad
-    float multipCirAng; // 设置零点后清空 rad
+    float singleCirAng; // 相对零点的输出轴侧单圈值 rad
+    float multipCirAng; // 设置零点后输出轴侧多圈值rad
 
     float cirNum; // 相对零点的圈数
 
