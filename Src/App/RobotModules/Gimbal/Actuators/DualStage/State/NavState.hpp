@@ -49,21 +49,21 @@ public:
 
     void run() final
     {
-        DualStage_u<float> delArc = {};
+        DualStage_s<float> delArc = {};
 
-        eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
-        eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
-        eIA.SecondYaw = 0.f; //run模式下小yaw不改变方向
+        eIA_s.Pitch += gimbal_->msg.wPitch * 0.001f;
+        eIA_s.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
 
-        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+        eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
 
-        delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
-        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
+        delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
+        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
 
-        eMA.Pitch = PINYMOTOR::rangeMap(cMA.Pitch + delArc.Pitch);
-        eMA.FirstYaw = PINYMOTOR::rangeMap(cMA.FirstYaw + delArc.FirstYaw);
-        eMA.SecondYaw = 0.f;
+        eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
+        eMA_s.FirstYaw = PINYMOTOR::rangeMap(cMA_s.FirstYaw + delArc.FirstYaw);
+        eMA_s.SecondYaw = 0.f;
 
         gimbal_->ctrl(eMA, navPosPid_, navVelPid_);
     }
@@ -98,11 +98,18 @@ private:
     DualStage *gimbal_;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
-    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
-    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
-    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
 
-    DualStagePtr_u<PositionalPid> navPosPid_;
-    DualStagePtr_u<PositionalPid> navVelPid_;
+    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
+    DualStage_s<float> &cIA_s = this->gimbal_->curImuAng_.Gim_s;
+
+    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
+    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
+
+    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &eIA_s = this->gimbal_->expImuAng_.Gim_s;
+
+    DualStage_u<PositionalPid *> navPosPid_;
+    DualStage_u<PositionalPid *> navVelPid_;
 };
 } // namespace GIMBAL

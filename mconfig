@@ -75,7 +75,7 @@ CONFIG_APP_USE_VISION=y
 CONFIG_APP_USE_NAV=y
 # end of MiniPc config
 
-# CONFIG_APP_USE_DAEMONS is not set
+CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
 # CONFIG_APP_USE_REFEREE is not set
 # end of app config

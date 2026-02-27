@@ -160,8 +160,9 @@ void Swerve::update(void *_param)
     }
 
     Speed_u v = forward(wSpeed_);
-    curSpeed_.vx = v.vx * cosYaw_ + v.vy * sinYaw_;
-    curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
+    curSpeed_.Speed.vx = v.Speed.vx * cosYaw_ + v.Speed.vy * sinYaw_;
+    curSpeed_.Speed.vy = v.Speed.vy * cosYaw_ - v.Speed.vx * sinYaw_;
+    curSpeed_.Speed.wz = v.Speed.wz;
 
     this->stateFactory_.update();
 }
@@ -194,30 +195,30 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
     float carRadius = sqrtf((rX * rX) + (rY * rY));
 
-    wheelComVel[0] = -_wSpeed.M_LF * W_RADIUS; //m/s
-    wheelComVel[1] = -_wSpeed.M_LB * W_RADIUS; //m/s
-    wheelComVel[2] = _wSpeed.M_RB * W_RADIUS;  //m/s
-    wheelComVel[3] = _wSpeed.M_RF * W_RADIUS;  //m/s
+    wheelComVel[0] = -_wSpeed.Wspeed.M_LF * W_RADIUS; //m/s
+    wheelComVel[1] = -_wSpeed.Wspeed.M_LB * W_RADIUS; //m/s
+    wheelComVel[2] = _wSpeed.Wspeed.M_RB * W_RADIUS;  //m/s
+    wheelComVel[3] = _wSpeed.Wspeed.M_RF * W_RADIUS;  //m/s
 
-    sinAng[0] = sin(curDir.LF);
-    cosAng[0] = cos(curDir.LF);
+    sinAng[0] = sin(curDir.Chas_s.LF);
+    cosAng[0] = cos(curDir.Chas_s.LF);
 
-    sinAng[1] = sin(curDir.LB);
-    cosAng[1] = cos(curDir.LB);
+    sinAng[1] = sin(curDir.Chas_s.LB);
+    cosAng[1] = cos(curDir.Chas_s.LB);
 
-    sinAng[2] = sin(curDir.RB);
-    cosAng[2] = cos(curDir.RB);
+    sinAng[2] = sin(curDir.Chas_s.RB);
+    cosAng[2] = cos(curDir.Chas_s.RB);
 
-    sinAng[3] = sin(curDir.RF);
-    cosAng[3] = cos(curDir.RF);
+    sinAng[3] = sin(curDir.Chas_s.RF);
+    cosAng[3] = cos(curDir.Chas_s.RF);
 
-    speed.vx = (wheelComVel[0] * cosAng[0] + wheelComVel[1] * cosAng[1] + wheelComVel[2] * cosAng[2] +
-                wheelComVel[3] * cosAng[3]) /
-               4;
-    speed.vy = (wheelComVel[0] * sinAng[0] + wheelComVel[1] * sinAng[1] + wheelComVel[2] * sinAng[2] +
-                wheelComVel[3] * sinAng[3]) /
-               4;
-    speed.wz =
+    speed.Speed.vx = (wheelComVel[0] * cosAng[0] + wheelComVel[1] * cosAng[1] + wheelComVel[2] * cosAng[2] +
+                      wheelComVel[3] * cosAng[3]) /
+                     4;
+    speed.Speed.vy = (wheelComVel[0] * sinAng[0] + wheelComVel[1] * sinAng[1] + wheelComVel[2] * sinAng[2] +
+                      wheelComVel[3] * sinAng[3]) /
+                     4;
+    speed.Speed.wz =
             (wheelComVel[0] * (rX * sinAng[0] - rY * cosAng[0]) + wheelComVel[1] * (-rX * sinAng[1] - rY * cosAng[1]) +
              wheelComVel[2] * (-rX * sinAng[2] + rY * cosAng[2]) + wheelComVel[3] * (rX * sinAng[3] + rY * cosAng[3])) /
             powf(carRadius, 2) / 4;
@@ -241,32 +242,32 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
 
     //LF:0
-    wheelVx[0] = _speed.vx - _speed.wz * rY;
-    wheelVy[0] = _speed.vy + _speed.wz * rX;
+    wheelVx[0] = _speed.Speed.vx - _speed.Speed.wz * rY;
+    wheelVy[0] = _speed.Speed.vy + _speed.Speed.wz * rX;
     wheelComVel[0] = sqrtf((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]));
 
-    expDir.LF = atan2(wheelVy[0], wheelVx[0]);
+    expDir.Chas_s.LF = atan2(wheelVy[0], wheelVx[0]);
 
     //LB:1
-    wheelVx[1] = _speed.vx - _speed.wz * rY;
-    wheelVy[1] = _speed.vy - _speed.wz * rX;
+    wheelVx[1] = _speed.Speed.vx - _speed.Speed.wz * rY;
+    wheelVy[1] = _speed.Speed.vy - _speed.Speed.wz * rX;
     wheelComVel[1] = sqrtf((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]));
 
-    expDir.LB = atan2(wheelVy[1], wheelVx[1]);
+    expDir.Chas_s.LB = atan2(wheelVy[1], wheelVx[1]);
 
     //RB:2
-    wheelVx[2] = _speed.vx + _speed.wz * rY;
-    wheelVy[2] = _speed.vy - _speed.wz * rX;
+    wheelVx[2] = _speed.Speed.vx + _speed.Speed.wz * rY;
+    wheelVy[2] = _speed.Speed.vy - _speed.Speed.wz * rX;
     wheelComVel[2] = sqrtf((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]));
 
-    expDir.RB = atan2(wheelVy[2], wheelVx[2]);
+    expDir.Chas_s.RB = atan2(wheelVy[2], wheelVx[2]);
 
     //RF:3
-    wheelVx[3] = _speed.vx + _speed.wz * rY;
-    wheelVy[3] = _speed.vy + _speed.wz * rX;
+    wheelVx[3] = _speed.Speed.vx + _speed.Speed.wz * rY;
+    wheelVy[3] = _speed.Speed.vy + _speed.Speed.wz * rX;
     wheelComVel[3] = sqrtf((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]));
 
-    expDir.RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
+    expDir.Chas_s.RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
 
     for (float &i : expDir._) {
         if (i < 0) {
@@ -279,10 +280,10 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     // refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
     // refWheels.M_RF = wheelComVel[3] / W_CIRCUMFERENCE * 60;
     // //传rad/s
-    refWheels.M_LF = -wheelComVel[0] / W_RADIUS;
-    refWheels.M_LB = -wheelComVel[1] / W_RADIUS;
-    refWheels.M_RB = wheelComVel[2] / W_RADIUS;
-    refWheels.M_RF = wheelComVel[3] / W_RADIUS;
+    refWheels.Wspeed.M_LF = -wheelComVel[0] / W_RADIUS;
+    refWheels.Wspeed.M_LB = -wheelComVel[1] / W_RADIUS;
+    refWheels.Wspeed.M_RB = wheelComVel[2] / W_RADIUS;
+    refWheels.Wspeed.M_RF = wheelComVel[3] / W_RADIUS;
 
     return refWheels;
 }
@@ -296,13 +297,13 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir;
 
-    float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
-    float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
-    float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.wz, MAX_WZ_SPEED));
+    float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.Speed.vx, MAX_VX_SPEED));
+    float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.Speed.vy, MAX_VY_SPEED));
+    float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.Speed.wz, MAX_WZ_SPEED));
 
-    Speed_u refSpeed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
-                         .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
-                         .wz = wz };
+    Speed_u refSpeed = { .Speed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
+                                    .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
+                                    .wz = wz } };
     WheelsSpeed_u refWSpeed = reverse(refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
@@ -323,7 +324,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //6020
 
-        if (_refSpeed.vx == 0 && _refSpeed.vy == 0 && _refSpeed.wz == 0) {
+        if (_refSpeed.Speed.vx == 0 && _refSpeed.Speed.vy == 0 && _refSpeed.Speed.wz == 0) {
             motors_._[i + 4]->cmdTorq(0);
         } else {
             motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));

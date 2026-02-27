@@ -14,23 +14,13 @@
 #include "RxPacket.hpp"
 
 namespace GIMBAL {
-
-//指针模板
-template <typename T> union DualStagePtr_u {
-    struct {
-        T *Pitch;
-        T *FirstYaw;  // first stage yaw motor, 大yaw
-        T *SecondYaw; // second stage yaw motor, 小yaw
-    };
-    T *_[3];
+template <typename T> struct DualStage_s {
+    T Pitch;
+    T FirstYaw;  //大yaw
+    T SecondYaw; //小yaw
 };
-//非指针模板
 template <typename T> union DualStage_u {
-    struct {
-        T Pitch;
-        T FirstYaw;  //大yaw
-        T SecondYaw; //小yaw
-    };
+    DualStage_s<T> Gim_s;
     T _[3];
 };
 
@@ -110,12 +100,12 @@ public:
     void update(void *_param);
     void loadResetState(bool _state);
 
-    void ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _angPID, DualStagePtr_u<PositionalPid> _velPID);
-    void ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStagePtr_u<PositionalPid> _angPID,
-              DualStagePtr_u<PositionalPid> _velPID);
+    void ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
+    void ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStage_u<PositionalPid *> _angPID,
+              DualStage_u<PositionalPid *> _velPID);
 
-    DualStagePtr_u<PINYMOTOR::IMotor> *motors() { return &motors_; }
-    DualStagePtr_u<FILTER::LPF> *gimbalFilter() { return &gimbalFilterOutput_; }
+    DualStage_u<PINYMOTOR::IMotor *> *motors() { return &motors_; }
+    DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
 
 protected:
     /**
@@ -144,8 +134,8 @@ private:
     ShooterCtrlTxPacket shooterCtrlTxPacket_;
     RefereeRxPacket refereeRxPacket_; //裁判系统
 
-    DualStagePtr_u<FILTER::LPF> gimbalFilterOutput_; //输出滤波
-    DualStagePtr_u<PINYMOTOR::IMotor> motors_;       //电机
+    DualStage_u<FILTER::LPF *> gimbalFilterOutput_; //输出滤波
+    DualStage_u<PINYMOTOR::IMotor *> motors_;       //电机
 };
 
 } // namespace GIMBAL

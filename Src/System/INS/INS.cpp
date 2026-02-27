@@ -126,7 +126,6 @@ void INS::task()
         };
         data.a.x = data.a.x - (data.g.y * data.g.z * IMU_OFFSET_Y - data.g.z * data.g.z * IMU_OFFSET_X);
         data.a.y = data.a.y - (data.g.z * data.g.x * IMU_OFFSET_X - data.g.x * data.g.z * IMU_OFFSET_Y);
-
         // update INS
         update(bmi088_.getTimestamp());
 #endif

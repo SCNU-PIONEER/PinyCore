@@ -145,6 +145,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             return;
         }
         memcpy(&rcDataPrev, rcData, sizeof(DT7::RcData_s));
+
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
         static ET08A::RcData_s rcDataPrev = {};
@@ -201,19 +202,21 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (sl == SW::UP) {
                 // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
-
             cMsg_.state = CHASSIS::FSMState_e::STOP;
+
+            memcpy(&rcDataPrev, rcData, sizeof(ET08A::RcData_s));
         } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
             VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
             (void)rcData;
         }
         // User-defined processing logic goes here ↑
+        notify(&gMsg_, msgBus_->gimbalQueue);
+        notify(&cMsg_, msgBus_->chassisQueue);
+        notify(&alMsg_, msgBus_->armorLoaderQueue);
+        notify(&abMsg_, msgBus_->armorBoosterQueue);
     }
-    notify(&gMsg_, msgBus_->gimbalQueue);
-    notify(&cMsg_, msgBus_->chassisQueue);
-    notify(&alMsg_, msgBus_->armorLoaderQueue);
-    notify(&abMsg_, msgBus_->armorBoosterQueue);
 }
+
 template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::notify(Msg *_msg, QueueHandle_t _queue)
 {
     xQueueSend(_queue, _msg, 0);

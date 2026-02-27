@@ -55,11 +55,11 @@ public:
     {
         DualStage_u<float> delArc = {};
 
-        eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
-        eIA.Pitch = cIA.Pitch;
-        eIA.SecondYaw = cIA.SecondYaw;
+        eIA_s.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA_s.Pitch = cIA_s.Pitch;
+        eIA_s.SecondYaw = cIA_s.SecondYaw;
 
-        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+        eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
 
         for (uint8_t i = 0; i < 3; i++) {
             delArc._[i] = PINYMOTOR::getMinorArc(eIA._[i], cIA._[i]);
@@ -72,8 +72,8 @@ public:
             maxPatCount = MAX_PAT_CNT;
         SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
-        eMA.Pitch = PINYMOTOR::rangeMap((0.4f * cos(omiga * patrolCnt)) - 0.1f);
-        eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
+        eMA_s.Pitch = PINYMOTOR::rangeMap((0.4f * cos(omiga * patrolCnt)) - 0.1f);
+        eMA_s.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
 
         gimbal_->ctrl(eMA, patPosPid_, patVelPid_);
     }
@@ -115,11 +115,18 @@ private:
     float omiga = 2 * PI / PERIOD / PAT_FREQ; //rad/s
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
-    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
-    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
-    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
 
-    DualStagePtr_u<PositionalPid> patPosPid_;
-    DualStagePtr_u<PositionalPid> patVelPid_;
+    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
+    DualStage_s<float> &cIA_s = this->gimbal_->curImuAng_.Gim_s;
+
+    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
+    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
+
+    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &eIA_s = this->gimbal_->expImuAng_.Gim_s;
+
+    DualStage_u<PositionalPid *> patPosPid_;
+    DualStage_u<PositionalPid *> patVelPid_;
 };
 } // namespace GIMBAL

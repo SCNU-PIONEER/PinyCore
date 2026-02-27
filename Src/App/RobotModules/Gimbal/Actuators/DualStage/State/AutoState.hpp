@@ -50,27 +50,27 @@ public:
     //auto下视觉进行控制,此时只控小yaw,转动范围不应该超出小yaw范围，
     void run() final
     {
-        DualStage_u<float> delArc = {};
+        DualStage_s<float> delArc = {};
 
-        eIA.Pitch = vision->v2eData().targetPitch;
-        eIA.SecondYaw = vision->v2eData().targetYaw;
+        eIA_s.Pitch = vision->v2eData().targetPitch;
+        eIA_s.SecondYaw = vision->v2eData().targetYaw;
         // eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
 
-        if (eIA.SecondYaw >= SECOND_YAW_MAX_ANG || eIA.SecondYaw <= SECOND_YAW_MIN_ANG) {
+        if (eIA_s.SecondYaw >= SECOND_YAW_MAX_ANG || eIA_s.SecondYaw <= SECOND_YAW_MIN_ANG) {
             gimbal_->isVisionAngOver_ = true; //视觉角度超出小yaw范围，停止控制
         } else {
             gimbal_->isVisionAngOver_ = false;
-            eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-            eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
-            eIA.SecondYaw = PINYMOTOR::clampArc(eIA.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+            eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+            eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
+            eIA_s.SecondYaw = PINYMOTOR::clampArc(eIA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
 
-            delArc.Pitch = PINYMOTOR::getMinorArc(eIA.Pitch, cIA.Pitch);
-            delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
-            delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
+            delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
+            delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
+            delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
 
-            eMA.Pitch = PINYMOTOR::rangeMap(cMA.Pitch + delArc.Pitch);
+            eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
             // eMA.FirstYaw = 0.f;
-            eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
+            eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
 
             gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
         }
@@ -106,11 +106,18 @@ private:
     DualStage *gimbal_;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
-    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
-    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
-    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
 
-    DualStagePtr_u<PositionalPid> autoPosPid_;
-    DualStagePtr_u<PositionalPid> autoVelPid_;
+    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
+    DualStage_s<float> &cIA_s = this->gimbal_->curImuAng_.Gim_s;
+
+    DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
+    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
+
+    DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
+    DualStage_s<float> &eIA_s = this->gimbal_->expImuAng_.Gim_s;
+
+    DualStage_u<PositionalPid *> autoPosPid_;
+    DualStage_u<PositionalPid *> autoVelPid_;
 };
 } // namespace GIMBAL

@@ -24,22 +24,15 @@
 namespace CHASSIS {
 
 //以下两个模板专为舵向电机使用(控制较为复杂)
-template <typename T> union SwervePtr_u {
-    struct {
-        T *RF;
-        T *LF;
-        T *LB;
-        T *RB;
-    };
-    T *_[4];
+template <typename T> struct Swerve_s {
+    T RF;
+    T LF;
+    T LB;
+    T RB;
 };
+
 template <typename T> union Swerve_u {
-    struct {
-        T RF;
-        T LF;
-        T LB;
-        T RB;
-    };
+    Swerve_s<T> Chas_s;
     T _[4];
 };
 
@@ -48,7 +41,7 @@ union Speed_u {
         float vx; // m/s
         float vy; // m/s
         float wz; // rad/s
-    };
+    } Speed;
     float _[3];
 };
 union WheelsSpeed_u {
@@ -57,7 +50,7 @@ union WheelsSpeed_u {
         float M_LF; // motor of the left front
         float M_LB; // motor of the left back
         float M_RB; // motor of the right back
-    };
+    } Wspeed;
     float _[4]; // rad/s
 };
 //RF 1 ,LF 2 ,LB 3 ,RB 4
@@ -72,7 +65,7 @@ union Motors_u {
         PINYMOTOR::IMotor *S_LF;
         PINYMOTOR::IMotor *S_LB;
         PINYMOTOR::IMotor *S_RB;
-    };
+    } Motor;
     PINYMOTOR::IMotor *_[8];
 };
 
@@ -171,15 +164,15 @@ private:
     canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
 
     //舵轮位置环
-    SwervePtr_u<PositionalPid> swervePosPid_ = {};
+    Swerve_u<PositionalPid *> swervePosPid_ = {};
     //舵轮速度环
-    SwervePtr_u<PositionalPid> swerveVelPid_ = {};
+    Swerve_u<PositionalPid *> swerveVelPid_ = {};
     //舵轮输入滤波器
     FILTER::IIR3 swerveFilterInput_[4];
     //舵轮输出滤波器
-    SwervePtr_u<FILTER::LPF> swerveFilterOutput_ = {};
+    Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};
     //轮速度环
-    SwervePtr_u<PositionalPid> wheelVelPid_ = {};
+    Swerve_u<PositionalPid *> wheelVelPid_ = {};
 };
 
 } // namespace CHASSIS

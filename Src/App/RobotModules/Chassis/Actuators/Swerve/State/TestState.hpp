@@ -10,10 +10,7 @@
 namespace CHASSIS {
 class TestState : public FSMState<FSMState_e> {
 public:
-    TestState(Swerve *_chassis)
-            : FSMState<FSMState_e>(FSMState_e::TEST), chassis_(_chassis)
-    {
-    }
+    TestState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::TEST), chassis_(_chassis) {}
 
     void enter() final { LOG::info("ChassisTest", " enter"); }
 
@@ -21,7 +18,7 @@ public:
     {
         Speed_u ref;
 
-        ref.vx = 0.5f;
+        ref.Speed.vx = 0.5f;
         chassis_->ctrl(ref);
     }
 

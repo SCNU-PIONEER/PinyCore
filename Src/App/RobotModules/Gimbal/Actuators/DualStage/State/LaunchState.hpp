@@ -39,9 +39,9 @@ public:
             lauPosPid_._[i] = &gLauPosPid[i];
             lauVelPid_._[i] = &gLauVelPid[i];
         }
-        launchStep.Pitch = PITCH_LAUNCH_STEP;
-        launchStep.FirstYaw = FIRST_YAW_LAUNCH_STEP;
-        launchStep.SecondYaw = SECOND_YAW_LAUNCH_STEP;
+        launchStep.Gim_s.Pitch = PITCH_LAUNCH_STEP;
+        launchStep.Gim_s.FirstYaw = FIRST_YAW_LAUNCH_STEP;
+        launchStep.Gim_s.SecondYaw = SECOND_YAW_LAUNCH_STEP;
     }
 
     void enter() final
@@ -58,9 +58,9 @@ public:
         // determine if the target position (0) has been reached
         launchTotalTime_++;
 
-        if (std::fabs(PINYMOTOR::getMinorArc(0, cMA.Pitch)) < PITCH_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, cMA.FirstYaw)) < YAW_LAUNCH_ANG_DEADBAND &&
-            std::fabs(PINYMOTOR::getMinorArc(0, cMA.SecondYaw)) < YAW_LAUNCH_ANG_DEADBAND) {
+        if (std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.Pitch)) < PITCH_LAUNCH_ANG_DEADBAND &&
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.FirstYaw)) < YAW_LAUNCH_ANG_DEADBAND &&
+            std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.SecondYaw)) < YAW_LAUNCH_ANG_DEADBAND) {
             launchFinishTime_++;
         } else {
             launchFinishTime_ = 0;
@@ -100,11 +100,14 @@ private:
 
     DualStage_u<float> launchStep;
 
-    DualStagePtr_u<PositionalPid> lauPosPid_;
-    DualStagePtr_u<PositionalPid> lauVelPid_;
+    DualStage_u<PositionalPid *> lauPosPid_;
+    DualStage_u<PositionalPid *> lauVelPid_;
 
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
+    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
+
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
+    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
 
     uint16_t launchTotalTime_ = 0; // ms
     uint16_t launchFinishTime_ = 0;

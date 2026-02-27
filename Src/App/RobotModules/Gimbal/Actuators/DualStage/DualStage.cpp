@@ -58,9 +58,9 @@ DualStage::DualStage()
         gimbalFilterOutput_._[i] = &gimbalFilterOutput[i];
     }
 
-    isGimbalResverse.Pitch = DualStage::PITCH_REVERSE;
-    isGimbalResverse.FirstYaw = DualStage::FIRST_YAW_REVERSE;
-    isGimbalResverse.SecondYaw = DualStage::SECOND_YAW_REVERSE;
+    isGimbalResverse.Gim_s.Pitch = DualStage::PITCH_REVERSE;
+    isGimbalResverse.Gim_s.FirstYaw = DualStage::FIRST_YAW_REVERSE;
+    isGimbalResverse.Gim_s.SecondYaw = DualStage::SECOND_YAW_REVERSE;
 
     InitConfig_s pitchDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -72,9 +72,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
-    motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
-    LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
+    motors_.Gim_s.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
+    motors_.Gim_s.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
+    LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Gim_s.Pitch->data().zeroAng);
 
     InitConfig_s firstYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
@@ -86,9 +86,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
-    motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
-    LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
+    motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
+    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
+    LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -100,9 +100,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
-    motors_.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
-    motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
-    LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);
+    motors_.Gim_s.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
+    motors_.Gim_s.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
+    LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.Gim_s.SecondYaw->data().zeroAng);
 
     this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(this));
     this->stateFactory_.addState(FSMState_e::LAUNCH, std::make_unique<LaunchState>(this));
@@ -138,9 +138,9 @@ void DualStage::update(void *_param)
         curMotorAng_._[i] = motors_._[i]->posNorm(); // 0~2*pi
     }
     //ins -pi~pi
-    curImuAng_.Pitch = insData_.pitch;
-    curImuAng_.SecondYaw = insData_.yaw; //云台imu在小yaw上
-    curImuAng_.FirstYaw = getMinorArc(curImuAng_.SecondYaw, rangeConversion(curMotorAng_.SecondYaw));
+    curImuAng_.Gim_s.Pitch = insData_.pitch;
+    curImuAng_.Gim_s.SecondYaw = insData_.yaw; //云台imu在小yaw上
+    curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
     compensateImuAngle();
 
     loadChassisMsg(_param);
@@ -183,7 +183,7 @@ void DualStage::loadChassisMsg(void *_param)
     chassisCtrlTxPacket_.setData().vy = cmsg.vy;
     chassisCtrlTxPacket_.setData().wz = cmsg.wz;
 #endif
-    chassisCtrlTxPacket_.setData().deltaYaw = motors_.FirstYaw->posNorm();
+    chassisCtrlTxPacket_.setData().deltaYaw = motors_.Gim_s.FirstYaw->posNorm();
     chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(nav->navToEData().posture);
 }
 
@@ -212,7 +212,7 @@ void DualStage::sendVisionData()
 void DualStage::sendNavData()
 { //nav send
     nav->ecToNavData().pitch = insData_.pitch;
-    nav->ecToNavData().yaw = motors_.FirstYaw->posNorm();
+    nav->ecToNavData().yaw = motors_.Gim_s.FirstYaw->posNorm();
 
     nav->ecToNavData().navHPstate = refereeRxPacket_.data().HP;
     nav->ecToNavData().gameTime = refereeRxPacket_.data().gameTime;
@@ -224,17 +224,17 @@ void DualStage::compensateImuAngle()
     float tempComAng;
     if (this->isConfirmYawZero_) {
         //控制大yaw
-        this->curImuAng_.SecondYaw = getMinorArc(this->curImuAng_.SecondYaw, -this->constDeltaYawArc_);
-        this->curImuAng_.FirstYaw = getMinorArc(this->curImuAng_.FirstYaw, -this->constDeltaYawArc_);
+        this->curImuAng_.Gim_s.SecondYaw = getMinorArc(this->curImuAng_.Gim_s.SecondYaw, -this->constDeltaYawArc_);
+        this->curImuAng_.Gim_s.FirstYaw = getMinorArc(this->curImuAng_.Gim_s.FirstYaw, -this->constDeltaYawArc_);
         //与gimbal类保持相同
-        this->ctrlYawAng_ = this->curImuAng_.FirstYaw;
+        this->ctrlYawAng_ = this->curImuAng_.Gim_s.FirstYaw;
     } else {
         // confirm zero
-        if (motors_.FirstYaw->posNorm() != 0.f && motors_.SecondYaw->posNorm() != 0.f) {
+        if (motors_.Gim_s.SecondYaw->posNorm() != 0.f && motors_.Gim_s.FirstYaw->posNorm() != 0.f) {
             // TODO: prefer to globalState
             /*实际在获取上电后imu确定的坐标系与车体坐标系正方向的差角,当前imu在小yaw上.
             小yaw+大yaw=imu坐标系与车体坐标系正方向的差角*/
-            tempComAng = motors_.SecondYaw->posNorm() + motors_.FirstYaw->posNorm();
+            tempComAng = motors_.Gim_s.SecondYaw->posNorm() + motors_.Gim_s.FirstYaw->posNorm();
             //0~2pi
             tempComAng = PINYMOTOR::rangeMap(tempComAng);
             this->constDeltaYawArc_ = FIRST_YAW_REVERSE ? getMinorArc(0.f, tempComAng) : getMinorArc(tempComAng, 0.f);
@@ -247,8 +247,8 @@ void DualStage::compensateImuAngle()
 
 void DualStage::updateBaseYaw() {}
 
-void DualStage::ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _angPID,
-                     DualStagePtr_u<PositionalPid> _velPID)
+void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID,
+                     DualStage_u<PositionalPid *> _velPID)
 {
     float del[3], vel[3], torq[3];
     for (uint8_t i = 0; i < 3; i++) {
@@ -262,8 +262,8 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStagePtr_u<PositionalPid> _ang
     }
 }
 
-void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStagePtr_u<PositionalPid> _angPID,
-                     DualStagePtr_u<PositionalPid> _velPID)
+void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStage_u<PositionalPid *> _angPID,
+                     DualStage_u<PositionalPid *> _velPID)
 {
     float del[3], vel[3], torq[3];
     for (uint8_t i = 0; i < 3; i++) {

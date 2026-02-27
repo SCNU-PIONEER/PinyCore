@@ -24,16 +24,18 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
+        ref.Speed.vx = std::fmax(chassis_->getSpeed().Speed.vx - ACC,
+                                 std::fmin(chassis_->msg.vx, chassis_->getSpeed().Speed.vx + ACC));
 
-        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
+        ref.Speed.vy = std::fmax(chassis_->getSpeed().Speed.vy - ACC,
+                                 std::fmin(chassis_->msg.vy, chassis_->getSpeed().Speed.vy + ACC));
         // ref.wz = getSpinVel(spinCnt_++);
         if (spinCnt_ + 5 >= MAX_SPIN_CNT)
             maxSpinCount = 0;
         else if (spinCnt_ - 5 <= 0)
             maxSpinCount = MAX_SPIN_CNT;
         SMOOTH::slopeFollowing(&maxSpinCount, &spinCnt_, 1.f);
-        ref.wz =   NORMAL_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
+        ref.Speed.wz = NORMAL_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
         chassis_->ctrl(ref);
     }
 
