@@ -44,6 +44,13 @@ void ShooterCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
     Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
 }
 
+void RefereeRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+    });
+    LOG::info("RefereeRxPacket", " Receive cb registered, uId:0x%hx", uid());
+}
 
 DualStage::DualStage()
 {
@@ -134,13 +141,27 @@ void DualStage::update(void *_param)
     curImuAng_.Pitch = insData_.pitch;
     curImuAng_.SecondYaw = insData_.yaw; //云台imu在小yaw上
     curImuAng_.FirstYaw = getMinorArc(curImuAng_.SecondYaw, rangeConversion(curMotorAng_.SecondYaw));
-
     compensateImuAngle();
 
+    loadChassisMsg(_param);
+    loadShooterMsg(_param);
+
+    sendVisionData();
+    sendNavData();
+
+    //与云台控制无关，debug使用
+    memcpy(&debug.visionControl, &vision->v2eData().control, sizeof(bool));
+    memcpy(&debug.visionFire, &vision->v2eData().fire, sizeof(bool));
+    memcpy(&debug.visionTargetYaw, &vision->v2eData().targetYaw, sizeof(float));
+
+    this->stateFactory_.update();
+}
+
+void DualStage::loadChassisMsg(void *_param)
+{
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) == pdTRUE) {
     };
     chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
-
     if (xQueueReceive((((MsgBus_s *)_param)->navigationQueue), &nmsg, 0) == pdTRUE) {
     };
 #if APP_USE_NAV
@@ -155,7 +176,6 @@ void DualStage::update(void *_param)
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
         chassisCtrlTxPacket_.setData().vy = cmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz;
-
         nmsg = {};
     }
 #else
@@ -165,30 +185,38 @@ void DualStage::update(void *_param)
 #endif
     chassisCtrlTxPacket_.setData().deltaYaw = motors_.FirstYaw->posNorm();
     chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(nav->navToEData().posture);
+}
 
+void DualStage::loadShooterMsg(void *_param)
+{
     ArmorLoaderMsg_s almsg{};
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &almsg, 0) == pdTRUE) {
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
-
     shooterCtrlTxPacket_.setData().fire &= (vision->v2eData().control) ? vision->v2eData().fire : true;
+}
 
-    // vision send
+void DualStage::sendVisionData()
+{ // vision send
     vision->eToVData().roll = insData_.roll;
     vision->eToVData().pitch = insData_.pitch;
     vision->eToVData().yaw = insData_.yaw;
     vision->eToVData().timestamp = xTaskGetTickCount();
+    //装裁判系统数据
+    vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);
+    vision->eToVData().gameTime = refereeRxPacket_.data().gameTime;
+    vision->eToVData().isPlay = refereeRxPacket_.data().isPlay;
+}
 
-    //nav send
+void DualStage::sendNavData()
+{ //nav send
     nav->ecToNavData().pitch = insData_.pitch;
     nav->ecToNavData().yaw = motors_.FirstYaw->posNorm();
-    //与云台控制无关，debug使用
-    memcpy(&debug.visionControl, &vision->v2eData().control, sizeof(bool));
-    memcpy(&debug.visionFire, &vision->v2eData().fire, sizeof(bool));
-    memcpy(&debug.visionTargetYaw, &vision->v2eData().targetYaw, sizeof(float));
 
-    this->stateFactory_.update();
+    nav->ecToNavData().navHPstate = refereeRxPacket_.data().HP;
+    nav->ecToNavData().gameTime = refereeRxPacket_.data().gameTime;
+    // nav->ecToNavData().gameProgress;
 }
 
 void DualStage::compensateImuAngle()

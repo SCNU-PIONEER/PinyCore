@@ -3,6 +3,7 @@
 #include "Gimbal.hpp"
 
 #include "IMotor.hpp"
+#include "RefereeProt.hpp"
 #include "Vision.hpp"
 #include "Nav.hpp"
 #include "LPF.hpp"
@@ -45,6 +46,16 @@ static inline float rangeConversion(float _ang)
     return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
 };
 
+//红1机器人ID 为 1，蓝1 机器人 ID 为 101
+inline bool isColor(float _robotId)
+{
+    if (_robotId < 100) {
+        return 1; // 红色
+    } else {
+        return 0; // 蓝色
+    }
+}
+
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     friend class DualStage;
     // ChassisCtrlTxPacket() : TxPacket(200.f) {}
@@ -56,6 +67,13 @@ class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> 
     // ShooterCtrlTxPacket() : TxPacket(200.f) {}
     void transmit(uint8_t *_buf, uint16_t _len) final;
 };
+
+class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
+    friend class DualStage;
+    RefereeRxPacket() { registerCallback(); }
+    void registerCallback() final;
+};
+
 
 /**
  * @brief 双级yaw轴,大小yaw.
@@ -113,12 +131,18 @@ protected:
     void compensateImuAngle();
     void updateBaseYaw();
 
+    void loadChassisMsg(void *_param);
+    void loadShooterMsg(void *_param);
+    void sendVisionData();
+    void sendNavData();
+
 private:
     ChassisMsg_s cmsg{};
     NavMsg_s nmsg{};
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_;
     ShooterCtrlTxPacket shooterCtrlTxPacket_;
+    RefereeRxPacket refereeRxPacket_; //裁判系统
 
     DualStagePtr_u<FILTER::LPF> gimbalFilterOutput_; //输出滤波
     DualStagePtr_u<PINYMOTOR::IMotor> motors_;       //电机

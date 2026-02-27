@@ -3,6 +3,7 @@
 
 #include "IMotor.hpp"
 #include "INS.hpp"
+#include "MsgImpl.hpp"
 #include "Pid.hpp"
 #include "PidBasic.hpp"
 #include "Referee.hpp"
@@ -75,18 +76,6 @@ union Motors_u {
     PINYMOTOR::IMotor *_[8];
 };
 
-//红1机器人ID 为 1，蓝1 机器人 ID 为 101
-inline bool isColor()
-{
-    REFEREE::RefereeProt_s &refereeData = referee->receiver.getRefereeData();
-    if (refereeData.gameRobotStatus.robotId < 100) {
-        // 红色
-        return 1;
-    } else {
-        // 蓝色
-        return 0;
-    }
-}
 
 class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
     friend class Swerve;
@@ -122,7 +111,7 @@ public:
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
 
-    void loadRefereeData();
+
     void loadDeltaYaw();
     bool isGimbalReset() const;
 
@@ -145,10 +134,14 @@ protected:
     */
     WheelsSpeed_u reverse(const Speed_u &_speed);
 
+    void loadRefereeData(void *_param);
+
 private:
     Motors_u motors_;
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
+
+    RefereeMsg_s refereeMsg_;
 
     WheelsSpeed_u refWSpeed_; //期望轮速rad/s
 

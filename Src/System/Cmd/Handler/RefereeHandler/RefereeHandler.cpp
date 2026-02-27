@@ -26,7 +26,7 @@ void RefereeHandler::handle()
     msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
     msg_.currentHP = rx.getRefereeData().gameRobotStatus.currentHP;
     msg_.gameTime = rx.getRefereeData().gameStatus.stageRemainTime;
-    msg_.isPlay = rx.getRefereeData().gameStatus.gameType == 0x01;
+    msg_.isPlay = rx.getRefereeData().gameStatus.gameProgress == 0x04;
     msg_.rxFreq = rx.getRxFreq();
 
     notify(&msg_, msgBus_->refereeQueue);

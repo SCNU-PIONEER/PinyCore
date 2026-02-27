@@ -151,6 +151,7 @@ void Swerve::update(void *_param)
 
     // TODO: yaw
     loadDeltaYaw();
+    loadRefereeData(_param);
 
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRadps;
@@ -163,6 +164,17 @@ void Swerve::update(void *_param)
     curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
 
     this->stateFactory_.update();
+}
+//向上板发送裁判系统数据
+void Swerve::loadRefereeData(void *_param)
+{
+    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg_, 0) == pdTRUE) {
+    };
+
+    refereeTxPacket_.setData().gameTime = refereeMsg_.gameTime;
+    refereeTxPacket_.setData().HP = refereeMsg_.currentHP;
+    refereeTxPacket_.setData().isPlay = refereeMsg_.isPlay;
+    refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
 }
 
 /**
