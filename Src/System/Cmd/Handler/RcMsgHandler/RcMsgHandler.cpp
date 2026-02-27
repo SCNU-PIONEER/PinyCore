@@ -82,10 +82,13 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
     // User-defined processing logic goes here ↓
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
         DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
+        (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
+        (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+        (void)rcData;
     }
     // User-defined processing logic goes here ↑
 }

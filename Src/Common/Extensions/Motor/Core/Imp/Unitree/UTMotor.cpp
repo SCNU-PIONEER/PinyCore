@@ -25,12 +25,10 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
-                 UART_HandleTypeDef *_huart)
+UTMotor::UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart)
         : IMotor(_name, _config)
         , uart_(_huart)
-        , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(
-                  sizeof(TransmitMsg_s)))
+        , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s)))
         , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
 
 {
@@ -39,9 +37,7 @@ UTMotor::UTMotor(const char _name[16], InitConfig_s _config,
     AUX_.rxQueue = xQueueCreate(4, sizeof(Feedback_s));
 
     /* send first frame to init dma reception */
-    __HAL_UART_ENABLE_IT(
-            reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle),
-            UART_IT_IDLE);
+    __HAL_UART_ENABLE_IT(reinterpret_cast<UART_HandleTypeDef *>(regInfo_.pComHandle), UART_IT_IDLE);
     uart_.receiveDma((uint8_t *)rxBuf_, sizeof(Feedback_s));
 }
 
@@ -57,23 +53,20 @@ uint16_t UTMotor::getReceiveId() const { return regInfo_.model.rxBaseId; }
 
 void UTMotor::registerRecvCallback()
 {
-    uart_.registerCallback(
-            [this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
-                // basic cb
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(AUX_.rxQueue, _huart->pRxBuffPtr,
-                                  &higherPriorityTaskWoken);
-            });
+    uart_.registerCallback([this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
+        // basic cb
+        (void)(_dataLength);
+        BaseType_t higherPriorityTaskWoken = pdFALSE;
+        xQueueSendFromISR(AUX_.rxQueue, _huart->pRxBuffPtr, &higherPriorityTaskWoken);
+    });
 }
 
-MotorTypeDef_e UTMotor::send(uint16_t _sendId, TransmitMsg_s *_txBuf,
-                             uint8_t _len)
+MotorTypeDef_e UTMotor::send(TransmitMsg_s *_txBuf, uint8_t _len)
 {
     if (this->checkSend()) {
         SET_485_1_DE_UP();
         memcpy(txBuf_, _txBuf, _len);
-        MotorTypeDef_e ret =
-                (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
+        MotorTypeDef_e ret = (MotorTypeDef_e)uart_.transmitDma((uint8_t *)txBuf_, _len);
         SET_485_1_DE_DOWN();
         return ret;
     }
@@ -89,15 +82,12 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
         this->status_.error_ = static_cast<ErrorStatus_e>(fb->mode.status);
         this->data_.angLast = this->data_.rawAng;
         float noumenaAng = static_cast<float>(fb->fbk.pos) * B2C;
-        this->data_.rawAng = regInfo_.isReverse ? (2 * PI) - noumenaAng :
-                                                  noumenaAng;
+        this->data_.rawAng = regInfo_.isReverse ? (2 * PI) - noumenaAng : noumenaAng;
         float del = this->data_.rawAng - this->data_.zeroAng;
         this->data_.ang = del < 0 ? del + (2 * std::numbers::pi_v<float>) : del;
-        this->data_.multipCirAng +=
-                (this->data_.rawAng - this->data_.angLast) / this->rr();
+        this->data_.multipCirAng += (this->data_.rawAng - this->data_.angLast) / this->rr();
         this->data_.cirNum = this->data_.multipCirAng / (2 * PI);
-        this->data_.singleCirAng =
-                rangeMap(this->data_.multipCirAng, 0, (2 * PI));
+        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0, (2 * PI));
         float noumenaVel = ((float)fb->fbk.speed / 256) * (2 * PI);
         this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
@@ -111,7 +101,7 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
     return 0; //TODO: return check
 }
 
-void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
+void UTMotor::convert(TransmitMsg_s &_txBuf)
 {
     float multiplier = regInfo_.isReverse ? -1 : 1;
     float pDes = cmd_.pos * this->rr() * multiplier;
@@ -130,16 +120,15 @@ void UTMotor::convert(TransmitMsg_s &_txBuf, const Cmd_s &_cmd)
     _txBuf.comd.pos_des = static_cast<int32_t>(pDes / 6.2832f * 32768);
     _txBuf.comd.spd_des = static_cast<int16_t>(vDes / 6.2832f * 256);
     _txBuf.comd.tor_des = static_cast<int16_t>(tFF * 256);
-    _txBuf.CRC16 =
-            Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
+    _txBuf.CRC16 = Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
 }
 
 
 MotorTypeDef_e UTMotor::ctrl()
 {
     TransmitMsg_s txBuf{};
-    convert(txBuf, this->cmd_);
-    return send(regInfo_.model.txBaseId, &txBuf, sizeof(TransmitMsg_s));
+    convert(txBuf);
+    return send(&txBuf, sizeof(TransmitMsg_s));
 }
 
 void UTMotor::overrideReductionRatio(float _newReductionRatio)
@@ -147,8 +136,7 @@ void UTMotor::overrideReductionRatio(float _newReductionRatio)
     regInfo_.model.reductionRatio = _newReductionRatio;
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
-    LOG::info("UTMotor", " %s: you have changed reduction ratio to %f",
-              regInfo_.name, _newReductionRatio);
+    LOG::info("UTMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
 }
 
 MotorTypeDef_e UTMotor::update()
@@ -175,14 +163,14 @@ MotorTypeDef_e UTMotor::enable()
 {
     TransmitMsg_s txBuf{};
     this->cmd_.updateSW(true);
-    convert(txBuf, this->cmd_);
-    return send(ctrlId_, &txBuf, sizeof(TransmitMsg_s));
+    convert(txBuf);
+    return send(&txBuf, sizeof(TransmitMsg_s));
 }
 
 MotorTypeDef_e UTMotor::disable()
 {
     TransmitMsg_s txBuf{};
     this->cmd_.updateSW(false);
-    convert(txBuf, this->cmd_);
-    return send(ctrlId_, &txBuf, sizeof(TransmitMsg_s));
+    convert(txBuf);
+    return send(&txBuf, sizeof(TransmitMsg_s));
 }

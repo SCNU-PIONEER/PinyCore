@@ -17,11 +17,16 @@ void RefereeHandler::handle()
     rx.readRefereeData();
     rx.rxFreqCalc();
 
-    msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
-    msg_.shooterHeatLimit = rx.getRefereeData().gameRobotStatus.shooterHeatLimit;
+    msg_.robotId = rx.getRefereeData().gameRobotStatus.robotId;
+    msg_.remainHeat = rx.getRefereeData().gameRobotStatus.shooterHeatLimit -
+                      ((msg_.robotId % 100 == 1) ? rx.getRefereeData().powerHeatData.shooter_42mmBarrelHeat :
+                                                   rx.getRefereeData().powerHeatData.shooter_17mmBarrelHeat);
     msg_.chassisPowerLimit = rx.getRefereeData().gameRobotStatus.chassisPowerLimit;
     msg_.chassisPowerBuffer = rx.getRefereeData().powerHeatData.chassisPowerBuffer;
+    msg_.bulletSpeed = rx.getRefereeData().shootData.bulletSpeed;
     msg_.currentHP = rx.getRefereeData().gameRobotStatus.currentHP;
+    msg_.gameTime = rx.getRefereeData().gameStatus.stageRemainTime;
+    msg_.isPlay = rx.getRefereeData().gameStatus.gameType == 0x01;
     msg_.rxFreq = rx.getRxFreq();
 
     notify(&msg_, msgBus_->refereeQueue);

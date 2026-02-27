@@ -7,8 +7,6 @@
 using namespace PINYMOTOR;
 using namespace MTMOTOR;
 
-static constexpr char TAG[] = "MTMotor";
-
 Status_s &Status_s::operator=(const Status_s &_other)
 {
     if (this != &_other) {
@@ -30,10 +28,7 @@ MTMotor::MTMotor(const char _name[16], InitConfig_s _config)
 
 MTMotor::~MTMotor() { this->cancelMotor(); }
 
-void MTMotor::updateCtrlMode()
-{
-    ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId;
-}
+void MTMotor::updateCtrlMode() { ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId; }
 
 void MTMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
@@ -41,12 +36,10 @@ bool MTMotor::isEnable() const { return this->cmd_.SW; }
 
 void MTMotor::registerRecvCallback(uint16_t _rxId)
 {
-    Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
-            [this](const uint8_t *_rxBuf) {
-                xMessageBufferSendFromISR(this->rxStream_, (void *)_rxBuf, 8,
-                                          nullptr);
-            });
+    Can::instance().registerCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+                                     [this](const uint8_t *_rxBuf) {
+                                         xMessageBufferSendFromISR(this->rxStream_, (void *)_rxBuf, 8, nullptr);
+                                     });
 }
 
 MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
@@ -61,8 +54,7 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
 {
     Feedback_s fb = *(Feedback_s *)_rxBuf;
     data_.tempture = fb.temperature;
-    data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f :
-                                      static_cast<float>(fb.iq) * 0.01f;
+    data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f : static_cast<float>(fb.iq) * 0.01f;
     data_.torq = data_.curr * status_.kn;
     /* speed */
     float noumenaVel = deg2rad(static_cast<float>(fb.speed));
@@ -82,12 +74,10 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
 }
 
 
-MotorTypeDef_e MTMotor::send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf,
-                             uint8_t _len)
+MotorTypeDef_e MTMotor::send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, uint8_t _len)
 {
-    return Can::instance().transmitData(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
-            _txBuf.data(), _len);
+    return Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf.data(),
+                                        _len);
 }
 
 
@@ -129,9 +119,8 @@ void MTMotor::absPosCtrl(std::array<uint8_t, 8> &_txBuf)
     TransmitMsg_s data{};
     uint16_t rawSpeed = static_cast<uint16_t>(rad2deg(this->cmd_.vel));
     data.maxspeed = std::min(rawSpeed, this->status_.speedMax);
-    data.pos = regInfo_.isReverse ?
-                       -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
-                       static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
+    data.pos = regInfo_.isReverse ? -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
+                                    static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
     memcpy(_txBuf.data(), &data, 8);
 }
 
@@ -150,4 +139,11 @@ MotorTypeDef_e MTMotor::update()
     taskEXIT_CRITICAL();
 
     return ctrl();
+}
+
+void MTMotor::overrideReductionRatio(float _newReductionRatio)
+{
+    regInfo_.model.reductionRatio = _newReductionRatio;
+    status_.torqMax *= _newReductionRatio;
+    status_.kn *= _newReductionRatio;
 }

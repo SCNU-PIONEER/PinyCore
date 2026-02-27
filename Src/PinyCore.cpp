@@ -11,9 +11,6 @@ void PinyCore::bspInit()
     SEGGER_SYSVIEW_Conf();
 
     Can::instance().init();
-
-    /* we need lazy init firstly */
-    auto &usb = Usb::instance();
 }
 
 void PinyCore::coreInit()
