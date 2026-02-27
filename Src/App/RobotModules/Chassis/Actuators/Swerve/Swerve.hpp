@@ -123,7 +123,6 @@ public:
     void ctrl(const Speed_u &_refSpeed);
 
     void loadRefereeData();
-
     void loadDeltaYaw();
     bool isGimbalReset() const;
 
@@ -168,7 +167,12 @@ private:
     float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
 
     //舵轮零位角度，用于回正方向,rad
-    Swerve_u<float> SwerveZero = { 5.0083f, 4.95766449f, 6.122f, 1.35620451f };
+    Swerve_u<float> SwerveZero = { {
+            .RF = 5.0083f,
+            .LF = 4.95766449f,
+            .LB = 6.122f,
+            .RB = 1.35620451f,
+    } };
 
     canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
     canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };

@@ -176,7 +176,7 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     Speed_u speed;
 
     ///<这些数组索引与模型对应即，0：LF，1：LB，2：RB，3：RF
-    float wheelVx[4], wheelVy[4], wheelComVel[4], sinAng[4], cosAng[4];
+    float wheelComVel[4], sinAng[4], cosAng[4];
 
     float rX = W_FRONT_REAR / 2.f; ///<前后轮距的一半
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
@@ -227,7 +227,6 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
 
     float rX = W_FRONT_REAR / 2.f; ///<前后轮距的一半
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
-    float carRadius = sqrtf((rX * rX) + (rY * rY));
 
     //LF:0
     wheelVx[0] = _speed.vx - _speed.wz * rY;
@@ -292,7 +291,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     Speed_u refSpeed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
                          .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
                          .wz = wz };
-    WheelsSpeed_u refWSpeed = reverse(_refSpeed);
+    WheelsSpeed_u refWSpeed = reverse(refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
         tempDir._[i] = expDir._[i];
@@ -302,7 +301,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
-        tempDir._[i] < 0 ? 0 : tempDir._[i];
+        tempDir._[i] = tempDir._[i] < 0 ? 0 : tempDir._[i];
 
         refWSpeed_ = refWSpeed; //debug
 
