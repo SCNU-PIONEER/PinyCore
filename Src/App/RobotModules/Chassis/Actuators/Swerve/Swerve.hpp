@@ -5,8 +5,10 @@
 #include "INS.hpp"
 #include "Pid.hpp"
 #include "PidBasic.hpp"
+#include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
+#include "Bsp_can.hpp"
 #include "dsp/fast_math_functions.h"
 #include "TopicRouter.hpp"
 
@@ -73,11 +75,30 @@ union Motors_u {
     PINYMOTOR::IMotor *_[8];
 };
 
+//红1机器人ID 为 1，蓝1 机器人 ID 为 101
+inline bool isColor()
+{
+    REFEREE::RefereeProt_s &refereeData = referee->receiver.getRefereeData();
+    if (refereeData.gameRobotStatus.robotId < 100) {
+        // 红色
+        return 1;
+    } else {
+        // 蓝色
+        return 0;
+    }
+}
+
 class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
     friend class Swerve;
     // TODO: slightly cumbersome like this or CRTP
     ChassisCtrlRxPacket() { registerCallback(); }
     void registerCallback() final;
+};
+
+class RefereeCtrlTxPacket : public COMM::TxPacket<COMM::RefereePacketType> {
+public:
+    RefereeCtrlTxPacket(float _txFreq) : COMM::TxPacket<COMM::RefereePacketType>(_txFreq) {}
+    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
 };
 
 //喵板
@@ -100,6 +121,8 @@ public:
     void enter();
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
+
+    void loadRefereeData();
 
     void loadDeltaYaw();
     bool isGimbalReset() const;
@@ -134,14 +157,14 @@ private:
     Swerve_u<float> expDir; //舵轮期望方向角
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
-    REFEREE::SentryCmd_s sentryCmd; //哨兵指令
+    RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
+    REFEREE::SentryCmd_s sentryCmd;                //哨兵指令
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};
 
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;
-
     float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
 
     //舵轮零位角度，用于回正方向,rad
@@ -154,12 +177,10 @@ private:
     SwervePtr_u<PositionalPid> swervePosPid_ = {};
     //舵轮速度环
     SwervePtr_u<PositionalPid> swerveVelPid_ = {};
-
     //舵轮输入滤波器
     FILTER::IIR3 swerveFilterInput_[4];
     //舵轮输出滤波器
     SwervePtr_u<FILTER::LPF> swerveFilterOutput_ = {};
-
     //轮速度环
     SwervePtr_u<PositionalPid> wheelVelPid_ = {};
 };

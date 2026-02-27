@@ -130,4 +130,45 @@ public:
     }
 };
 
+class RefereePacketType {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x23;
+    struct ProtoData_s {
+        uint16_t HP;
+        uint16_t gameTime;
+        uint8_t robotId;
+        uint8_t isPlay;
+        uint32_t reserved;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            uint16_t HP : 10;
+            uint16_t gameTime : 10;
+            uint8_t robotId : 8;
+            uint8_t isPlay : 1;
+            uint32_t reserved : 3;
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        Data_u::Data_s &d = _data.content;
+        d.HP = _protoData.HP;
+        d.gameTime = _protoData.gameTime;
+        d.robotId = _protoData.robotId;
+        d.isPlay = _protoData.isPlay;
+        d.reserved = 0;
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.HP = _data.content.HP;
+        _protoData.gameTime = _data.content.gameTime;
+        _protoData.robotId = _data.content.robotId;
+        _protoData.isPlay = _data.content.isPlay;
+    }
+};
+
 } // namespace COMM
