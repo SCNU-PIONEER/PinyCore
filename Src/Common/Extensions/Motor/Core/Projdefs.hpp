@@ -77,7 +77,7 @@ struct Data_s {
     float angLast; // 上一时刻的相对零点的角度 rad
 
     float singleCirAng; // 相对零点的输出轴侧单圈值 rad
-    float multipCirAng; // 设置零点后输出轴侧多圈值rad
+    float multipCirAng; // 设置零点后输出轴侧多圈值 rad
 
     float cirNum; // 相对零点的圈数
 

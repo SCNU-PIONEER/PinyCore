@@ -39,9 +39,12 @@ public:
 protected:
     LKMotorRS485(const char _name[16], InitConfig_s _config);
 
-    void registerRecvCallback(uint16_t _rxId);
+    void registerRecvCallback();
     void updateCtrlMode(const WorkMode_e _mode);
-    void overrideReductionRatio(float _newReductionRatio) final {}; // TODO: waiting for coding
+    void overrideReductionRatio(float _newReductionRatio) final
+    {
+        UNUSED(_newReductionRatio);
+    }; // TODO: waiting for coding
 
     template <uint8_t len> MotorTypeDef_e send(const TransmitMsg_s<len> *_txBuf, uint8_t _len);
     MotorTypeDef_e txConvert(const uint8_t _cmdid);

@@ -43,7 +43,7 @@ LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config)
         return STM_OK;
     });
 
-    registerRecvCallback(this->regInfo_.offsetId);
+    registerRecvCallback();
     updateCtrlMode(this->regInfo_.workMode);
     AUX_.rxQueue = xQueueCreate(4, RXBUF_LEN);
     uart_.recvDmaInit(rxBuf_, RXBUF_LEN);
@@ -53,21 +53,19 @@ LKMotorRS485::~LKMotorRS485() { this->cancelMotor(); }
 
 bool LKMotorRS485::isEnable() const { return this->cmd_.SW; }
 
-void LKMotorRS485::registerRecvCallback(uint16_t _rxId)
+void LKMotorRS485::registerRecvCallback()
 {
     uart_.registerCallback([this](UART_HandleTypeDef *_huart, uint16_t _dataLength) {
+        UNUSED(_dataLength);
         xQueueSendFromISR(AUX_.rxQueue, _huart->pRxBuffPtr, nullptr);
     });
 }
 
-uint8_t rxbuf[20]{};
 MotorTypeDef_e LKMotorRS485::parse()
 {
     if (this->rxBuf_[0] != 0x3E) {
         return STM_FAIL;
     }
-
-    memcpy(rxbuf, this->rxBuf_, RXBUF_LEN);
 
     MotorTypeDef_e rslt = STM_OK;
 
@@ -85,11 +83,6 @@ MotorTypeDef_e LKMotorRS485::parse()
         rslt |= parseState2();
         break;
     case 0x80: // disable command has no response, just return OK
-        if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
-            rslt |= readSinglePos(); // 第一次上电，读取当前位置，避免 angle last 为空
-        }
-        uart_.receiveDma(rxBuf_, RXBUF_LEN);
-        return rslt;
     case 0x88: // enable command has no response, just return OK
     case 0x81: // stop command has no response, just return OK
     case 0x93: // clear pos circle command has no response, just return OK
@@ -222,25 +215,33 @@ MotorTypeDef_e LKMotorRS485::parseState2()
     data_.ang = data_.rawAng;
 
     /*
+     * 电机内部的单圈认定范围是[-PI, PI], 如果超过范围，会将当前角度设置为0
+     */
+    data_.singleCirAng = rangeMap(data_.ang, -PI, PI);
+
+    /* 
+     * 当电机断电，状态为离线状态，上电第一刻先赋值 angLast
+     */
+    if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
+        this->globalState = GlobalState_e::ONLINE;
+        data_.angLast = data_.singleCirAng;
+    }
+
+    /*
      * 在零度附近编码器会在0和6.28之间跳变，而多圈位置控制2是支持控制正负的，所以通过delta来判断编码器是否跨过零度，并计算圈数
      * 1. 当编码器从0跳变到6.28时，delta会大于PI，说明电机反向跨过零度，圈数减1，并且多圈角度等于编码器值减去2PI
      * 2. 当编码器从6.28跳变到0时，delta会小于-PI，说明电机正向跨过零度，圈数加1，并且多圈角度等于编码器值加上2PI
      * 3. 当编码器在零度附近跳变，多圈角通过抵消从而不会跳变
      */
-    float delta = data_.ang - data_.angLast;
+    float delta = data_.singleCirAng - data_.angLast;
     if (delta > PI) {
         data_.cirNum--;
     } else if (delta < -PI) {
         data_.cirNum++;
     }
-    data_.multipCirAng = data_.ang + (TWO_PI * data_.cirNum);
 
-    /*
-     * 电机内部的单圈认定范围是[-PI, PI], 如果超过范围，会将当前角度设置为0
-     */
-    data_.singleCirAng = rangeMap(data_.multipCirAng, -PI, PI);
-
-    data_.angLast = data_.ang;
+    data_.multipCirAng = data_.singleCirAng + (TWO_PI * data_.cirNum);
+    data_.angLast = data_.singleCirAng;
 
     return STM_OK;
 }
@@ -500,7 +501,7 @@ MotorTypeDef_e LKMotorRS485::incrementalPosCtrl2()
     uint8_t data[8];
     memcpy(data, &angleControl, 4);
     memcpy(data + 4, &maxSpeed, 4);
-    return txConvert<88>(0xA5, (uint8_t *)&data);
+    return txConvert<8>(0xA5, (uint8_t *)&data);
 }
 
 MotorTypeDef_e LKMotorRS485::readCtrlCmd(const ParamID_e _id)
