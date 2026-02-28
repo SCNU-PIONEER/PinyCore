@@ -6,6 +6,7 @@
 
 #ifndef PI
 #define PI std::numbers::pi_v<float>
+static constexpr float TWO_PI = 2.f * PI;
 #endif // !PI
 
 namespace PINYMOTOR {

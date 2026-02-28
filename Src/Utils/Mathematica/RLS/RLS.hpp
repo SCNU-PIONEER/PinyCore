@@ -13,7 +13,7 @@ public:
             , lamda_(_lamda)
     {
     }
-    void update(Matrix<rank, 1> _inputVector, float _outPut)
+    void update(const Matrix<rank, 1> &_inputVector, float _outPut)
     {
         inputVector_ = _inputVector;
         e_ = _outPut - (inputVector_.trans() * estVector_)(0, 0);
@@ -21,7 +21,9 @@ public:
         P_ = (P_ - K_ * inputVector_.trans() * P_) / lamda_;
         estVector_ += K_ * e_;
     }
-    Matrix<rank, 1> const &getEstVector() { return estVector_; }
+    const Matrix<rank, 1> &getEstVector() const { return estVector_; }
+
+    void setLamda(float _lamda) { lamda_ = _lamda; }
 
 private:
     Matrix<rank, 1> K_;
