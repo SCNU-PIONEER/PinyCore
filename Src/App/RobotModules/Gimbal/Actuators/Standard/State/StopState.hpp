@@ -7,15 +7,11 @@ namespace GIMBAL {
 
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Standard &_gimbal)
-            : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal)
-    {
-    }
+    StopState(Standard &_gimbal) : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal) {}
 
     void enter() final
     {
         gimbal_.loadResetState(false);
-
         LOG::info("GimbalStop", "enter");
     }
 
@@ -27,8 +23,8 @@ public:
     {
         using enum FSMState_e;
         switch (gimbal_.msg.state) {
-        case LAUNCH:
-            return LAUNCH;
+        case RUN:
+            return RUN;
         default:
             return STOP;
         }
