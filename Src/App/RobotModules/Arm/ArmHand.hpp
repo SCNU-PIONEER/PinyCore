@@ -1,11 +1,10 @@
 #pragma once
 
-#include "DM4310.hpp"
+#include "M3508.hpp"
 
 namespace ARM {
 
-enum class ClampLevel_e : uint8_t { ONE, TWO, THREE };
-enum class State_e : uint8_t { MOVING, FINISH, FAULT };
+enum class State_e : uint8_t { MOVING, CLAMP, FAULT, RELEASE };
 
 class Hand {
 public:
@@ -16,17 +15,11 @@ public:
     void enable();
 
 private:
-    template <typename T, typename U, typename V>
-    requires std::floating_point<T> constexpr bool
-    inRange(const T _x, const U _m1, const V _m2)
-    {
-        auto min = (_m1 < _m2) ? _m1 : _m2;
-        auto max = (_m1 < _m2) ? _m2 : _m1;
-        return (_x >= min && _x <= max);
-    }
+    static constexpr float MOVE_CURRENT = 0.05f;
+    static constexpr float CLAMP_CURRENT = 6.f;
+    static constexpr float SAFE_CURRENT = 8.f;
 
-private:
-    PINYMOTOR::DMMOTOR::DM4310 motor;
-    ClampLevel_e level;
+    PINYMOTOR::DJIMOTOR::M3508 motor;
+    State_e state = State_e::MOVING;
 };
 } // namespace ARM

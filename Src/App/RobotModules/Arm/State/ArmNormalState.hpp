@@ -57,6 +57,11 @@ public:
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
         }
+        if (arm_.msg.switch1) {
+            arm_.hand.clamp();
+        } else {
+            arm_.hand.release();
+        }
         arm_.motors.safety.setSpeed(1);
         arm_.motors.safety.setAllAngleLimit(arm_.target_joints.joints);
         arm_.motors.ctrl(arm_.target_joints.joints);
