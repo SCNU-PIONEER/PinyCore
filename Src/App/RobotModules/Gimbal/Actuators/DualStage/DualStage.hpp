@@ -86,6 +86,10 @@ public:
 
     static constexpr float ANGLE_JUMP_VALUE = 0.033169213f; // rad,现状为每圈只跳一次
 
+    static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
+    static constexpr float YAW_FRICTION = 0.00570616219f;
+    static constexpr float YAW_COULOMB = 0.0173312854f;
+
     DualStage();
 
     DualStageDebug_s debug{};
@@ -103,8 +107,9 @@ public:
     void loadResetState(bool _state);
 
     void ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
-    void ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStage_u<PositionalPid *> _angPID,
-              DualStage_u<PositionalPid *> _velPID);
+    void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
+                    DualStage_u<PositionalPid *> _velPID);
+    void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
 
     DualStage_u<PINYMOTOR::IMotor *> *motors() { return &motors_; }
     DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
@@ -129,6 +134,8 @@ protected:
     void sendNavData();
 
     void resetZeroPoint(); //大yaw跳齿
+
+    float calcYawTorq(float _vel, float _acc);
 
 private:
     ChassisMsg_s cmsg{};

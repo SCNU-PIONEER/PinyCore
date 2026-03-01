@@ -70,7 +70,7 @@ public:
             i = 0;
         }
         // ctrl (smooth)
-        gimbal_->ctrl(eMA, launchStep, lauPosPid_, lauVelPid_);
+        gimbal_->ctrlSmooth(eMA, launchStep, lauPosPid_, lauVelPid_);
     }
 
     void exit() final

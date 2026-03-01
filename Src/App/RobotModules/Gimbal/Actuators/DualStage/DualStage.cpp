@@ -268,16 +268,49 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angP
     }
 }
 
-void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<float> _vel, DualStage_u<PositionalPid *> _angPID,
-                     DualStage_u<PositionalPid *> _velPID)
+void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
+                           DualStage_u<PositionalPid *> _velPID)
 {
     float del[3], vel[3], torq[3];
     for (uint8_t i = 0; i < 3; i++) {
         del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
-        vel[i] = _angPID._[i]->calc(fmax(-_vel._[i], fmin(del[i], _vel._[i])), 0);
+        vel[i] = _angPID._[i]->calc(fmax(-_step._[i], fmin(del[i], _step._[i])), 0);
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
+}
+
+volatile float accDebug = 0;
+volatile float torqDebug = 0;
+volatile float velDebug = 0;
+void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos)
+{
+    float insYawDelArc = getMinorArc(_pos, ins().yaw);
+    float pos = rangeMap(motors_.Gim_s.SecondYaw->posNorm() + insYawDelArc);
+    float del = getMinorArc(pos, motors_.Gim_s.SecondYaw->posNorm());
+    float vel = _angPID->calc(del, 0);
+    velDebug = vel;
+    float acc =
+            _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(vision->v2eData().yawVel, insData_.body.gz);
+    accDebug = acc += vision->v2eData().yawAcc; // forward feedbac
+    float torq = calcYawTorq(insData_.body.gz, acc);
+    torqDebug = torq = std::clamp(torq, -DJIMOTOR::GM6020::TORQ_MAX, DJIMOTOR::GM6020::TORQ_MAX);
+    motors_.Gim_s.SecondYaw->cmdTorq(gimbalFilterOutput_.Gim_s.SecondYaw->process(torq));
+}
+
+float DualStage::calcYawTorq(float _vel, float _acc)
+{
+    static constexpr auto SIGN = [](float _v) {
+        if (_v > 0.f)
+            return 1.f;
+        else if (_v < 0.f)
+            return -1.f;
+        else
+            return 0.f;
+    };
+
+    float torq = (YAW_INERTIA * _acc) + (YAW_FRICTION * _vel) + (YAW_COULOMB * SIGN(_vel));
+    return torq;
 }
 
 void DualStage::loadResetState(bool _state) { chassisCtrlTxPacket_.setData().gimbalReset = _state; }
