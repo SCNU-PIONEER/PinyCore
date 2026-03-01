@@ -72,8 +72,8 @@ class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 1.48076534f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.12077522f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 2.17608452f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.30871105f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -83,6 +83,8 @@ public:
     static constexpr bool PITCH_REVERSE = true;
     static constexpr bool FIRST_YAW_REVERSE = false;
     static constexpr bool SECOND_YAW_REVERSE = true;
+
+    static constexpr float ANGLE_JUMP_VALUE = 0.033169213f; // rad,现状为每圈只跳一次
 
     DualStage();
 
@@ -125,6 +127,8 @@ protected:
     void loadShooterMsg(void *_param);
     void sendVisionData();
     void sendNavData();
+
+    void resetZeroPoint(); //大yaw跳齿
 
 private:
     ChassisMsg_s cmsg{};

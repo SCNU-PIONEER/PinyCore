@@ -142,8 +142,8 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
 
-    sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
-    referee->transmitter.sendData(0x0120, reinterpret_cast<uint8_t *>(&sentryCmd), sizeof(REFEREE::SentryCmd_s));
+    // sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
+    // referee->transmitter.sendData(0x0120, reinterpret_cast<uint8_t *>(&sentryCmd), sizeof(REFEREE::SentryCmd_s));
 #endif
 
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {

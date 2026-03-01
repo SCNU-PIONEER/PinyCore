@@ -245,6 +245,12 @@ void DualStage::compensateImuAngle()
     }
 }
 
+void DualStage::resetZeroPoint()
+{
+    float cirNum = (motors_.Gim_s.FirstYaw->data().cirNum);
+    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG + (cirNum * ANGLE_JUMP_VALUE));
+}
+
 void DualStage::updateBaseYaw() {}
 
 void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID,

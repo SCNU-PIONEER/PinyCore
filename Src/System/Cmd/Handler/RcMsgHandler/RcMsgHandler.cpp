@@ -118,7 +118,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (sl == SW::UP) {
                 alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
-            // cMsg_.state = CHASSIS::FSMState_e::STOP;
+            cMsg_.state = CHASSIS::FSMState_e::STOP;
 
         } else if (sr == SW::UP) {
             cMsg_.vx = static_cast<float>(rcData->rc.ch1) / CH_RANGE * INPUT_VX_MAX;
@@ -139,7 +139,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (sl == SW::UP) {
                 alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
-            // cMsg_.state = CHASSIS::FSMState_e::STOP;
+            cMsg_.state = CHASSIS::FSMState_e::STOP;
         } else {
             // TODO: Use keyboard
             return;
@@ -177,12 +177,13 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (sl == SW::MID) {
                 gMsg_.state = GIMBAL::FSMState_e::RUN;
                 cMsg_.state = CHASSIS::FSMState_e::TANK;
-                alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-                abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+                // alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
+                // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
             } else if (sl == SW::UP) {
-                alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+                // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
             cMsg_.state = CHASSIS::FSMState_e::STOP;
+
         } else if (sr == SW::UP) {
             cMsg_.vx = static_cast<float>(rcData->ch1) / CH_RANGE * INPUT_VX_MAX;
             cMsg_.vy = -static_cast<float>(rcData->ch0) / CH_RANGE * INPUT_VY_MAX;
