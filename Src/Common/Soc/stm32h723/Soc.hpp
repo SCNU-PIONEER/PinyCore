@@ -32,3 +32,14 @@ enum DmaRam_e { SRAM, SRAM_D2 };
 
 /*usb*/
 #define SOC_USB_HS
+
+/*gpio*/
+
+#define Power_OUT1_ON()        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET)
+#define Power_OUT1_OFF()       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET)
+
+#define Power_OUT2_ON()        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET)
+#define Power_OUT2_OFF()       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET)
+
+#define Power_5V_ON()        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET)
+#define Power_5V_OFF()       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET)

@@ -6,6 +6,7 @@
 
 #ifndef PI
 #define PI std::numbers::pi_v<float>
+static constexpr float TWO_PI = 2.f * PI;
 #endif // !PI
 
 namespace PINYMOTOR {
@@ -44,12 +45,9 @@ static float torq2volt(float _val)
  * // arc will be approximately +20 degrees in radians (0.349f)
  */
 
-static inline float getMinorArc(float _endAngle, float _startAngle,
-                                float _range = 2.f * PI)
+static inline float getMinorArc(float _endAngle, float _startAngle, float _range = 2.f * PI)
 {
-    float rslt = std::fmod(((_endAngle) - (_startAngle) + ((_range) * 1.5f)),
-                           (_range)) -
-                 ((_range) * 0.5f);
+    float rslt = std::fmod(((_endAngle) - (_startAngle) + ((_range) * 1.5f)), (_range)) - ((_range) * 0.5f);
     return rslt;
 }
 
@@ -79,8 +77,7 @@ static inline float getMinorArc(float _endAngle, float _startAngle,
  * // result will be clamped within [-3/PI, 3/PI] range
  */
 
-static float clampArc(float _angle, float _startAngle, float _endAngle,
-                      float _range = 2.f * PI)
+static float clampArc(float _angle, float _startAngle, float _endAngle, float _range = 2.f * PI)
 {
     auto normalize = [_range](float _a) {
         _a = std::fmodf(_a, _range);
@@ -122,10 +119,7 @@ static inline float rangeMap(float _scale, float _min, float _max)
     return rslt;
 }
 
-static inline float rangeMap(float _scale)
-{
-    return rangeMap(_scale, 0, 2 * PI);
-}
+static inline float rangeMap(float _scale) { return rangeMap(_scale, 0, 2 * PI); }
 
 static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
 {
@@ -135,14 +129,12 @@ static inline float uint2float(int _xInt, float _xMin, float _xMax, int _bits)
     return (((float)_xInt) * span / ((float)((1 << _bits) - 1))) + offset;
 }
 
-static inline uint16_t float2uint(float _xInt, float _xMin, float _xMax,
-                                  int _bits)
+static inline uint16_t float2uint(float _xInt, float _xMin, float _xMax, int _bits)
 {
     /// Converts a float to an unsigned int, given range and number of _bits ///
     float span = _xMax - _xMin;
     float offset = _xMin;
-    uint16_t rawSet =
-            (uint16_t)((_xInt - offset) * ((float)((1 << _bits) - 1)) / span);
+    uint16_t rawSet = (uint16_t)((_xInt - offset) * ((float)((1 << _bits) - 1)) / span);
     return rawSet;
 }
 static inline float rad2deg(float _rad) { return _rad * 180.f / PI; }
@@ -151,13 +143,9 @@ static inline float deg2rad(float _deg) { return _deg * PI / 180.f; }
 
 static inline float rpm2radps(float _rpm) { return _rpm * PI / 30.f; }
 
-static inline float radps2rpm(float _radps)
-{
-    return _radps * 60.f / (2.f * PI);
-}
+static inline float radps2rpm(float _radps) { return _radps * 60.f / (2.f * PI); }
 
-template <typename T>
-inline T clamp(const T &_value, const T &_min, const T &_max)
+template <typename T> inline T clamp(const T &_value, const T &_min, const T &_max)
 {
     return std::min(std::max(_value, _min), _max);
 }

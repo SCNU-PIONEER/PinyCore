@@ -31,8 +31,7 @@ void Uart::unregisterCallback()
     }
 }
 
-HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress,
-                                            uint32_t _dataLength)
+HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress, uint32_t _dataLength)
 {
     HAL_StatusTypeDef result = HAL_OK;
     huart_->ReceptionType = HAL_UART_RECEPTION_TOIDLE;
@@ -41,9 +40,8 @@ HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress,
     SET_BIT(huart_->Instance->CR3, USART_CR3_DMAR);
     __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
     uint32_t *secondMemAddress = _dstAddress + (_dataLength / 2);
-    result = HAL_DMAEx_MultiBufferStart(
-            huart_->hdmarx, (uint32_t)&SOC_UART_DMA_DR, (uint32_t)_dstAddress,
-            (uint32_t)secondMemAddress, _dataLength);
+    result = HAL_DMAEx_MultiBufferStart(huart_->hdmarx, (uint32_t)&SOC_UART_DMA_DR, (uint32_t)_dstAddress,
+                                        (uint32_t)secondMemAddress, _dataLength);
 
     return result;
 }
@@ -67,15 +65,11 @@ HAL_StatusTypeDef Uart::transmitDma(const uint8_t *_pData, uint16_t _size)
     return HAL_UART_Transmit_DMA(huart_, _pData, _size);
 }
 
-HAL_StatusTypeDef Uart::receive(uint8_t *_pData, uint16_t _size)
-{
-    return HAL_UART_Receive(huart_, _pData, _size, 0);
-}
+HAL_StatusTypeDef Uart::receive(uint8_t *_pData, uint16_t _size) { return HAL_UART_Receive(huart_, _pData, _size, 0); }
 
 HAL_StatusTypeDef Uart::receiveDma(uint8_t *_pData, uint16_t _size)
 {
-    HAL_StatusTypeDef result =
-            HAL_UARTEx_ReceiveToIdle_DMA(huart_, _pData, _size);
+    HAL_StatusTypeDef result = HAL_UARTEx_ReceiveToIdle_DMA(huart_, _pData, _size);
     __HAL_DMA_DISABLE_IT(huart_->hdmarx, DMA_IT_HT);
     return result;
 }
@@ -86,6 +80,19 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *_huart, uint16_t _size)
         if (pair.first == _huart) {
             pair.second(_huart, _size);
             break;
+        }
+    }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *_huart)
+{
+    if (HAL_UART_GetError(_huart) == HAL_UART_ERROR_ORE) {
+        __HAL_UART_CLEAR_OREFLAG(_huart);
+        for (const auto &pair : cbTable) {
+            if (pair.first == _huart) {
+                HAL_UARTEx_ReceiveToIdle_DMA(_huart, _huart->pRxBuffPtr, _huart->RxXferSize);
+                __HAL_DMA_DISABLE_IT(_huart->hdmarx, DMA_IT_HT);
+            }
         }
     }
 }
