@@ -5,7 +5,6 @@
 
 class NavHandler final : public Handler {
 public:
-
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) final;
     void handle() final;
     void notify(Msg *_msg, QueueHandle_t _queue) final;

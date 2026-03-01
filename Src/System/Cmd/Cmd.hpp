@@ -37,4 +37,11 @@ private:
 #if APP_USE_REFEREE
     RefereeHandler refereeHandler_;
 #endif
+
+#if APP_USE_NAV
+    NavHandler navHandler_;
+#endif
+#if APP_USE_VISION
+    VisionHandler visionHandler_;
+#endif
 };
