@@ -22,11 +22,12 @@ public:
         /* 上控复位 */
         float yawAng = gimbal_.motor()->posNorm();
         if (std::fabs(yawAng) < 0.1f) {
-            return true;
+            gimbal_.isLaunched = true;
         } else {
             gimbal_.ctrl(0);
-            return false;
+            gimbal_.isLaunched = false;
         }
+        return gimbal_.isLaunched;
     }
 
     void run() final

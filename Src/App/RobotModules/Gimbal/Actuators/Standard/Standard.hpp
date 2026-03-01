@@ -7,7 +7,6 @@
 
 namespace GIMBAL {
 
-
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     friend class Standard;
     void transmit(uint8_t *_buf, uint16_t _len) final;
@@ -30,7 +29,7 @@ public:
     void update(void *_param);
     void ctrl(float _pos, float _maxSpeed = YAW_SPEED_MAX);
 
-    void loadResetState(bool _state);
+    bool isLaunched = false;
 
 private:
     PINYMOTOR::IMotor *motor_;

@@ -9,11 +9,7 @@ class StopState : public FSMState<FSMState_e> {
 public:
     StopState(Standard &_gimbal) : FSMState<FSMState_e>(FSMState_e::STOP), gimbal_(_gimbal) {}
 
-    void enter() final
-    {
-        gimbal_.loadResetState(false);
-        LOG::info("GimbalStop", "enter");
-    }
+    void enter() final { LOG::info("GimbalStop", "enter"); }
 
     void run() final { gimbal_.stop(); }
 
