@@ -335,16 +335,12 @@ Joint Kinematic::ikine(const Matrix<4, 4> &_t, const array<float, 6> &_pose)
     float r22 = _t(1, 1);
     float r23 = _t(1, 2);
     float r31 = _t(2, 0);
-    float r32 = _t(2, 1);
-    float r33 = _t(2, 2);
 
     float px = _t(0, 3);
     float py = _t(1, 3);
     float pz = _t(2, 3);
 
     float d1 = dh.d[0];
-    float d2 = dh.d[1];
-    float d3 = dh.d[2];
     float d4 = dh.d[3];
     float d5 = dh.d[4];
     float d6 = dh.d[5];

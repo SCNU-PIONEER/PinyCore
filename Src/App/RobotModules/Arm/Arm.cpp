@@ -41,7 +41,6 @@ Arm::Arm() : motors(angleMin, angleMax)
 void Arm::update(MsgBus_s *_param)
 {
     if (xQueueReceive(_param->armQueue, &msg, 0) == pdTRUE) {
-        uint32_t i = 0;
     }
     motors.update();
     stateFactory_.update();
@@ -79,7 +78,7 @@ JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
     if (jointStateFlag == JointState_e::FINISH_STATE) {
         /*joint1 - joint10*/
         for (int i = 0; i < 10; i++) {
-            if (!IS_WITHIN_RANGE(_goal.joints[i], motors.jointInfos[i].angle_min, motors.jointInfos[i].angle_max)) {
+            if (!isWithinRange(_goal.joints[i], motors.jointInfos[i].angle_min, motors.jointInfos[i].angle_max)) {
                 LOG::error("ARM", "Joint%d move goal error", i + 1);
                 return jointStateFlag;
             }

@@ -5,6 +5,13 @@
 
 namespace ARM {
 
+template <typename T> constexpr auto isWithinRange(const T &_val, const T &_val1, const T &_val2) -> bool
+{
+    T min = (_val1 < _val2) ? _val1 : _val2;
+    T max = (_val1 < _val2) ? _val2 : _val1;
+    return (_val >= min && _val <= max);
+}
+
 using std::array;
 
 using Joint = array<float, 6>;

@@ -9,15 +9,6 @@
 #include "./ArmLifting.hpp"
 #include "./ArmOreBin.hpp"
 
-#define IS_WITHIN_RANGE(x, M1, M2)                      \
-    ({                                                  \
-        typeof(x) _x = (x);                             \
-        typeof(M1) _m1 = (M1);                          \
-        typeof(M2) _m2 = (M2);                          \
-        typeof(_m1) _min_val = (_m1 < _m2) ? _m1 : _m2; \
-        typeof(_m2) _max_val = (_m1 < _m2) ? _m2 : _m1; \
-        (_x >= _min_val && _x <= _max_val);             \
-    })
 
 namespace ARM {
 //一键：从矿仓取矿，公路穿越，资源区取矿（一次取两个，针对不同位置有123）
