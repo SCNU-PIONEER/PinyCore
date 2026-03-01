@@ -22,9 +22,10 @@ public:
 
         ref.vx = chassis_.msg.vx;
         ref.vy = chassis_.msg.vy;
-#if APP_USE_GIMBAL == 1
-        float targetYaw = (fabs(chassis_.deltaYaw) > PI / 2.f) ? PI : 0.f;
-        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(chassis_.deltaYaw, targetYaw));
+#if APP_USE_COMM == 1
+        const float deltaYaw = PINYMOTOR::getMinorArc(chassis_.msg.yaw, 0.f);
+        float targetYaw = (deltaYaw > M_PI / 2.f) ? M_PI : 0.f;
+        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(deltaYaw, targetYaw));
 #else
         ref.wz = chassis_.msg.yaw;
 #endif
@@ -44,6 +45,8 @@ public:
         switch (chassis_.msg.state) {
         case RUN:
             return RUN;
+        case SPIN:
+            return SPIN;
         default:
             return STOP;
         }

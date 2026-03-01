@@ -9,6 +9,7 @@ enum class SpinDir_e : uint8_t {
     LEFT = 0,
     RIGHT,
 };
+
 class SpinState : public FSMState<FSMState_e> {
     static constexpr float ACC = 0.5f;
     static constexpr float MAX_SPIN_SPEED = 5.0f;
@@ -26,7 +27,6 @@ public:
     {
         Speed_u ref{};
         ref.vx = std::fmax(chassis_.getSpeed().vx - ACC, std::fmin(chassis_.msg.vx, chassis_.getSpeed().vx + ACC));
-
         ref.vy = std::fmax(chassis_.getSpeed().vy - ACC, std::fmin(chassis_.msg.vy, chassis_.getSpeed().vy + ACC));
         ref.wz = getSpinVel(spinCnt_++);
         chassis_.ctrl(ref);
@@ -50,7 +50,6 @@ public:
             return FSMState_e::RUN;
     }
 
-    /// @brief speed change spinning
     float getSpinVel(uint32_t _cnt)
     {
         float x = 2.1f * (static_cast<float>(_cnt) * 0.001f);

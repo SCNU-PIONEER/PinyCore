@@ -1,19 +1,13 @@
 #include "Mecanum.hpp"
-#include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
-#include <numbers>
 #include "Cmd.hpp"
 
 #include "M3508.hpp"
 
-#include "QuadricycleController.hpp"
-
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
-
-extern canHandle HCAN1;
 
 extern Cmd *cmd;
 
@@ -27,13 +21,19 @@ IncrementalPid motorPids[4] = { IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8
                                 IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f),
                                 IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f) };
 
-// IncrementalPid motorPids[4] = { IncrementalPid(0.91f, 0.002f, 0.f, 4.0f, 0.0f),
-//                                 IncrementalPid(0.91f, 0.002f, 0.f, 4.0f, 0.0f),
-//                                 IncrementalPid(0.88f, 0.002f, 0.f, 4.0f, 0.0f),
-//                                 IncrementalPid(0.88f, 0.002f, 0.f, 4.0f,
-//                                                0.0f) };
+void ChassisCtrlRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+    });
+    LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx \n", uid());
+}
 
 Mecanum::Mecanum()
+        : iir3_{ FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE) }
 {
     for (uint8_t i = 1; i <= 4; i++) {
         InitConfig_s m3508Config = {
@@ -73,10 +73,9 @@ void Mecanum::update()
     xQueueReceive(cmd->getMsgBus()->chassisQueue, &msg, 0);
 
     for (uint8_t i = 0; i < 4; i++) {
-        wSpeed_._[i] = iir3_.process(motors_._[i]->data().spdRpm);
+        wSpeed_._[i] = iir3_[i].process(motors_._[i]->data().spdRpm);
     }
     this->curSpeed_ = forward(wSpeed_);
-
     this->stateFactory_.update();
 }
 
@@ -97,22 +96,24 @@ Speed_u Mecanum::forward(const WheelsSpeed_u &_wSpeed)
 WheelsSpeed_u Mecanum::reverse(const Speed_u &_speed)
 {
     WheelsSpeed_u refWheels;
-    refWheels.M_RF = (60.f / W_CIRCUMFERENCE) * (-_speed.vx - _speed.vy) +
-                     FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_LF =
-            (60.f / W_CIRCUMFERENCE) * (_speed.vx - _speed.vy) + FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_LB =
-            (60.f / W_CIRCUMFERENCE) * (_speed.vx + _speed.vy) + BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
-    refWheels.M_RB =
-            (60.f / W_CIRCUMFERENCE) * (-_speed.vx + _speed.vy) + BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI;
+    refWheels.M_RF = ((60.f / W_CIRCUMFERENCE) * (-_speed.vx - _speed.vy)) +
+                     (FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI);
+    refWheels.M_LF = ((60.f / W_CIRCUMFERENCE) * (_speed.vx - _speed.vy)) +
+                     (FRONT_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI);
+    refWheels.M_LB = ((60.f / W_CIRCUMFERENCE) * (_speed.vx + _speed.vy)) +
+                     (BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI);
+    refWheels.M_RB = ((60.f / W_CIRCUMFERENCE) * (-_speed.vx + _speed.vy)) +
+                     (BACK_R / (W_DIAMETER / 2.f) * _speed.wz * 30.f / F_PI);
     return refWheels;
 }
 
 void Mecanum::ctrl(const Speed_u &_refSpeed)
 {
-    WheelsSpeed_u refWSpeed = reverse(_refSpeed);
-
+    const Speed_u speed{ .vx = std::clamp(_refSpeed.vx, -MAX_VX_SPEED, MAX_VX_SPEED),
+                         .vy = std::clamp(_refSpeed.vy, -MAX_VY_SPEED, MAX_VY_SPEED),
+                         .wz = std::clamp(_refSpeed.wz, -MAX_WZ_SPEED, MAX_WZ_SPEED) };
+    WheelsSpeed_u refWSpeed = reverse(speed);
     for (uint8_t i = 0; i < 4; i++) {
-        motors_._[i]->cmdVel(rpm2radps(refWSpeed._[i]));
+        motors_._[i]->cmdVel(rpm2radps(((float *)&refWSpeed)[i]));
     }
 }

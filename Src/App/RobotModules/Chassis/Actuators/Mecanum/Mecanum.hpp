@@ -3,10 +3,19 @@
 #include "Chassis.hpp"
 
 #include "IMotor.hpp"
-#include "arm_math.h"
 #include "IIR.hpp"
 
+#include "RxPacket.hpp"
+#include "PacketImpl.hpp"
+#include "QuadricycleController.hpp"
+
 namespace CHASSIS {
+
+class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
+public:
+    ChassisCtrlRxPacket() { registerCallback(); }
+    void registerCallback() final;
+};
 
 union Speed_u {
     struct {
@@ -40,7 +49,7 @@ union Motors_u {
 class Mecanum : public Chassis {
 public:
     static constexpr float W_DIAMETER = 0.1525f;
-    static constexpr float W_CIRCUMFERENCE = (PI * W_DIAMETER);
+    static constexpr float W_CIRCUMFERENCE = (M_PI * W_DIAMETER);
     static constexpr float FRONT_R = 0.354f;
     static constexpr float BACK_R = 0.354f;
 
@@ -51,7 +60,6 @@ public:
     void ctrl(const Speed_u &_speed);
     void update();
     const Speed_u &getSpeed() const { return curSpeed_; }
-
 
 protected:
     /*
@@ -71,10 +79,14 @@ protected:
 private:
     Motors_u motors_ = {};
 
-    WheelsSpeed_u wSpeed_ = {};
-    Speed_u curSpeed_ = {};
+#ifdef TARGET_SLAVE
+    ChassisCtrlRxPacket chassisCtrlRxPacket_;
+#endif
 
-    FILTER::IIR3 iir3_;
+    QuadricycleController *powerCtrl_;
+    WheelsSpeed_u wSpeed_ = {}; // 当前轮速，单位 rpm
+    Speed_u curSpeed_ = {};     // 当前底盘速度，单位 m/s 和 rad/s
+    FILTER::IIR3 iir3_[4];      // 轮速滤波器
 };
 
 } //namespace CHASSIS
