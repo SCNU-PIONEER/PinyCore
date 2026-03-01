@@ -31,10 +31,10 @@ public:
     void task();
 
 protected:
-    void updateChassis(const ChassisTxMsg_s *_msg);
-    void updateGimbal(const GimbalTxMsg_s *_msg);
-    void updateArm(const ArmTxMsg_s *_msg);
-    void updateReferee(const RefereeTxMsg_s *_msg);
+    void updateChassis(const ChassisMsg_s *_msg);
+    void updateGimbal(const GimbalMsg_s *_msg);
+    void updateArm(const ArmMsg_s *_msg);
+    void updateReferee(const RefereeMsg_s *_msg);
 
 private:
     Client client_;

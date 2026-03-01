@@ -33,8 +33,7 @@ void App::init()
     constInfo_[0] = newConfig(ui_g_static_chassis);
 
     // 初始化UI链表
-    if (client_.initList(dynamicInfo_, UIdynamicNum, constInfo_, UIconstNum) ==
-        Status_e::ERROR) {
+    if (client_.initList(dynamicInfo_, UIdynamicNum, constInfo_, UIconstNum) == Status_e::ERROR) {
         LOG::error("UI", "List init failed");
     } else {
         LOG::info("UI", "List init success");
@@ -52,38 +51,38 @@ void App::update(const Msg_s *_msg)
     // 更新UI信息
     switch (_msg->type) {
     case Event_e::CHASSIS:
-        updateChassis((ChassisTxMsg_s *)_msg->pdata);
+        updateChassis((ChassisMsg_s *)_msg->pdata);
         break;
     case Event_e::GIMBAL:
-        updateGimbal((GimbalTxMsg_s *)_msg->pdata);
+        updateGimbal((GimbalMsg_s *)_msg->pdata);
         break;
     case Event_e::ARM:
-        updateArm((ArmTxMsg_s *)_msg->pdata);
+        updateArm((ArmMsg_s *)_msg->pdata);
         break;
     case Event_e::REFEREE:
-        updateReferee((RefereeTxMsg_s *)_msg->pdata);
+        updateReferee((RefereeMsg_s *)_msg->pdata);
         break;
     default:
         break;
     }
 }
 
-void App::updateChassis(const ChassisTxMsg_s *_msg)
+void App::updateChassis(const ChassisMsg_s *_msg)
 {
     // client_.ready(Event_e::CHASSIS);
 }
 
-void App::updateGimbal(const GimbalTxMsg_s *_msg)
+void App::updateGimbal(const GimbalMsg_s *_msg)
 {
     // client_.ready(Event_e::GIMBAL);
 }
 
-void App::updateArm(const ArmTxMsg_s *_msg)
+void App::updateArm(const ArmMsg_s *_msg)
 {
     // client_.ready(Event_e::ARM);
 }
 
-void App::updateReferee(const RefereeTxMsg_s *_msg)
+void App::updateReferee(const RefereeMsg_s *_msg)
 {
     //TODO:
     // client_.updateID(_msg->robotID);

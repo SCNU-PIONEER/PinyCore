@@ -6,11 +6,11 @@
 
 
 namespace CHASSIS {
-enum class FSMState_e : uint8_t;
+enum class FSMState_e : uint8_t { STOP = 1, RUN, SPIN };
 }
 
 namespace GIMBAL {
-enum class FSMState_e : uint8_t;
+enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 }
 
 namespace ARM {
@@ -54,28 +54,3 @@ struct RefereeMsg_s : public Msg {
     float bulletSpeed, rxFreq;
     bool isPlay;
 };
-
-//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct GimbalEularMsg_s : public Msg {
-    float roll, pitch, yaw;
-};
-
-struct DeltaYawMsg_s : public Msg {
-    float deltaYaw;
-};
-
-struct GimbalYawMsg_s : public Msg {
-    bool isReset;
-    float followYaw;
-    float chassisYaw; // only single core system need it
-};
-//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct ChassisTxMsg_s {
-    CHASSIS::FSMState_e state;
-};
-
-struct GimbalTxMsg_s {};
-
-struct ArmTxMsg_s {};
-
-struct RefereeTxMsg_s {};

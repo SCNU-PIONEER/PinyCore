@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./utils.hpp"
+#include "MsgImpl.hpp"
 #include <cstring>
 
 namespace COMM {
@@ -54,8 +55,7 @@ public:
     static constexpr uint8_t LEN = 8;
     static constexpr uint16_t ID = 0x21;
     struct ProtoData_s {
-        bool gimbalReset;
-        uint8_t state;
+        CHASSIS::FSMState_e state;
         float vx;
         float vy;
         float yaw;
@@ -63,12 +63,10 @@ public:
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
-            bool gimbalReset : 1;
+            uint8_t state : 3;
             int16_t vx : 16;
             int16_t vy : 16;
             int16_t yaw : 16;
-            uint8_t state : 8;
-            uint16_t reversed : 7;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -76,19 +74,16 @@ public:
     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
         Data_u::Data_s &d = _data.content;
-        d.gimbalReset = _protoData.gimbalReset;
         d.vx = static_cast<int16_t>(_protoData.vx * 1000.f);
         d.vy = static_cast<int16_t>(_protoData.vy * 1000.f);
-        d.state = _protoData.state;
+        d.state = (uint8_t)_protoData.state;
         d.yaw = convertToInt16(_protoData.yaw);
-        d.reversed = 0;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
-        _protoData.gimbalReset = _data.content.gimbalReset;
         _protoData.vx = static_cast<float>(_data.content.vx) / 1000.f;
         _protoData.vy = static_cast<float>(_data.content.vy) / 1000.f;
-        _protoData.state = _data.content.state;
+        _protoData.state = (CHASSIS::FSMState_e)_data.content.state;
         _protoData.yaw = convertToFloat(_data.content.yaw);
     }
 };

@@ -3,9 +3,6 @@
 #include "FSMState.hpp"
 #include "MsgImpl.hpp"
 
-namespace CHASSIS {
-enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN, SPIN };
-}
 class Chassis {
 public:
     static constexpr float MAX_VX_SPEED = 18.f;

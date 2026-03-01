@@ -20,6 +20,11 @@ public:
     void notify(Msg *_msg, QueueHandle_t _queue) final;
 
 private:
+    static constexpr float INPUT_VX_MAX = 4.f;
+    static constexpr float INPUT_VY_MAX = 4.f;
+
+    static constexpr float INPUT_YAW_MAX = 3.f;
+
     MsgBus_s *msgBus_;
 
     ChassisMsg_s cMsg_ = {}; // sample
