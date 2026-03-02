@@ -114,7 +114,9 @@ MotorTypeDef_e LKMotorRS485::parse()
         break;
     }
 
-    uart_.receiveDma(rxBuf_, RXBUF_LEN);
+    if (uart_.receiveDma(rxBuf_, RXBUF_LEN) != STM_OK) {
+        LOG::error(TAG, "Failed to restart UART DMA reception");
+    }
 
     return rslt;
 }

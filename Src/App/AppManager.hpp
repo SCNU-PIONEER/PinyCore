@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Task.hpp"
-#include <initializer_list>
 #include "etl/delegate.h"
 #include <vector>
 

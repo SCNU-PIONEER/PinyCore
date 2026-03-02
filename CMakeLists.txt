@@ -21,6 +21,7 @@ include("tools/cmake/FindLib/FindLib.cmake")
 add_compile_options($<$<C_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
 add_compile_options($<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
 add_compile_options(-Wno-unused-function)
+add_compile_options(-Wno-pedantic)
 
 add_executable(${CMAKE_PROJECT_NAME})
 
