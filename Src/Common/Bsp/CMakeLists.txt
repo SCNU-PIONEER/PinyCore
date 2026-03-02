@@ -32,3 +32,6 @@ add_subdirectory(${soc_folder}/hal/cmake/stm32cubemx ${CMAKE_CURRENT_BINARY_DIR}
 
 target_compile_options(STM32_Drivers PRIVATE -Wno-unused-parameter)
 
+# usbd_desc.c:143:1: warning: missing initializer for field
+# 'GetBOSDescriptor' of 'USBD_DescriptorsTypeDef' [-Wmissing-field-initializers]
+target_compile_options(STM32_Drivers PRIVATE -Wno-missing-field-initializers)
