@@ -11,10 +11,10 @@ Referee::Referee(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, u
 }
 
 Receiver::Receiver(UART_HandleTypeDef *_huart, const EventGroupHandle_t &_event, uint32_t _eventBit)
-        : uart_(_huart), rxBuffer_((uint8_t *)Dma::instance().ram_alloc(2 * REFEREE_RX_BUFFER_LEN))
+        : uart_(_huart), rxBuffer_((uint8_t *)Dma::instance().ram_alloc(REFEREE_RX_BUFFER_LEN))
 {
     // Should be executed after MX_USARTx_UART_Init()
-    uart_.recvDmaMultiBufInit((uint32_t *)&rxBuffer_[0], REFEREE_RX_BUFFER_LEN);
+    uart_.recvDmaInit(rxBuffer_, REFEREE_RX_BUFFER_LEN);
     uart_.registerCallback([this, _event, _eventBit](UART_HandleTypeDef *_huart, uint16_t _size) {
         this->uartIdleCallback(_huart, _size, _event, _eventBit);
     });
@@ -29,53 +29,41 @@ Receiver::~Receiver()
 void Receiver::uartIdleCallback(UART_HandleTypeDef *_huart, uint16_t _size, const EventGroupHandle_t &_event,
                                 uint32_t _eventBit)
 {
-    (void)_size;
     if (_huart->Instance != uart_.huart_->Instance)
         return;
-
-    uint16_t dmaRxPos = REFEREE_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(_huart->hdmarx);
-    int32_t lenDif = dmaRxPos - lastPos;
-    dataLen = (lenDif >= 0) ? lenDif : (REFEREE_RX_BUFFER_LEN + lenDif);
-
-    //数据回绕
-    if (lenDif < 0)
-        memcpy(&rxBuffer_[REFEREE_RX_BUFFER_LEN], &rxBuffer_[0], dmaRxPos);
+    pendingSize = _size;
 
     xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
 }
 
 void Receiver::readRefereeData()
 {
-    uint16_t frameStartPos, nextPos, frameLen;
-    uint16_t maxLen = dataLen + lastPos;
+    uint16_t frameHeaderPos, nextPos, frameLen;
+    for (frameHeaderPos = 0; frameHeaderPos < pendingSize; frameHeaderPos = nextPos) {
+        while (frameHeaderPos < pendingSize && rxBuffer_[frameHeaderPos] != SOF)
+            frameHeaderPos++;
 
-    for (frameStartPos = lastPos; frameStartPos < maxLen; frameStartPos = nextPos) {
-        while (frameStartPos < maxLen && rxBuffer_[frameStartPos] != SOF)
-            frameStartPos++;
-        if (frameStartPos + sizeof(FrameHeader_s) > maxLen)
-            break;
-
-        const FrameHeader_s *header = (FrameHeader_s *)&rxBuffer_[frameStartPos];
+        const FrameHeader_s *header = (FrameHeader_s *)&rxBuffer_[frameHeaderPos];
         frameLen = sizeof(FrameHeader_s) + LEN_CMDID + header->dataLen + LEN_TAIL;
 
-        if (header->dataLen > 128 || (!Verify_CRC8_Check_Sum(&rxBuffer_[frameStartPos], sizeof(FrameHeader_s))) ||
-            (!Verify_CRC16_Check_Sum(&rxBuffer_[frameStartPos], frameLen))) {
-            nextPos = frameStartPos + 1;
+        if (header->dataLen > 128 || (!Verify_CRC8_Check_Sum(&rxBuffer_[frameHeaderPos], sizeof(FrameHeader_s))) ||
+            (!Verify_CRC16_Check_Sum(&rxBuffer_[frameHeaderPos], frameLen))) {
+            nextPos = frameHeaderPos + 1;
             continue;
         } else
-            nextPos = frameStartPos + frameLen;
+            nextPos = frameHeaderPos + frameLen;
 
-        uint16_t cmdId = *((uint16_t *)&rxBuffer_[frameStartPos + sizeof(FrameHeader_s)]);
-
+        uint16_t cmdId = *((uint16_t *)&rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s)]);
         for (auto i : INFO) {
             if (static_cast<CmdId_e>(cmdId) == i.cmdId) {
                 rxCnt_++;
                 void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_) + i.offsetByte;
-                memcpy(dataPtr, &rxBuffer_[frameStartPos + sizeof(FrameHeader_s) + LEN_CMDID], i.size);
+                memcpy(dataPtr, &rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s) + LEN_CMDID], i.size);
             }
         }
     }
-    lastPos = frameStartPos % REFEREE_RX_BUFFER_LEN;
+    memset(rxBuffer_, 0, REFEREE_RX_BUFFER_LEN);
+    uart_.receiveDma(rxBuffer_, REFEREE_RX_BUFFER_LEN);
 }
 
 void Receiver::rxFreqCalc()
