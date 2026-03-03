@@ -29,7 +29,7 @@ endif()
 
 if(USE_HARDFAULT)
   target_sources(utils
-                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/Hardfault.cpp)
+                 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault/Hardfault.cpp)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardfault)
 endif()
 
