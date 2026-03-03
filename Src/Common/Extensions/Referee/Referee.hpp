@@ -47,7 +47,6 @@ private:
 
     float rxFreq_ = 0.f;
     uint16_t rxCnt_ = 0;
-    uint16_t pendingSize = 0;
 };
 
 class Transmitter {

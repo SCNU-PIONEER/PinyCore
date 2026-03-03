@@ -31,16 +31,17 @@ void Receiver::uartIdleCallback(UART_HandleTypeDef *_huart, uint16_t _size, cons
 {
     if (_huart->Instance != uart_.huart_->Instance)
         return;
-    pendingSize = _size;
 
+    (void)_size;
     xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
 }
 
 void Receiver::readRefereeData()
 {
     uint16_t frameHeaderPos, nextPos, frameLen;
-    for (frameHeaderPos = 0; frameHeaderPos < pendingSize; frameHeaderPos = nextPos) {
-        while (frameHeaderPos < pendingSize && rxBuffer_[frameHeaderPos] != SOF)
+    for (frameHeaderPos = 0; frameHeaderPos < (REFEREE_RX_BUFFER_LEN - uart_.huart_->RxXferCount);
+         frameHeaderPos = nextPos) {
+        while (frameHeaderPos < (REFEREE_RX_BUFFER_LEN - uart_.huart_->RxXferCount) && rxBuffer_[frameHeaderPos] != SOF)
             frameHeaderPos++;
 
         const FrameHeader_s *header = (FrameHeader_s *)&rxBuffer_[frameHeaderPos];
