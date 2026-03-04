@@ -48,6 +48,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC
 target_link_libraries(
   ${CMAKE_PROJECT_NAME} Extensions Bsp utils freertos_kernel
   etl::etl
+  magic_enum
   # TinyMPC
 )
 
