@@ -28,7 +28,7 @@ private:
 
     void createRcDev(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
 
-    void scheduleDaemon(const char *_format);
+    void scheduleDaemon();
 
     void masterHandle();
 };

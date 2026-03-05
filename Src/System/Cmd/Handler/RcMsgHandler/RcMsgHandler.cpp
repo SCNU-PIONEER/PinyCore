@@ -20,6 +20,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "magic_enum/magic_enum.hpp"
+
 template <RCDevType_e DEV_TYPE>
 RcMsgHandler<DEV_TYPE>::RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event)
 {
@@ -31,25 +33,23 @@ void RcMsgHandler<DEV_TYPE>::createRcDev(UART_HandleTypeDef *_huart, EventGroupH
 {
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
         rc_ = std::make_unique<DT7>(_huart, _event, this->bit_);
-        scheduleDaemon("DT7 offline");
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         rc_ = std::make_unique<ET08A>(_huart, _event, this->bit_);
-        scheduleDaemon("ET08A offline");
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         rc_ = std::make_unique<VT13>(_huart, _event, this->bit_);
-        scheduleDaemon("VT13 offline");
     }
+    scheduleDaemon();
 }
 
-template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::scheduleDaemon(const char *_format)
+template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::scheduleDaemon()
 {
 #if APP_USE_DAEMONS
-    Daemons::instance().schedule([this, _format]() {
+    Daemons::instance().schedule([this]() {
         static uint32_t updateCnt = 0;
         if (!this->rc_->isOnline()) {
             if (xTaskGetTickCount() - updateCnt >= 2000) {
                 updateCnt = xTaskGetTickCount();
-                LOG::warn("Daemons", _format);
+                LOG::warn("RcMsgHandler", "%s offline", magic_enum::enum_name(DEV_TYPE).data());
             }
         }
     });
