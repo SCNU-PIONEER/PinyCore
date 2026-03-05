@@ -19,6 +19,7 @@
 #include "./State/PatrolState.hpp"
 #include "./State/AutoState.hpp"
 #include "./State/NavState.hpp"
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 
@@ -27,6 +28,8 @@ extern canHandle HCAN1;
 
 using namespace GIMBAL;
 using namespace PINYMOTOR;
+
+_no_init float bigYawZeroAng;
 
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
@@ -87,7 +90,9 @@ DualStage::DualStage()
         .isReverse = FIRST_YAW_REVERSE,
     };
     motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
-    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
+    //强制要求上电必须摆正大yaw
+    bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
+    motors_.Gim_s.FirstYaw->setZeroAng(bigYawZeroAng);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
@@ -142,6 +147,10 @@ void DualStage::update(void *_param)
     curImuAng_.Gim_s.SecondYaw = insData_.yaw; //云台imu在小yaw上
     curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
     compensateImuAngle();
+
+    if (isConfirmYawZero_) {
+        resetZeroPoint();
+    }
 
     loadChassisMsg(_param);
     loadShooterMsg(_param);
@@ -248,11 +257,14 @@ void DualStage::compensateImuAngle()
 void DualStage::resetZeroPoint()
 {
     float cirNum = (motors_.Gim_s.FirstYaw->data().cirNum);
-    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG + (cirNum * ANGLE_JUMP_VALUE));
+    bigYawZeroAng += (cirNum * ANGLE_JUMP_VALUE);
+    motors_.Gim_s.FirstYaw->setZeroAng(bigYawZeroAng);
+    // motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG + (cirNum * ANGLE_JUMP_VALUE));
 }
 
 void DualStage::updateBaseYaw() {}
 
+float outMaxRunVel[3];
 void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID,
                      DualStage_u<PositionalPid *> _velPID)
 {
@@ -260,6 +272,7 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angP
     for (uint8_t i = 0; i < 3; i++) {
         del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
         vel[i] = _angPID._[i]->calc(del[i], 0);
+        outMaxRunVel[i] = vel[i];
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
         if (msg.state == FSMState_e::STOP) {
             torq[i] = 0.f;

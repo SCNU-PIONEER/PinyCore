@@ -64,6 +64,7 @@ class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
     void registerCallback() final;
 };
 
+#define _no_init __attribute__((section(".noinit_ram")))
 
 /**
  * @brief 双级yaw轴,大小yaw.
@@ -72,7 +73,7 @@ class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 2.17608452f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 2.826614875f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 4.30871105f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
