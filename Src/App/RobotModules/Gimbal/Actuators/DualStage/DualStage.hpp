@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Gimbal.hpp"
-
+#include "Bsp_can.hpp"
 #include "IMotor.hpp"
 #include "RefereeProt.hpp"
 #include "Vision.hpp"
@@ -49,19 +49,25 @@ inline bool isColor(float _robotId)
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     friend class DualStage;
     // ChassisCtrlTxPacket() : TxPacket(200.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final;
+    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
 };
 
 class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
     friend class DualStage;
     // ShooterCtrlTxPacket() : TxPacket(200.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final;
+    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
 };
 
 class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
     friend class DualStage;
     RefereeRxPacket() { registerCallback(); }
-    void registerCallback() final;
+    void registerCallback() final
+    {
+        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+        });
+        LOG::info("RefereeRxPacket", " Receive cb registered, uId:0x%hx", uid());
+    };
 };
 
 #define _no_init __attribute__((section(".noinit_ram")))

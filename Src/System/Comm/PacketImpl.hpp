@@ -132,7 +132,7 @@ public:
 
 class RefereePacketType {
 public:
-    static constexpr uint8_t LEN = 8;
+    static constexpr uint8_t LEN = 4;
     static constexpr uint16_t ID = 0x23;
     struct ProtoData_s {
         uint16_t HP;

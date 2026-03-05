@@ -30,14 +30,6 @@ using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
 
-void ChassisCtrlRxPacket::registerCallback()
-{
-    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
-        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
-    });
-    LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
-}
-
 //以下数组可以塞到类内。但不好用free master
 //RF 0 ,LF 1 ,LB 2 ,RB 3
 FILTER::LPF swerveFilterOutput[4]{

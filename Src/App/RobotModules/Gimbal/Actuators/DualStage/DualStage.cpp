@@ -11,7 +11,7 @@
 
 #include "Vision.hpp"
 #include "sdkconfig.h"
-#include "Bsp_can.hpp"
+
 
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
@@ -29,7 +29,7 @@ extern canHandle HCAN1;
 using namespace GIMBAL;
 using namespace PINYMOTOR;
 
-_no_init float bigYawZeroAng;
+_no_init float bigYawZeroAng; //强制要求上电必须摆正大yaw
 
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
@@ -37,23 +37,6 @@ static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
 };
 
-void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
-{
-    Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
-}
-
-void ShooterCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
-{
-    Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
-}
-
-void RefereeRxPacket::registerCallback()
-{
-    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
-        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
-    });
-    LOG::info("RefereeRxPacket", " Receive cb registered, uId:0x%hx", uid());
-}
 
 DualStage::DualStage()
 {

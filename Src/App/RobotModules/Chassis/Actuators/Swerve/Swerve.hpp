@@ -74,7 +74,13 @@ class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1
     friend class Swerve;
     // TODO: slightly cumbersome like this or CRTP
     ChassisCtrlRxPacket() { registerCallback(); }
-    void registerCallback() final;
+    void registerCallback() final
+    {
+        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+        });
+        LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
+    };
 };
 
 class RefereeCtrlTxPacket : public COMM::TxPacket<COMM::RefereePacketType> {
