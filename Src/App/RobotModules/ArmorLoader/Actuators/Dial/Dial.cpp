@@ -60,8 +60,20 @@ void Dial::enter()
 
 void Dial::update(void *_param)
 {
+#if APP_USE_REFEREE
+    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg_, 0) == pdTRUE) {
+    };
+    if (refereeMsg_.remainHeat > 40) {
+        refereeFire_ = true;
+    }
+#else
+    refereeFire_ = true;
+#endif
     msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
-    msg.fire = shooterCtrlRxPacket_.data().fire;
+
+    msg.fire = shooterCtrlRxPacket_.data().fire && refereeFire_;
+
+    // User-defined processing logic goes here ↓
 
     vel_ = velFltr_.process(dial()->vel());
 

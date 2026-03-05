@@ -6,6 +6,8 @@
 
 #include "IIR.hpp"
 
+#include "MsgImpl.hpp"
+#include "Referee.hpp"
 #include "RxPacket.hpp"
 #include "PacketImpl.hpp"
 
@@ -91,8 +93,10 @@ private:
     FILTER::IIR2 velFltr_;
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;
+    RefereeMsg_s refereeMsg_;
 
     float vel_; // rad/s
+    bool refereeFire_ = false;
 
     uint16_t blockCnt = 0.f;
 };
