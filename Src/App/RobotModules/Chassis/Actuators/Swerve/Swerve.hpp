@@ -83,6 +83,12 @@ public:
     void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
 };
 
+class SpeedTxPacket : public COMM::TxPacket<COMM::SpeedMsgPacket> {
+public:
+    SpeedTxPacket(float _txFreq) : COMM::TxPacket<COMM::SpeedMsgPacket>(_txFreq) {}
+    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
+};
+
 //喵板
 class Swerve : public Chassis {
 public:
@@ -143,7 +149,9 @@ private:
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
-    REFEREE::SentryCmd_s sentryCmd;                //哨兵指令
+    SpeedTxPacket speedTxPacket{ 100.f };
+
+    REFEREE::SentryCmd_s sentryCmd; //哨兵指令
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};
@@ -171,7 +179,7 @@ private:
     FILTER::IIR3 swerveFilterInput_[4];
     //舵轮输出滤波器
     Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};
-    //轮速度环
+    //轮速
     Swerve_u<PositionalPid *> wheelVelPid_ = {};
 };
 

@@ -5,9 +5,23 @@
 #include "IMotor.hpp"
 
 #include "IIR.hpp"
+#include "PacketImpl.hpp"
 #include "PidBasic.hpp"
+#include "RxPacket.hpp"
+#include "Bsp_can.hpp"
 
 namespace ARMORBOOSTER {
+
+class SpeedRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 3> {
+public:
+    void registerCallback() final
+    {
+        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+            BaseType_t higherPriorityTaskWoken = pdFALSE;
+            xQueueSendFromISR(this->queue_, _rxBuf, &higherPriorityTaskWoken);
+        });
+    }
+};
 
 class DualFric : public ArmorBooster {
     union Motors_u {
@@ -46,6 +60,8 @@ private:
 
     PositionalPid fricPid_[2]{ { 0.00065f, 2e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f },
                                { 0.00085f, 7e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f } };
+
+    SpeedRxPacket speedRxPacket_;
 
     float fricLvel_ = 0.f;
     float fricRvel_ = 0.f;

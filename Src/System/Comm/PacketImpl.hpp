@@ -171,4 +171,32 @@ public:
     }
 };
 
+class SpeedMsgPacket {
+public:
+    static constexpr uint8_t LEN = 4;
+    static constexpr uint16_t ID = 0x24;
+    struct ProtoData_s {
+        float shootSpeed;
+        uint32_t reserved;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            uint16_t shootSpeed : 16;
+            uint32_t reserved : 16;
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        _data.content.shootSpeed = static_cast<uint16_t>((_protoData.shootSpeed - 10.f) * 585.f);
+        _data.content.reserved = 0;
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.shootSpeed = (static_cast<float>(_data.content.shootSpeed) / 585.f) + 10.f;
+    }
+};
+
 } // namespace COMM

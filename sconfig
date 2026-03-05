@@ -62,7 +62,19 @@ CONFIG_ARMORBOOSTER_FILE="\"DualFric.hpp\""
 # CONFIG_APP_USE_MINIPC is not set
 # CONFIG_APP_USE_DAEMONS is not set
 CONFIG_APP_USE_COMM=y
-# CONFIG_APP_USE_REFEREE is not set
+CONFIG_APP_USE_REFEREE=y
+
+#
+# UI config
+#
+# CONFIG_APP_USE_UI is not set
+
+#
+# UI config
+#
+CONFIG_UI_ROBOT_ID=0
+# end of UI config
+# end of UI config
 # end of app config
 
 #
