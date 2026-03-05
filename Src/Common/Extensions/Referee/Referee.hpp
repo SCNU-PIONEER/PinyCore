@@ -2,8 +2,8 @@
  * @file Referee.hpp
  * @brief 裁判系统类定义
  *
- * @version Version 1.0.0
- * @date 2025/9/21
+ * @version Version 1.2.0
+ * @date 2026/3/3
  *
  * @copyright SCNU-PIONEER (c) 2025-2026
  *
@@ -47,8 +47,6 @@ private:
 
     float rxFreq_ = 0.f;
     uint16_t rxCnt_ = 0;
-    uint16_t lastPos = 0;
-    uint16_t dataLen = 0;
 };
 
 class Transmitter {
