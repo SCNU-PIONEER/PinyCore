@@ -95,4 +95,10 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *_huart)
             }
         }
     }
+    //https://blog.csdn.net/Jonshen/article/details/144032215 (上电初始化出现帧错误（FE）)
+    else if (HAL_UART_GetError(_huart) == HAL_UART_ERROR_FE) {
+        __HAL_UART_CLEAR_FEFLAG(_huart);
+        HAL_UARTEx_ReceiveToIdle_DMA(_huart, _huart->pRxBuffPtr, _huart->RxXferSize);
+        __HAL_DMA_DISABLE_IT(_huart->hdmarx, DMA_IT_HT);
+    }
 }
