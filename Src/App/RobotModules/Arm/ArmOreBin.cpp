@@ -1,33 +1,34 @@
 #include "ArmOreBin.hpp"
 #include "StmLog.hpp"
-#include "Cmd.hpp"
+#include "main.h"
 
 using namespace ARM;
 
+OreBin::OreBin() : leftOreBin(&htim1, TIM_CHANNEL_1), rightOreBin(&htim1, TIM_CHANNEL_3) {}
+
 void OreBin::init()
 {
-    pwm1 = std::make_unique<Pwm>(&htim1, TIM_CHANNEL_1);
-    pwm2 = std::make_unique<Pwm>(&htim1, TIM_CHANNEL_3);
-    pwm1->start();
-    pwm2->start();
+    leftOreBin.start();
+    rightOreBin.start();
 
     LOG::info("OreBin", "init");
 }
 
-void OreBin::loop(ArmMsg_s &_msg)
+void OreBin::loop(const ArmMsg_s &_msg)
 {
     if (_msg.isStucked) {
-        pwm1->setDutyCycle(stuck_angle);
-        pwm2->setDutyCycle(stuck_angle);
+        leftOreBin.setDutyCycle(L_STUCK_ANG);
+        rightOreBin.setDutyCycle(R_STUCK_ANG);
     } else if (!_msg.isStucked) {
-        pwm1->setDutyCycle(release_angle);
-        pwm2->setDutyCycle(release_angle);
+        leftOreBin.setDutyCycle(L_RELEASE_ANG);
+        rightOreBin.setDutyCycle(R_RELEASE_ANG);
     }
 }
 
 void OreBin::stop()
 {
+    leftOreBin.stop();
+    rightOreBin.stop();
+
     LOG::info("OreBin", "stop");
-    pwm1->stop();
-    pwm2->stop();
 }

@@ -1,23 +1,24 @@
 #pragma once
-#include <memory>
 #include "Bsp_pwm.hpp"
 #include "MsgImpl.hpp"
 
 namespace ARM {
-    
+
 class OreBin {
 public:
-    OreBin() = default;
+    OreBin();
 
     void init();
-    void loop(ArmMsg_s &_msg);
+    void loop(const ArmMsg_s &_msg);
     void stop();
 
-    uint16_t release_angle = 1000;
-    uint16_t stuck_angle = 2000;
+    static constexpr uint16_t L_RELEASE_ANG = 1120;
+    static constexpr uint16_t L_STUCK_ANG = 1200;
+    static constexpr uint16_t R_RELEASE_ANG = 830;
+    static constexpr uint16_t R_STUCK_ANG = 900;
 
 private:
-    std::unique_ptr<Pwm> pwm1 = nullptr;
-    std::unique_ptr<Pwm> pwm2 = nullptr;
+    Pwm leftOreBin;
+    Pwm rightOreBin;
 };
 } // namespace ARM
