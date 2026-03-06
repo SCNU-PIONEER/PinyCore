@@ -12,9 +12,9 @@ public:
 
     void enter() override
     {
-        arm_.lifting.stop();
         arm_.orebin.stop();
         arm_.motors.stop();
+        arm_.hand.stop();
         arm_.isEnabled = false;
         LOG::info("Stop", "enter");
     }

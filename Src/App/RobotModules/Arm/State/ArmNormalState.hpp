@@ -12,8 +12,8 @@ public:
 
     void enter() override
     {
-        arm_.lifting.enable();
         arm_.orebin.init();
+        arm_.hand.enable();
         arm_.target_joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");

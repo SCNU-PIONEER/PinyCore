@@ -6,7 +6,6 @@
 #include "MsgImpl.hpp"
 #include "./ArmKinematic.hpp"
 #include "./ArmHand.hpp"
-#include "./ArmLifting.hpp"
 #include "./ArmOreBin.hpp"
 
 
@@ -66,7 +65,6 @@ public:
     bool isEnabled = false;
 
     ARM::OreBin orebin;
-    ARM::Lifting lifting;
 
 private:
     int16_t rateCnt = 0;
