@@ -70,7 +70,7 @@ class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
     };
 };
 
-#define _no_init __attribute__((section(".noinit_ram")))
+// #define _no_init __attribute__((section(".noinit_ram")))
 
 /**
  * @brief 双级yaw轴,大小yaw.
@@ -128,9 +128,10 @@ protected:
         *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
         */
     float ctrlYawAng_ = 0.f;        //主控yaw的角度
-    float baseYawAng_ = 0.f;        // 底盘跟随，单板要用，双板直接读取imu
+
     float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
     bool isConfirmYawZero_ = false; // 确认是否两系转换完成
+    bool isSetBYZeroAng_ = false;   // 是否重置状态
 
     void compensateImuAngle();
     void updateBaseYaw();

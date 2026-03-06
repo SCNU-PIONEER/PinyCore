@@ -196,18 +196,18 @@ SECTIONS
     . = ALIGN(8);
   } >DTCMRAM
 
-//https://shequ.stmicroelectronics.cn/thread-641833-1-1.html
-. = ALIGN(4);
-.noinit_ram :
-{
-  _sbss_ram = .;
+# //https://shequ.stmicroelectronics.cn/thread-641833-1-1.html
+# . = ALIGN(4);
+# .noinit_ram :
+# {
+#   _sbss_ram = .;
 
-  *(.noinit_ram)
-  *(.noinit_ram*)
+#   *(.noinit_ram)
+#   *(.noinit_ram*)
 
-  . = ALIGN(4);
-  _ebss_ram = .;
-} >DTCMRAM
+#   . = ALIGN(4);
+#   _ebss_ram = .;
+# } >DTCMRAM
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

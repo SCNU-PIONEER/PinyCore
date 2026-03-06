@@ -29,14 +29,13 @@ extern canHandle HCAN1;
 using namespace GIMBAL;
 using namespace PINYMOTOR;
 
-_no_init float bigYawZeroAng; //强制要求上电必须摆正大yaw
+float bigYawZeroAng; //强制要求上电必须摆正大yaw
 
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 5.f),
     FILTER::LPF(1000.f, 4.f),
 };
-
 
 DualStage::DualStage()
 {
@@ -73,9 +72,7 @@ DualStage::DualStage()
         .isReverse = FIRST_YAW_REVERSE,
     };
     motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
-    //强制要求上电必须摆正大yaw
-    bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
-    motors_.Gim_s.FirstYaw->setZeroAng(bigYawZeroAng);
+    // motors_.Gim_s.FirstYaw->setZeroAng();
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
@@ -132,6 +129,11 @@ void DualStage::update(void *_param)
     compensateImuAngle();
 
     if (isConfirmYawZero_) {
+        if (isSetBYZeroAng_) {
+            //强制要求上电必须摆正大yaw
+            bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
+            isSetBYZeroAng_ = false;
+        }
         resetZeroPoint();
     }
 
@@ -231,6 +233,7 @@ void DualStage::compensateImuAngle()
             tempComAng = PINYMOTOR::rangeMap(tempComAng);
             this->constDeltaYawArc_ = FIRST_YAW_REVERSE ? getMinorArc(0.f, tempComAng) : getMinorArc(tempComAng, 0.f);
             this->isConfirmYawZero_ = true;
+            this->isSetBYZeroAng_ = true;
         } else {
             this->isConfirmYawZero_ = false;
         }
@@ -240,8 +243,8 @@ void DualStage::compensateImuAngle()
 void DualStage::resetZeroPoint()
 {
     float cirNum = (motors_.Gim_s.FirstYaw->data().cirNum);
-    bigYawZeroAng += (cirNum * ANGLE_JUMP_VALUE);
-    motors_.Gim_s.FirstYaw->setZeroAng(bigYawZeroAng);
+    float newZeroAng = bigYawZeroAng + (cirNum * ANGLE_JUMP_VALUE);
+    motors_.Gim_s.FirstYaw->setZeroAng(newZeroAng);
     // motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG + (cirNum * ANGLE_JUMP_VALUE));
 }
 
