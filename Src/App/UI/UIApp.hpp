@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "MsgImpl.hpp"
-#include "./UIClient.hpp"
+#include "./UIDesigner.hpp"
 
 namespace UI {
 
@@ -13,7 +13,7 @@ namespace UI {
 static constexpr uint8_t SEND_INTERVAL = 40;
 
 // 队列接收事件
-enum class Event_e : uint8_t { CHASSIS, GIMBAL, ARM, REFEREE };
+enum class Event_e : uint8_t { CHASSIS, GIMBAL, ARM, ARMORBOOSTER };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -22,26 +22,37 @@ struct Msg_s {
     void *pdata;
 };
 
-
-class App {
+class UIAPP {
 public:
-    App(uint8_t _id);
+    static UIAPP *instance()
+    {
+        static UIAPP instance;
+        return &instance;
+    }
+
+    UIAPP(const UIAPP &) = delete;
+    UIAPP &operator=(const UIAPP &) = delete;
+
     void init();
     void update(const Msg_s *_param);
     void task();
 
+    QueueHandle_t rxQueue;
+
+    Client &client() { return client_; }
+    void uiReInit();
+
 protected:
-    void updateChassis(const ChassisTxMsg_s *_msg);
-    void updateGimbal(const GimbalTxMsg_s *_msg);
-    void updateArm(const ArmTxMsg_s *_msg);
-    void updateReferee(const RefereeTxMsg_s *_msg);
+    void updateChassis(const ChassisUIMsg_s *_msg);
+    void updateGimbal(const GimbalUIMsg_s *_msg);
+    void updateArm(const ArmUIMsg_s *_msg);
+    void updateArmorBooster(const ArmorBoosterUIMsg_s *_msg);
 
 private:
+    UIAPP();
     Client client_;
-    Info_s *dynamicInfo_;
-    Info_s *constInfo_;
-    QueueHandle_t rxQueue;
-    uint8_t queueLen_ = 0;
+    Info_s dynamicInfo_[DYNAIMIC_NUM] = {};
+    Info_s constInfo_[STATIC_NUM] = {};
     uint32_t updateCnt = 0;
 };
 

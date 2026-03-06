@@ -13,9 +13,7 @@
 
 using namespace UI;
 
-GraphicBuilder &GraphicBuilder::create(const char *_name,
-                                       OperateType_e _operateType,
-                                       uint8_t _layer)
+GraphicBuilder &GraphicBuilder::create(const char *_name, OperateType_e _operateType, uint8_t _layer)
 {
     std::memset(&data_, 0, sizeof(GraphicData_s));
 
@@ -42,8 +40,7 @@ GraphicBuilder &GraphicBuilder::width(uint16_t _width)
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::line(uint16_t _start_x, uint16_t _start_y,
-                                     uint16_t _end_x, uint16_t _end_y)
+GraphicBuilder &GraphicBuilder::line(uint16_t _start_x, uint16_t _start_y, uint16_t _end_x, uint16_t _end_y)
 {
     if (!initialized_)
         return *this;
@@ -56,8 +53,7 @@ GraphicBuilder &GraphicBuilder::line(uint16_t _start_x, uint16_t _start_y,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::rectangle(uint16_t _start_x, uint16_t _start_y,
-                                          uint16_t _end_x, uint16_t _end_y)
+GraphicBuilder &GraphicBuilder::rectangle(uint16_t _start_x, uint16_t _start_y, uint16_t _end_x, uint16_t _end_y)
 {
     if (!initialized_)
         return *this;
@@ -70,8 +66,7 @@ GraphicBuilder &GraphicBuilder::rectangle(uint16_t _start_x, uint16_t _start_y,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::circle(uint16_t _centerX, uint16_t _centerY,
-                                       uint16_t _radius)
+GraphicBuilder &GraphicBuilder::circle(uint16_t _centerX, uint16_t _centerY, uint16_t _radius)
 {
     if (!initialized_)
         return *this;
@@ -83,8 +78,7 @@ GraphicBuilder &GraphicBuilder::circle(uint16_t _centerX, uint16_t _centerY,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::ellipse(uint16_t _centerX, uint16_t _centerY,
-                                        uint16_t _xRadius, uint16_t _yRadius)
+GraphicBuilder &GraphicBuilder::ellipse(uint16_t _centerX, uint16_t _centerY, uint16_t _xRadius, uint16_t _yRadius)
 {
     if (!initialized_)
         return *this;
@@ -97,8 +91,7 @@ GraphicBuilder &GraphicBuilder::ellipse(uint16_t _centerX, uint16_t _centerY,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::arc(uint16_t _start_angle, uint16_t _end_angle,
-                                    uint16_t _centerX, uint16_t _centerY,
+GraphicBuilder &GraphicBuilder::arc(uint16_t _start_angle, uint16_t _end_angle, uint16_t _centerX, uint16_t _centerY,
                                     uint16_t _xRadius, uint16_t _yRadius)
 {
     if (!initialized_)
@@ -114,8 +107,7 @@ GraphicBuilder &GraphicBuilder::arc(uint16_t _start_angle, uint16_t _end_angle,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::floatNum(uint16_t _fontSize, uint16_t _decimal,
-                                         uint16_t _start_x, uint16_t _start_y,
+GraphicBuilder &GraphicBuilder::floatNum(uint16_t _fontSize, uint16_t _decimal, uint16_t _start_x, uint16_t _start_y,
                                          int32_t _num)
 {
     if (!initialized_)
@@ -128,12 +120,11 @@ GraphicBuilder &GraphicBuilder::floatNum(uint16_t _fontSize, uint16_t _decimal,
     data_.start_y = _start_y;
     data_.radius = _num;
     data_.end_x = _num >> 10;
-    data_.end_x = _num >> 21;
+    data_.end_y = _num >> 21;
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::intNum(uint16_t _start_x, uint16_t _start_y,
-                                       uint8_t _fontSize, int32_t _num)
+GraphicBuilder &GraphicBuilder::intNum(uint16_t _start_x, uint16_t _start_y, uint8_t _fontSize, int32_t _num)
 {
     if (!initialized_)
         return *this;
@@ -149,8 +140,7 @@ GraphicBuilder &GraphicBuilder::intNum(uint16_t _start_x, uint16_t _start_y,
     return *this;
 }
 
-GraphicBuilder &GraphicBuilder::character(uint8_t _fontSize, uint16_t _length,
-                                          uint16_t _start_x, uint16_t _start_y)
+GraphicBuilder &GraphicBuilder::character(uint8_t _fontSize, uint16_t _length, uint16_t _start_x, uint16_t _start_y)
 {
     if (!initialized_)
         return *this;

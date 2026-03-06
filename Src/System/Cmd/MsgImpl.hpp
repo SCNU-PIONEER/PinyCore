@@ -12,6 +12,14 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
+namespace ARM {
+enum class FSMState_e : uint8_t;
+}
+
+namespace ARMORBOOSTER {
+enum class FSMState_e : uint8_t;
+}
+
 struct MsgBus_s {
     QueueHandle_t chassisQueue;
     QueueHandle_t gimbalQueue;
@@ -51,12 +59,18 @@ struct DeltaYawMsg_s : public Msg {
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct ChassisTxMsg_s {
+struct ChassisUIMsg_s {
     CHASSIS::FSMState_e state;
 };
 
-struct GimbalTxMsg_s {};
+struct GimbalUIMsg_s {
+    GIMBAL::FSMState_e state;
+};
 
-struct ArmTxMsg_s {};
+struct ArmUIMsg_s {
+    ARM::FSMState_e state;
+};
 
-struct RefereeTxMsg_s {};
+struct ArmorBoosterUIMsg_s {
+    ARMORBOOSTER::FSMState_e state;
+};

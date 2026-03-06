@@ -3,6 +3,7 @@
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
+
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
@@ -30,7 +31,6 @@ Lazy<Cmd> cmd;
 
 #if APP_USE_UI
 #include "UI/UIApp.hpp"
-Lazy<UI::App> ui;
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -51,8 +51,8 @@ void AppManager::initApp()
     cmd.init();
 
 #if APP_USE_UI
-    ui.init(UI_ROBOT_ID);
-    schedule([]() { ui->task(); });
+    UI::UIAPP::instance()->init();
+    schedule([]() { UI::UIAPP::instance()->task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();

@@ -8,8 +8,6 @@
  */
 
 #pragma once
-
-#include "./UIProtocol.hpp"
 #include "./UISender.hpp"
 #include "./UIBuilder.hpp"
 #include <cstdint>
@@ -70,8 +68,8 @@ enum class SendMode_e : uint8_t {
  * @brief UI发送状态枚举
  */
 enum class SendState_e : uint8_t {
-    SENT = 0, // 消息已发送
-    NOT_SENT, // 消息更新后未发送
+    NOT_SENT = 0, // 消息更新后未发送
+    SENT,         // 消息更新后已发送
 };
 
 enum class Type_e : uint8_t {
@@ -116,10 +114,10 @@ struct Config_s {
     uint32_t radius;     // 圆：半径
     uint32_t startAngle; // 圆弧：起始角度
     uint32_t endAngle;   // 圆弧：终止角度
-    uint32_t size;       // 文字数字：字体大小
     float floatNum;      // 浮点数: 显示的数字
     uint32_t decimal;    // 浮点数：小数位有效个数
     int32_t intNum;      // 整数: 显示的数字
+    uint32_t size;       // 文字数字：字体大小
     char text[30];       // 字符串：显示的文字
 };
 
@@ -145,12 +143,11 @@ struct Node_s {
 
 class Client {
 public:
-    Client(UART_HandleTypeDef _huart, uint8_t _id);
+    Client(UART_HandleTypeDef _huart);
     /**
     * @brief 初始化UI链表 在外部调用 一定要在Ui_Send之前调用
     */
-    Status_e initList(Info_s *_dynamicInfo, uint8_t _dynamicNum, Info_s *_info,
-                      uint8_t _num);
+    Status_e initList(Info_s *_dynamicInfo, uint8_t _dynamicNum, Info_s *_info, uint8_t _num);
 
     /**
     * @brief 发送初始化 UI
@@ -171,7 +168,9 @@ public:
     /**
     * @brief 更新机器人ID
     */
-    void updateID(uint16_t _id) { sender_.infoUpdate(_id); }
+    void updateID(uint16_t _id) { sender_.idUpdate(_id); }
+    bool isGraphicInit = false;
+    bool isCharInit = false;
 
 protected:
     /**
@@ -208,16 +207,12 @@ protected:
     * @param ui_send_mode 发送模式
     * @return Status_e UI_ERROR：链表为空,没有初始化链表
     */
-    Status_e storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead,
-                                 Info_s *_graphicPriorityBuf,
-                                 Info_s *_charPriorityBuf,
-                                 uint8_t *_graphicBufNum,
-                                 SendMode_e *_sendMode);
+    Status_e storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead, Info_s *_graphicPriorityBuf,
+                                 Info_s *_charPriorityBuf, uint8_t *_graphicBufNum, SendMode_e *_sendMode);
 
 
     /*初始化优先队列*/
-    Status_e initPriorityLinkedList(Node_s **_headRef, Info_s *_ui_input,
-                                    uint8_t _num);
+    Status_e initPriorityLinkedList(Node_s **_headRef, Info_s *_ui_input, uint8_t _num);
 
     /**
     * @brief 初始化两个链表，将dynamic_ui_info和const_ui_info两个数组中
@@ -230,8 +225,7 @@ protected:
     * @param dynamic_num 动态UI信息数组成员个数
     * @param const_num 静态UI信息数组成员个数
     */
-    Status_e initTypeLinkedLists(Node_s **_graphicLink, Node_s **_charLink,
-                                 Info_s *_dynamicUiInfo, Info_s *_uiInfo,
+    Status_e initTypeLinkedLists(Node_s **_graphicLink, Node_s **_charLink, Info_s *_dynamicUiInfo, Info_s *_uiInfo,
                                  const uint8_t _dynamicNum, const uint8_t _num);
 
     /**
@@ -241,8 +235,7 @@ protected:
     * @param add_operate_enable 1：强行ADD 0：按照UI配置的operate_type
     * @return ext_client_custom_character_t 配置好的发送结构体
     */
-    CharGraphicData_s processCharInfo2Buffer(Info_s _info,
-                                             uint8_t _addOperateEnable);
+    CharGraphicData_s processCharInfo2Buffer(Info_s _info, uint8_t _addOperateEnable);
 
     /**
     * @brief 配置图形信息进发送结构体
@@ -251,8 +244,7 @@ protected:
     * @param add_operate_enable 1：强行ADD 0：按照UI配置的operate_type
     * @return ext_client_custom_graphic_seven_t 配置好的发送结构体
     */
-    SevenGraphicData_s processGraphic2Buffer(Info_s *_info, uint8_t _infoSize,
-                                             uint8_t _addOperateEnable);
+    SevenGraphicData_s processGraphic2Buffer(Info_s *_info, uint8_t _infoSize, uint8_t _addOperateEnable);
 
     /**
     * @brief UI强行发送ADD
@@ -261,10 +253,10 @@ protected:
     Status_e sendForce();
 
 private:
-    Node_s *dynamicListHead_; // 动态UI链表头
-    Node_s *constListHead_;   // 不变UI链表头
-    Node_s *graphicListHead_; // 图形UI链表头
-    Node_s *charListHead_;    // 字符UI链表头
+    Node_s *dynamicListHead_ = nullptr; // 动态UI链表头
+    Node_s *constListHead_ = nullptr;   // 不变UI链表头
+    Node_s *graphicListHead_ = nullptr; // 图形UI链表头
+    Node_s *charListHead_ = nullptr;    // 字符UI链表头
 
     Info_s graphicPriorityBuf_[7]; // 优先级最高的7个图形
     Info_s charPriorityBuf_;       // 优先级最高的字符
