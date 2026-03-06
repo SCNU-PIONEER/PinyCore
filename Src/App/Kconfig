@@ -49,8 +49,8 @@ menu "app config"
     bool "arm"
     default y
 
-    config APP_USE_KEY
-    bool "key"
+    config APP_USE_DT7_KEYBOARD
+    bool "dt7 keyboard"
     default n
 
     config APP_USE_TEACH

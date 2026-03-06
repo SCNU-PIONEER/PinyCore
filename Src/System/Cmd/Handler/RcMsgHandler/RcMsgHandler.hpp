@@ -5,6 +5,8 @@
 #include "RemoteControl.hpp"
 
 #define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
+#define IS_KEY(KEY)             IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::KEY)
+#define IS_LAST_KEY(KEY)        IS_KEY_PRESS(rcData->keyboard.lastKeyCode, DT7::KEY)
 
 enum class RCDevType_e : uint8_t {
     DT7 = 0,
@@ -22,8 +24,10 @@ public:
 private:
     static constexpr float INPUT_VX_MAX = 4.f;
     static constexpr float INPUT_VY_MAX = 4.f;
-
+    static constexpr uint8_t T_ACC_CNT = 100;
+    static constexpr float S_CURVE_ACC = 3.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
+    float channelMax_;
 
     MsgBus_s *msgBus_;
 
@@ -36,4 +40,11 @@ private:
     void scheduleDaemon(const char *_format);
 
     void masterHandle();
+
+    void updateRocker(float _target, float _channel);
+
+    float rx = 0.f;
+    float ry = 0.f;
+    float lx = 0.f;
+    float ly = 0.f;
 };
