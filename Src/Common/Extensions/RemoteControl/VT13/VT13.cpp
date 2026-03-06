@@ -57,13 +57,13 @@ void VT13::parse()
         data_.gamepad.fn2 = raw_->fn2;
         data_.gamepad.wheel = static_cast<int16_t>(raw_->wheel - CH_VALUE_OFFSET);
         data_.gamepad.trigger = raw_->trigger;
-        data_.KBM.mouseX = raw_->mouseX;
-        data_.KBM.mouseY = raw_->mouseY;
-        data_.KBM.mouseZ = raw_->mouseZ;
-        data_.KBM.mouseLeft = raw_->mouseLeft;
-        data_.KBM.mouseRight = raw_->mouseRight;
-        data_.KBM.mouseMiddle = raw_->mouseMiddle;
-        data_.KBM.key = raw_->key;
+        data_.mouse.X = raw_->mouseX;
+        data_.mouse.Y = raw_->mouseY;
+        data_.mouse.Z = raw_->mouseZ;
+        data_.mouse.Left = raw_->mouseLeft;
+        data_.mouse.Right = raw_->mouseRight;
+        data_.mouse.Middle = raw_->mouseMiddle;
+        data_.key = raw_->key;
         rxLostCnt_ = 0;
     }
 }

@@ -84,14 +84,14 @@ public:
             bool trigger;
         } gamepad;
         struct {
-            int16_t mouseX;
-            int16_t mouseY;
-            int16_t mouseZ;
-            bool mouseLeft;
-            bool mouseRight;
-            bool mouseMiddle;
-            uint16_t key;
-        } KBM;
+            int16_t X;
+            int16_t Y;
+            int16_t Z;
+            bool Left;
+            bool Right;
+            bool Middle;
+        } mouse;
+        uint16_t key;
     };
 #pragma pack(pop)
 

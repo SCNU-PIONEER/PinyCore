@@ -67,10 +67,8 @@ public:
             uint8_t pressLeft;
             uint8_t pressRight;
         } mouse;
-        struct {
-            uint16_t keyCode;
-            uint16_t lastKeyCode;
-        } keyboard;
+        uint16_t keyCode;
+
         //1684 - 1024 - 364， 自动居中 1024
         int16_t wheel;
     };

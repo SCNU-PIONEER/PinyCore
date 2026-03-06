@@ -79,7 +79,7 @@ void DT7::parse()
     data_.mouse.pressLeft = buf_[12];
     data_.mouse.pressRight = buf_[13];
 
-    data_.keyboard.keyCode = (((uint16_t)buf_[14]) | ((uint16_t)buf_[15] << 8));
+    data_.keyCode = (((uint16_t)buf_[14]) | ((uint16_t)buf_[15] << 8));
 
     data_.wheel = static_cast<int16_t>((buf_[16]) | (buf_[17] << 8));
 
