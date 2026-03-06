@@ -15,11 +15,13 @@ public:
     void enable();
 
 private:
-    static constexpr float MOVE_CURRENT = 0.05f;
-    static constexpr float CLAMP_CURRENT = 6.f;
-    static constexpr float SAFE_CURRENT = 8.f;
+    static constexpr float MOVE_TORQ = 0.025f;
+    static constexpr float CLAMP_CURRENT = 2.f;
+    static constexpr float SAFE_CURRENT = 6.f;
 
-    PINYMOTOR::DJIMOTOR::M3508 motor;
+    PINYMOTOR::DJIMOTOR::M3508 left;
+    PINYMOTOR::DJIMOTOR::M3508 right;
+
     State_e state = State_e::MOVING;
 };
 } // namespace ARM

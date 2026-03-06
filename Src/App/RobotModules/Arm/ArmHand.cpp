@@ -7,26 +7,36 @@ using namespace PINYMOTOR;
 
 using enum State_e;
 
-static InitConfig_s handConfig = {
+static InitConfig_s hand1Config = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
     .comType = ComType_e::CAN,
     .workMode = WorkMode_e::QUAD_CURR,
     .offsetId = 1,
-    .txFreq = 200.0f,
+    .txFreq = 500.0f,
     .posPID = nullptr,
     .velPID = nullptr,
 };
 
-Hand::Hand() : motor("Hand", handConfig) {}
+static InitConfig_s hand2Config = {
+    .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+    .comType = ComType_e::CAN,
+    .workMode = WorkMode_e::QUAD_CURR,
+    .offsetId = 2,
+    .txFreq = 500.0f,
+    .posPID = nullptr,
+    .velPID = nullptr,
+};
+
+Hand::Hand() : left("Hand1", hand2Config), right("Hand2", hand1Config) {}
 
 State_e Hand::clamp()
 {
-    motor.cmdTorq(-MOVE_CURRENT);
+    right.cmdTorq(-MOVE_TORQ);
 
-    if (motor.data().curr < -SAFE_CURRENT) {
+    if (right.data().curr < -SAFE_CURRENT) {
         // 超过电流阈值，释放夹爪以防损坏
         release();
-    } else if (motor.data().curr < -MOVE_CURRENT) {
+    } else if (right.data().curr < -CLAMP_CURRENT) {
         state = CLAMP;
     } else {
         state = MOVING;
@@ -37,17 +47,25 @@ State_e Hand::clamp()
 void Hand::release()
 {
     if (state == RELEASE) {
-        motor.cmdTorq(0);
+        right.cmdTorq(0);
         return;
     }
-    if (motor.data().curr > SAFE_CURRENT) {
-        motor.cmdTorq(0);
+    if (right.data().curr > SAFE_CURRENT) {
+        right.cmdTorq(0);
         state = RELEASE;
     }
     state = MOVING;
-    motor.cmdTorq(MOVE_CURRENT);
+    right.cmdTorq(MOVE_TORQ);
 }
 
-void Hand::enable() { motor.cmd(MotorCmdType_e::ON); }
+void Hand::enable()
+{
+    left.cmd(MotorCmdType_e::ON);
+    right.cmd(MotorCmdType_e::ON);
+}
 
-void Hand::stop() { motor.cmd(MotorCmdType_e::OFF); }
+void Hand::stop()
+{
+    left.cmd(MotorCmdType_e::OFF);
+    right.cmd(MotorCmdType_e::OFF);
+}
