@@ -63,6 +63,9 @@ public:
 
     bool isMoving(const Joint10 &_target);
 
+    void handYaw(Joint10 &_msgTargetJoints);
+    void handPitch(Joint10 &_msgTargetJoints);
+
     JointInfo_s jointInfos[10];
     Joint10 currentJoints = {};
     ArmSpeed_u ref_speed = {};

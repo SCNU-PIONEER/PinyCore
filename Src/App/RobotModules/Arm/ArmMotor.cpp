@@ -59,3 +59,19 @@ void Motors::ctrl(const Joint10 &_targetJoints)
         index++;
     }
 }
+
+void Motors::handYaw(Joint10 &_msgTargetJoints)
+{
+    _msgTargetJoints[4] = _msgTargetJoints[4];
+    _msgTargetJoints[5] = -_msgTargetJoints[4];
+    _msgTargetJoints[9] = _msgTargetJoints[8];
+    _msgTargetJoints[10] = -_msgTargetJoints[8];
+}
+
+void Motors::handPitch(Joint10 &_msgTargetJoints)
+{
+    _msgTargetJoints[4] = _msgTargetJoints[5];
+    _msgTargetJoints[5] = _msgTargetJoints[5];
+    _msgTargetJoints[9] = _msgTargetJoints[9];
+    _msgTargetJoints[10] = _msgTargetJoints[9];
+}
