@@ -146,7 +146,7 @@ void DualStage::update(void *_param)
     //与云台控制无关，debug使用
     memcpy(&debug.visionControl, &vision->v2eData().control, sizeof(bool));
     memcpy(&debug.visionFire, &vision->v2eData().fire, sizeof(bool));
-    memcpy(&debug.visionTargetYaw, &vision->v2eData().targetYaw, sizeof(float));
+    memcpy(&debug.visionTargetYaw, &vision->v2eData().yaw, sizeof(float));
 
     this->stateFactory_.update();
 }
@@ -164,7 +164,7 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + nmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + nmsg.wz;
         if (msg.state == FSMState_e::NAV) {
-            msg.wYaw = 0.5f;
+            msg.wYaw = 0.3f;
         }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -188,7 +188,8 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
-    shooterCtrlTxPacket_.setData().fire &= (vision->v2eData().control) ? vision->v2eData().fire : true;
+
+    shooterCtrlTxPacket_.setData().fire &= true; //(vision->v2eData().control) ? vision->v2eData().fire : true;
 }
 
 void DualStage::sendVisionData()
@@ -196,11 +197,11 @@ void DualStage::sendVisionData()
     vision->eToVData().roll = insData_.roll;
     vision->eToVData().pitch = insData_.pitch;
     vision->eToVData().yaw = insData_.yaw;
-    vision->eToVData().timestamp = xTaskGetTickCount();
     //装裁判系统数据
     vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);
-    vision->eToVData().gameTime = refereeRxPacket_.data().gameTime;
     vision->eToVData().isPlay = refereeRxPacket_.data().isPlay;
+    //     vision->eToVData().changeTarget = msg.changeTarget;
+    //     vision->eToVData().resetTracker;
 }
 
 void DualStage::sendNavData()
@@ -242,6 +243,9 @@ void DualStage::compensateImuAngle()
 
 void DualStage::resetZeroPoint()
 {
+    if (fabsf(getMinorArc(motors_.Gim_s.FirstYaw->posNorm(), 0.f)) < 0.05f) {
+        return;
+    }
     float cirNum = (motors_.Gim_s.FirstYaw->data().cirNum);
     float newZeroAng = bigYawZeroAng + (cirNum * ANGLE_JUMP_VALUE);
     motors_.Gim_s.FirstYaw->setZeroAng(newZeroAng);
@@ -251,6 +255,7 @@ void DualStage::resetZeroPoint()
 void DualStage::updateBaseYaw() {}
 
 float outMaxRunVel[3];
+float outMaxRunTorq[3];
 void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID,
                      DualStage_u<PositionalPid *> _velPID)
 {
@@ -263,8 +268,12 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angP
         if (msg.state == FSMState_e::STOP) {
             torq[i] = 0.f;
         }
+        outMaxRunTorq[i] = torq[i];
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
+    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
+    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
+    // motors_.Gim_s.Pitch->cmdTorq(0.f);
 }
 
 void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
@@ -277,6 +286,9 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
+    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
+    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
+    // motors_.Gim_s.Pitch->cmdTorq(0.f);
 }
 
 volatile float accDebug = 0;

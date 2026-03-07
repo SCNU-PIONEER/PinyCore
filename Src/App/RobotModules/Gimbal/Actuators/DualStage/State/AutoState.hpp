@@ -52,8 +52,8 @@ public:
     {
         DualStage_s<float> delArc = {};
 
-        eIA_s.Pitch = vision->v2eData().targetPitch;
-        eIA_s.SecondYaw = vision->v2eData().targetYaw;
+        eIA_s.Pitch = vision->v2eData().pitch;
+        eIA_s.SecondYaw = vision->v2eData().yaw;
         // eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
 
         if (eIA_s.SecondYaw >= SECOND_YAW_MAX_ANG || eIA_s.SecondYaw <= SECOND_YAW_MIN_ANG) {

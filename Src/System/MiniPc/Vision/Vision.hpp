@@ -19,40 +19,35 @@ typedef struct {
     float roll;
     float pitch;
     float yaw;
-    float aimX;        // unuse
-    float aimY;        // unuse
-    float aimZ;        // unuse
-    uint16_t gameTime; // s [0,450]
-    uint32_t timestamp;
     uint16_t checksum;
 } EcToVision_s;
 //发来的原始数据
 typedef struct {
     uint8_t header;
-    float targetYaw;
-    float targetPitch;
-    float yawDiff;
-    float pitchDiff;
-    float distance;
-    uint8_t fire;
-    uint32_t capTimestamp;
-    uint16_t tOffset;
-    uint16_t checksum;
-} VisionToEc_s;
-#pragma pack(pop)
-//处理后的数据
-typedef struct {
     uint8_t control;
     uint8_t fire;
-    float targetYaw;
-    float targetPitch;
     float yaw;
     float yawVel;
     float yawAcc;
     float pitch;
     float pitchVel;
     float pitchAcc;
-} V2EData_s;
+    uint16_t checksum;
+} VisionToEc_s;
+#pragma pack(pop)
+//处理后的数据
+// typedef struct {
+//     uint8_t header;
+//     uint8_t control;
+//     uint8_t fire;
+//     float yaw;
+//     float yawVel;
+//     float yawAcc;
+//     float pitch;
+//     float pitchVel;
+//     float pitchAcc;
+//     uint16_t checksum;
+// } V2EData_s;
 
 
 class Vision {
@@ -68,14 +63,14 @@ public:
     void parseData();
     float getRxFreq() { return rxFreq_; }
     EcToVision_s &eToVData() { return ecToVisionDatas_; };
-    V2EData_s &v2eData() { return v2eDatas_; };
+    VisionToEc_s &v2eData() { return visionToEcDatas_; };
 
 protected:
     void usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t &_event, uint32_t _eventBit);
 
 private:
     VisionToEc_s visionToEcDatas_;
-    V2EData_s v2eDatas_;
+    // V2EData_s v2eDatas_;
     EcToVision_s ecToVisionDatas_;
 
     uint8_t rxBuffer_[VISION_DATA_LEN];
