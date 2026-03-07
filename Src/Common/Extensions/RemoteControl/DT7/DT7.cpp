@@ -46,6 +46,8 @@ void DT7::callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _e
 
 void DT7::parse()
 {
+    data_.keyboard.lastKeyCode = data_.keyboard.keyCode;
+
     data_.rc.ch0 = static_cast<int16_t>((buf_[0] | (buf_[1] << 8)) & 0x07FF);
 
     if (data_.rc.ch0 > CH_VALUE_MAX || data_.rc.ch0 < CH_VALUE_MIN)
