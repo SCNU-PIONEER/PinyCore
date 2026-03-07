@@ -92,11 +92,12 @@ void DualFric::on()
 
 void DualFric::off()
 {
-    if (std::fabs(motors_.fricL->vel() + motors_.fricR->vel()) < FRIC_STOP_THRESHOLD) {
+    if ((std::fabs(motors_.fricL->vel()) < FRIC_STOP_THRESHOLD) &&
+        (std::fabs(motors_.fricR->vel()) < FRIC_STOP_THRESHOLD)) {
         stop();
     } else {
         float constZero = 0;
-        SMOOTH::slopeFollowing(&constZero, &targetVel_, 1.f);
+        SMOOTH::slopeFollowing(&constZero, &targetVel_, 5.f);
         ctrl(targetVel_);
     }
 }

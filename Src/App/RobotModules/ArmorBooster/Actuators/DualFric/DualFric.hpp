@@ -56,7 +56,10 @@ public:
 private:
     Motors_u motors_;
 
-    FILTER::IIR3 velFltr_[2];
+    FILTER::IIR3 velFltr_[2] = {
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+    };
 
     PositionalPid fricPid_[2]{ { 0.00065f, 2e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f },
                                { 0.00085f, 7e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f } };
