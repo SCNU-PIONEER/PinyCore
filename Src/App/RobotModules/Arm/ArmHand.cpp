@@ -55,7 +55,7 @@ void Hand::release()
         state = RELEASE;
     }
     state = MOVING;
-    right.cmdTorq(MOVE_TORQ);
+    right.cmdTorq(RELEASE_TORQ);
 }
 
 void Hand::enable()

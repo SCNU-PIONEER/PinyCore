@@ -15,9 +15,10 @@ public:
     void enable();
 
 private:
-    static constexpr float MOVE_TORQ = 0.025f;
+    float MOVE_TORQ = 0.08f;
+    float RELEASE_TORQ = 0.038f;
     static constexpr float CLAMP_CURRENT = 2.f;
-    static constexpr float SAFE_CURRENT = 6.f;
+    static constexpr float SAFE_CURRENT = 7.f;
 
     PINYMOTOR::DJIMOTOR::M3508 left;
     PINYMOTOR::DJIMOTOR::M3508 right;
