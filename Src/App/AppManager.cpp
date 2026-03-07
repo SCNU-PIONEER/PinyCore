@@ -51,8 +51,8 @@ void AppManager::initApp()
     cmd.init();
 
 #if APP_USE_UI
-    UI::UIAPP::instance()->init();
-    schedule([]() { UI::UIAPP::instance()->task(); });
+    UI::APP::instance()->init();
+    schedule([]() { UI::APP::instance()->task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();

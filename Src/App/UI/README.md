@@ -63,13 +63,16 @@ Designer.cpp: 配置UI数据
 ## 使用
 menuconfig中开启UI后
 
-在对应的模块中发送队列,如在底盘update中
+在对应模块调用UI数据更新函数
 ```cpp
-        UI::Msg_s uiMsg;
         ChassisUIMsg_s uiMsgData{ .state = msg.state };
-        uiMsg.type = UI::Event_e::CHASSIS;
-        uiMsg.pdata = &uiMsgData;
-        xQueueSend(UI::UIAPP::instance()->rxQueue, &uiMsg, 0);
+        UI::APP::instance()->updateChassis(uiMsgData);
+```
+
+### 重置UI
+调用
+```cpp
+UI::APP::instance()->uiReInit
 ```
 
 机器人ID会自动在RefereeHanlder更新

@@ -22,34 +22,31 @@ struct Msg_s {
     void *pdata;
 };
 
-class UIAPP {
+class APP {
 public:
-    static UIAPP *instance()
+    static APP *instance()
     {
-        static UIAPP instance;
+        static APP instance;
         return &instance;
     }
 
-    UIAPP(const UIAPP &) = delete;
-    UIAPP &operator=(const UIAPP &) = delete;
+    APP(const APP &) = delete;
+    APP &operator=(const APP &) = delete;
 
     void init();
-    void update(const Msg_s *_param);
     void task();
-
-    QueueHandle_t rxQueue;
 
     Client &client() { return client_; }
     void uiReInit();
 
-protected:
-    void updateChassis(const ChassisUIMsg_s *_msg);
-    void updateGimbal(const GimbalUIMsg_s *_msg);
-    void updateArm(const ArmUIMsg_s *_msg);
-    void updateArmorBooster(const ArmorBoosterUIMsg_s *_msg);
+    void updateChassis(const ChassisUIMsg_s &_msg);
+    void updateGimbal(const GimbalUIMsg_s &_msg);
+    void updateArm(const ArmUIMsg_s &_msg);
+    void updateArmorBooster(const ArmorBoosterUIMsg_s &_msg);
 
+protected:
 private:
-    UIAPP();
+    APP();
     Client client_;
     Info_s dynamicInfo_[DYNAIMIC_NUM] = {};
     Info_s constInfo_[STATIC_NUM] = {};
