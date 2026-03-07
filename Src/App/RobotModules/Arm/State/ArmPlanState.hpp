@@ -20,6 +20,9 @@ public:
     void run() override
     {
         // arm_.setTargetPose();
+        arm_.motors.handYaw(arm_.msg.target);
+        arm_.motors.handPitch(arm_.msg.target);
+
         if (arm_.msg.mode == ARM::ArmMode_e::LEFT) {
             //左臂 j1，2，3,4,5,6
             for (uint8_t i = 6; i < 10; i++) {

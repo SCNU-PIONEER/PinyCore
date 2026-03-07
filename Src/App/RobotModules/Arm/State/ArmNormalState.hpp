@@ -38,6 +38,9 @@ public:
     {
         arm_.orebin.loop(arm_.msg);
 
+        arm_.motors.handYaw(arm_.msg.target);
+        arm_.motors.handPitch(arm_.msg.target);
+
         for (uint8_t i = 0; i < 2; i++) {
             arm_.target_joints.joints[i] += arm_.msg.target[i];
         }
