@@ -30,10 +30,10 @@ void ChassisCtrlRxPacket::registerCallback()
 }
 
 Mecanum::Mecanum()
-        : iir3_{ FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
-                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
-                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
-                 FILTER::IIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE) }
+        : iir3_{ FILTER::LPFIIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::LPFIIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::LPFIIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE),
+                 FILTER::LPFIIR3(1000.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE) }
 {
     for (uint8_t i = 1; i <= 4; i++) {
         InitConfig_s m3508Config = {

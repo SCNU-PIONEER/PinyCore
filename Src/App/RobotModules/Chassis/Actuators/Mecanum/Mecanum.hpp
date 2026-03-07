@@ -86,7 +86,7 @@ private:
     QuadricycleController *powerCtrl_;
     WheelsSpeed_u wSpeed_ = {}; // 当前轮速，单位 rpm
     Speed_u curSpeed_ = {};     // 当前底盘速度，单位 m/s 和 rad/s
-    FILTER::IIR3 iir3_[4];      // 轮速滤波器
+    FILTER::LPFIIR3 iir3_[4];   // 轮速滤波器
 };
 
 } //namespace CHASSIS
