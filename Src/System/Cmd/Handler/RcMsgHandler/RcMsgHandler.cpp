@@ -224,8 +224,6 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             }
             chassisMsg.vx = ry / CH_RANGE * INPUT_VX_MAX;
             chassisMsg.vy = -rx / CH_RANGE * INPUT_VY_MAX;
-        } else {
-            return;
         }
 
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
@@ -327,21 +325,19 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
     // User-defined processing logic goes here ↓
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
         using SW = DT7::Sw_e;
-        static constexpr float CH_RANGE = DT7::CH_VALUE_MAX - DT7::CH_VALUE_OFFSET;
         DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
 
-        const float &rx = rcData->rc.ch0;
-        const float &ry = rcData->rc.ch1;
-        const float &lx = rcData->rc.ch2;
-        const float &ly = rcData->rc.ch3;
+        updateRocker(rx, (float)rcData->rc.ch0);
+        updateRocker(ry, (float)rcData->rc.ch1);
+        updateRocker(lx, (float)rcData->rc.ch2);
 
-        if (rcData->rc.switchRight == DT7::Sw_e::DOWN) {
+        if (rcData->rc.switchRight == SW::DOWN) {
             chassisMsg.state = CHASSIS::FSMState_e::STOP;
             chassisMsg.vx = 0.f;
             chassisMsg.vy = 0.f;
             chassisMsg.yaw = 0.f;
         } else {
-            if (rcData->rc.switchLeft == DT7::Sw_e::DOWN) {
+            if (rcData->rc.switchLeft == SW::DOWN) {
                 chassisMsg.state = CHASSIS::FSMState_e::RUN;
             } else {
                 chassisMsg.state = CHASSIS::FSMState_e::SPIN;
@@ -350,6 +346,47 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             chassisMsg.vy = -SMOOTH::sCurve(INPUT_VY_MAX, rx, T_ACC_CNT);
             chassisMsg.yaw = SMOOTH::sCurve(INPUT_YAW_MAX, lx, T_ACC_CNT);
         }
+
+#if APP_USE_DT7_KEYBOARD
+        float accK = 1.f, lxCommand = 0;
+        chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //加速
+        if (IS_KEY_DT7(SHIFT))
+            accK = 1.5f;
+        else
+            accK = 1.f;
+
+        //前后左右
+        if (IS_KEY_DT7(W)) {
+            updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
+        } else if (IS_KEY_DT7(S)) {
+            updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
+        } else {
+            updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
+        }
+
+        if (IS_KEY_DT7(A)) {
+            updateRocker(rx, -1);
+        } else if (IS_KEY_DT7(D)) {
+            updateRocker(rx, 1);
+        } else {
+            updateRocker(rx, 0);
+        }
+
+        //旋转
+        if (rcData->mouse.pressRight == 1)
+            lxCommand = 1;
+        else if (rcData->mouse.pressLeft == 1)
+            lxCommand = -1;
+        else
+            lxCommand = 0;
+
+        updateRocker(lx, lxCommand);
+
+        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
+        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, lx, T_ACC_CNT); // Scale to m/s
+#endif
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
         (void)rcData;

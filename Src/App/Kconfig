@@ -34,7 +34,12 @@ menu "app config"
     config APP_USE_REFEREE
     bool "referee"
     default n
-    
+
+    config APP_USE_VT13_KEYBOARD
+    depends on APP_USE_REFEREE
+    bool "vt13 keyboard"
+    default n
+
     menu "UI config"
     depends on APP_USE_REFEREE
 
@@ -51,10 +56,6 @@ menu "app config"
 
     config APP_USE_DT7_KEYBOARD
     bool "dt7 keyboard"
-    default n
-
-    config APP_USE_VT13_KEYBOARD
-    bool "vt13 keyboard"
     default n
 
     config APP_USE_TEACH
