@@ -168,6 +168,8 @@ void Swerve::loadRefereeData(void *_param)
     refereeTxPacket_.setData().HP = refereeMsg_.currentHP;
     refereeTxPacket_.setData().isPlay = refereeMsg_.isPlay;
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
+
+    speedTxPacket.setData().shootSpeed = refereeMsg_.bulletSpeed;
 }
 
 /**
@@ -271,7 +273,7 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     // refWheels.M_LB = -wheelComVel[1] / W_CIRCUMFERENCE * 60;
     // refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
     // refWheels.M_RF = wheelComVel[3] / W_CIRCUMFERENCE * 60;
-    // //传rad/s
+    //传rad/s
     refWheels.Wspeed.M_LF = -wheelComVel[0] / W_RADIUS;
     refWheels.Wspeed.M_LB = -wheelComVel[1] / W_RADIUS;
     refWheels.Wspeed.M_RB = wheelComVel[2] / W_RADIUS;
@@ -306,7 +308,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
-        tempDir._[i] = tempDir._[i] < 0 ? 0 : tempDir._[i];
 
         refWSpeed_ = refWSpeed; //debug
 
@@ -315,13 +316,11 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         sTorq[i] = swerveVelPid_._[i]->calc(vel[i], motors_._[i + 4]->vel());
 
         //6020
-
         if (_refSpeed.Speed.vx == 0 && _refSpeed.Speed.vy == 0 && _refSpeed.Speed.wz == 0) {
             motors_._[i + 4]->cmdTorq(0);
         } else {
             motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));
         }
-
         // motors_.S_RF->cmdTorq(0);
         // motors_.S_LF->cmdTorq(0);
         // motors_.S_LB->cmdTorq(0);
@@ -348,9 +347,9 @@ void Swerve::loadDeltaYaw()
     // Master Board method
     insSub_->receive();
     deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
-    if (msg.state == FSMState_e::TANK) {
-        deltaYaw = 0.f;
-    }
+    // if (msg.state == FSMState_e::TANK) {
+    //     deltaYaw = 0.f;
+    // }
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
 };

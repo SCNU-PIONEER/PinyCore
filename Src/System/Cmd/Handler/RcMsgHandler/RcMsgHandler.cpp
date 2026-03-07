@@ -178,9 +178,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 gMsg_.state = GIMBAL::FSMState_e::RUN;
                 cMsg_.state = CHASSIS::FSMState_e::TANK;
                 alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-                // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+                abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
             } else if (sl == SW::UP) {
-                // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+                alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
             // cMsg_.state = CHASSIS::FSMState_e::STOP;
 
@@ -192,16 +192,16 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - ET08A::CH_VALUE_OFFSET) / CH_RANGE) >
                           WHEEL_THESHORLD;
             if (sl == SW::DOWN) {
-                // gMsg_.state = GIMBAL::FSMState_e::NAV;
+                gMsg_.state = GIMBAL::FSMState_e::NAV;
                 cMsg_.state = CHASSIS::FSMState_e::TANK;
                 // gMsg_.state = GIMBAL::FSMState_e::PATROL;
                 // cMsg_.state = CHASSIS::FSMState_e::SPIN;
             } else if (sl == SW::MID) {
                 gMsg_.state = GIMBAL::FSMState_e::AUTO;
                 alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
-                // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+                abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
             } else if (sl == SW::UP) {
-                // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+                alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
             // cMsg_.state = CHASSIS::FSMState_e::STOP;
 

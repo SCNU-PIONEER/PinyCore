@@ -182,7 +182,12 @@ private:
     //舵轮速度环
     Swerve_u<PositionalPid *> swerveVelPid_ = {};
     //舵轮输入滤波器
-    FILTER::IIR3 swerveFilterInput_[4];
+    FILTER::IIR3 swerveFilterInput_[4] = {
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+    };
     //舵轮输出滤波器
     Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};
     //轮速
