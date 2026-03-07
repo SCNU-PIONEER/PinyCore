@@ -31,8 +31,24 @@ CONFIG_CHASSIS_FILE="\"Mecanum.hpp\""
 # CONFIG_APP_USE_INS is not set
 CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
-# CONFIG_APP_USE_REFEREE is not set
-CONFIG_APP_USE_ARM=y
+CONFIG_APP_USE_REFEREE=y
+# CONFIG_APP_USE_VT13_KEYBOARD is not set
+
+#
+# UI config
+#
+# CONFIG_APP_USE_UI is not set
+
+#
+# UI config
+#
+CONFIG_UI_ROBOT_ID=0
+# end of UI config
+# end of UI config
+
+# CONFIG_APP_USE_ARM is not set
+# CONFIG_APP_USE_DT7_KEYBOARD is not set
+# CONFIG_APP_USE_TEACH is not set
 # end of app config
 
 #
@@ -53,6 +69,7 @@ CONFIG_BSP_USE_USB=y
 #
 CONFIG_EXTENSION_DT7=y
 # CONFIG_EXTENSION_ET08A is not set
+# CONFIG_EXTENSION_VT13 is not set
 CONFIG_EXTENSION_BUZZER=y
 CONFIG_EXTENSION_LED=y
 
