@@ -211,7 +211,7 @@ void DualStage::sendNavData()
 
     nav->ecToNavData().navHPstate = refereeRxPacket_.data().HP;
     nav->ecToNavData().gameTime = refereeRxPacket_.data().gameTime;
-    // nav->ecToNavData().gameProgress;
+    nav->ecToNavData().gameProgress = refereeRxPacket_.data().gameProgress;
 }
 
 void DualStage::compensateImuAngle()

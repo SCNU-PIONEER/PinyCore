@@ -132,11 +132,12 @@ public:
 
 class RefereePacketType {
 public:
-    static constexpr uint8_t LEN = 4;
+    static constexpr uint8_t LEN = 8;
     static constexpr uint16_t ID = 0x23;
     struct ProtoData_s {
         uint16_t HP;
         uint16_t gameTime;
+        uint8_t gameProgress;
         uint8_t robotId;
         uint8_t isPlay;
         uint32_t reserved;
@@ -144,11 +145,12 @@ public:
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
-            uint16_t HP : 10;
-            uint16_t gameTime : 10;
+            uint16_t HP;
+            uint16_t gameTime;
+            uint8_t gameProgress : 4;
             uint8_t robotId : 8;
             uint8_t isPlay : 1;
-            uint32_t reserved : 3;
+            uint32_t reserved : 23;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -158,6 +160,7 @@ public:
         Data_u::Data_s &d = _data.content;
         d.HP = _protoData.HP;
         d.gameTime = _protoData.gameTime;
+        d.gameProgress = _protoData.gameProgress;
         d.robotId = _protoData.robotId;
         d.isPlay = _protoData.isPlay;
         d.reserved = 0;
@@ -166,6 +169,7 @@ public:
     {
         _protoData.HP = _data.content.HP;
         _protoData.gameTime = _data.content.gameTime;
+        _protoData.gameProgress = _data.content.gameProgress;
         _protoData.robotId = _data.content.robotId;
         _protoData.isPlay = _data.content.isPlay;
     }

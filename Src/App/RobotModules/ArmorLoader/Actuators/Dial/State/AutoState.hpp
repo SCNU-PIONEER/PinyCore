@@ -36,7 +36,7 @@ public:
     void run() final
     {
         if (loader_->msg.fire)
-            loader_->ctrl(pids_.dialVelPid, DIAL_VEL_18HZ);
+            loader_->ctrl(pids_.dialVelPid, DIAL_VEL_10HZ);
         else
             loader_->ctrl(pids_.dialVelPid, 0.f);
     }

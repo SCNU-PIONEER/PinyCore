@@ -165,6 +165,7 @@ void Swerve::loadRefereeData(void *_param)
     };
 
     refereeTxPacket_.setData().gameTime = refereeMsg_.gameTime;
+    refereeTxPacket_.setData().gameProgress = referee->receiver.getRefereeData().gameStatus.gameProgress;
     refereeTxPacket_.setData().HP = refereeMsg_.currentHP;
     refereeTxPacket_.setData().isPlay = refereeMsg_.isPlay;
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
