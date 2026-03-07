@@ -44,7 +44,7 @@ private:
 
     void masterHandle();
 
-    void updateRocker(float _target, float _channel);
+    void updateRocker(float &_target, float _channel);
 
     float rx = 0.f;
     float ry = 0.f;

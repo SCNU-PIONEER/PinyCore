@@ -403,7 +403,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::notify(Msg *_msg, Q
     xQueueSend(_queue, _msg, 0);
 }
 
-template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::updateRocker(float _target, float _channel)
+template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::updateRocker(float &_target, float _channel)
 {
     float delta = (_channel * T_ACC_CNT / channelMax_) - _target;
     _target += std::fmax(-S_CURVE_ACC, std::fmin(S_CURVE_ACC, delta));
