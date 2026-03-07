@@ -190,13 +190,65 @@ public:
 #pragma pack(pop)
     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
-        _data.content.shootSpeed = static_cast<uint16_t>((_protoData.shootSpeed - 10.f) * 585.f);
-        _data.content.reserved = 0;
+        Data_u::Data_s &d = _data.content;
+        d.shootSpeed = static_cast<uint16_t>((_protoData.shootSpeed - 10.f) * 585.f);
+        d.reserved = 0;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         _protoData.shootSpeed = (static_cast<float>(_data.content.shootSpeed) / 585.f) + 10.f;
     }
 };
+
+//UL专用,英雄1,步兵2,哨兵7
+// class RobotHPPacketType {
+// public:
+//     static constexpr uint8_t LEN = 8;
+//     static constexpr uint16_t ID = 0x25;
+//     struct ProtoData_s {
+//         uint16_t ally1RobotHP;
+//         uint16_t ally3RobotHP;
+//         uint16_t ally7RobotHP;
+//         uint16_t enemy1RobotHP;
+//         uint16_t enemy3RobotHP;
+//         uint16_t enemy7RobotHP;
+//         uint16_t reserved;
+//     };
+// #pragma pack(push, 1)
+//     union Data_u {
+//         struct Data_s {
+//             uint16_t ally1RobotHP : 10;
+//             uint16_t ally3RobotHP : 10;
+//             uint16_t ally7RobotHP : 10;
+//             uint16_t enemy1RobotHP : 10;
+//             uint16_t enemy3RobotHP : 10;
+//             uint16_t enemy7RobotHP : 10;
+//             uint16_t reserved : 4;
+//         } content;
+//         uint8_t bytes[LEN];
+//     } data;
+
+//     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+//     {
+//         Data_u::Data_s &d = _data.content;
+//         d.ally1RobotHP = _protoData.ally1RobotHP;
+//         d.ally3RobotHP = _protoData.ally3RobotHP;
+//         d.ally7RobotHP = _protoData.ally7RobotHP;
+//         d.enemy1RobotHP = _protoData.enemy1RobotHP;
+//         d.enemy3RobotHP = _protoData.enemy3RobotHP;
+//         d.enemy7RobotHP = _protoData.enemy7RobotHP;
+//         d.reserved = 0;
+//     }
+//     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+//     {
+//         _protoData.ally1RobotHP = _data.content.ally1RobotHP;
+//         _protoData.ally3RobotHP = _data.content.ally3RobotHP;
+//         _protoData.ally7RobotHP = _data.content.ally7RobotHP;
+//         _protoData.enemy1RobotHP = _data.content.enemy1RobotHP;
+//         _protoData.enemy3RobotHP = _data.content.enemy3RobotHP;
+//         _protoData.enemy7RobotHP = _data.content.enemy7RobotHP;
+//     }
+// #pragma pack(pop)
+// };
 
 } // namespace COMM

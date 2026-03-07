@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "Bsp_can.hpp"
-
+#include "Referee.hpp"
 #include "M2006.hpp"
 
 #include "./State/AutoState.hpp"
@@ -60,16 +60,15 @@ void Dial::enter()
 
 void Dial::update(void *_param)
 {
+    msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
+
 #if APP_USE_REFEREE
-    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg_, 0) == pdTRUE) {
-    };
-    if (refereeMsg_.remainHeat > 40) {
-        refereeFire_ = true;
-    }
+    remainHeat = referee->receiver.getRefereeData().gameRobotStatus.shooterHeatLimit -
+                 referee->receiver.getRefereeData().powerHeatData.shooter_17mmBarrelHeat;
+    refereeFire_ = remainHeat < 0 || remainHeat > 40;
 #else
     refereeFire_ = true;
 #endif
-    msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
 
     msg.fire = shooterCtrlRxPacket_.data().fire && refereeFire_;
 

@@ -10,6 +10,7 @@
 #include "Referee.hpp"
 #include "RxPacket.hpp"
 #include "PacketImpl.hpp"
+#include <cstdint>
 
 namespace ARMORLOADER {
 
@@ -93,8 +94,8 @@ private:
     FILTER::IIR2 velFltr_;
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;
-    RefereeMsg_s refereeMsg_;
 
+    uint16_t remainHeat;
     float vel_; // rad/s
     bool refereeFire_ = false;
 
