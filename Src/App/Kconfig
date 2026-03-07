@@ -53,6 +53,10 @@ menu "app config"
     bool "dt7 keyboard"
     default n
 
+    config APP_USE_VT13_KEYBOARD
+    bool "vt13 keyboard"
+    default n
+
     config APP_USE_TEACH
     bool "teach"
     default n

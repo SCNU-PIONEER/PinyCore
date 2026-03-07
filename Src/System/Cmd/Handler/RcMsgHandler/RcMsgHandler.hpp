@@ -5,8 +5,11 @@
 #include "RemoteControl.hpp"
 
 #define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
-#define IS_KEY(KEY)             IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::KEY)
-#define IS_LAST_KEY(KEY)        IS_KEY_PRESS(rcData->keyboard.lastKeyCode, DT7::KEY)
+#define IS_KEY_DT7(KEY)         IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::KEY)
+#define IS_LAST_KEY_DT7(KEY)    IS_KEY_PRESS(rcData->keyboard.lastKeyCode, DT7::KEY)
+
+#define IS_KEY_VT13(KEY)      IS_KEY_PRESS(rcData->keyboard.key, VT13::KEY)
+#define IS_LAST_KEY_VT13(KEY) IS_KEY_PRESS(rcData->keyboard.lastKey, VT13::KEY)
 
 enum class RCDevType_e : uint8_t {
     DT7 = 0,
