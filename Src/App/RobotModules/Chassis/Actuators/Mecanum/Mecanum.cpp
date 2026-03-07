@@ -52,6 +52,8 @@ Mecanum::Mecanum()
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     this->stateFactory_.addState(FSMState_e::SPIN, std::make_unique<SpinState>(*this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
+
+    LOG::info("Mecanum", "init success");
 }
 
 void Mecanum::stop()
@@ -68,9 +70,9 @@ void Mecanum::enter()
     }
 }
 
-void Mecanum::update()
+void Mecanum::update(const QueueHandle_t *_queue)
 {
-    xQueueReceive(cmd->getMsgBus()->chassisQueue, &msg, 0);
+    xQueueReceive(*_queue, &msg, 0);
 
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = iir3_[i].process(motors_._[i]->data().spdRpm);

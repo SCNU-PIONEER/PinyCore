@@ -9,8 +9,12 @@
 #include "Bsp.hpp"
 #include "Lazy.hpp"
 #include "INS.hpp"
-#include "Mecanum.hpp"
-#include "Standard.hpp"
+#if APP_USE_CHASSIS
+#include CHASSIS_FILE
+#endif
+#if APP_USE_GIMBAL
+#include GIMBAL_FILE
+#endif
 #include "UI/UIApp.hpp"
 #include "Arm.hpp"
 
@@ -27,7 +31,9 @@ Lazy<INS_SYS::INS> ins;
 
 Lazy<Cmd> cmd;
 
+#if APP_USE_CHASSIS
 Lazy<CHASSIS::Mecanum> chassis;
+#endif
 //---------------------------------------------------------------------------------------------------
 
 #if APP_USE_GIMBAL
@@ -42,6 +48,7 @@ Lazy<UI::App> ui;
 
 void AppManager::initApp()
 {
+    Power_5V_ON();
     // Buzzer
     BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
 
@@ -66,12 +73,12 @@ void AppManager::initApp()
 
 #if APP_USE_CHASSIS
     chassis.init();
-    schedule([]() { chassis->update(); });
+    schedule([]() { chassis->update(&(cmd->getMsgBus()->chassisQueue)); });
 #endif
 
 #if APP_USE_GIMBAL
     gimbal.init();
-    schedule([]() { gimbal->update((void *)cmd->getMsgBus()); });
+    schedule([]() { gimbal->update((cmd->getMsgBus())); });
 
     arm.init();
     schedule([]() { arm->update(cmd->getMsgBus()); });

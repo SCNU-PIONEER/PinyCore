@@ -58,7 +58,7 @@ public:
     void stop();
     void enter();
     void ctrl(const Speed_u &_speed);
-    void update();
+    void update(const QueueHandle_t *_queue);
     const Speed_u &getSpeed() const { return curSpeed_; }
 
 protected:

@@ -26,7 +26,7 @@ public:
 
     void stop();
     void enter();
-    void update(void *_param);
+    void update(const MsgBus_s *_bus);
     void ctrl(float _pos, float _maxSpeed = YAW_SPEED_MAX);
 
     bool isLaunched = false;

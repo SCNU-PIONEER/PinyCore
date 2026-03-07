@@ -40,14 +40,13 @@ void Standard::stop() { motor_->cmd(PINYMOTOR::MotorCmdType_e::OFF); }
 
 void Standard::enter() { motor_->cmd(PINYMOTOR::MotorCmdType_e::ON); }
 
-void Standard::update(void *_param)
+void Standard::update(const MsgBus_s *_bus)
 {
-    if (xQueueReceive((((MsgBus_s *)_param)->gimbalQueue), &msg, 0) == pdTRUE) {
-    };
+    xQueueReceive(_bus->gimbalQueue, &msg, 0);
 
 #if APP_USE_COMM
     ChassisMsg_s cmsg{};
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) == pdTRUE) {
+    if (xQueueReceive(_bus->chassisQueue, &cmsg, 0) == pdTRUE) {
         if (cmsg.state == CHASSIS::FSMState_e::RUN) {
             if (isLaunched) {
                 chassisCtrlTxPacket_.setData().state = cmsg.state;
