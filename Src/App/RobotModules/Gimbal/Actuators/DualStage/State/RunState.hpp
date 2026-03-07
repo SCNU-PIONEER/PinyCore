@@ -10,13 +10,13 @@
 
 static PositionalPid gRunPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(30.f, 40.f, 3.f, 0.001f, 3.f, 25.f, 0.f),
-    PositionalPid(25.f, 5.f, 0.05f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(20.f, 10.f, 2.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(10.f, 2.f, 0.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(4.f, 0.f, 0.03f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.3f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(2.f, 0.0f, 0.0001f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 
 namespace GIMBAL {
@@ -55,8 +55,8 @@ public:
         eIA_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
 
         if (gimbal_->isVisionAngOver_) {
-            eIA_s.Pitch = vision->v2eData().targetPitch;
-            eIA_s.FirstYaw = vision->v2eData().targetYaw;
+            eIA_s.Pitch = vision->v2eData().pitch;
+            eIA_s.FirstYaw = vision->v2eData().yaw;
         }
 
         eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
