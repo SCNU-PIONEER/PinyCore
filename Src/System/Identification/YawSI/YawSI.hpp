@@ -24,8 +24,8 @@ public:
 
 private:
     float ctrlFreq_ = 0.f;
-    FILTER::IIR3 velFilter_;
-    FILTER::IIR3 torqFilter_;
+    FILTER::LPFIIR3 velFilter_;
+    FILTER::LPFIIR3 torqFilter_;
     FILTER::LPF inerFilter_;
 
     float fitTorq_ = 0.f;
