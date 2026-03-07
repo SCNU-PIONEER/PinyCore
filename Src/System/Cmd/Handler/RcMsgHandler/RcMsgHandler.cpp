@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <cstring>
+#include "Smooth.hpp"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -35,10 +36,13 @@ void RcMsgHandler<DEV_TYPE>::createRcDev(UART_HandleTypeDef *_huart, EventGroupH
 {
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
         rc_ = std::make_unique<DT7>(_huart, _event, this->bit_);
+        channelMax_ = 660.f;
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         rc_ = std::make_unique<ET08A>(_huart, _event, this->bit_);
+        channelMax_ = 1.f; // 未测
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         rc_ = std::make_unique<VT13>(_huart, _event, this->bit_);
+        channelMax_ = 1.f;
     }
     scheduleDaemon();
 }
@@ -92,12 +96,12 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         static constexpr float CH_RANGE = DT7::CH_VALUE_MAX - DT7::CH_VALUE_OFFSET;
         DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
 
-        const float &rx = rcData->rc.ch0;
-        const float &ry = rcData->rc.ch1;
-        const float &lx = rcData->rc.ch2;
-        const float &ly = rcData->rc.ch3;
+        updateRocker(rx, rcData->rc.ch0);
+        updateRocker(ry, rcData->rc.ch1);
+        updateRocker(lx, rcData->rc.ch2);
+        updateRocker(ly, rcData->rc.ch3);
 
-#if APP_USE_KEY
+#if APP_USE_DT7_KEYBOARD
         /*
          * gimbal:STOP,RUN,
          * chassis:STOP,RUN,SPIN
@@ -108,68 +112,68 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         float accK = 1.f, lxCommand = 0;
         chassisMsg.state = CHASSIS::FSMState_e::RUN;
         //加速
-        if (isKeyPressed(KEY_SHIFT))
+        if (IS_KEY_DT7(SHIFT))
             accK = 1.5f;
         else
             accK = 1.f;
 
         //前后左右
-        if (isKeyPressed(KEY_W)) {
-            kupdateRocker(rcMsg_.ry, 1); //加速向前，ry 增加并趋近于最大值。
-        } else if (isKeyPressed(KEY_S)) {
-            kupdateRocker(rcMsg_.ry, -1); //加速向后，ry 减少并趋近于最小值。
+        if (IS_KEY_DT7(W)) {
+            updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
+        } else if (IS_KEY_DT7(S)) {
+            updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
         } else {
-            kupdateRocker(rcMsg_.ry, 0); //自然减速回中，ry 向 0 值靠近。
+            updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
         }
 
-        if (isKeyPressed(KEY_A)) {
-            kupdateRocker(rcMsg_.rx, -1);
-        } else if (isKeyPressed(KEY_D)) {
-            kupdateRocker(rcMsg_.rx, 1);
+        if (IS_KEY_DT7(A)) {
+            updateRocker(rx, -1);
+        } else if (IS_KEY_DT7(D)) {
+            updateRocker(rx, 1);
         } else {
-            kupdateRocker(rcMsg_.rx, 0);
+            updateRocker(rx, 0);
         }
 
         //旋转
-        if (rcMsg_.rPress == 1)
+        if (rcData->mouse.pressRight == 1)
             lxCommand = 1;
-        else if (rcMsg_.lPress == 1)
+        else if (rcData->mouse.pressLeft == 1)
             lxCommand = -1;
         else
             lxCommand = 0;
 
-        kupdateRocker(rcMsg_.lx, lxCommand);
+        updateRocker(lx, lxCommand);
 
-        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, rcMsg_.ry, T_ACC_CNT);  // Scale to m/s
-        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rcMsg_.rx, T_ACC_CNT); // Scale to m/s
-        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, rcMsg_.lx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
+        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, lx, T_ACC_CNT); // Scale to m/s
         /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
         //单双臂
-        if (isKeyPressed(KEY_SHIFT) && !isKeyLastPressed(KEY_SHIFT)) {
-            if (isKeyLastPressed(KEY_Z) && !isKeyPressed(KEY_Z)) {
+        if (IS_KEY_DT7(SHIFT) && !IS_LAST_KEY_DT7(SHIFT)) {
+            if (IS_LAST_KEY_DT7(Z) && !IS_KEY_DT7(Z)) {
                 armMsg.mode = ARM::ArmMode_e::LEFT;
             }
-            if (isKeyLastPressed(KEY_X) && !isKeyPressed(KEY_X)) {
+            if (IS_LAST_KEY_DT7(X) && !IS_KEY_DT7(X)) {
                 armMsg.mode = ARM::ArmMode_e::RIGHT;
             }
-            if (isKeyLastPressed(KEY_C) && !isKeyPressed(KEY_C)) {
+            if (IS_LAST_KEY_DT7(C) && !IS_KEY_DT7(C)) {
                 armMsg.mode = ARM::ArmMode_e::TWO;
             }
         }
         //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
-        if (isKeyPressed(KEY_Q))
+        if (IS_KEY_DT7(Q))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-        if (isKeyPressed(KEY_E))
+        if (IS_KEY_DT7(E))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-        if (isKeyPressed(KEY_R))
+        if (IS_KEY_DT7(R))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
-        if (isKeyPressed(KEY_F))
+        if (IS_KEY_DT7(F))
             armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-        if (isKeyPressed(KEY_G))
+        if (IS_KEY_DT7(G))
             armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
-        if (isKeyPressed(KEY_V) && !isKeyLastPressed(KEY_V))
+        if (IS_KEY_DT7(V) && !IS_LAST_KEY_DT7(V))
             armMsg.switch1 = !armMsg.switch1;
-#else
+#endif
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
             armMsg.switch1 = false;
@@ -220,17 +224,91 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             }
             chassisMsg.vx = ry / CH_RANGE * INPUT_VX_MAX;
             chassisMsg.vy = -rx / CH_RANGE * INPUT_VY_MAX;
-        } else {
-            return;
         }
 
-#endif
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
         (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
         (void)rcData;
+        updateRocker(rx, rcData->gamepad.ch[0]);
+        updateRocker(ry, rcData->gamepad.ch[1]);
+        updateRocker(lx, rcData->gamepad.ch[2]);
+        updateRocker(ly, rcData->gamepad.ch[3]);
+#if APP_USE_VT13_KEYBOARD
+        /*
+         * gimbal:STOP,RUN,
+         * chassis:STOP,RUN,SPIN
+         * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
+         */
+        //机械臂控制使用自定义控制器
+        /*————————————————————————————————————————————————chassis——————————————————————————————————————————————*/
+        float accK = 1.f, lxCommand = 0;
+        chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //加速
+        if (IS_KEY_VT13(SHIFT))
+            accK = 1.5f;
+        else
+            accK = 1.f;
+
+        //前后左右
+        if (IS_KEY_VT13(W)) {
+            updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
+        } else if (IS_KEY_VT13(S)) {
+            updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
+        } else {
+            updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
+        }
+
+        if (IS_KEY_VT13(A)) {
+            updateRocker(rx, -1);
+        } else if (IS_KEY_VT13(D)) {
+            updateRocker(rx, 1);
+        } else {
+            updateRocker(rx, 0);
+        }
+
+        //旋转
+        if (rcData->KBM.mouseRight == 1)
+            lxCommand = 1;
+        else if (rcData->KBM.mouseLeft == 1)
+            lxCommand = -1;
+        else
+            lxCommand = 0;
+
+        updateRocker(lx, lxCommand);
+
+        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
+        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, lx, T_ACC_CNT); // Scale to m/s
+        /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
+        //单双臂
+        if (IS_KEY_VT13(SHIFT) && !IS_LAST_KEY_VT13(SHIFT)) {
+            if (IS_LAST_KEY_VT13(Z) && !IS_KEY_VT13(Z)) {
+                armMsg.mode = ARM::ArmMode_e::LEFT;
+            }
+            if (IS_LAST_KEY_VT13(X) && !IS_KEY_VT13(X)) {
+                armMsg.mode = ARM::ArmMode_e::RIGHT;
+            }
+            if (IS_LAST_KEY_VT13(C) && !IS_KEY_VT13(C)) {
+                armMsg.mode = ARM::ArmMode_e::TWO;
+            }
+        }
+        //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
+        if (IS_KEY_VT13(Q))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
+        if (IS_KEY_VT13(E))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
+        if (IS_KEY_VT13(R))
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
+        if (IS_KEY_VT13(F))
+            armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
+        if (IS_KEY_VT13(G))
+            armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+        if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V))
+            armMsg.switch1 = !armMsg.switch1;
+#endif
     }
 
     notify(&chassisMsg, msgBus_->chassisQueue);
@@ -243,22 +321,79 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
-    if (rcMsg_.rSwitch == RC_SW_DOWN) {
-        chassisMsg.state = CHASSIS::FSMState_e::STOP;
-        chassisMsg.vx = 0.f;
-        chassisMsg.vy = 0.f;
-        chassisMsg.yaw = 0.f;
-    } else {
-        if (rcMsg_.lSwitch == RC_SW_DOWN) {
-            chassisMsg.state = CHASSIS::FSMState_e::RUN;
+
+    // User-defined processing logic goes here ↓
+    if constexpr (DEV_TYPE == RCDevType_e::DT7) {
+        using SW = DT7::Sw_e;
+        DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
+
+        updateRocker(rx, (float)rcData->rc.ch0);
+        updateRocker(ry, (float)rcData->rc.ch1);
+        updateRocker(lx, (float)rcData->rc.ch2);
+
+        if (rcData->rc.switchRight == SW::DOWN) {
+            chassisMsg.state = CHASSIS::FSMState_e::STOP;
+            chassisMsg.vx = 0.f;
+            chassisMsg.vy = 0.f;
+            chassisMsg.yaw = 0.f;
         } else {
-            chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+            if (rcData->rc.switchLeft == SW::DOWN) {
+                chassisMsg.state = CHASSIS::FSMState_e::RUN;
+            } else {
+                chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+            }
+            chassisMsg.vx = SMOOTH::sCurve(INPUT_VX_MAX, ry, T_ACC_CNT);
+            chassisMsg.vy = -SMOOTH::sCurve(INPUT_VY_MAX, rx, T_ACC_CNT);
+            chassisMsg.yaw = SMOOTH::sCurve(INPUT_YAW_MAX, lx, T_ACC_CNT);
         }
-        chassisMsg.vx = SMOOTH::sCurve(ROCKER_VX_GAIN, rcMsg_.ry, T_ACC_CNT);
-        chassisMsg.vy = -SMOOTH::sCurve(ROCKER_VY_GAIN, rcMsg_.rx, T_ACC_CNT);
-        chassisMsg.yaw = SMOOTH::sCurve(ROCKER_YAW_GAIN, rcMsg_.lx, T_ACC_CNT);
+
+#if APP_USE_DT7_KEYBOARD
+        float accK = 1.f, lxCommand = 0;
+        chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //加速
+        if (IS_KEY_DT7(SHIFT))
+            accK = 1.5f;
+        else
+            accK = 1.f;
+
+        //前后左右
+        if (IS_KEY_DT7(W)) {
+            updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
+        } else if (IS_KEY_DT7(S)) {
+            updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
+        } else {
+            updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
+        }
+
+        if (IS_KEY_DT7(A)) {
+            updateRocker(rx, -1);
+        } else if (IS_KEY_DT7(D)) {
+            updateRocker(rx, 1);
+        } else {
+            updateRocker(rx, 0);
+        }
+
+        //旋转
+        if (rcData->mouse.pressRight == 1)
+            lxCommand = 1;
+        else if (rcData->mouse.pressLeft == 1)
+            lxCommand = -1;
+        else
+            lxCommand = 0;
+
+        updateRocker(lx, lxCommand);
+
+        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
+        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
+        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, lx, T_ACC_CNT); // Scale to m/s
+#endif
+    } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
+        ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
+        (void)rcData;
+    } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
+        VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+        (void)rcData;
     }
-    memcpy(&rcMsgPrev_, &rcMsg_, sizeof(rcMsg_));
     notify(&chassisMsg, msgBus_->chassisQueue);
 }
 #endif
@@ -266,6 +401,12 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::notify(Msg *_msg, QueueHandle_t _queue)
 {
     xQueueSend(_queue, _msg, 0);
+}
+
+template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::updateRocker(float _target, float _channel)
+{
+    float delta = (_channel * T_ACC_CNT / channelMax_) - _target;
+    _target += std::fmax(-S_CURVE_ACC, std::fmin(S_CURVE_ACC, delta));
 }
 
 // Explicit template instantiation

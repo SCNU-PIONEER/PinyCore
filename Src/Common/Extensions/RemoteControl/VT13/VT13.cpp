@@ -47,6 +47,7 @@ void VT13::parse()
 {
     raw_ = reinterpret_cast<RcRawData_s *>(buf_);
     if (buf_[0] == 0xA9 && buf_[1] == 0x53 && Verify_CRC16_Check_Sum(buf_, FRAME_LENGTH)) {
+        data_.KBM.lastKey = data_.KBM.key;
         data_.gamepad.ch[0] = static_cast<int16_t>(raw_->ch0 - CH_VALUE_OFFSET);
         data_.gamepad.ch[1] = static_cast<int16_t>(raw_->ch1 - CH_VALUE_OFFSET);
         data_.gamepad.ch[2] = static_cast<int16_t>(raw_->ch2 - CH_VALUE_OFFSET);

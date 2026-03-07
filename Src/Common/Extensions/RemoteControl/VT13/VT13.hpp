@@ -91,6 +91,7 @@ public:
             bool mouseRight;
             bool mouseMiddle;
             uint16_t key;
+            uint16_t lastKey;
         } KBM;
     };
 #pragma pack(pop)
