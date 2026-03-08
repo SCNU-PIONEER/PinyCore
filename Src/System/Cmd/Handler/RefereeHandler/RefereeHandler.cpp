@@ -1,6 +1,7 @@
 
 #include "RefereeHandler.hpp"
 #include "sdkconfig.h"
+#include "UI/UIApp.hpp"
 
 void RefereeHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
@@ -18,6 +19,7 @@ void RefereeHandler::handle()
     rx.rxFreqCalc();
 
     msg_.robotId = rx.getRefereeData().gameRobotStatus.robotId;
+    UI::APP::instance()->client().updateID(msg_.robotId);
     msg_.remainHeat = rx.getRefereeData().gameRobotStatus.shooterHeatLimit -
                       ((msg_.robotId % 100 == 1) ? rx.getRefereeData().powerHeatData.shooter_42mmBarrelHeat :
                                                    rx.getRefereeData().powerHeatData.shooter_17mmBarrelHeat);

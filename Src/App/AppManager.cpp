@@ -3,6 +3,7 @@
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
+
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
@@ -14,14 +15,12 @@
 #endif
 #if APP_USE_GIMBAL
 #include GIMBAL_FILE
-#endif
-#include "UI/UIApp.hpp"
 #include "Arm.hpp"
+#endif
 
 #if APP_USE_DAEMONS
 #include "Daemons.hpp"
 #endif
-
 
 //---------------------------------------------------------------------------------------------------
 
@@ -42,7 +41,9 @@ Lazy<Arm> arm;
 #endif
 //---------------------------------------------------------------------------------------------------
 
-Lazy<UI::App> ui;
+#if APP_USE_UI
+#include "UI/UIApp.hpp"
+#endif
 
 //---------------------------------------------------------------------------------------------------
 
@@ -63,8 +64,8 @@ void AppManager::initApp()
     cmd.init();
 
 #if APP_USE_UI
-    ui.init(UI_ROBOT_ID);
-    schedule([]() { ui->task(); });
+    UI::APP::instance()->init();
+    schedule([]() { UI::APP::instance()->task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();

@@ -13,6 +13,9 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 }
 
+namespace ARMORBOOSTER {
+enum class FSMState_e : uint8_t;
+}
 namespace ARM {
 enum class OneClick_e : uint8_t;
 enum class ArmMode_e : uint8_t;
@@ -53,4 +56,30 @@ struct RefereeMsg_s : public Msg {
     uint16_t remainHeat, gameTime, currentHP, shooterHeatLimit, chassisPowerLimit, chassisPowerBuffer;
     float bulletSpeed, rxFreq;
     bool isPlay;
+};
+
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+struct GimbalEularMsg_s : public Msg {
+    float roll, pitch, yaw;
+};
+
+struct DeltaYawMsg_s : public Msg {
+    float deltaYaw;
+};
+
+//  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+struct ChassisUIMsg_s {
+    CHASSIS::FSMState_e state;
+};
+
+struct GimbalUIMsg_s {
+    GIMBAL::FSMState_e state;
+};
+
+struct ArmUIMsg_s {
+    ARM::FSMState_e state;
+};
+
+struct ArmorBoosterUIMsg_s {
+    ARMORBOOSTER::FSMState_e state;
 };

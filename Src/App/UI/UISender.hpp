@@ -25,12 +25,12 @@ namespace UI {
 
 class Sender {
 public:
-    Sender(UART_HandleTypeDef _huart, uint8_t _id);
+    Sender(UART_HandleTypeDef _huart);
 
     /**
     * @brief 更新红蓝方机器人信息，在裁判系统接受中断中调用
     */
-    void infoUpdate(uint16_t _id);
+    void idUpdate(uint16_t _id);
 
     uint8_t sendOneGraphic(OneGraphicData_s _data);
     uint8_t sendTwoGraphic(TwoGraphicData_s _data);
@@ -40,12 +40,10 @@ public:
     uint8_t deleteGraphic(uint8_t _deleteLayer);
 
 protected:
-    void buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength,
-                          const ID_e _cmdID);
+    void buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength, const ID_e _cmdID);
 
     template <typename GraphicData_t>
-    uint8_t sendGraphic(GraphicData_t &_data, const IDLen_e _len,
-                        const ID_e _id, const uint8_t _graphicCount)
+    uint8_t sendGraphic(GraphicData_t &_data, const IDLen_e _len, const ID_e _id, const uint8_t _graphicCount)
     {
         uint8_t buffer[128] = {};
         buildCommonFrame(buffer, _len, _id);
@@ -60,7 +58,7 @@ private:
     UART_HandleTypeDef huart_;
     uint8_t *txBuf_; // DMA buffer for sending data
     std::function<uint8_t(uint8_t *, uint16_t)> send_;
-    ClientInfo_s clientInfo_;
+    ClientInfo_s clientInfo_{};
 };
 
 } // namespace UI

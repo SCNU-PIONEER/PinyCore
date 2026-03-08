@@ -47,7 +47,6 @@ menu "app config"
     bool "UI"
     default n
 
-    source "Src/App/UI/Kconfig"
     endmenu
 
     config APP_USE_ARM

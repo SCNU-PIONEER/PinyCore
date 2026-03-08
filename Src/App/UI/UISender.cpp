@@ -18,26 +18,21 @@
 
 using namespace UI;
 
-Sender::Sender(UART_HandleTypeDef _huart, uint8_t _id)
-        : huart_(_huart)
-        , txBuf_((uint8_t *)Dma::instance().ram_alloc(128))
-        , clientInfo_{ .robotID = _id,
-                       .clientID = static_cast<uint16_t>(_id + 0x100) }
-
+Sender::Sender(UART_HandleTypeDef _huart) : huart_(_huart), txBuf_((uint8_t *)Dma::instance().ram_alloc(128))
 {
     send_ = [this](uint8_t *_data, uint16_t _len) -> uint8_t {
+        huart_.gState = HAL_UART_STATE_READY;
         return HAL_UART_Transmit_DMA(&huart_, _data, _len);
     };
 }
 
-void Sender::infoUpdate(uint16_t _id)
+void Sender::idUpdate(uint16_t _id)
 {
     clientInfo_.robotID = _id;
     clientInfo_.clientID = _id + 0x100;
 }
 
-void Sender::buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength,
-                              const ID_e _cmdID)
+void Sender::buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength, const ID_e _cmdID)
 {
     Frame_s frame = {};
     frame.header.SOF = 0xA5;
@@ -55,7 +50,6 @@ void Sender::buildCommonFrame(uint8_t *_buf, const IDLen_e _dataLength,
     dataHeader.receiverID = clientInfo_.clientID;
     memcpy(&_buf[7], &dataHeader, 6);
 }
-
 
 uint8_t Sender::sendOneGraphic(OneGraphicData_s _data)
 {
