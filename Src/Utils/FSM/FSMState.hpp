@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <cstdint>
 #include <unordered_map>
 
 enum class FSMMode_e : uint8_t { NORMAL, CHANGE };
@@ -47,10 +48,7 @@ public:
         nextState_ = _state;
     }
 
-    void addState(T _name, std::unique_ptr<FSMState<T> > _state)
-    {
-        stateTable[_name] = std::move(_state);
-    }
+    void addState(T _name, std::unique_ptr<FSMState<T> > _state) { stateTable[_name] = std::move(_state); }
 
     FSMState<T> *getNextState(T _next)
     {

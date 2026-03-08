@@ -2,6 +2,7 @@
 #include "StmLog.hpp"
 #include "Bsp.hpp"
 #include "MotorCommonMacros.hpp"
+#include <algorithm>
 
 
 using namespace PINYMOTOR;
