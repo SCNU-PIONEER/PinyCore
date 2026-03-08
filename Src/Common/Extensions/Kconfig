@@ -13,6 +13,11 @@ menu "extension config"
     bool "remote control vt13"
     default y
 
+    config EXTENSION_CUSTOM_CTRL
+    bool "custom remote control"
+    depends on EXTENSION_VT13
+    default y
+
     config EXTENSION_BUZZER
     bool "buzzer"
     default y

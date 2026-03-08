@@ -7,6 +7,7 @@
  *             校验位 无
  *             流控 无
  *             单帧包长 153 + 16 bit (21 Byte)
+ *             频率： 约 70 hz
  */
 #pragma once
 
@@ -14,9 +15,31 @@
 #include "event_groups.h"
 #include "Bsp.hpp"
 #include "remoteControl.hpp"
+#include "RefereeProt.hpp"
+#include <cstdint>
+
+#if EXTENSION_CUSTOM_CTRL
+// 自定义控制器数据
+#pragma pack(1)
+struct CtrlData_s {    // 30-bytes
+    float joint[6];    // 24-bytes
+    uint8_t push;      // 1-byte
+    uint8_t direction; // left: 0, right: 1
+    uint8_t reserved[4];
+};
+
+struct TxData_s {                       // 39-bytes
+    REFEREE::FrameHeader_s frameHeader; // 5-bytes
+    uint16_t cmd_id = 0x302;            // 2-bytes
+    CtrlData_s ctrlData;                // 30-bytes
+    uint16_t frameTail;                 // 2-bytes 整包校验
+};
+#pragma pack()
+#endif
 
 class VT13 final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 21;
+    static constexpr uint8_t FRAME_LENGTH_MAX = 50;
     static constexpr uint8_t RX_LOST_MAX = 15;
 
 public:
@@ -102,10 +125,18 @@ public:
 
     void *getData() final;
 
+#if EXTENSION_CUSTOM_CTRL
+    const CtrlData_s &getCtrlData();
+#endif
+
 private:
     void parse() final;
     void callBackFromISR(UART_HandleTypeDef *_huart, uint16_t _pos, uint32_t _eventBit) final;
 
     RcRawData_s *raw_ = nullptr;
     RcData_s data_;
+
+#if EXTENSION_CUSTOM_CTRL
+    CtrlData_s ctrlData_;
+#endif
 };
