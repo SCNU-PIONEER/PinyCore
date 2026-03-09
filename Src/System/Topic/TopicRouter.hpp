@@ -7,7 +7,11 @@
 
 class TopicRouter {
 public:
-    static TopicRouter &instance();
+    static TopicRouter &instance()
+    {
+        static TopicRouter instance;
+        return instance;
+    }
 
     Topic<INS_SYS::INSData_s> insTopic{ "CompleteINSData" };
 

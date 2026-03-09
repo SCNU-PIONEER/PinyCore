@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include "event_groups.h"
 #include "Bsp.hpp"
-#include <memory>
+#include "Lazy.hpp"
 
 namespace REFEREE {
 
@@ -72,4 +72,6 @@ public:
 
 } // namespace REFEREE
 
-inline std::unique_ptr<REFEREE::Referee> referee = nullptr;
+#if EXTENSION_REFEREE
+inline Lazy<REFEREE::Referee> referee;
+#endif
