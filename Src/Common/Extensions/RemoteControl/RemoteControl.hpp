@@ -3,6 +3,7 @@
 #include "Bsp.hpp"
 #include "FreeRTOS.h"
 #include "event_groups.h"
+#include <atomic>
 
 class RemoteControl {
 public:
@@ -19,5 +20,5 @@ protected:
     Uart uart_;
     uint8_t *buf_ = nullptr;
     EventGroupHandle_t &event_;
-    volatile uint8_t rxLostCnt_;
+    std::atomic<uint8_t> rxLostCnt_;
 };

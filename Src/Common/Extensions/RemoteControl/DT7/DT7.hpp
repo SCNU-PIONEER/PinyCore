@@ -18,7 +18,7 @@
 #include "FreeRTOS.h"
 #include "event_groups.h"
 #include "Bsp.hpp"
-#include "remoteControl.hpp"
+#include "RemoteControl.hpp"
 
 class DT7 final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 18;
