@@ -23,8 +23,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
 {
     AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
@@ -33,8 +32,7 @@ DJIMotor::~DJIMotor()
     this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
     this->removeMotorFromMap();
-    LOG::info("DJIMotor", " %s: An instance of DJIMotor destroyed",
-              regInfo_.name);
+    LOG::info("DJIMotor", " %s: An instance of DJIMotor destroyed", regInfo_.name);
 }
 
 void DJIMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
@@ -44,23 +42,18 @@ uint16_t DJIMotor::canId() const { return regInfo_.model.txBaseId + 0u; }
 void DJIMotor::registerRecvCallback(uint16_t _rxId)
 {
     // lamda
-    Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
-            [this](const uint8_t *_rxBuf) {
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
-                                  &higherPriorityTaskWoken);
-            });
-    LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx",
-              regInfo_.name, _rxId);
+    Can::instance().registerCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+                                     [this](const uint8_t *_rxBuf) {
+                                         BaseType_t higherPriorityTaskWoken = pdFALSE;
+                                         xQueueSendFromISR(AUX_.rxQueue, _rxBuf, &higherPriorityTaskWoken);
+                                     });
+    LOG::info("DJIMotor", " %s: Receive cb registed, masterId:%hx", regInfo_.name, _rxId);
 }
 
 void DJIMotor::cancelRecvCallback(uint16_t _rxId)
 {
-    Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
-    LOG::info("DJIMotor", " %s: Receive cb canceled, masterId:%hx",
-              regInfo_.name, _rxId);
+    Can::instance().unregisterCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
+    LOG::info("DJIMotor", " %s: Receive cb canceled, masterId:%hx", regInfo_.name, _rxId);
 }
 
 MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
@@ -80,8 +73,7 @@ MotorTypeDef_e DJIMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
             //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
 
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
-                    _txBuf, _len));
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf, _len));
         } else {
             return 0;
         }
@@ -97,13 +89,11 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
     fb.temperature = _rxBuf.data[6];
 
     float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-    this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng :
-                                              noumenaAng;
+    this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng : noumenaAng;
     float del = this->data_.rawAng - this->data_.zeroAng;
     this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-    float noumenaCurr = static_cast<float>(fb.current) /
-                        this->status_.currRxCodeSpan * this->status_.currMax;
+    float noumenaCurr = static_cast<float>(fb.current) / this->status_.currRxCodeSpan * this->status_.currMax;
     this->data_.curr = regInfo_.isReverse ? -noumenaCurr : noumenaCurr;
     this->data_.torq = this->data_.curr * status_.Kn;
 
@@ -113,26 +103,22 @@ MotorTypeDef_e DJIMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
     this->data_.tempture = fb.temperature;
 
-    float angDiff =
-            (getMinorArc(this->data_.rawAng, this->data_.angLast)) / this->rr();
+    this->data_.singleCirAng = rangeMap(data_.ang / this->rr());
 
-    if ((this->globalState == GlobalState_e::OFFLINE ||
-         this->globalState == GlobalState_e::UNRECOGNIZED) &&
-        this->data_.angLast != this->data_.rawAng) {
+    if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
         this->globalState = GlobalState_e::ONLINE;
-        angDiff = 0;
-        this->data_.multipCirAng =
-                this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
+        this->data_.angLast = this->data_.ang;
     }
-    this->data_.angLast = this->data_.rawAng;
 
-    this->data_.multipCirAng += angDiff;
-    this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
+    float angDiff = this->data_.ang - this->data_.angLast;
+    if (angDiff > PI) {
+        this->data_.cirNum -= 1.f / this->rr();
+    } else if (angDiff < -PI) {
+        this->data_.cirNum += 1.f / this->rr();
+    }
 
-    if (this->rr() == 1) // TODO: 因fmod的精度问题 多圈始终不准
-        this->data_.singleCirAng = this->data_.ang;
-    else
-        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
+    this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
+    this->data_.angLast = this->data_.ang;
 
     return 0;
 }
@@ -175,6 +161,5 @@ void DJIMotor::overrideReductionRatio(float _newReductionRatio)
     regInfo_.model.reductionRatio = _newReductionRatio;
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
-    LOG::info("DJIMotor", " %s: you have changed reduction ratio to %f",
-              regInfo_.name, _newReductionRatio);
+    LOG::info("DJIMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
 }
