@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include "event_groups.h"
 #include "Bsp.hpp"
-#include "remoteControl.hpp"
+#include "RemoteControl.hpp"
 #include "RefereeProt.hpp"
 #include <cstdint>
 
@@ -140,3 +140,4 @@ private:
     CtrlData_s ctrlData_;
 #endif
 };
+
