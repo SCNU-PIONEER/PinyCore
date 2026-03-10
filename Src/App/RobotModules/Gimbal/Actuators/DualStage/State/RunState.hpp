@@ -10,12 +10,12 @@
 
 static PositionalPid gRunPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(20.f, 10.f, 2.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(10.f, 5.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(10.f, 2.f, 0.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(2.f, 0.0f, 0.0001f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 
@@ -88,9 +88,9 @@ public:
             return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (gimbal_->msg.state == FSMState_e::PATROL)
-            return FSMState_e::PATROL;
-        else if (gimbal_->msg.state == FSMState_e::AUTO || vision->v2eData().control)
+        // else if (gimbal_->msg.state == FSMState_e::PATROL)
+        //     return FSMState_e::PATROL;
+        else if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
             return FSMState_e::AUTO;
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;
