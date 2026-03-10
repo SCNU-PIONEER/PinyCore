@@ -16,22 +16,28 @@ public:
 
     void enter() final
     {
+        // 零点设置
         // auto motor = (PINYMOTOR::LKMOTOR::LKMotorRS485 *)gimbal_.motor();
         // motor->setZeroPos();
-        gimbal_.enter();
+        // targetAng = gimbal_.motor()->posNorm();
         LOG::info(TAG, "enter");
     }
 
     bool change() final
     {
         /* 上控复位 */
-        float yawAng = gimbal_.motor()->posNorm();
-        if (std::fabs(yawAng) < 0.01f) {
-            gimbal_.isLaunched = true;
-            targetAng = gimbal_.motor()->posNorm();
+        if (!isEnabled) {
+            gimbal_.enter();
+            isEnabled = true;
         } else {
-            gimbal_.ctrl(0);
-            gimbal_.isLaunched = false;
+            float yawAng = gimbal_.motor()->posNorm();
+            if (std::fabs(yawAng) < 0.01f) {
+                gimbal_.isLaunched = true;
+                targetAng = gimbal_.motor()->posNorm();
+            } else {
+                gimbal_.ctrl(0, 2.f);
+                gimbal_.isLaunched = false;
+            }
         }
         return gimbal_.isLaunched;
     }
@@ -42,7 +48,12 @@ public:
         gimbal_.ctrl(targetAng);
     }
 
-    void exit() final { LOG::info(TAG, "exit"); }
+    void exit() final
+    {
+        targetAng = gimbal_.motor()->posNorm();
+        isEnabled = false;
+        LOG::info(TAG, "exit");
+    }
 
     FSMState_e checkChange() final
     {
@@ -58,6 +69,7 @@ public:
 private:
     Standard &gimbal_;
     float targetAng;
+    bool isEnabled = false;
 };
 
 } // namespace GIMBAL

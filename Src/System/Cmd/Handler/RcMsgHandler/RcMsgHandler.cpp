@@ -188,7 +188,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             if (rcData->rc.switchLeft == SW::DOWN) {
                 // gimbal
                 gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-                gimbalMsg.yaw = -lx / CH_RANGE * INPUT_YAW_MAX;
+                gimbalMsg.yaw = -lx / CH_RANGE * GIMBAL_YAW_MAX;
                 // chassis
                 chassisMsg.state = CHASSIS::FSMState_e::RUN;
                 chassisMsg.vx = ry / CH_RANGE * INPUT_VX_MAX;

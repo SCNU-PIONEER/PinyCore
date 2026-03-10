@@ -30,6 +30,7 @@ private:
     static constexpr uint8_t T_ACC_CNT = 100;
     static constexpr float S_CURVE_ACC = 3.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
+    static constexpr float GIMBAL_YAW_MAX = 0.1f;
     float channelMax_;
 
     MsgBus_s *msgBus_;
