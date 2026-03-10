@@ -45,7 +45,6 @@ struct ArmMsg_s : public Msg {
     ARM::OneClick_e oneClick;
     ARM::ArmMode_e mode;
     ARM::FSMState_e state;
-    float j1, j2, j3, j4, j5, j6, j7, j8, j9, j10;
     ARM::Joint10 target;
     bool switch1; // ture: clamp, false: release
     bool isStucked = false;
