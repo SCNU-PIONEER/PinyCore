@@ -145,12 +145,12 @@ public:
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
-            uint16_t HP;
-            uint16_t gameTime;
+            uint16_t HP : 10;
+            uint16_t gameTime : 10;
             uint8_t gameProgress : 4;
             uint8_t robotId : 8;
             uint8_t isPlay : 1;
-            uint32_t reserved : 23;
+            uint32_t reserved : 31;
         } content;
         uint8_t bytes[LEN];
     } data;

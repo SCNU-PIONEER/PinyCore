@@ -165,8 +165,18 @@ struct RadarMarkData_s {
 
 /* 0x020D 哨兵兑远程换数据，1Hz 周期发送 */
 struct SentryInfo_s {
-    uint32_t sentryInfo;
-    uint16_t sentryInfo2;
+    uint32_t exchangeAmmo : 11;
+    uint32_t remoteExchangeAmmoCount : 4;
+    uint32_t remoteExchangeHealthCount : 4;
+    uint32_t canFreeRevive : 1;
+    uint32_t canImmediateRevive : 1;
+    uint32_t immediateReviveCost : 10;
+    uint32_t reserved1 : 1;
+    uint16_t outOfCombat : 1;
+    uint16_t team17mmRemainingExchange : 11;
+    uint16_t posture : 2;
+    uint16_t energyMechanismCanActivate : 1;
+    uint16_t reserved2 : 1;
 };
 
 /* 0x020E 雷达易伤次数，1Hz 周期发送 */
