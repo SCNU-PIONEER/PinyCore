@@ -27,8 +27,7 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+DMMotor::DMMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
 
 {
     AUX_.rxQueue = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
@@ -38,42 +37,32 @@ DMMotor::~DMMotor()
 {
     this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
-    LOG::info(
-            "DMMotor",
-            " %s: An instance of DMMotor created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("DMMotor", " %s: An instance of DMMotor created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 void DMMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
 bool DMMotor::isEnable() const { return this->cmd_.SW; }
 
-uint16_t DMMotor::canId() const
-{
-    return regInfo_.model.txBaseId + regInfo_.offsetId;
-}
+uint16_t DMMotor::canId() const { return regInfo_.model.txBaseId + regInfo_.offsetId; }
 
 void DMMotor::registerRecvCallback(uint16_t _rxId)
 {
     // lamda
-    Can::instance().registerCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
-            [this](const uint8_t *_rxBuf) {
-                BaseType_t higherPriorityTaskWoken = pdFALSE;
-                xQueueSendFromISR(AUX_.rxQueue, _rxBuf,
-                                  &higherPriorityTaskWoken);
-            });
-    LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx",
-              regInfo_.name, _rxId);
+    Can::instance().registerCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
+                                     [this](const uint8_t *_rxBuf) {
+                                         BaseType_t higherPriorityTaskWoken = pdFALSE;
+                                         xQueueSendFromISR(AUX_.rxQueue, _rxBuf, &higherPriorityTaskWoken);
+                                     });
+    LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx", regInfo_.name, _rxId);
 }
 
 
 void DMMotor::cancelRecvCallback(uint16_t _rxId)
 {
-    Can::instance().unregisterCallback(
-            reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
-    LOG::info("DMMotor", " %s: Receive cb canceled, masterId:%hx",
-              regInfo_.name, _rxId);
+    Can::instance().unregisterCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId);
+    LOG::info("DMMotor", " %s: Receive cb canceled, masterId:%hx", regInfo_.name, _rxId);
 }
 
 void DMMotor::setMITKp(float _kp)
@@ -107,14 +96,12 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 #ifdef SOC_FDCAN
         if (regInfo_.comType == ComType_e::FDCAN) {
             return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
-                    _txBuf, _len));
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf, _len));
         }
 #endif
         if (regInfo_.comType == ComType_e::CAN) {
             return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId,
-                    _txBuf, _len));
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf, _len));
         }
     }
     return 0;
@@ -122,11 +109,11 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) &&
-        _rxBuf.data[1] == static_cast<uint8_t>(canId() >> 8)) {
-        uint32_t rawDat = (_rxBuf.data[7] << 24) | (_rxBuf.data[6] << 16) |
-                          (_rxBuf.data[5] << 8) | _rxBuf.data[4];
+    if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) && _rxBuf.data[1] == static_cast<uint8_t>(canId() >> 8)) {
+        uint32_t rawDat = (_rxBuf.data[7] << 24) | (_rxBuf.data[6] << 16) | (_rxBuf.data[5] << 8) | _rxBuf.data[4];
         auto it = regObjList_.find(static_cast<RegId_e>(_rxBuf.data[3]));
+        if (it == regObjList_.end())
+            return 1;
         if (_rxBuf.data[2] == 0x33) {
             (*it).second->isRead = true;
             memcpy(&(*it).second->dat, &rawDat, 4);
@@ -135,8 +122,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
         } else if (_rxBuf.data[2] == 0xAA) {
             (*it).second->isStorage = true;
         } else {
-            LOG::error("DMMotor", " %s: Unknown feedback type, rxBuf[2]:%02X",
-                       regInfo_.name, _rxBuf.data[2]);
+            LOG::error("DMMotor", " %s: Unknown feedback type, rxBuf[2]:%02X", regInfo_.name, _rxBuf.data[2]);
             return 1;
         }
     } else {
@@ -151,37 +137,28 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         errorCode_ = fb.errorCode;
 
-        float noumenaAng =
-                static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
-        this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng :
-                                                  noumenaAng;
+        float noumenaAng = static_cast<float>(fb.rawAng) / this->span() * 2.f * PI;
+        this->data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng : noumenaAng;
         float del = this->data_.rawAng - this->data_.zeroAng;
         this->data_.ang = del < 0 ? del + (2.f * PI) : del;
 
-        float noumenaVel =
-                uint2float(fb.rawVel, -status_.VMax, status_.VMax, 12) /
-                this->rr();
+        float noumenaVel = uint2float(fb.rawVel, -status_.VMax, status_.VMax, 12) / this->rr();
         this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
 
-        float noumenaTorq =
-                uint2float(fb.torque, -status_.TMax, status_.TMax, 12) *
-                this->rr();
+        float noumenaTorq = uint2float(fb.torque, -status_.TMax, status_.TMax, 12) * this->rr();
         this->data_.torq = regInfo_.isReverse ? -noumenaTorq : noumenaTorq;
         this->data_.curr = this->data_.torq / status_.Kn;
 
         this->data_.tempture = fb.mosTemperature;
 
-        float angDiff = (getMinorArc(this->data_.ang, this->data_.angLast)) /
-                        this->rr();
+        float angDiff = (getMinorArc(this->data_.ang, this->data_.angLast)) / this->rr();
 
-        if ((this->globalState == GlobalState_e::OFFLINE ||
-             this->globalState == GlobalState_e::UNRECOGNIZED) &&
+        if ((this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) &&
             this->data_.angLast != this->data_.rawAng) {
             this->globalState = GlobalState_e::ONLINE;
             angDiff = 0;
-            this->data_.multipCirAng =
-                    this->data_.ang / this->rr(); // 与电机内编码器同步零点
+            this->data_.multipCirAng = this->data_.ang / this->rr(); // 与电机内编码器同步零点
         }
 
         this->data_.angLast = this->data_.ang;
@@ -201,10 +178,8 @@ MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     TxBus txBuf;
-    if ((this->cmd_.SW && !this->cmd_.prevSW) ||
-        (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
-        constexpr uint8_t ENABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF,
-                                                0xFF, 0xFF, 0xFF, 0xFC };
+    if ((this->cmd_.SW && !this->cmd_.prevSW) || (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
+        constexpr uint8_t ENABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC };
         memcpy(txBuf.data, ENABLE_CMD_MSG, 8);
         txBuf.len = 8;
     } else if (!this->cmd_.SW) {
@@ -212,8 +187,7 @@ MotorTypeDef_e DMMotor::ctrl()
             this->posPID_->reset();
         if (this->velPID_ != nullptr)
             this->velPID_->reset();
-        constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF,
-                                                 0xFF, 0xFF, 0xFF, 0xFD };
+        constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
         memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
         txBuf.len = 8;
     } else {
@@ -242,9 +216,7 @@ MotorTypeDef_e DMMotor::update()
 MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;
-    uint8_t disableCmdPack[8] = {
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD
-    };
+    uint8_t disableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
     rslt |= this->send(this->ctrlId_, disableCmdPack, 8);
     this->cmd_.updateSW(false); // force disable
     return rslt;
@@ -253,9 +225,7 @@ MotorTypeDef_e DMMotor::disable()
 MotorTypeDef_e DMMotor::clearError()
 {
     MotorTypeDef_e rslt = 0;
-    uint8_t enableCmdPack[8] = {
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB
-    };
+    uint8_t enableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB };
     rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
     return rslt;
 }
@@ -265,6 +235,5 @@ void DMMotor::overrideReductionRatio(float _newReductionRatio)
     regInfo_.model.reductionRatio = _newReductionRatio;
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
-    LOG::info("DMMotor", " %s: you have changed reduction ratio to %f",
-              regInfo_.name, _newReductionRatio);
+    LOG::info("DMMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
 }
