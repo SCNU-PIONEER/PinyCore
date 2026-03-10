@@ -70,6 +70,18 @@ class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
     };
 };
 
+class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
+    friend class DualStage;
+    BulletSpdRxPacket() { registerCallback(); }
+    void registerCallback() final
+    {
+        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+        });
+        LOG::info("BulletSpdRxPacket", " Receive cb registered, uId:0x%hx", uid());
+    };
+};
+
 // #define _no_init __attribute__((section(".noinit_ram")))
 
 /**
@@ -127,7 +139,7 @@ protected:
         * @note 上电后云台系与底盘系会有差角,(imu上电即为0,而云台当前角度不一定为0)
         *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
         */
-    float ctrlYawAng_ = 0.f;        //主控yaw的角度
+    float ctrlYawAng_ = 0.f; //主控yaw的角度
 
     float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
     bool isConfirmYawZero_ = false; // 确认是否两系转换完成
@@ -151,7 +163,8 @@ private:
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_;
     ShooterCtrlTxPacket shooterCtrlTxPacket_;
-    RefereeRxPacket refereeRxPacket_; //裁判系统
+    RefereeRxPacket refereeRxPacket_;     //裁判系统
+    BulletSpdRxPacket bulletSpdRxPacket_; //弹速
 
     DualStage_u<FILTER::LPF *> gimbalFilterOutput_; //输出滤波
     DualStage_u<PINYMOTOR::IMotor *> motors_;       //电机

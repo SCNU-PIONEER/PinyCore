@@ -148,7 +148,7 @@ void Swerve::update(void *_param)
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRadps;
         curDir._[i] = swerveFilterInput_[i].process(motors_._[i + 4]->data().ang);
-        wCurr[i] = motors_._[i]->data().torq;
+        wCurr[i] = motors_._[i]->data().torq; //debug
     }
 
     Speed_u v = forward(wSpeed_);
@@ -170,7 +170,7 @@ void Swerve::loadRefereeData(void *_param)
     refereeTxPacket_.setData().isPlay = refereeMsg_.isPlay;
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
 
-    speedTxPacket.setData().shootSpeed = refereeMsg_.bulletSpeed;
+    BulletSpdTxPacket_.setData().shootSpeed = refereeMsg_.bulletSpeed;
 }
 
 /**

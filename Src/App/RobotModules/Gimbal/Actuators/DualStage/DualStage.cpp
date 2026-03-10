@@ -200,15 +200,14 @@ void DualStage::sendVisionData()
     //装裁判系统数据
     vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);
     vision->eToVData().isPlay = refereeRxPacket_.data().isPlay;
-    //     vision->eToVData().changeTarget = msg.changeTarget;
-    //     vision->eToVData().resetTracker;
+    vision->eToVData().bulletSpeed = bulletSpdRxPacket_.data().shootSpeed;
 }
 
 void DualStage::sendNavData()
 { //nav send
     nav->ecToNavData().pitch = insData_.pitch;
     nav->ecToNavData().yaw = motors_.Gim_s.FirstYaw->posNorm();
-
+    //装裁判系统数据
     nav->ecToNavData().navHPstate = refereeRxPacket_.data().HP;
     nav->ecToNavData().gameTime = refereeRxPacket_.data().gameTime;
     nav->ecToNavData().gameProgress = refereeRxPacket_.data().gameProgress;

@@ -89,9 +89,9 @@ public:
     void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
 };
 
-class SpeedTxPacket : public COMM::TxPacket<COMM::SpeedMsgPacket> {
+class BulletSpdTxPacket : public COMM::TxPacket<COMM::SpeedMsgPacket> {
 public:
-    SpeedTxPacket(float _txFreq) : COMM::TxPacket<COMM::SpeedMsgPacket>(_txFreq) {}
+    BulletSpdTxPacket(float _txFreq) : COMM::TxPacket<COMM::SpeedMsgPacket>(_txFreq) {}
     void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
 };
 
@@ -155,7 +155,7 @@ private:
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
-    SpeedTxPacket speedTxPacket{ 100.f };
+    BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
 
     REFEREE::SentryCmd_s sentryCmd; //哨兵指令
 

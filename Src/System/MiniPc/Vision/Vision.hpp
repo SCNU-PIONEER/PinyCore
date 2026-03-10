@@ -19,8 +19,10 @@ typedef struct {
     float roll;
     float pitch;
     float yaw;
+    float bulletSpeed;
     uint16_t checksum;
 } EcToVision_s;
+
 //发来的原始数据
 typedef struct {
     uint8_t header;
@@ -35,20 +37,6 @@ typedef struct {
     uint16_t checksum;
 } VisionToEc_s;
 #pragma pack(pop)
-//处理后的数据
-// typedef struct {
-//     uint8_t header;
-//     uint8_t control;
-//     uint8_t fire;
-//     float yaw;
-//     float yawVel;
-//     float yawAcc;
-//     float pitch;
-//     float pitchVel;
-//     float pitchAcc;
-//     uint16_t checksum;
-// } V2EData_s;
-
 
 class Vision {
 public:
