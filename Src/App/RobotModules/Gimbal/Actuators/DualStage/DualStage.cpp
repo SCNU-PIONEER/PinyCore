@@ -189,7 +189,7 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
 
-    shooterCtrlTxPacket_.setData().fire &= true; //(vision->v2eData().control) ? vision->v2eData().fire : true;
+    shooterCtrlTxPacket_.setData().fire &= (vision->v2eData().control) ? vision->v2eData().fire : true;
 }
 
 void DualStage::sendVisionData()

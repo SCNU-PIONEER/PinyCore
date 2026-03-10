@@ -31,7 +31,7 @@ class Dial : public ArmorLoader {
 public:
     static constexpr float OUTER_RR = 1.f;
 
-    static constexpr uint8_t BULLET_NUM_ROUND = 8;
+    static constexpr uint8_t BULLET_NUM_ROUND = 10;
 
     static constexpr float DIAL_MOTOR_FREQ = 500.f;
 
@@ -91,7 +91,7 @@ private:
 
     float torq_;
 
-    FILTER::IIR2 velFltr_;
+    FILTER::IIR2 velFltr_ = { 500.f, 30.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;
 
