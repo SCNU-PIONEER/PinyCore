@@ -15,8 +15,8 @@ public:
     void enable();
 
 private:
-    float MOVE_TORQ = 0.08f;
-    float RELEASE_TORQ = 0.038f;
+    float MOVE_TORQ = 0.083f;
+    float RELEASE_TORQ = 0.048f;
     static constexpr float CLAMP_CURRENT = 2.f;
     static constexpr float SAFE_CURRENT = 7.f;
 

@@ -1,6 +1,7 @@
 #include "ArmHand.hpp"
 #include "Projdefs.hpp"
 #include "Soc.hpp"
+#include "StmLog.hpp"
 
 using namespace ARM;
 using namespace PINYMOTOR;
@@ -52,7 +53,13 @@ void Hand::release()
     }
     if (right.data().curr > SAFE_CURRENT) {
         right.cmdTorq(0);
+        LOG::error("HAND", "Over current! Current: %.2f", right.data().curr);
         state = RELEASE;
+    }
+    if(right.data().tempture > 48.f) {
+        right.cmdTorq(0);
+        LOG::error("HAND", "Over temperature! Temperature: %.2f", right.data().tempture);
+        state = FAULT;
     }
     state = MOVING;
     right.cmdTorq(RELEASE_TORQ);
