@@ -74,7 +74,7 @@ void ET08A::parse()
 bool ET08A::isOnline()
 {
     if (rxLostCnt_ < RX_LOST_MAX) {
-        rxLostCnt_ = rxLostCnt_ + 1;
+        rxLostCnt_.fetch_add(1, std::memory_order_relaxed);
         return true;
     } else
         return false;

@@ -6,6 +6,7 @@
 #if APP_USE_MINIPC
 #include "MiniPcManager.hpp"
 #endif
+
 #include "Cmd.hpp"
 #include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
@@ -56,7 +57,6 @@ Lazy<ARMORBOOSTER::ARMORBOOSTER_TYPE> armorBooster;
 
 #if APP_USE_UI
 #include "UI/UIApp.hpp"
-Lazy<UI::App> ui;
 #endif
 
 //---------------------------------------------------------------------------------------------------
@@ -81,8 +81,8 @@ void AppManager::initApp()
 #endif
 
 #if APP_USE_UI
-    ui.init(UI_ROBOT_ID);
-    schedule([]() { ui->task(); });
+    UI::APP::instance()->init();
+    schedule([]() { UI::APP::instance()->task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();

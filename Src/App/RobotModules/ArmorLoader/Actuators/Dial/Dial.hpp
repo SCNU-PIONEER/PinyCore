@@ -91,7 +91,7 @@ private:
 
     float torq_;
 
-    FILTER::IIR2 velFltr_ = { 500.f, 30.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
+    FILTER::LPFIIR2 velFltr_ = { 500.f, 30.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;
 

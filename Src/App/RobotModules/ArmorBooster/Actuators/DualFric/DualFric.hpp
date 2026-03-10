@@ -56,7 +56,7 @@ public:
 private:
     Motors_u motors_;
 
-    FILTER::IIR3 velFltr_[2] = {
+    FILTER::LPFIIR3 velFltr_[2] = {
         { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
         { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     };

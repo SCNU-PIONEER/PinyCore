@@ -8,7 +8,9 @@
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
 #include "MiniPcHandler.hpp"
+#if EXTENSION_REFEREE
 #include "RefereeHandler.hpp"
+#endif
 
 class Cmd : public Task<Cmd, 256> {
 public:
@@ -34,7 +36,7 @@ private:
 
     RTTMsgHandler rttHandler_;
 
-#if APP_USE_REFEREE
+#if EXTENSION_REFEREE
     RefereeHandler refereeHandler_;
 #endif
 

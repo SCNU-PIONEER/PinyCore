@@ -64,7 +64,8 @@ cmake -B build -G Ninja -DCONFIG_NAME=yourconfig
 1. openocd >= 0.12.0
 2. [cortex-debug](https://github.com/Marus/cortex-debug) / [codelldb](https://github.com/vadimcn/codelldb) (vscode-plugin)
 3. Ozone 3.24
-4. systemview
+4. FreeMASTER/FreeMASTER Lite >= 3.1.3 (后者支持Linux，需装前置Java JRE)
+5. systemview
 
 ## ⚠️Notice
 

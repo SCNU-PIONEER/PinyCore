@@ -77,19 +77,7 @@ CONFIG_APP_USE_NAV=y
 
 CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
-CONFIG_APP_USE_REFEREE=y
-
-#
-# UI config
-#
 # CONFIG_APP_USE_UI is not set
-
-#
-# UI config
-#
-CONFIG_UI_ROBOT_ID=0
-# end of UI config
-# end of UI config
 # end of app config
 
 #

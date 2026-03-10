@@ -20,7 +20,7 @@
 #include "Bsp.hpp"
 #include "FreeRTOS.h"
 #include "event_groups.h"
-#include "remoteControl.hpp"
+#include "RemoteControl.hpp"
 
 class ET08A final : public RemoteControl {
     static constexpr uint8_t FRAME_LENGTH = 25;

@@ -15,38 +15,64 @@
 
 ## init
 
-```cpp
-ui = new UI::App(UI_UART, UI_ROBOT_ID);
-```
-
-ui robot_id 可以在 Kconfig 中修改默认值，也可以在`void App::updateReferee(const RefereeTxMsg_s *_msg)` 中更新
-
-## 与RM_UI_Designer兼容
+### 与RM_UI_Designer兼容
 
 为了保证代码的安全性，在Client的协议中使用了强类型枚举，但是在builder中没有使用，就是为了与RM_UI_Designer的传统C风格代码兼容
 
 ### 要修改的地方
 
-Designer.hpp: 配置ui info的数量
+Designer.hpp: 配置UI的数量
 
 ```cpp
 /* need to add */
-static constexpr uint8_t UIdynamicNum = 3;
-static constexpr uint8_t UIconstNum = 1;
+static constexpr uint8_t DYNAIMIC_NUM = 3;
+static constexpr uint8_t STATIC_NUM = 1;
 ```
 
-App.cpp: ui info 需要赋值，若是动态的信息，需要设置优先级
+Designer.cpp: 配置UI数据
 
 ```cpp
-dynamicInfo_[0] = newConfig(ui_g_dynamic_NewArc);
-dynamicInfo_[0].config.priority = Priority_e::HIGH;
-
-dynamicInfo_[1] = newConfig(ui_g_dynamic_time);
-dynamicInfo_[0].config.priority = Priority_e::MID;
-
-dynamicInfo_[2] = newConfig(ui_g_dynamic_chassis_state);
-dynamicInfo_[0].config.priority = Priority_e::LOW;
-
-
-constInfo_[0] = newConfig(ui_g_static_chassis);
+    _info[0].config = {
+        .priority = UI::Priority_e::HIGH,
+        .name = "ne",
+        .uiType = Type_e::CHAR,
+        .operateType = OperateType_e::ADD,
+        .layer = 0,
+        .color = Color_e::RED_BLUE,
+        .width = 2,
+        .startX = 76,
+        .startY = 840,
+        //直线，矩形，正圆，圆弧需要使用
+        .endX = 600,
+        .endY = 600,
+        //正圆半径
+        .radius = 100,
+        //圆弧起始角度，终止角度
+        .startAngle = 20,
+        .endAngle = 300,
+        //浮点数：整型数均为 32 位，对于浮点数，实际显示的值为输入的值/1000
+        .floatNum = 100.f,
+        .decimal = 0,
+        //整型数数据
+        .intNum = 1000,
+        //字体大小
+        .size = 11,
+        .text = "1234567890",
+    };
 ```
+## 使用
+menuconfig中开启UI后
+
+在对应模块调用UI数据更新函数
+```cpp
+        ChassisUIMsg_s uiMsgData{ .state = msg.state };
+        UI::APP::instance()->updateChassis(uiMsgData);
+```
+
+### 重置UI
+调用
+```cpp
+UI::APP::instance()->uiReInit
+```
+
+机器人ID会自动在RefereeHanlder更新

@@ -86,12 +86,14 @@ struct GimbalYawMsg_s : public Msg {
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ temp cache ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-struct ChassisTxMsg_s {
+struct ChassisUIMsg_s {
     CHASSIS::FSMState_e state;
 };
 
-struct GimbalTxMsg_s {};
+struct GimbalUIMsg_s {
+    GIMBAL::FSMState_e state;
+};
 
-struct ArmTxMsg_s {};
-
-struct RefereeTxMsg_s {};
+struct ArmorBoosterUIMsg_s {
+    ARMORBOOSTER::FSMState_e state;
+};

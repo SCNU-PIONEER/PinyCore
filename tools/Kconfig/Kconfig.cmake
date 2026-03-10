@@ -40,7 +40,6 @@ function (apply_config config_name)
     if(NOT EXISTS "${CMAKE_SOURCE_DIR}/${config_name}")
         message(FATAL_ERROR "${CMAKE_SOURCE_DIR}/${config_name} not found!")
     endif()
-
     message(STATUS "Applying configuration: ${config_name}")
     execute_process(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -68,12 +67,13 @@ function (apply_config config_name)
             "Error: ${py_error}"
         )
     endif()
+    unset(CONFIG_NAME CACHE)
 endfunction()
 
 if(DEFINED CONFIG_NAME AND NOT EDIT_CONFIG)
   apply_config(${CONFIG_NAME})
 elseif(NOT EXISTS "${CMAKE_BINARY_DIR}/build.ninja"
-       OR NOT EXISTS "${CMAKE_SOURCE_DIR}/Src/Config/sdkconfig.h")
+     AND NOT EXISTS "${CMAKE_SOURCE_DIR}/Src/Config/sdkconfig.h")
   message(WARNING "No found build, Using default config")
 
     execute_process(
