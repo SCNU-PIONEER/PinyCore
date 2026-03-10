@@ -1,7 +1,5 @@
 #include "Handler.hpp"
 
-#include "StmLog.hpp"
-
 std::vector<Handler::HandlerItem_s> &Handler::getHandlerList()
 {
     static std::vector<HandlerItem_s> handlerList;

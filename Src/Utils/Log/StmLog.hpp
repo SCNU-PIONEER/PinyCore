@@ -7,9 +7,6 @@
 
 #define LOCATION std::source_location::current()
 
-
-extern "C" int _write(int _file, char *_ptr, int _len);
-
 namespace LOG {
 
 class Logger {
