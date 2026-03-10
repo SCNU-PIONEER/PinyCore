@@ -15,14 +15,29 @@ class PlanState : public FSMState<FSMState_e> {
 public:
     PlanState(Arm &_arm) : FSMState(FSMState_e::PLAN), arm_(_arm) {};
 
-    void enter() override { LOG::info("Plan", "enter"); }
+    void enter() override
+    {
+        if (arm_.msg.oneClick == OneClick_e::ORE_BIN_EXTRACT) {
+            LOG::info("Plan", "ORE_BIN_EXTRACT");
+            // arm_.setTargetPose(test1);
+        } else if (arm_.msg.oneClick == OneClick_e::HIGHWAY_CROSS) {
+            LOG::info("Plan", "HIGHWAY_CROSS");
+            // arm_.setTargetPose(test1);
+        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK1) {
+            LOG::info("Plan", "ORE_PICK1");
+            // arm_.setTargetPose(test1);
+        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK2) {
+            LOG::info("Plan", "ORE_PICK2");
+            // arm_.setTargetPose(test1);
+        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK3) {
+            LOG::info("Plan", "ORE_PICK3");
+            // arm_.setTargetPose(test1);
+        }
+        LOG::info("Plan", "enter");
+    }
 
     void run() override
     {
-        // arm_.setTargetPose();
-        arm_.motors.handYaw(arm_.msg.target);
-        arm_.motors.handPitch(arm_.msg.target);
-
         if (arm_.msg.mode == ARM::ArmMode_e::LEFT) {
             //左臂 j1，2，3,4,5,6
             for (uint8_t i = 6; i < 10; i++) {
