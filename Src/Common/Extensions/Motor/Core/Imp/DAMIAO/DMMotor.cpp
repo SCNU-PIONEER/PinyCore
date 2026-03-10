@@ -122,24 +122,24 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) &&
-        _rxBuf.data[1] == static_cast<uint8_t>(canId() >> 8)) {
-        uint32_t rawDat = (_rxBuf.data[7] << 24) | (_rxBuf.data[6] << 16) |
-                          (_rxBuf.data[5] << 8) | _rxBuf.data[4];
-        auto it = regObjList_.find(static_cast<RegId_e>(_rxBuf.data[3]));
-        if (_rxBuf.data[2] == 0x33) {
-            (*it).second->isRead = true;
-            memcpy(&(*it).second->dat, &rawDat, 4);
-        } else if (_rxBuf.data[2] == 0x55) {
-            (*it).second->isWrite = true;
-        } else if (_rxBuf.data[2] == 0xAA) {
-            (*it).second->isStorage = true;
-        } else {
-            LOG::error("DMMotor", " %s: Unknown feedback type, rxBuf[2]:%02X",
-                       regInfo_.name, _rxBuf.data[2]);
-            return 1;
-        }
-    } else {
+    // if (_rxBuf.data[0] == static_cast<uint8_t>(canId()) &&
+    //     _rxBuf.data[1] == static_cast<uint8_t>(canId() >> 8)) {
+    //     uint32_t rawDat = (_rxBuf.data[7] << 24) | (_rxBuf.data[6] << 16) |
+    //                       (_rxBuf.data[5] << 8) | _rxBuf.data[4];
+    //     auto it = regObjList_.find(static_cast<RegId_e>(_rxBuf.data[3]));
+    //     if (_rxBuf.data[2] == 0x33) {
+    //         (*it).second->isRead = true;
+    //         memcpy(&(*it).second->dat, &rawDat, 4);
+    //     } else if (_rxBuf.data[2] == 0x55) {
+    //         (*it).second->isWrite = true;
+    //     } else if (_rxBuf.data[2] == 0xAA) {
+    //         (*it).second->isStorage = true;
+    //     } else {
+    //         LOG::error("DMMotor", " %s: Unknown feedback type, rxBuf[2]:%02X",
+    //                    regInfo_.name, _rxBuf.data[2]);
+    //         return 1;
+    //     }
+    // } else {
         Feedback_s fb = {};
         fb.ID = _rxBuf.data[0] & 0x0F;
         fb.errorCode = static_cast<ErrorCode_e>(_rxBuf.data[0] >> 4);
@@ -193,7 +193,7 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
             this->data_.singleCirAng = this->data_.ang;
         else
             this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
-    }
+    // }
     return 0;
 }
 
