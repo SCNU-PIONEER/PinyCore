@@ -74,7 +74,9 @@ void VT13::parse()
                 freq1 = Dwt::instance().getFreq(&cnt1);
                 i += FRAME_LENGTH;
             }
-        } else if (buf_[i] == 0xA5 && Verify_CRC16_Check_Sum(&buf_[i], sizeof(TxData_s))) {
+        }
+#if EXTENSION_CUSTOM_CTRL
+        else if (buf_[i] == 0xA5 && Verify_CRC16_Check_Sum(&buf_[i], sizeof(TxData_s))) {
             if ((i + sizeof(TxData_s)) > FRAME_LENGTH_MAX) {
                 break;
             }
@@ -88,6 +90,7 @@ void VT13::parse()
             i += sizeof(TxData_s);
             printf("angle: %.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
         }
+#endif
     }
 
     //     if (buf_[0] == 0xA9) {
