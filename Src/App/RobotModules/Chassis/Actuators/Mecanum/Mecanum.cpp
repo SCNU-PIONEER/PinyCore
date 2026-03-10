@@ -16,10 +16,10 @@ using namespace PINYMOTOR;
 
 constexpr float F_PI = std::numbers::pi_v<float>;
 
-IncrementalPid motorPids[4] = { IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f),
-                                IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f),
-                                IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f),
-                                IncrementalPid(0.0024f, 0.00002f, 0.f, 1.0f, 0.8f) };
+IncrementalPid motorPids[4] = { IncrementalPid(0.6f, 0.004f, 0.03f, 2.f, 0.02f),
+                                IncrementalPid(0.6f, 0.004f, 0.03f, 2.f, 0.02f),
+                                IncrementalPid(0.6f, 0.004f, 0.03f, 2.f, 0.02f),
+                                IncrementalPid(0.6f, 0.004f, 0.03f, 2.f, 0.02f) };
 
 void ChassisCtrlRxPacket::registerCallback()
 {
@@ -46,6 +46,7 @@ Mecanum::Mecanum()
             .velPID = &motorPids[i - 1],
         };
         motors_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
+        motors_._[i - 1]->overrideReductionRatio(DJIMOTOR::M3508::ORIGINAL_GEARBOX_RR);
     }
 
     this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(*this));
