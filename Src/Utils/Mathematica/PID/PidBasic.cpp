@@ -3,10 +3,22 @@
 #include <cstring>
 #include <algorithm>
 
-IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
-                               float _deadband)
-        : kp(_kp), ki(_ki), kd(_kd), outMax(_outMax), deadband(_deadband)
+IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax, float _deadband)
 {
+    setParam(_kp, _ki, _kd, _outMax, _deadband);
+
+    /* Reset state to zero, The size will be always 3 samples */
+    memset(state, 0, 3U * sizeof(float_t));
+}
+
+void IncrementalPid::setParam(float _kp, float _ki, float _kd, float _outMax, float _deadband)
+{
+    this->kp = _kp;
+    this->ki = _ki;
+    this->kd = _kd;
+    this->outMax = _outMax;
+    this->deadband = _deadband;
+
     /* Derived coefficient A0 */
     A0 = kp + ki + kd;
 
@@ -15,9 +27,6 @@ IncrementalPid::IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
 
     /* Derived coefficient A2 */
     A2 = kd;
-
-    /* Reset state to zero, The size will be always 3 samples */
-    memset(state, 0, 3U * sizeof(float_t));
 }
 
 float IncrementalPid::calc(float _ref, float _cur)
@@ -49,19 +58,21 @@ void IncrementalPid::reset()
 }
 
 
-PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt,
-                             float _iMax, float _outMax, float _deadband)
-        : iOut(0.0f)
-        , kp(_kp)
-        , ki(_ki)
-        , kd(_kd)
-        , dt(_dt)
-        , iMax(_iMax)
-        , outMax(_outMax)
-        , deadband(_deadband)
+PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband)
 {
-    /* Reset state to zero */
-    memset(err, 0, 2U * sizeof(float_t));
+    setParam(_kp, _ki, _kd, _dt, _iMax, _outMax, _deadband);
+    reset();
+}
+
+void PositionalPid::setParam(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband)
+{
+    this->kp = _kp;
+    this->ki = _ki;
+    this->kd = _kd;
+    this->dt = _dt;
+    this->iMax = _iMax;
+    this->outMax = _outMax;
+    this->deadband = _deadband;
 }
 
 float PositionalPid::calc(float _ref, float _cur)
@@ -75,8 +86,7 @@ float PositionalPid::calc(float _ref, float _cur)
         err[0] += deadband;
     } else {
         //  reference value get into deadband && last error out of deadband
-        if (_ref < deadband && _ref > -deadband &&
-            (err[1] < -deadband || err[1] > deadband)) {
+        if (_ref < deadband && _ref > -deadband && (err[1] < -deadband || err[1] > deadband)) {
             iOut = 0.0f;
         } else
             return 0.0f;
@@ -84,8 +94,7 @@ float PositionalPid::calc(float _ref, float _cur)
 
     iOut += ki * (err[0] + err[1]) / 2.f * dt;
     iOut = std::clamp(iOut, -iMax, iMax);
-    return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt),
-                      -outMax, outMax);
+    return std::clamp((kp * err[0]) + iOut + (kd * (err[0] - err[1]) / dt), -outMax, outMax);
 }
 
 void PositionalPid::reset()

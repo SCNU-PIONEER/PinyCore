@@ -7,8 +7,7 @@ public:
     /**
     * @brief  init incremental pid parameter
     */
-    IncrementalPid(float _kp, float _ki, float _kd, float _outMax,
-                   float _deadband = 0.f);
+    IncrementalPid(float _kp, float _ki, float _kd, float _outMax, float _deadband = 0.f);
 
     /** @brief  pid reset
     */
@@ -18,6 +17,8 @@ public:
     * @brief  pid calculation
     */
     float calc(float _ref, float _cur) override;
+
+    void setParam(float _kp, float _ki, float _kd, float _outMax, float _deadband = 0.f);
 
 protected:
     float A0; /**< The derived gain, A0 = Kp + Ki + Kd . */
@@ -38,8 +39,7 @@ public:
     /**
     * @brief  init positonal pid parameter
     */
-    PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-                  float _outMax, float _deadband = 0.f);
+    PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband = 0.f);
 
     /** @brief  pid reset
     */
@@ -49,6 +49,8 @@ public:
     * @brief  pid calculation
     */
     float calc(float _ref, float _cur) override;
+
+    void setParam(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband = 0.f);
 
 protected:
     float iOut;
