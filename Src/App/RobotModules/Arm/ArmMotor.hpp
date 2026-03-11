@@ -1,6 +1,5 @@
 #pragma once
 #include "DMMotor.hpp"
-#include "LKMotor.hpp"
 #include "./ArmKinematic.hpp"
 #include "./ArmSafety.hpp"
 #include "ArmPlan.hpp"
@@ -30,7 +29,7 @@ union ArmSpeed_u {
 
 typedef union {
     struct {
-        LKMOTOR::LKMotor *mgMotor1;  //mg8016
+        IMotor *mgMotor1;            //mg8016
         DMMOTOR::DMMotor *dmMotor2;  //10010
         DMMOTOR::DMMotor *dmMotor3;  //8009
         DMMOTOR::DMMotor *dmMotor4;  //4340
