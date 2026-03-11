@@ -220,14 +220,14 @@ MotorTypeDef_e LKMotorRS485::parseState2()
     /*
      * 电机内部的单圈认定范围是[-PI, PI], 如果超过范围，会将当前角度设置为0
      */
-    data_.singleCirAng = rangeMap(data_.ang, -PI, PI);
+    data_.singleCirAng = rangeMap(data_.ang / this->rr(), -PI, PI);
 
     /* 
      * 当电机断电，状态为离线状态，上电第一刻先赋值 angLast
      */
     if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
         this->globalState = GlobalState_e::ONLINE;
-        data_.angLast = data_.singleCirAng;
+        data_.angLast = data_.ang;
     }
 
     /*
@@ -236,15 +236,15 @@ MotorTypeDef_e LKMotorRS485::parseState2()
      * 2. 当编码器从6.28跳变到0时，delta会小于-PI，说明电机正向跨过零度，圈数加1，并且多圈角度等于编码器值加上2PI
      * 3. 当编码器在零度附近跳变，多圈角通过抵消从而不会跳变
      */
-    float delta = data_.singleCirAng - data_.angLast;
+    float delta = data_.ang - data_.angLast;
     if (delta > PI) {
-        data_.cirNum--;
+        this->data_.cirNum -= 1.f / this->rr();
     } else if (delta < -PI) {
-        data_.cirNum++;
+        this->data_.cirNum += 1.f / this->rr();
     }
 
     data_.multipCirAng = data_.singleCirAng + (TWO_PI * data_.cirNum);
-    data_.angLast = data_.singleCirAng;
+    data_.angLast = data_.ang;
 
     return STM_OK;
 }
