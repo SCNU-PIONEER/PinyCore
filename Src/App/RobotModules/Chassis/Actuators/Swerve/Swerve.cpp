@@ -53,7 +53,7 @@ PositionalPid swerveVelPid[4] = {
 };
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.48f, 0.000f, 0.f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
     PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
     PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
     PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),

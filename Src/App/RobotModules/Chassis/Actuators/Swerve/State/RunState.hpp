@@ -7,7 +7,7 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid gWzAP{ 10.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.2f };
+static PositionalPid gWzAP{ 10.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.1f };
 static float spinWz;
 
 namespace CHASSIS {
