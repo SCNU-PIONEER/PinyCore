@@ -101,6 +101,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         updateRocker(lx, rcData->rc.ch2);
         updateRocker(ly, rcData->rc.ch3);
 
+        gimbalVal = -((float)rcData->rc.ch2 * GIMBAL_YAW_MAX / 660);
+
+
 #if APP_USE_DT7_KEYBOARD
         /*
          * gimbal:STOP,RUN,
@@ -180,7 +183,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             armMsg.state = ARM::FSMState_e::STOP;
             // gimbal
             gimbalMsg.state = GIMBAL::FSMState_e::STOP;
-            gimbalMsg.pitch = gimbalMsg.yaw = 0.f;
+            gimbalMsg.yaw = 0.f;
             // chassis
             chassisMsg.state = CHASSIS::FSMState_e::STOP;
             chassisMsg.vx = chassisMsg.vy = 0.f;
@@ -188,11 +191,11 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             if (rcData->rc.switchLeft == SW::DOWN) {
                 // gimbal
                 gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-                gimbalMsg.yaw = -lx / CH_RANGE * GIMBAL_YAW_MAX;
+                gimbalMsg.yaw = gimbalVal;
                 // chassis
                 chassisMsg.state = CHASSIS::FSMState_e::RUN;
-                chassisMsg.vx = ry / CH_RANGE * INPUT_VX_MAX;
-                chassisMsg.vy = -rx / CH_RANGE * INPUT_VY_MAX;
+                chassisMsg.vx = ry / 100 * INPUT_VX_MAX;
+                chassisMsg.vy = -rx / 100 * INPUT_VY_MAX;
 
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
@@ -216,7 +219,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         } else if (rcData->rc.switchRight == SW::UP) {
             // gimbal
             gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-            gimbalMsg.yaw = -lx / CH_RANGE * INPUT_YAW_MAX;
+            gimbalMsg.yaw = gimbalVal;
             // chassis
             if (rcData->rc.switchLeft == SW::DOWN) {
             } else {

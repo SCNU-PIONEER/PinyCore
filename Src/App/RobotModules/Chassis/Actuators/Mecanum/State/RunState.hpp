@@ -24,12 +24,12 @@ public:
         ref.vy = chassis_.msg.vy;
 #if APP_USE_COMM == 1
         const float deltaYaw = PINYMOTOR::getMinorArc(chassis_.msg.yaw, 0.f);
-        float targetYaw = (deltaYaw > M_PI / 2.f) ? M_PI : 0.f;
-        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(deltaYaw, targetYaw));
+        float followYaw = (deltaYaw > M_PI / 2.f) ? M_PI : 0.f;
+        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(deltaYaw, followYaw));
 #else
         ref.wz = chassis_.msg.yaw;
 #endif
-        chassis_.ctrl(ref);
+        // chassis_.ctrl(ref);
     }
 
     void exit() final
@@ -54,6 +54,6 @@ public:
 
 private:
     Mecanum &chassis_;
-    PositionalPid wzAngPid_{ 0, 0, 0, 0.001f, 0, 0, 0 };
+    PositionalPid wzAngPid_{ 10.f, 0, 0.03f, 0.001f, 0, 20.f, 0.1f };
 };
 } // namespace CHASSIS

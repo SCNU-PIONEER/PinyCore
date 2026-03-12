@@ -2,7 +2,6 @@
 
 #include "./utils.hpp"
 #include "MsgImpl.hpp"
-#include <cstring>
 
 namespace COMM {
 
@@ -58,7 +57,7 @@ public:
         CHASSIS::FSMState_e state;
         float vx;
         float vy;
-        float yaw;
+        float deltaYaw;
     };
 #pragma pack(push, 1)
     union Data_u {
@@ -66,7 +65,7 @@ public:
             uint8_t state : 3;
             int16_t vx : 16;
             int16_t vy : 16;
-            int16_t yaw : 16;
+            int16_t deltaYaw : 16;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -77,14 +76,14 @@ public:
         d.vx = static_cast<int16_t>(_protoData.vx * 1000.f);
         d.vy = static_cast<int16_t>(_protoData.vy * 1000.f);
         d.state = (uint8_t)_protoData.state;
-        d.yaw = convertToInt16(_protoData.yaw);
+        d.deltaYaw = convertToInt16(_protoData.deltaYaw);
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         _protoData.vx = static_cast<float>(_data.content.vx) / 1000.f;
         _protoData.vy = static_cast<float>(_data.content.vy) / 1000.f;
         _protoData.state = (CHASSIS::FSMState_e)_data.content.state;
-        _protoData.yaw = convertToFloat(_data.content.yaw);
+        _protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
     }
 };
 

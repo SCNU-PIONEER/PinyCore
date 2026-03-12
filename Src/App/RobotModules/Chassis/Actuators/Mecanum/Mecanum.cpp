@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "Mecanum.hpp"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
@@ -71,10 +73,17 @@ void Mecanum::enter()
     }
 }
 
-void Mecanum::update(const QueueHandle_t *_queue)
+void Mecanum::update([[maybe_unused]] const QueueHandle_t *_queue)
 {
+#if APP_USE_COMM
+    auto data = rxPacket_.data();
+    msg.state = data.state;
+    msg.vx = data.vx;
+    msg.vy = data.vy;
+    msg.yaw = -data.deltaYaw;
+#else
     xQueueReceive(*_queue, &msg, 0);
-
+#endif
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = iir3_[i].process(motors_._[i]->data().spdRpm);
     }

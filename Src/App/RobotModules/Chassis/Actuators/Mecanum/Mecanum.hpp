@@ -80,7 +80,7 @@ private:
     Motors_u motors_ = {};
 
 #ifdef TARGET_SLAVE
-    ChassisCtrlRxPacket chassisCtrlRxPacket_;
+    ChassisCtrlRxPacket rxPacket_;
 #endif
 
     QuadricycleController *powerCtrl_;

@@ -9,6 +9,7 @@ namespace GIMBAL {
 
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     friend class Standard;
+    ChassisCtrlTxPacket() : TxPacket(500.f) {}
     void transmit(uint8_t *_buf, uint16_t _len) final;
 };
 
@@ -16,9 +17,9 @@ class Standard : public Gimbal {
 public:
     static constexpr float YAW_LAUNCH_ANG = 4.74211359f;
     static constexpr float YAW_MOTOR_FREQ = 500.f;
-    static constexpr float YAW_SPEED_MAX = 5.f;
+    static constexpr float YAW_SPEED_MAX = 15.f;
     // "REVERSE flag" is true when imu and motor have different direction
-    static constexpr bool YAW_REVERSE = true;
+    static constexpr bool YAW_REVERSE = false;
 
     Standard();
 
@@ -33,7 +34,7 @@ public:
 
 private:
     PINYMOTOR::IMotor *motor_;
-    ChassisCtrlTxPacket chassisCtrlTxPacket_;
+    ChassisCtrlTxPacket txPacket_;
 };
 
 } // namespace GIMBAL

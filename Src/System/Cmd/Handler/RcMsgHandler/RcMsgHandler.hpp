@@ -25,12 +25,12 @@ public:
     void notify(Msg *_msg, QueueHandle_t _queue) final;
 
 private:
-    static constexpr float INPUT_VX_MAX = 4.f;
-    static constexpr float INPUT_VY_MAX = 4.f;
+    static constexpr float INPUT_VX_MAX = 3.f;
+    static constexpr float INPUT_VY_MAX = 3.f;
     static constexpr uint8_t T_ACC_CNT = 100;
     static constexpr float S_CURVE_ACC = 3.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
-    static constexpr float GIMBAL_YAW_MAX = 0.1f;
+    static constexpr float GIMBAL_YAW_MAX = 0.002f;
     float channelMax_;
 
     MsgBus_s *msgBus_;
@@ -51,4 +51,6 @@ private:
     float ry = 0.f;
     float lx = 0.f;
     float ly = 0.f;
+
+    float gimbalVal = 0.f;
 };

@@ -8,6 +8,7 @@ menu "app config"
 
     config APP_USE_GIMBAL
     bool "gimbal"
+    depends on APP_USE_INS
     default n
 
     source "Src/App/RobotModules/Gimbal/Kconfig"

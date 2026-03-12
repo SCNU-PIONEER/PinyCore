@@ -14,7 +14,7 @@ using namespace PINYMOTOR;
 
 void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
 {
-    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+    Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
 }
 
 Standard::Standard()
@@ -42,17 +42,26 @@ void Standard::enter() { motor_->cmd(PINYMOTOR::MotorCmdType_e::ON); }
 
 void Standard::update(const MsgBus_s *_bus)
 {
+    this->insSub_->receive();
+
     xQueueReceive(_bus->gimbalQueue, &msg, 0);
 
+    /* 离线检测 */
+    if (motor_->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
+        msg.state = GIMBAL::FSMState_e::STOP;
+    }
+
 #if APP_USE_COMM
-    ChassisMsg_s cmsg{};
+    ChassisMsg_s cmsg;
     if (xQueueReceive(_bus->chassisQueue, &cmsg, 0) == pdTRUE) {
-        if (cmsg.state == CHASSIS::FSMState_e::RUN) {
+        if (cmsg.state != CHASSIS::FSMState_e::STOP) {
             if (isLaunched) {
-                chassisCtrlTxPacket_.setData().state = cmsg.state;
+                txPacket_.setData().state = cmsg.state;
             } else {
-                chassisCtrlTxPacket_.setData().state = CHASSIS::FSMState_e::STOP;
+                txPacket_.setData().state = CHASSIS::FSMState_e::STOP;
             }
+        } else {
+            txPacket_.setData().state = CHASSIS::FSMState_e::STOP;
         }
         float deltaYaw = getMinorArc(motor_->posNorm(), 0.f);
         float cosYaw = 1.f, sinYaw = 0.f;
@@ -60,16 +69,12 @@ void Standard::update(const MsgBus_s *_bus)
             cosYaw = arm_cos_f32(deltaYaw);
             sinYaw = arm_sin_f32(deltaYaw);
         }
-        chassisCtrlTxPacket_.setData().vx = (cmsg.vx * cosYaw) - (cmsg.vy * sinYaw);
-        chassisCtrlTxPacket_.setData().vy = (cmsg.vy * cosYaw) + (cmsg.vx * sinYaw);
+        txPacket_.setData().vx = (cmsg.vx * cosYaw) - (cmsg.vy * sinYaw);
+        txPacket_.setData().vy = (cmsg.vy * cosYaw) + (cmsg.vx * sinYaw);
     };
-    chassisCtrlTxPacket_.setData().yaw = motor_->posNorm();
+    txPacket_.setData().deltaYaw = motor_->posNorm();
 #endif
 
-    /* 离线检测 */
-    if (motor_->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
-        msg.state = GIMBAL::FSMState_e::STOP;
-    }
 
     this->stateFactory_.update();
 }
