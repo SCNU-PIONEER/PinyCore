@@ -10,12 +10,12 @@
 
 static PositionalPid gRunPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(10.f, 5.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(10.f, 2.f, 0.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(2.f, 0.0f, 0.0001f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 
@@ -54,11 +54,6 @@ public:
         eIA_s.FirstYaw += gimbal_->msg.wYaw * 0.001f;
         eIA_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
 
-        if (gimbal_->isVisionAngOver_) {
-            eIA_s.Pitch = vision->v2eData().pitch;
-            eIA_s.FirstYaw = vision->v2eData().yaw;
-        }
-
         eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
 
@@ -86,16 +81,15 @@ public:
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (gimbal_->msg.state == FSMState_e::RUN)
-            return FSMState_e::RUN;
-        // else if (gimbal_->msg.state == FSMState_e::PATROL)
-        //     return FSMState_e::PATROL;
-        else if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
+
+        if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
             return FSMState_e::AUTO;
+        else if (gimbal_->msg.state == FSMState_e::RUN && vision->v2eData().control)
+            return FSMState_e::AUTO; //平时调试用
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;
         else
-            return FSMState_e::STOP;
+            return FSMState_e::RUN;
     };
 
 private:

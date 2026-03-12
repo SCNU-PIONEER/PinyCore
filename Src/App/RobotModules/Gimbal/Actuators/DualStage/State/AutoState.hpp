@@ -7,6 +7,7 @@
 
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
+#include "Vision.hpp"
 
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
@@ -43,6 +44,7 @@ public:
             eIA._[i] = cIA._[i];
             eMA._[i] = cMA._[i];
         }
+        visionExpBigYaw_ = eIA_s.FirstYaw; //进入auto状态时，钉住大yaw角度
         gimbal_->enter();
 
         LOG::info("GimbalAuto", "enter");
@@ -52,28 +54,36 @@ public:
     {
         DualStage_s<float> delArc = {};
 
-        eIA_s.Pitch = vision->v2eData().pitch;
-        eIA_s.SecondYaw = vision->v2eData().yaw;
-        // eIA.FirstYaw = 0.f; //auto模式下大yaw不改变方向
+        deltaVisionAng_ = PINYMOTOR::getMinorArc(vision->v2eData().yaw, cMA_s.SecondYaw);
+        isVisionAngOver_ = deltaVisionAng_ >= SECOND_YAW_MAX_ANG || deltaVisionAng_ <= SECOND_YAW_MIN_ANG;
 
-        if (eIA_s.SecondYaw >= SECOND_YAW_MAX_ANG || eIA_s.SecondYaw <= SECOND_YAW_MIN_ANG) {
-            gimbal_->isVisionAngOver_ = true; //视觉角度超出小yaw范围，停止控制
+        if (isVisionAngOver_) {
+            eIA_s.Pitch = vision->v2eData().pitch;
+            eIA_s.SecondYaw = 0.f;
+            eIA_s.FirstYaw = vision->v2eData().yaw;
         } else {
-            gimbal_->isVisionAngOver_ = false;
-            eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-            eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
-            eIA_s.SecondYaw = PINYMOTOR::clampArc(eIA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
-
-            delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
-            delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
-            delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
-
-            eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
-            // eMA.FirstYaw = 0.f;
-            eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
-
-            gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
+            eIA_s.Pitch = vision->v2eData().pitch;
+            eIA_s.SecondYaw = vision->v2eData().yaw;
+            eIA_s.FirstYaw = visionExpBigYaw_;
         }
+
+        eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
+        eIA_s.SecondYaw = PINYMOTOR::clampArc(eIA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+
+        delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
+        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
+        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
+
+        eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
+        eMA_s.FirstYaw = PINYMOTOR::rangeMap(cMA_s.FirstYaw + delArc.FirstYaw);
+        eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
+
+        if (isVisionAngOver_) {
+            eMA_s.SecondYaw = 0.f;
+        }
+
+        gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
     }
 
     void exit() final
@@ -90,20 +100,20 @@ public:
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (gimbal_->msg.state == FSMState_e::RUN || gimbal_->isVisionAngOver_)
-            return FSMState_e::RUN;
-        else if (gimbal_->msg.state == FSMState_e::PATROL)
-            return FSMState_e::PATROL;
-        else if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
-            return FSMState_e::AUTO;
-        else if (gimbal_->msg.state == FSMState_e::NAV)
+
+        if (gimbal_->msg.state == FSMState_e::NAV && !vision->v2eData().control)
             return FSMState_e::NAV;
+        else if (gimbal_->msg.state == FSMState_e::RUN && !vision->v2eData().control)
+            return FSMState_e::RUN;
         else
-            return FSMState_e::STOP;
+            return FSMState_e::AUTO;
     };
 
 private:
     DualStage *gimbal_;
+    float visionExpBigYaw_;        //视觉进行自瞄，钉住大yaw角度
+    bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
+    float deltaVisionAng_;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;

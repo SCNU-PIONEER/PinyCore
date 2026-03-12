@@ -31,8 +31,6 @@ public:
             return FSMState_e::STOP;
         else if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::LAUNCH;
-        else if (gimbal_->msg.state == FSMState_e::PATROL)
-            return FSMState_e::LAUNCH;
         else
             return FSMState_e::STOP;
     }

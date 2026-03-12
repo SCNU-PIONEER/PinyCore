@@ -73,6 +73,7 @@ DualStage::DualStage()
     };
     motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
     // motors_.Gim_s.FirstYaw->setZeroAng();
+    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
@@ -134,7 +135,7 @@ void DualStage::update(void *_param)
             bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
             isSetBYZeroAng_ = false;
         }
-        resetZeroPoint();
+        // resetZeroPoint();
     }
 
     loadChassisMsg(_param);

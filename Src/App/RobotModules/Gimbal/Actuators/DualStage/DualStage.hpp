@@ -91,7 +91,7 @@ class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 2.826614875f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG =1.13866675f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 4.30871105f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
@@ -103,7 +103,7 @@ public:
     static constexpr bool FIRST_YAW_REVERSE = false;
     static constexpr bool SECOND_YAW_REVERSE = true;
 
-    static constexpr float ANGLE_JUMP_VALUE = 0.033169213f; // rad,现状为每圈只跳一次
+    static constexpr float ANGLE_JUMP_VALUE = 0.035169213f; //0.033169213f; // rad,现状为每圈只跳一次
 
     static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
     static constexpr float YAW_FRICTION = 0.00570616219f;
@@ -113,7 +113,6 @@ public:
 
     DualStageDebug_s debug{};
 
-    bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi

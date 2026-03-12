@@ -94,16 +94,15 @@ public:
     {
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
-        else if (gimbal_->msg.state == FSMState_e::RUN)
+
+        if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (gimbal_->msg.state == FSMState_e::PATROL)
-            return FSMState_e::PATROL;
         else if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
             return FSMState_e::AUTO;
-        else if (gimbal_->msg.state == FSMState_e::NAV)
-            return FSMState_e::NAV;
+        else if (gimbal_->msg.state == FSMState_e::RUN && vision->v2eData().control)
+            return FSMState_e::AUTO; //平时调试用
         else
-            return FSMState_e::STOP;
+            return FSMState_e::NAV;
     };
 
 private:
