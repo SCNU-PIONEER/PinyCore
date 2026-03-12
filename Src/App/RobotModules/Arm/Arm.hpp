@@ -67,8 +67,5 @@ public:
     ARM::OreBin orebin;
 
 private:
-    int16_t rateCnt = 0;
-
-private:
     // ARM::Kinematic kinematic;
 };
