@@ -24,7 +24,14 @@ CONFIG_GIMBAL_FILE="\"Standard.hpp\""
 # end of gimbal config
 
 # CONFIG_APP_USE_TEST is not set
-# CONFIG_APP_USE_INS is not set
+CONFIG_APP_USE_INS=y
+
+#
+# INS config
+#
+# CONFIG_INS_ACCEL_CALIBRATION is not set
+# end of INS config
+
 CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
 CONFIG_APP_USE_REFEREE=y
