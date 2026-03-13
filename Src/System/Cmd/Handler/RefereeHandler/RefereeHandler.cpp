@@ -11,7 +11,7 @@ void RefereeHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
     this->msgBus_ = _bus;
     this->event = _event;
 
-    referee = std::make_unique<REFEREE::Referee>(&REFEREE_UART, _event, this->bit_);
+    referee.init(&REFEREE_UART, _event, this->bit_);
 }
 
 void RefereeHandler::handle()

@@ -104,22 +104,22 @@ MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
     this->data_.tempture = fb.temperature;
 
-    float angDiff = getMinorArc(this->data_.rawAng, this->data_.angLast, 2.0f * PI) / this->rr();
-    this->data_.angLast = this->data_.rawAng;
-    this->data_.multipCirAng += angDiff;
-    this->data_.cirNum = this->data_.multipCirAng / (2.0f * PI);
+    this->data_.singleCirAng = rangeMap(data_.ang / this->rr());
 
-    if ((this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) &&
-        this->data_.angLast != this->data_.rawAng) {
+    if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
         this->globalState = GlobalState_e::ONLINE;
-        angDiff = 0;
-        this->data_.multipCirAng = this->data_.rawAng / this->rr(); // 与电机内编码器同步零点
+        this->data_.angLast = this->data_.ang;
     }
 
-    if (this->rr() == 1) // TODO: 因fmod的精度问题 多圈始终不准
-        this->data_.singleCirAng = this->data_.ang;
-    else
-        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng);
+    float angDiff = this->data_.ang - this->data_.angLast;
+    if (angDiff > PI) {
+        this->data_.cirNum -= 1.f / this->rr();
+    } else if (angDiff < -PI) {
+        this->data_.cirNum += 1.f / this->rr();
+    }
+
+    this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
+    this->data_.angLast = this->data_.ang;
 
     return 0;
 }

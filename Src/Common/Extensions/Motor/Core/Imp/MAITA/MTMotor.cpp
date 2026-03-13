@@ -53,9 +53,9 @@ MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
 MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
 {
     Feedback_s fb = *(Feedback_s *)_rxBuf;
-    data_.tempture = fb.temperature;
-    data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f : static_cast<float>(fb.iq) * 0.01f;
-    data_.torq = data_.curr * status_.kn;
+    this->data_.tempture = fb.temperature;
+    this->data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f : static_cast<float>(fb.iq) * 0.01f;
+    this->data_.torq = this->data_.curr * status_.kn;
     /* speed */
     float noumenaVel = deg2rad(static_cast<float>(fb.speed));
     this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
@@ -64,12 +64,20 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
     this->data_.rawAng = static_cast<float>(fb.pos);
     float noumenaAng = deg2rad(this->data_.rawAng);
     float rawAng = regInfo_.isReverse ? -noumenaAng : noumenaAng;
-    float delta = rawAng - this->data_.zeroAng;
+    this->data_.ang = rawAng - this->data_.zeroAng;
+    this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
+    if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
+        this->globalState = GlobalState_e::ONLINE;
+        this->data_.angLast = this->data_.ang;
+    }
+    float delta = this->data_.ang - this->data_.angLast;
+    if (delta > PI) {
+        this->data_.cirNum -= 1.f / this->rr();
+    } else if (delta < -PI) {
+        this->data_.cirNum += 1.f / this->rr();
+    }
+    this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
     this->data_.angLast = this->data_.ang;
-    this->data_.ang = delta;
-    this->data_.singleCirAng = rangeMap(this->data_.ang, -PI, PI);
-    this->data_.multipCirAng = this->data_.ang;
-    this->data_.cirNum = this->data_.multipCirAng / (2.f * PI);
     return 0;
 }
 
