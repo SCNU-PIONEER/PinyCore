@@ -11,6 +11,8 @@
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
 
+#include "UIApp.hpp"
+
 extern Cmd *cmd;
 
 using namespace CHASSIS;
@@ -80,7 +82,7 @@ void Mecanum::update([[maybe_unused]] const QueueHandle_t *_queue)
     msg.state = data.state;
     msg.vx = data.vx;
     msg.vy = data.vy;
-    msg.yaw = -data.deltaYaw;
+    msg.yaw = data.deltaYaw;
 #else
     xQueueReceive(*_queue, &msg, 0);
 #endif
@@ -89,6 +91,8 @@ void Mecanum::update([[maybe_unused]] const QueueHandle_t *_queue)
     }
     this->curSpeed_ = forward(wSpeed_);
     this->stateFactory_.update();
+
+    // UI::APP::instance()->updateChassis({ .state = msg.state });
 }
 
 

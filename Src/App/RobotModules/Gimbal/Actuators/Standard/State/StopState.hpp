@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MsgImpl.hpp"
 #include "Standard.hpp"
 #include "FSMState.hpp"
 #include "StmLog.hpp"
@@ -20,7 +21,7 @@ public:
         using enum FSMState_e;
         switch (gimbal_.msg.state) {
         case RUN:
-            return RUN;
+            return LAUNCH;
         default:
             return STOP;
         }

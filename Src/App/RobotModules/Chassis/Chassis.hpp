@@ -7,7 +7,7 @@ class Chassis {
 public:
     static constexpr float MAX_VX_SPEED = 3.f; // m/s
     static constexpr float MAX_VY_SPEED = 3.f; // m/s
-    static constexpr float MAX_WZ_SPEED = 5.f; // rad/s
+    static constexpr float MAX_WZ_SPEED = 3.f; // rad/s
 
     ChassisMsg_s msg = {};
 

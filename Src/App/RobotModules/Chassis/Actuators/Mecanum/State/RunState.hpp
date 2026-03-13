@@ -5,6 +5,10 @@
 #include "PidBasic.hpp"
 #include "MotorCommonMacros.hpp"
 
+PositionalPid wzAngPid{ 15.f, 0, 0.03f, 0.001f, 0, 20.f, 0.1f };
+float w = 0.f;
+
+
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
 public:
@@ -23,18 +27,20 @@ public:
         ref.vx = chassis_.msg.vx;
         ref.vy = chassis_.msg.vy;
 #if APP_USE_COMM == 1
-        const float deltaYaw = PINYMOTOR::getMinorArc(chassis_.msg.yaw, 0.f);
+        const float deltaYaw = chassis_.msg.yaw;
         float followYaw = (deltaYaw > M_PI / 2.f) ? M_PI : 0.f;
-        ref.wz = wzAngPid_.calc(0, PINYMOTOR::getMinorArc(deltaYaw, followYaw));
+        followYaw = PINYMOTOR::getMinorArc(deltaYaw, followYaw);
+        w = followYaw;
+        ref.wz = wzAngPid.calc(0, deltaYaw);
 #else
         ref.wz = chassis_.msg.yaw;
 #endif
-        // chassis_.ctrl(ref);
+        chassis_.ctrl(ref);
     }
 
     void exit() final
     {
-        wzAngPid_.reset();
+        wzAngPid.reset();
         LOG::info("ChassisRun", " exit");
     }
 
@@ -54,6 +60,5 @@ public:
 
 private:
     Mecanum &chassis_;
-    PositionalPid wzAngPid_{ 10.f, 0, 0.03f, 0.001f, 0, 20.f, 0.1f };
 };
 } // namespace CHASSIS

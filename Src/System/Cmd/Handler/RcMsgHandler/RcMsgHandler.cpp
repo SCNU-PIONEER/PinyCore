@@ -222,6 +222,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             gimbalMsg.yaw = gimbalVal;
             // chassis
             if (rcData->rc.switchLeft == SW::DOWN) {
+                chassisMsg.state = CHASSIS::FSMState_e::RUN;
             } else {
                 chassisMsg.state = CHASSIS::FSMState_e::SPIN;
             }

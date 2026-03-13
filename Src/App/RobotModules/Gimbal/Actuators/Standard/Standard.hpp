@@ -4,6 +4,8 @@
 #include "IMotor.hpp"
 #include "TxPacket.hpp"
 #include "PacketImpl.hpp"
+#include "PidBasic.hpp"
+#include <cmath>
 
 namespace GIMBAL {
 
@@ -19,7 +21,7 @@ public:
     static constexpr float YAW_MOTOR_FREQ = 500.f;
     static constexpr float YAW_SPEED_MAX = 15.f;
     // "REVERSE flag" is true when imu and motor have different direction
-    static constexpr bool YAW_REVERSE = false;
+    static constexpr bool YAW_REVERSE = true;
 
     Standard();
 
@@ -28,12 +30,13 @@ public:
     void stop();
     void enter();
     void update(const MsgBus_s *_bus);
-    void ctrl(float _pos, float _maxSpeed = YAW_SPEED_MAX);
+    void ctrl(float _delta);
 
     bool isLaunched = false;
 
 private:
     PINYMOTOR::IMotor *motor_;
+
     ChassisCtrlTxPacket txPacket_;
 };
 
