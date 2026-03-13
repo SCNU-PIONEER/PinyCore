@@ -33,7 +33,7 @@ class DualFric : public ArmorBooster {
     };
 
 public:
-    static constexpr float FAST_FRIC_RATE = 628.f;
+    static constexpr float FAST_FRIC_RATE = 610.f;
     static constexpr float SLOW_FRIC_RATE = 314.f;
 
     static constexpr float FRIC_STOP_THRESHOLD = 1.f;
@@ -61,8 +61,8 @@ private:
         { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     };
 
-    PositionalPid fricPid_[2]{ { 0.00065f, 2e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f },
-                               { 0.00085f, 7e-6f, 0.f, 0.001f, 0.003f, 0.157f, 0.f } };
+    PositionalPid fricPid_[2]{ { 0.00025f, 4e-6f, 3e-7f, 0.001f, 0.003f, 0.157f, 0.f },
+                               { 0.00025f, 4e-6f, 3e-7f, 0.001f, 0.003f, 0.157f, 0.f } };
 
     SpeedRxPacket speedRxPacket_;
 
