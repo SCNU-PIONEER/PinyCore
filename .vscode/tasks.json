@@ -13,17 +13,38 @@
         "cwd": "${workspaceFolder}"
       },
       "detail": "make...",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+          }
+        }
+      },
     },
     {
       "type": "shell",
       "label": "cmake",
-      "command": " cmake -B 'build' -G 'Ninja' ",
-      "problemMatcher": []
+      "command": "cmake -B build -G Ninja",
+      "problemMatcher": [],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+          }
+        }
+      },
     },
     {
       "label": "jlinkserver",
       "type": "shell",
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+          }
+        }
+      },
       "command": "JLinkGDBServer -singlerun  -if swd -port 50000 -swoport 50001 -telnetport 50002 -device stm32f407ig -rtttelnetport 19021",
       "dependsOn": [
         "build"
@@ -46,10 +67,14 @@
               "message": 1
             }
           ],
-         "background": {
+          "background": {
             "activeOnStart": true,
-            "beginsPattern": { "regexp": "." },
-            "endsPattern": { "regexp": "^.*$" }
+            "beginsPattern": {
+              "regexp": "."
+            },
+            "endsPattern": {
+              "regexp": "^.*$"
+            }
           }
         }
       ]
@@ -57,7 +82,7 @@
     {
       "label": "open-RTT",
       "type": "shell",
-       "dependsOn": [
+      "dependsOn": [
         "jlinkserver"
       ],
       "command": "JLinkRTTClient",
@@ -68,7 +93,7 @@
         "focus": true,
         "panel": "dedicated"
       },
-     "problemMatcher": [
+      "problemMatcher": [
         {
           "pattern": [
             {
@@ -79,10 +104,14 @@
               "message": 1
             }
           ],
-         "background": {
+          "background": {
             "activeOnStart": true,
-            "beginsPattern": { "regexp": "." },
-            "endsPattern": { "regexp": "^.*$" }
+            "beginsPattern": {
+              "regexp": "."
+            },
+            "endsPattern": {
+              "regexp": "^.*$"
+            }
           }
         }
       ]
