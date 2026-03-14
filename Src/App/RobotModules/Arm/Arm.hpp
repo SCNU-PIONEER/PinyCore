@@ -43,7 +43,8 @@ public:
 
     ArmMsg_s msg = {};
 
-    ARM::Hand hand;
+    ARM::Hand leftHand;
+    ARM::Hand rightHand;
 
     ARM::Joint10D_s target_joints = {};
 

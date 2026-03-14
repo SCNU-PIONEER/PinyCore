@@ -13,7 +13,8 @@ public:
     void enter() override
     {
         arm_.orebin.init();
-        arm_.hand.enable();
+        arm_.leftHand.enable();
+        arm_.rightHand.enable();
         arm_.target_joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");
@@ -44,27 +45,44 @@ public:
         for (uint8_t i = 0; i < 2; i++) {
             arm_.target_joints.joints[i] += arm_.msg.target[i];
         }
-        if (arm_.msg.mode == ARM::ArmMode_e::LEFT) {
+
+        switch (arm_.msg.mode) {
+        case ArmMode_e::LEFT:
             //左臂 j3,4,5,6
             for (uint8_t i = 3; i < 7; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
-        } else if (arm_.msg.mode == ARM::ArmMode_e::RIGHT) {
+            if (arm_.msg.switch1) {
+                arm_.leftHand.clamp();
+            } else {
+                arm_.leftHand.release();
+            }
+            break;
+        case ArmMode_e::RIGHT:
             //右臂 j7,8,9,10
             for (uint8_t i = 7; i < 10; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
-        } else if (arm_.msg.mode == ARM::ArmMode_e::TWO) {
+            if (arm_.msg.switch1) {
+                arm_.rightHand.clamp();
+            } else {
+                arm_.rightHand.release();
+            }
+            break;
+        case ArmMode_e::TWO:
             //双臂 j1,2,3,4,5,6,7,8,9,10
             for (uint8_t i = 2; i < 10; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
+            if (arm_.msg.switch1) {
+                arm_.leftHand.clamp();
+                arm_.rightHand.clamp();
+            } else {
+                arm_.leftHand.release();
+                arm_.rightHand.release();
+            }
         }
-        if (arm_.msg.switch1) {
-            arm_.hand.clamp();
-        } else {
-            arm_.hand.release();
-        }
+
         arm_.motors.safety.setSpeed(1);
         arm_.motors.safety.setAllAngleLimit(arm_.target_joints.joints);
         arm_.motors.ctrl(arm_.target_joints.joints);
