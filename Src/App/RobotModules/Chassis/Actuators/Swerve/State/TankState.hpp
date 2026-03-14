@@ -33,21 +33,24 @@ public:
         chassis_->ctrl(ref);
     }
 
-    void exit() final { LOG::info("ChassisTANK", " exit"); }
+    void exit() final
+    {
+        chassis_->isGimbalReset = false;
+        LOG::info("ChassisTANK", " exit");
+    }
 
 
     FSMState_e checkChange() final
     {
-        if (chassis_->msg.state == FSMState_e::STOP)
+        if (chassis_->msg.state == FSMState_e::STOP || !chassis_->isGimbalReset)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
+
+        if (chassis_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
         else if (chassis_->msg.state == FSMState_e::SPIN)
             return FSMState_e::SPIN;
-        else if (chassis_->msg.state == FSMState_e::TANK)
-            return FSMState_e::TANK;
         else
-            return FSMState_e::STOP;
+            return FSMState_e::TANK;
     }
 
 private:

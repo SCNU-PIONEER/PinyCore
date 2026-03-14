@@ -21,13 +21,14 @@ public:
 
     FSMState_e checkChange() final
     {
-        if (chassis_->msg.state == FSMState_e::STOP)
+        if (chassis_->msg.state == FSMState_e::STOP || !chassis_->isGimbalReset)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN && chassis_->isGimbalReset())
+
+        if (chassis_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (chassis_->msg.state == FSMState_e::SPIN && chassis_->isGimbalReset())
+        else if (chassis_->msg.state == FSMState_e::SPIN)
             return FSMState_e::SPIN;
-        else if (chassis_->msg.state == FSMState_e::TANK && chassis_->isGimbalReset())
+        else if (chassis_->msg.state == FSMState_e::TANK)
             return FSMState_e::TANK;
         else
             return FSMState_e::STOP;

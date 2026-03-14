@@ -25,8 +25,8 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.Speed.vx = std::clamp(chassis_->msg.vx, -1.f, 1.f);
-        ref.Speed.vy = std::clamp(chassis_->msg.vy, -1.f, 1.f);
+        ref.Speed.vx = std::clamp(chassis_->msg.vx, -1.1f, 1.1f);
+        ref.Speed.vy = std::clamp(chassis_->msg.vy, -1.1f, 1.1f);
 
         ref.Speed.vx = std::fmax(chassis_->msg.vx - CONPENSATION,
                                  std::fmin(chassis_->msg.vx, chassis_->msg.vx + CONPENSATION));
@@ -46,6 +46,7 @@ public:
 
     void exit() final
     {
+        chassis_->isGimbalReset = false;
         spinCnt_ = 0;
         spinDir_ = !spinDir_;
         LOG::info("ChassisSpin", " exit");
@@ -54,16 +55,15 @@ public:
 
     FSMState_e checkChange() final
     {
-        if (chassis_->msg.state == FSMState_e::STOP)
+        if (chassis_->msg.state == FSMState_e::STOP || !chassis_->isGimbalReset)
             return FSMState_e::STOP;
-        else if (chassis_->msg.state == FSMState_e::RUN)
+
+        if (chassis_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (chassis_->msg.state == FSMState_e::SPIN)
-            return FSMState_e::SPIN;
         else if (chassis_->msg.state == FSMState_e::TANK)
             return FSMState_e::TANK;
         else
-            return FSMState_e::STOP;
+            return FSMState_e::SPIN;
     }
 
     /// @brief speed change spinning

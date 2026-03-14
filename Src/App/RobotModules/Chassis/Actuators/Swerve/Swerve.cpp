@@ -133,6 +133,7 @@ void Swerve::update(void *_param)
     msg.vx = chassisCtrlRxPacket_.data().vx;
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
+    isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
 
     // sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
     // referee->transmitter.sendData(0x0120, reinterpret_cast<uint8_t *>(&sentryCmd), sizeof(REFEREE::SentryCmd_s));
@@ -354,5 +355,3 @@ void Swerve::loadDeltaYaw()
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
 };
-
-bool Swerve::isGimbalReset() const { return chassisCtrlRxPacket_.data().gimbalReset; }
