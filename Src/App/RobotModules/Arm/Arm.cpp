@@ -23,10 +23,28 @@ using namespace ARM;
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
 static Joint10 angleMin{ -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f };
 static Joint10 angleMax{ 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+
+static InitConfig_s leftHandConfig = {
+    .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+    .comType = ComType_e::CAN,
+    .workMode = WorkMode_e::QUAD_CURR,
+    .offsetId = 1,
+    .txFreq = 500.0f,
+    .posPID = nullptr,
+    .velPID = nullptr,
+};
+
+static InitConfig_s rightHandConfig = {
+    .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+    .comType = ComType_e::CAN,
+    .workMode = WorkMode_e::QUAD_CURR,
+    .offsetId = 2,
+    .txFreq = 500.0f,
+    .posPID = nullptr,
+    .velPID = nullptr,
+};
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-Arm::Arm() : motors(angleMin, angleMax)
+Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), rightHand("RightHand", rightHandConfig)
 {
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));

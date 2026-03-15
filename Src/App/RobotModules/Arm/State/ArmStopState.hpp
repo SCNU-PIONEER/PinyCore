@@ -14,7 +14,8 @@ public:
     {
         arm_.orebin.stop();
         arm_.motors.stop();
-        arm_.hand.stop();
+        arm_.leftHand.stop();
+        arm_.rightHand.stop();
         arm_.isEnabled = false;
         LOG::info("Stop", "enter");
     }
