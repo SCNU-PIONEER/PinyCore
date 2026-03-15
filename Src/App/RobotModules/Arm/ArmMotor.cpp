@@ -168,20 +168,10 @@ void Motors::ctrl(const Joint10 &_targetJoints)
     }
 }
 
-void Motors::handRollPitch(Joint10 &_mJoints, Joint10 &_msgTargetJoints)
+void Motors::handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
 {
-    static bool a = true;
-    if (a) { //roll
-        _mJoints[4] = _msgTargetJoints[4];
-        _mJoints[5] = _msgTargetJoints[4];
-        _mJoints[8] = _msgTargetJoints[8];
-        _mJoints[9] = _msgTargetJoints[8];
-
-    } else { //pitch
-        _mJoints[4] = _msgTargetJoints[5];
-        _mJoints[5] = -_msgTargetJoints[5];
-        _mJoints[8] = _msgTargetJoints[9];
-        _mJoints[9] = -_msgTargetJoints[9];
-    }
-    a = !a;
+    _targetJoints[4] += _msgTargetJoints[4] + _msgTargetJoints[5];
+    _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
+    _targetJoints[8] += _msgTargetJoints[8] + _msgTargetJoints[9];
+    _targetJoints[9] += _msgTargetJoints[8] - _msgTargetJoints[9];
 }

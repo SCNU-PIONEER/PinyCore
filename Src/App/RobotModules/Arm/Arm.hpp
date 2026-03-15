@@ -46,7 +46,6 @@ public:
     ARM::Hand hand;
 
     ARM::Joint10D_s target_joints = {};
-    ARM::Joint10 middle_joints = {};
 
     ARM::JointRoute_s RouteDta = {};
 

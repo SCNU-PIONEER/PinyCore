@@ -45,7 +45,7 @@ public:
             }
         } else if (arm_.msg.mode == ARM::ArmMode_e::RIGHT) {
             //右臂 j1，2，7,8,9,10
-            for (uint8_t i = 3; i < 7; i++) {
+            for (uint8_t i = 2; i < 6; i++) {
                 arm_.RouteDta.pose->joints[i] = arm_.motors.currentJoints[i];
             }
         } else if (arm_.msg.mode == ARM::ArmMode_e::TWO) {

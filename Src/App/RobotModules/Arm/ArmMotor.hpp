@@ -64,7 +64,7 @@ public:
 
     bool isMoving(const Joint10 &_target);
 
-    void handRollPitch(Joint10 &_mJoints, Joint10 &_msgTargetJoints);
+    void handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints);
 
     JointInfo_s jointInfos[10];
     Joint10 currentJoints = {};
