@@ -88,7 +88,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
     GimbalMsg_s gimbalMsg{};
-    ArmMsg_s armMsg{};
+    static ArmMsg_s armMsg{};
 
     // User-defined processing logic goes here ↓
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
@@ -177,6 +177,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         if (IS_KEY_DT7(V) && !IS_LAST_KEY_DT7(V))
             armMsg.switch1 = !armMsg.switch1;
 #endif
+        //拨轮控夹爪
+        if (rcData->wheel == 1684)
+            armMsg.switch1 = !armMsg.switch1;
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
             armMsg.switch1 = false;
@@ -192,44 +195,43 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 // gimbal
                 gimbalMsg.state = GIMBAL::FSMState_e::RUN;
                 gimbalMsg.yaw = gimbalVal;
-                // chassis
-                chassisMsg.state = CHASSIS::FSMState_e::RUN;
+                if (rcData->rc.ch1 == 660) { //ry
+                    chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+                } else if (rcData->rc.ch1 == -660) { //ry
+                    // chassis
+                    chassisMsg.state = CHASSIS::FSMState_e::RUN;
+                }
                 chassisMsg.vx = ry / 100 * INPUT_VX_MAX;
                 chassisMsg.vy = -rx / 100 * INPUT_VY_MAX;
-
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
-                armMsg.target[0] = lx / 314 / 200;
-                armMsg.target[1] = ly / 314 / 100;
-                //夹爪
-                if (rcData->rc.ch1 == 660)
-                    armMsg.switch1 = !armMsg.switch1;
+                armMsg.target[0] = lx / 314 / 50; //8016yaw
+                armMsg.target[1] = ly / 314 / 50; //10010pitch
+                if (armMsg.mode == ARM::ArmMode_e::LEFT) {
+                    armMsg.target[2] = rx / 314 / 50; //8009pitch
+                    armMsg.target[3] = ry / 314 / 50; //4340yaw
+                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
+                    armMsg.target[6] = rx / 314 / 50; //8009pitch
+                    armMsg.target[7] = ry / 314 / 50; //4340yaw
+                }
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
-                armMsg.target[2] = ly / 314 / 150; //pitch
-                armMsg.target[3] = lx / 314 / 50;  //yaw
-                armMsg.target[4] = rx / 314 / 50;  //pitch
-                armMsg.target[5] = ry / 314 / 50;  //roll
-
-                armMsg.target[6] = ly / 314 / 150; //pitch
-                armMsg.target[7] = lx / 314 / 50;  //yaw
-                armMsg.target[8] = ry / 314 / 100; //pitch
-                armMsg.target[9] = rx / 314 / 50;  //roll
+                if (armMsg.mode == ARM::ArmMode_e::LEFT) {
+                    armMsg.target[4] = lx / 314 / 50; //3507roll
+                    armMsg.target[5] = ly / 314 / 50; //3507pitch
+                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
+                    armMsg.target[8] = lx / 314 / 50; //3507roll
+                    armMsg.target[9] = ly / 314 / 50; //3507pitch
+                }
+                //左右臂切换
+                if (rcData->rc.ch0 == -660) //rx
+                    armMsg.mode = ARM::ArmMode_e::LEFT;
+                else if (rcData->rc.ch0 == 660) //rx
+                    armMsg.mode = ARM::ArmMode_e::RIGHT;
             }
         } else if (rcData->rc.switchRight == SW::UP) {
-            // gimbal
-            gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-            gimbalMsg.yaw = gimbalVal;
-            // chassis
-            if (rcData->rc.switchLeft == SW::DOWN) {
-                chassisMsg.state = CHASSIS::FSMState_e::RUN;
-            } else {
-                chassisMsg.state = CHASSIS::FSMState_e::SPIN;
-            }
-            chassisMsg.vx = ry / CH_RANGE * INPUT_VX_MAX;
-            chassisMsg.vy = -rx / CH_RANGE * INPUT_VY_MAX;
         }
 
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
