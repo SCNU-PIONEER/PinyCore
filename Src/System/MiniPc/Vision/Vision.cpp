@@ -8,7 +8,7 @@
 using namespace MINIPC;
 Vision::Vision(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
-    PcManager::instance().registerTransmitter([this]() { sendData(); });
+    PcManager::instance().registerTransmitter([this]() { sendData(); }, 1);
     Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
         {
             usbIdleCallback(_buf, _len, _event, _eventBit);
@@ -39,7 +39,7 @@ void Vision::parseData()
     // v2eDatas_.yaw = visionToEcDatas_.yaw;
     // v2eDatas_.pitch = visionToEcDatas_.pitch;
 }
-   
+
 void Vision::sendData()
 {
     ecToVisionDatas_.header = VISION_UART_REQ_SOF;
@@ -47,6 +47,7 @@ void Vision::sendData()
     // ecToVisionDatas_.pitch++;
     Append_CRC16_Check_Sum((uint8_t *)&ecToVisionDatas_, sizeof(EcToVision_s));
     Usb::instance().send((uint8_t *)&ecToVisionDatas_, sizeof(EcToVision_s));
+    // LOG::info("Vision", "Send Vision data");
 };
 
 void Vision::rxFreqCalc()
