@@ -47,7 +47,7 @@ struct ArmMsg_s : public Msg {
     ARM::ArmMode_e mode = ARM::ArmMode_e::RIGHT;
     ARM::FSMState_e state;
     ARM::Joint10 target;
-    bool switch1; // ture: clamp, false: release
+    bool switch1 = false; // ture: clamp, false: release
     bool isStucked = false;
 };
 

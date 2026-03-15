@@ -88,7 +88,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 {
     ChassisMsg_s chassisMsg{};
     GimbalMsg_s gimbalMsg{};
-    ArmMsg_s armMsg{};
+    static ArmMsg_s armMsg{};
 
     // User-defined processing logic goes here ↓
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
@@ -197,7 +197,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 gimbalMsg.yaw = gimbalVal;
                 if (rcData->rc.ch1 == 660) { //ry
                     chassisMsg.state = CHASSIS::FSMState_e::SPIN;
-                } else if (rcData->rc.ch1 == -660) { //rx
+                } else if (rcData->rc.ch1 == -660) { //ry
                     // chassis
                     chassisMsg.state = CHASSIS::FSMState_e::RUN;
                 }
