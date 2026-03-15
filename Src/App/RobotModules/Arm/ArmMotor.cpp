@@ -2,12 +2,118 @@
 #include "Soc.hpp"
 #include "DM8009.hpp"
 #include "DM4340.hpp"
-#include "DM4310.hpp"
+#include "DM3507.hpp"
+#include "DM10010L.hpp"
+#include "MG8016E_i6_RS485.hpp"
+
 
 using namespace ARM;
 
-// TODO: 电机初始化，电机ID，电机类型等
-Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, _angleMax) {};
+Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, _angleMax)
+{
+    InitConfig_s mg8016Config1 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&huart3),
+        .comType = ComType_e::RS485,
+        .workMode = WorkMode_e::MULTI_PDESVDES,
+        .offsetId = 1,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm10010Config2 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::PDESVDES,
+        .offsetId = 2,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm8009Config3 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::PDESVDES,
+        .offsetId = 3,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm4340Config4 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::PDESVDES,
+        .offsetId = 4,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm3507Config5 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::EMIT,
+        .offsetId = 5,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm3507Config6 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::EMIT,
+        .offsetId = 6,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm8009Config7 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::PDESVDES,
+        .offsetId = 7,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm4340Config8 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::PDESVDES,
+        .offsetId = 8,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm3507Config9 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::EMIT,
+        .offsetId = 9,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+    InitConfig_s dm3507Config10 = {
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
+        .comType = ComType_e::CAN,
+        .workMode = WorkMode_e::EMIT,
+        .offsetId = 10,
+        .txFreq = 500.0f,
+        .posPID = nullptr,
+        .velPID = nullptr,
+    };
+
+
+    motors.all_motors[0] = new LKMOTOR::MG8016Ei6RS485("joint1", mg8016Config1);
+    motors.all_motors[1] = new DMMOTOR::DM10010L("joint2", dm10010Config2);
+    motors.all_motors[2] = new DMMOTOR::DM8009("joint3", dm8009Config3);
+    motors.all_motors[3] = new DMMOTOR::DM4340("joint4", dm4340Config4);
+    motors.all_motors[4] = new DMMOTOR::DM3507("joint5", dm3507Config5);
+    motors.all_motors[5] = new DMMOTOR::DM3507("joint6", dm3507Config6);
+    motors.all_motors[6] = new DMMOTOR::DM8009("joint7", dm8009Config7);
+    motors.all_motors[7] = new DMMOTOR::DM4340("joint8", dm4340Config8);
+    motors.all_motors[8] = new DMMOTOR::DM3507("joint9", dm3507Config9);
+    motors.all_motors[9] = new DMMOTOR::DM3507("joint10", dm3507Config10);
+};
 
 void Motors::update()
 {
@@ -53,25 +159,19 @@ void Motors::ctrl(const Joint10 &_targetJoints)
 
     safety.setAllAngleLimit(temp);
 
-    size_t index = 0;
-    for (const auto &motor : motors.all_motors) {
-        motor->cmdPos(temp[index]);
-        index++;
+    for (uint8_t i = 0; i < 10; ++i) {
+        if (i < 4 || (i >= 6 && i < 8)) {
+            motors.all_motors[i]->cmdPosVel(temp[i], ref_speed._[i]);
+        } else {
+            motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
+        }
     }
 }
 
-void Motors::handYaw(Joint10 &_msgTargetJoints)
+void Motors::handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
 {
-    _msgTargetJoints[4] = _msgTargetJoints[4];
-    _msgTargetJoints[5] = -_msgTargetJoints[4];
-    _msgTargetJoints[9] = _msgTargetJoints[8];
-    _msgTargetJoints[10] = -_msgTargetJoints[8];
-}
-
-void Motors::handPitch(Joint10 &_msgTargetJoints)
-{
-    _msgTargetJoints[4] = _msgTargetJoints[5];
-    _msgTargetJoints[5] = _msgTargetJoints[5];
-    _msgTargetJoints[9] = _msgTargetJoints[9];
-    _msgTargetJoints[10] = _msgTargetJoints[9];
+    _targetJoints[4] += _msgTargetJoints[4] + _msgTargetJoints[5];
+    _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
+    _targetJoints[8] += _msgTargetJoints[8] + _msgTargetJoints[9];
+    _targetJoints[9] += _msgTargetJoints[8] - _msgTargetJoints[9];
 }

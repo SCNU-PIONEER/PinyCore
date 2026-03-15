@@ -1,6 +1,5 @@
 #pragma once
 #include "DMMotor.hpp"
-#include "LKMotor.hpp"
 #include "./ArmKinematic.hpp"
 #include "./ArmSafety.hpp"
 #include "ArmPlan.hpp"
@@ -30,7 +29,7 @@ union ArmSpeed_u {
 
 typedef union {
     struct {
-        LKMOTOR::LKMotor *mgMotor1;  //mg8016
+        IMotor *mgMotor1;            //mg8016
         DMMOTOR::DMMotor *dmMotor2;  //10010
         DMMOTOR::DMMotor *dmMotor3;  //8009
         DMMOTOR::DMMotor *dmMotor4;  //4340
@@ -51,6 +50,8 @@ struct JointInfo_s {
 };
 
 class Motors {
+    static constexpr float RATED_TORQUE = 0.8f; //M3507
+
 public:
     Motors(Joint10 _angleMin, Joint10 _angleMax);
     bool init();
@@ -63,8 +64,7 @@ public:
 
     bool isMoving(const Joint10 &_target);
 
-    void handYaw(Joint10 &_msgTargetJoints);
-    void handPitch(Joint10 &_msgTargetJoints);
+    void handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints);
 
     JointInfo_s jointInfos[10];
     Joint10 currentJoints = {};

@@ -199,22 +199,24 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
-                armMsg.target[0] = -lx / 314 / 200;
+                armMsg.state = ARM::FSMState_e::NORMAL;
+                armMsg.target[0] = lx / 314 / 200;
                 armMsg.target[1] = ly / 314 / 100;
                 //夹爪
                 if (rcData->rc.ch1 == 660)
                     armMsg.switch1 = !armMsg.switch1;
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
-                armMsg.target[2] = ly / 314 / 150;  //pitch
-                armMsg.target[3] = lx / 314 / 50;   //yaw
-                armMsg.target[4] = -ry / 314 / 100; //pitch
-                armMsg.target[5] = rx / 314 / 50;   //roll
+                armMsg.state = ARM::FSMState_e::NORMAL;
+                armMsg.target[2] = ly / 314 / 150; //pitch
+                armMsg.target[3] = lx / 314 / 50;  //yaw
+                armMsg.target[4] = rx / 314 / 50;  //pitch
+                armMsg.target[5] = ry / 314 / 50;  //roll
 
-                armMsg.target[6] = ly / 314 / 150;  //pitch
-                armMsg.target[7] = -lx / 314 / 50;  //yaw
-                armMsg.target[8] = -ry / 314 / 100; //pitch
-                armMsg.target[9] = -rx / 314 / 50;  //roll
+                armMsg.target[6] = ly / 314 / 150; //pitch
+                armMsg.target[7] = lx / 314 / 50;  //yaw
+                armMsg.target[8] = ry / 314 / 100; //pitch
+                armMsg.target[9] = rx / 314 / 50;  //roll
             }
         } else if (rcData->rc.switchRight == SW::UP) {
             // gimbal
