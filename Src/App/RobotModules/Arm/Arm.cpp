@@ -21,8 +21,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint10 angleMin{};
-static Joint10 angleMax{};
+static Joint10 angleMin{ { -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f } };
+static Joint10 angleMax{ { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f } };
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
