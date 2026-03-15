@@ -1,0 +1,23 @@
+
+GraphedExpression="((gimbal)->curImuAng_)._[1]", DisplayFormat=DISPLAY_FORMAT_DEC, Color=#09a01b
+GraphedExpression="((gimbal)->expImuAng_)._[1]", DisplayFormat=DISPLAY_FORMAT_DEC, Color=#09a087
+OpenDocument="tasks.c", FilePath="D:/PIONEER/InternDocuments/C++_framework/PinyCoreSentryPull/ThirdParty/FreeRTOS/tasks.c", Line=6102
+OpenDocument="main.c", FilePath="D:/PIONEER/InternDocuments/C++_framework/PinyCoreSentryPull/Src/Common/Soc/stm32f407/hal/Core/Src/main.c", Line=82
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=3, w=1117, h=209, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=1, w=1117, h=228, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=RIGHT, x=0, y=2, w=1117, h=359, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=0, w=974, h=1023, TabPos=1, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=BOTTOM, x=1, y=0, w=1646, h=328, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=LEFT, x=0, y=0, w=974, h=1023, TabPos=0, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=0, CodePaneShown=0, PinCursor="Cursor Movable", TimePerDiv="1 ns / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=1, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="348;0", PowerGraphDrawAsPoints=0, PowerGraphLegendShown=0, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="580;-129", CodeGraphLegendShown=0, CodeGraphLegendPosition="597;0"
+OpenWindow="Find Results", DockArea=RIGHT, x=0, y=0, w=1117, h=260, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=913, h=328, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Source"], ColWidths=[14178;104;100;100;134]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" ((gimbal)->curImuAng_)._[1]";" ((gimbal)->expImuAng_)._[1]"], ColWidths=[100;100;100;100]
+TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[198;109;118;100;100;150;182;214;475]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[100;144;847]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[271;208;185;427]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[26;26;26;38]
+WatchedExpression="gimbal", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
