@@ -86,7 +86,7 @@ public:
             navPosPid_._[i]->reset();
             navVelPid_._[i]->reset();
         }
-
+        gimbal_->debug.gimbalState = gimbal_->msg.state;
         LOG::info("GimbalNav", "exit");
     }
 
@@ -97,9 +97,9 @@ public:
 
         if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
+        else if (gimbal_->msg.state == FSMState_e::NAV && gimbal_->vmsg.control)
             return FSMState_e::AUTO;
-        else if (gimbal_->msg.state == FSMState_e::RUN && vision->v2eData().control)
+        else if (gimbal_->msg.state == FSMState_e::RUN && gimbal_->vmsg.control)
             return FSMState_e::AUTO; //平时调试用
         else
             return FSMState_e::NAV;

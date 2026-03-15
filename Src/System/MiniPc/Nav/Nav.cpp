@@ -9,7 +9,7 @@ using namespace MINIPC;
 
 Nav::Nav(const EventGroupHandle_t &_event, uint32_t _eventBit)
 {
-    PcManager::instance().registerTransmitter([this]() { sendData(); });
+    PcManager::instance().registerTransmitter([this]() { sendData(); }, 10);
     Usb::instance().registerCallback([this, _event, _eventBit](uint8_t *_buf, uint16_t _len) {
         {
             usbIdleCallback(_buf, _len, _event, _eventBit);
@@ -40,6 +40,7 @@ void Nav::sendData()
     // ecToNavDatas_.navHPstate = referee->receiver.getRefereeData().gameRobotHP.red4RobotHP;
     Append_CRC16_Check_Sum((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
     Usb::instance().send((uint8_t *)&ecToNavDatas_, sizeof(EcToNav_s));
+    // LOG::info("Nav", "Send Nav data");
 };
 
 void Nav::rxFreqCalc()

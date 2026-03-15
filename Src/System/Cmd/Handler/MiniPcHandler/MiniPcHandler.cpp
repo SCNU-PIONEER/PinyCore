@@ -37,6 +37,14 @@ void VisionHandler::handle()
 {
     vision->parseData();
     vision->rxFreqCalc();
+    visionMsg_.control = vision->v2eData().control;
+    visionMsg_.fire = vision->v2eData().fire;
+    visionMsg_.pitch = vision->v2eData().pitch;
+    visionMsg_.pitchAcc = vision->v2eData().pitchAcc;
+    visionMsg_.pitchVel = vision->v2eData().pitchVel;
+    visionMsg_.yaw = vision->v2eData().yaw;
+    visionMsg_.yawAcc = vision->v2eData().yawAcc;
+    visionMsg_.yawVel = vision->v2eData().yawVel;
     notify(&visionMsg_, msgBus_->visionQueue);
 }
 void VisionHandler::notify(Msg *_msg, QueueHandle_t _queue) { xQueueSend(_queue, _msg, 0); }

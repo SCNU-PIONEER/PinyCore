@@ -11,6 +11,12 @@ class PcManager {
     static constexpr int MAX_TX_NUM = 2;
     static constexpr int MAX_RX_NUM = 2;
 
+    struct TransmitterInfo_s {
+        std::function<void()> txFunc;
+        uint32_t intervalMs;
+        TickType_t lastTxTime;
+    };
+
 public:
     PcManager() = default;
 
@@ -23,22 +29,40 @@ public:
     PcManager(const PcManager &) = delete;
     PcManager &operator=(const PcManager &) = delete;
 
-    void registerTransmitter(std::function<void()> _tx)
+    void registerTransmitter(std::function<void()> _tx, uint32_t _intervalMs = 100)
     {
         if (txIndex_ < MAX_TX_NUM) {
-            transmitter_.push_back(_tx);
+            transmitter_.push_back({ _tx, _intervalMs, xTaskGetTickCount() });
             txIndex_++;
+        }
+    }
+
+    void setTxInterval(uint8_t _index, uint32_t _intervalMs)
+    {
+        if (_index < txIndex_) {
+            transmitter_[_index].intervalMs = _intervalMs;
         }
     }
 
     void txTask()
     {
-        static uint8_t i = 0;
-        i < txIndex_ ? transmitter_[i](), i++ : i = 0;
+        TickType_t now = xTaskGetTickCount();
+        bool txExecuted = false; // 标志位，跟踪当前帧是否已执行发送
+
+        for (uint8_t i = 0; i < txIndex_; i++) {
+            TickType_t elapsed = now - transmitter_[i].lastTxTime;
+
+            // 只有当未执行发送且时间间隔满足时才执行发送
+            if (!txExecuted && elapsed >= pdMS_TO_TICKS(transmitter_[i].intervalMs)) {
+                transmitter_[i].txFunc();
+                transmitter_[i].lastTxTime = now;
+                txExecuted = true; // 标记已执行发送
+            }
+        }
     }
 
 private:
-    std::vector<std::function<void()> > transmitter_;
+    std::vector<TransmitterInfo_s> transmitter_;
     uint8_t txIndex_ = 0;
 };
 } // namespace MINIPC

@@ -11,12 +11,12 @@
 static PositionalPid gRunPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
-    PositionalPid(10.f, 2.f, 0.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(2.f, 0.0f, 0.0001f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(0.4f, 0.0f, 0.03f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 
 namespace GIMBAL {
@@ -73,7 +73,7 @@ public:
             runPosPid_._[i]->reset();
             runVelPid_._[i]->reset();
         }
-
+        gimbal_->debug.gimbalState = gimbal_->msg.state;
         LOG::info("GimbalRun", "exit");
     }
 
@@ -82,9 +82,9 @@ public:
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
 
-        if (gimbal_->msg.state == FSMState_e::NAV && vision->v2eData().control)
+        if (gimbal_->msg.state == FSMState_e::NAV && gimbal_->vmsg.control)
             return FSMState_e::AUTO;
-        else if (gimbal_->msg.state == FSMState_e::RUN && vision->v2eData().control)
+        else if (gimbal_->msg.state == FSMState_e::RUN && gimbal_->vmsg.control)
             return FSMState_e::AUTO; //平时调试用
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;

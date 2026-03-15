@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Chassis.hpp"
 #include "Gimbal.hpp"
 #include "Bsp_can.hpp"
 #include "IMotor.hpp"
+#include "MsgImpl.hpp"
 #include "RefereeProt.hpp"
-#include "Vision.hpp"
 #include "Nav.hpp"
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
@@ -27,7 +28,10 @@ template <typename T> union DualStage_u {
 struct DualStageDebug_s {
     bool visionControl;
     bool visionFire;
-    float visionTargetYaw;
+    bool visionAngOver;
+    float visionYaw;
+    float visionPitch;
+    FSMState_e gimbalState;
 };
 
 //转换为-pi~pi
@@ -91,8 +95,8 @@ class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG =1.13866675f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.30871105f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.679594994f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.42607498f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -111,8 +115,10 @@ public:
 
     DualStage();
 
-    DualStageDebug_s debug{};
-
+    DualStageDebug_s debug = {};
+    bool isLaunched_ = false;
+    bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
+    VisionMsg_s vmsg = {};
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi
@@ -122,7 +128,6 @@ public:
     void stop();
     void enter();
     void update(void *_param);
-    void loadResetState(bool _state);
 
     void ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
@@ -159,6 +164,7 @@ protected:
 private:
     ChassisMsg_s cmsg{};
     NavMsg_s nmsg{};
+    // CHASSIS::FSMState_e lastChassisState_ = CHASSIS::FSMState_e::STOP;
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_;
     ShooterCtrlTxPacket shooterCtrlTxPacket_;

@@ -1,4 +1,5 @@
 #include "Bsp_uart.hpp"
+#include "Chassis.hpp"
 #include "Gimbal.hpp"
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
@@ -129,25 +130,30 @@ void DualStage::update(void *_param)
     curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
     compensateImuAngle();
 
-    if (isConfirmYawZero_) {
-        if (isSetBYZeroAng_) {
-            //强制要求上电必须摆正大yaw
-            bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
-            isSetBYZeroAng_ = false;
-        }
-        // resetZeroPoint();
-    }
+    // if (isConfirmYawZero_) {
+    //     if (isSetBYZeroAng_) {
+    //         //强制要求上电必须摆正大yaw
+    //         bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
+    //         isSetBYZeroAng_ = false;
+    //     }
+    //     // resetZeroPoint();
+    // }
 
     loadChassisMsg(_param);
     loadShooterMsg(_param);
+
+    if (xQueueReceive((((MsgBus_s *)_param)->visionQueue), &vmsg, 0) == pdTRUE) {
+    }
 
     sendVisionData();
     sendNavData();
 
     //与云台控制无关，debug使用
-    memcpy(&debug.visionControl, &vision->v2eData().control, sizeof(bool));
-    memcpy(&debug.visionFire, &vision->v2eData().fire, sizeof(bool));
-    memcpy(&debug.visionTargetYaw, &vision->v2eData().yaw, sizeof(float));
+    debug.visionControl = vmsg.control;
+    debug.visionFire = vmsg.fire;
+    debug.visionYaw = vmsg.yaw;
+    debug.visionPitch = vmsg.pitch;
+    debug.visionAngOver = isVisionAngOver_;
 
     this->stateFactory_.update();
 }
@@ -156,9 +162,22 @@ void DualStage::loadChassisMsg(void *_param)
 {
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) == pdTRUE) {
     };
-    chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
     if (xQueueReceive((((MsgBus_s *)_param)->navigationQueue), &nmsg, 0) == pdTRUE) {
     };
+
+    // if (cmsg.state == CHASSIS::FSMState_e::SPIN || cmsg.state == CHASSIS::FSMState_e::TANK) {
+    //     lastChassisState_ = cmsg.state;
+    // } else {
+    //     lastChassisState_ = CHASSIS::FSMState_e::STOP;
+    // }
+    // if ((lastChassisState_ == CHASSIS::FSMState_e::SPIN || lastChassisState_ == CHASSIS::FSMState_e::TANK) &&
+    //     (lastChassisState_ != cmsg.state)) {
+    //     msg.state = FSMState_e::LAUNCH;
+    // }
+
+    chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
+    chassisCtrlTxPacket_.setData().gimbalReset = isLaunched_;
+
 #if APP_USE_NAV
     if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx + nmsg.vx;
@@ -190,14 +209,16 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
 
-    shooterCtrlTxPacket_.setData().fire &= (vision->v2eData().control) ? vision->v2eData().fire : true;
+    shooterCtrlTxPacket_.setData().fire &= (vmsg.control) ? vmsg.fire : true;
 }
 
 void DualStage::sendVisionData()
 { // vision send
     vision->eToVData().roll = insData_.roll;
     vision->eToVData().pitch = insData_.pitch;
-    vision->eToVData().yaw = insData_.yaw;
+    vision->eToVData().yaw = getMinorArc(insData_.yaw, -this->constDeltaYawArc_);
+    // vision->eToVData().yaw = curImuAng_.Gim_s.SecondYaw;
+
     //装裁判系统数据
     vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);
     vision->eToVData().isPlay = refereeRxPacket_.data().isPlay;
@@ -301,9 +322,8 @@ void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackP
     float del = getMinorArc(pos, motors_.Gim_s.SecondYaw->posNorm());
     float vel = _angPID->calc(del, 0);
     velDebug = vel;
-    float acc =
-            _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(vision->v2eData().yawVel, insData_.body.gz);
-    accDebug = acc += vision->v2eData().yawAcc; // forward feedbac
+    float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(vmsg.yawVel, insData_.body.gz);
+    accDebug = acc += vmsg.yawAcc; // forward feedbac
     float torq = calcYawTorq(insData_.body.gz, acc);
     torqDebug = torq = std::clamp(torq, -DJIMOTOR::GM6020::TORQ_MAX, DJIMOTOR::GM6020::TORQ_MAX);
     motors_.Gim_s.SecondYaw->cmdTorq(gimbalFilterOutput_.Gim_s.SecondYaw->process(torq));
@@ -323,5 +343,3 @@ float DualStage::calcYawTorq(float _vel, float _acc)
     float torq = (YAW_INERTIA * _acc) + (YAW_FRICTION * _vel) + (YAW_COULOMB * SIGN(_vel));
     return torq;
 }
-
-void DualStage::loadResetState(bool _state) { chassisCtrlTxPacket_.setData().gimbalReset = _state; }

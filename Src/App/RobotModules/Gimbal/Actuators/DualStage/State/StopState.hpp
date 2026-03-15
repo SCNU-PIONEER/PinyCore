@@ -16,7 +16,7 @@ public:
         for (auto &i : gimbal_->gimbalFilter()->_) {
             i->reset();
         }
-        gimbal_->loadResetState(false);
+        gimbal_->isLaunched_ = false;
         gimbal_->stop();
         LOG::info("GimbalStop", "enter");
     }

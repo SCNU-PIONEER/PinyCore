@@ -28,7 +28,7 @@ typedef struct {
     float yaw;
     uint16_t gameTime;
     uint8_t gameProgress; // 比赛进程
-    uint8_t navHPstate;   // 导航的血量标志位
+    uint16_t navHPstate;  // 导航的血量标志位
     uint16_t crcSum;
 } EcToNav_s; //Electric control to Navigation
 #pragma pack(pop)

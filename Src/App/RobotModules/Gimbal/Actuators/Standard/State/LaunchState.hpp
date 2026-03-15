@@ -91,7 +91,7 @@ public:
 
     void exit() final
     {
-        finishLaunching_ = true;
+        isLaunched_ = true;
         gimbal_->loadResetState(true);
 
         for (auto &i : pids_._) {
@@ -123,7 +123,7 @@ private:
 
     uint16_t launchTotalTime_ = 0; // ms
     uint16_t launchFinishTime_ = 0;
-    bool finishLaunching_ = false;
+    bool isLaunched_ = false;
 };
 
 } // namespace GIMBAL

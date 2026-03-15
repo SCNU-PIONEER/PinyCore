@@ -63,8 +63,14 @@ struct RefereeMsg_s : public Msg {
 };
 
 struct VisionMsg_s : public Msg {
-    //TODO: add vision msg
-    float x, y, z;
+    uint8_t control;
+    uint8_t fire;
+    float yaw;
+    float yawVel;
+    float yawAcc;
+    float pitch;
+    float pitchVel;
+    float pitchAcc;
 };
 
 struct NavMsg_s : public Msg {
