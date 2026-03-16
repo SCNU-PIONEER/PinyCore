@@ -207,10 +207,13 @@ MotorTypeDef_e LKMotorRS485::parseState2()
         return STM_FAIL;
 
     State2_s *fb = (State2_s *)(this->rxBuf_ + 5);
-    data_.tempture = fb->temperature;                     // 1°C/1LSB
-    data_.curr = static_cast<float>(fb->current) * 0.01f; // current in A, 0.01A/LSB, for MF/MG motor
+    data_.tempture = fb->temperature; // 1°C/1LSB
+    data_.curr = regInfo_.isReverse ?
+                         -static_cast<float>(fb->current) * 0.01f :
+                         static_cast<float>(fb->current) * 0.01f; // current in A, 0.01A/LSB, for MF/MG motor
     data_.torq = data_.curr * status_.torqueConstant;
-    data_.spdRadps = deg2rad(static_cast<float>(fb->speed)); // 反馈输出轴速度，1dps/LSB
+    auto speed = deg2rad(static_cast<float>(fb->speed));
+    data_.spdRadps = regInfo_.isReverse ? -speed : speed; // 反馈输出轴速度，1dps/LSB
     data_.spdRpm = radps2rpm(data_.spdRadps);
     // 双编码器反馈的是输出轴的编码器数据， 14bit encoder range: 0-16383, 15bit encoder range: 0-32767, 16bit encoder range: 0-65535
     float noumenaAng = static_cast<float>(fb->encoder) / this->span() * 2.f * PI;
@@ -422,7 +425,8 @@ MotorTypeDef_e LKMotorRS485::openloopCtrl()
 
 MotorTypeDef_e LKMotorRS485::torqCtrl()
 {
-    const int16_t iqControl = std::clamp((int16_t)(this->cmd_.elec), (int16_t)-2048, (int16_t)2048);
+    const float torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+    const int16_t iqControl = std::clamp((int16_t)(torq), (int16_t)-2048, (int16_t)2048);
     return txConvert<2>(0xA1, (uint8_t *)&iqControl);
 }
 
@@ -446,8 +450,9 @@ MotorTypeDef_e LKMotorRS485::multiPosCtrl1()
  */
 MotorTypeDef_e LKMotorRS485::multiPosCtrl2()
 {
-    const int64_t angleControl = (int64_t)(rad2deg(this->cmd_.pos * this->status_.innerReductionRatio) *
-                                           100); // 0.01degree/LSB, 控制为减速前
+    const float pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
+    const int64_t angleControl =
+            (int64_t)(rad2deg(pos * this->status_.innerReductionRatio) * 100); // 0.01degree/LSB, 控制为减速前
     float speed;
     if (this->cmd_.vel == 0) {
         speed = 0.01f; // if speed is zero, maxSpeed will be set MAX
@@ -484,7 +489,7 @@ MotorTypeDef_e LKMotorRS485::singlePosCtrl2()
     memcpy(data + 1, &angleControl, 2);
     data[3] = 0;
     memcpy(data + 4, &maxSpeed, 4);
-    return txConvert<8>(0xA5, (uint8_t *)&data);
+    return txConvert<8>(0xA6, (uint8_t *)&data);
 }
 
 MotorTypeDef_e LKMotorRS485::incrementalPosCtrl1()
@@ -493,7 +498,7 @@ MotorTypeDef_e LKMotorRS485::incrementalPosCtrl1()
             (int32_t)(rad2deg(regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos) * 100); // 0.01degree/LSB
     uint8_t data[4];
     memcpy(data, &angleControl, 4);
-    return txConvert<4>(0xA5, (uint8_t *)&data);
+    return txConvert<4>(0xA7, (uint8_t *)&data);
 }
 
 MotorTypeDef_e LKMotorRS485::incrementalPosCtrl2()
@@ -504,7 +509,7 @@ MotorTypeDef_e LKMotorRS485::incrementalPosCtrl2()
     uint8_t data[8];
     memcpy(data, &angleControl, 4);
     memcpy(data + 4, &maxSpeed, 4);
-    return txConvert<8>(0xA5, (uint8_t *)&data);
+    return txConvert<8>(0xA8, (uint8_t *)&data);
 }
 
 MotorTypeDef_e LKMotorRS485::readCtrlCmd(const ParamID_e _id)

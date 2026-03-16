@@ -51,7 +51,7 @@ protected:
     template <uint8_t len> requires(len > 0) MotorTypeDef_e txConvert(const uint8_t _cmdid, const uint8_t *_data);
 
     MotorTypeDef_e (LKMotorRS485::*ctrlCallback)();
-
+public:
     MotorTypeDef_e readState1andError();
     MotorTypeDef_e cleanError();
     MotorTypeDef_e readState2();
