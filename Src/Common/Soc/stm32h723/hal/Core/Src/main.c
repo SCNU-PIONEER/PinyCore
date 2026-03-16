@@ -401,19 +401,19 @@ void MX_FDCAN2_Init(void)
 
   /* USER CODE END FDCAN2_Init 1 */
   hfdcan2.Instance = FDCAN2;
-  hfdcan2.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
+  hfdcan2.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
   hfdcan2.Init.Mode = FDCAN_MODE_NORMAL;
-  hfdcan2.Init.AutoRetransmission = ENABLE;
+  hfdcan2.Init.AutoRetransmission = DISABLE;
   hfdcan2.Init.TransmitPause = DISABLE;
-  hfdcan2.Init.ProtocolException = ENABLE;
+  hfdcan2.Init.ProtocolException = DISABLE;
   hfdcan2.Init.NominalPrescaler = 3;
-  hfdcan2.Init.NominalSyncJumpWidth = 10;
+  hfdcan2.Init.NominalSyncJumpWidth = 1;
   hfdcan2.Init.NominalTimeSeg1 = 29;
   hfdcan2.Init.NominalTimeSeg2 = 10;
-  hfdcan2.Init.DataPrescaler = 1;
-  hfdcan2.Init.DataSyncJumpWidth = 6;
-  hfdcan2.Init.DataTimeSeg1 = 17;
-  hfdcan2.Init.DataTimeSeg2 = 6;
+  hfdcan2.Init.DataPrescaler = 3;
+  hfdcan2.Init.DataSyncJumpWidth = 1;
+  hfdcan2.Init.DataTimeSeg1 = 29;
+  hfdcan2.Init.DataTimeSeg2 = 10;
   hfdcan2.Init.MessageRAMOffset = 856;
   hfdcan2.Init.StdFiltersNbr = 8;
   hfdcan2.Init.ExtFiltersNbr = 0;
@@ -421,7 +421,7 @@ void MX_FDCAN2_Init(void)
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxFifo1ElmtsNbr = 8;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan2.Init.RxBuffersNbr = 8;
+  hfdcan2.Init.RxBuffersNbr = 0;
   hfdcan2.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.TxEventsNbr = 0;
   hfdcan2.Init.TxBuffersNbr = 0;
