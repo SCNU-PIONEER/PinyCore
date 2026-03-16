@@ -97,6 +97,7 @@ public:
     float posNorm() const;
     float vel() const;
     float torq() const;
+    float cirNum() const;
 
     // Don't call it multiple times!
     virtual void overrideReductionRatio(float _newReductionRatio) = 0;

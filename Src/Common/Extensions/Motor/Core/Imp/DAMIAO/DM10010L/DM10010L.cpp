@@ -50,9 +50,9 @@ MotorTypeDef_e DM10010L::checkBaseConfig()
         LOG::error("DM10010L", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (regInfo_.offsetId > 9) {
+    if (regInfo_.offsetId > 0xE) {
         rslt |= 1;
-        LOG::error("DM10010L", " %s: Max Offset ID is only 9!", regInfo_.name);
+        LOG::error("DM10010L", " %s: Max Offset ID is only 15!", regInfo_.name);
     }
 
     if (AUX_.txFreq > 1000) {

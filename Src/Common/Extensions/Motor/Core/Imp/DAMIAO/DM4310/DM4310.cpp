@@ -8,8 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
-DM4310::DM4310(const char _name[16], InitConfig_s _config)
-        : DMMotor(_name, _config)
+DM4310::DM4310(const char _name[16], InitConfig_s _config) : DMMotor(_name, _config)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -33,21 +32,17 @@ DM4310::DM4310(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
-    LOG::info(
-            "DM4310",
-            " %s: An instance of DM4310 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("DM4310", " %s: An instance of DM4310 created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e DM4310::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (regInfo_.comType != ComType_e::FDCAN &&
-        regInfo_.comType != ComType_e::CAN) {
+    if (regInfo_.comType != ComType_e::FDCAN && regInfo_.comType != ComType_e::CAN) {
         rslt |= 1;
-        LOG::error("DM4310", " %s: only support FDCAN or CAN comtype",
-                   regInfo_.name);
+        LOG::error("DM4310", " %s: only support FDCAN or CAN comtype", regInfo_.name);
     }
 
     if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
@@ -55,9 +50,9 @@ MotorTypeDef_e DM4310::checkBaseConfig()
         LOG::error("DM4310", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (regInfo_.offsetId > 9) {
+    if (regInfo_.offsetId > 0xE) {
         rslt |= 1;
-        LOG::error("DM4310", " %s: Max Offset ID is only 9!", regInfo_.name);
+        LOG::error("DM4310", " %s: Max Offset ID is only 15!", regInfo_.name);
     }
 
     if (AUX_.txFreq > 1000) {

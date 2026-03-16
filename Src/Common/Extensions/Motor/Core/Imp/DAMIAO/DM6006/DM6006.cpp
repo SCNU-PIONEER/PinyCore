@@ -50,9 +50,9 @@ MotorTypeDef_e DM6006::checkBaseConfig()
         LOG::error("DM6006", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (regInfo_.offsetId > 9) {
+    if (regInfo_.offsetId > 0xE) {
         rslt |= 1;
-        LOG::error("DM6006", " %s: Max Offset ID is only 9!",
+        LOG::error("DM6006", " %s: Max Offset ID is only 15!",
 
                    regInfo_.name);
     }
