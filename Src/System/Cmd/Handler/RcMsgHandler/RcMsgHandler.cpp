@@ -93,7 +93,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
     // User-defined processing logic goes here ↓
     if constexpr (DEV_TYPE == RCDevType_e::DT7) {
         using SW = DT7::Sw_e;
-        static constexpr float CH_RANGE = DT7::CH_VALUE_MAX - DT7::CH_VALUE_OFFSET;
+        // static constexpr float CH_RANGE = DT7::CH_VALUE_MAX - DT7::CH_VALUE_OFFSET;
         DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
 
         updateRocker(rx, rcData->rc.ch0);
@@ -179,10 +179,12 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
 #endif
         //拨轮控夹爪
         if (rcData->wheel == 1684)
-            armMsg.switch1 = !armMsg.switch1;
+            armMsg.switch1 = ARM::ClampState_e::CLAMP;
+        else if (rcData->wheel == 364)
+            armMsg.switch1 = ARM::ClampState_e::RELEASE;
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
-            armMsg.switch1 = false;
+            armMsg.switch1 = ARM::ClampState_e::NONE;
             armMsg.state = ARM::FSMState_e::STOP;
             // gimbal
             gimbalMsg.state = GIMBAL::FSMState_e::STOP;
@@ -209,21 +211,21 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 armMsg.target[0] = lx / 314 / 50; //8016yaw
                 armMsg.target[1] = ly / 314 / 50; //10010pitch
                 if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[2] = rx / 314 / 50; //8009pitch
-                    armMsg.target[3] = ry / 314 / 50; //4340yaw
-                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
                     armMsg.target[6] = rx / 314 / 50; //8009pitch
                     armMsg.target[7] = ry / 314 / 50; //4340yaw
+                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
+                    armMsg.target[2] = rx / 314 / 50; //8009pitch
+                    armMsg.target[3] = ry / 314 / 50; //4340yaw
                 }
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
                 if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[4] = lx / 314 / 50; //3507roll
-                    armMsg.target[5] = ly / 314 / 50; //3507pitch
-                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
                     armMsg.target[8] = lx / 314 / 50; //3507roll
                     armMsg.target[9] = ly / 314 / 50; //3507pitch
+                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
+                    armMsg.target[4] = lx / 314 / 50; //3507roll
+                    armMsg.target[5] = ly / 314 / 50; //3507pitch
                 }
                 //左右臂切换
                 if (rcData->rc.ch0 == -660) //rx

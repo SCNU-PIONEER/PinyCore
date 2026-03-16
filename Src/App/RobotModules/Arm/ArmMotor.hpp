@@ -14,15 +14,15 @@ union ArmSpeed_u {
         float joint1; //yaw    1   8016
         float joint2; //pitch  2   10010
 
-        float joint3; //pitch  3   8009
-        float joint4; //yaw    4   4340
-        float joint5; //pitch  5   3507
-        float joint6; //roll   6   3507
+        float joint3; //right pitch  3   8009
+        float joint4; //right yaw    4   4340
+        float joint5; //right pitch  5   3507
+        float joint6; //right roll   6   3507
 
-        float joint7;  //pitch  7   8009
-        float joint8;  //yaw    8   4340
-        float joint9;  //pitch  9   3507
-        float joint10; //roll   10  3507
+        float joint7;  //left pitch  7   8009
+        float joint8;  //left yaw    8   4340
+        float joint9;  //left pitch  9   3507
+        float joint10; //left roll   10  3507
     };
     float _[10]; // rad/s
 };
@@ -66,7 +66,6 @@ public:
 
     void handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints);
 
-    JointInfo_s jointInfos[10];
     Joint10 currentJoints = {};
     ArmSpeed_u ref_speed = {};
     Safety safety;

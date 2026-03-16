@@ -1,4 +1,3 @@
-#include "MsgImpl.hpp"
 #include <memory>
 
 #include "./Arm.hpp"
@@ -21,8 +20,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint10 angleMin{ -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f, -1.f };
-static Joint10 angleMax{ 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+static Joint10 angleMin{ -0.62f, 0.f, -1.41f, -1.15f, -2.f, -2.f, -1.f, -1.f, -1.f, -1.f };
+static Joint10 angleMax{ 0.62f, 3.f, 1.41f, 1.15f, 2.f, 2.f, 1.f, 1.f, 1.f, 1.f };
 
 static InitConfig_s leftHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -38,7 +37,7 @@ static InitConfig_s rightHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
     .comType = ComType_e::CAN,
     .workMode = WorkMode_e::QUAD_CURR,
-    .offsetId = 2,
+    .offsetId = 1,
     .txFreq = 500.0f,
     .posPID = nullptr,
     .velPID = nullptr,
@@ -85,9 +84,11 @@ void Arm::moveRoute()
 
 JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
 {
-    if (jointStateFlag == JointState_e::FINISH_STATE) {
+    auto angMin = motors.safety.getAngleMin();
+    auto angMax = motors.safety.getAngleMax();
+    {
         for (int i = 0; i < 10; i++) {
-            if (!isWithinRange(_goal.joints[i], motors.jointInfos[i].angle_min, motors.jointInfos[i].angle_max)) {
+            if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
                 LOG::error("ARM", "Joint%d move goal error", i + 1);
                 return jointStateFlag;
             }

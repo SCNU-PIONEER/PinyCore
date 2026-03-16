@@ -48,23 +48,23 @@ public:
         switch (arm_.msg.mode) {
         case ArmMode_e::LEFT:
             //左臂 j3,4,5,6
-            for (uint8_t i = 2; i < 4; i++) {
+            for (uint8_t i = 6; i < 8; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
-            }
-            if (arm_.msg.switch1) {
+            } 
+            if (arm_.msg.switch1 == ClampState_e::CLAMP) {
                 arm_.leftHand.clamp();
-            } else {
+            } else if (arm_.msg.switch1 == ClampState_e::RELEASE) {
                 arm_.leftHand.release();
             }
             break;
         case ArmMode_e::RIGHT:
             //右臂 j7,8,9,10
-            for (uint8_t i = 6; i < 7; i++) {
+            for (uint8_t i = 2; i < 4; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
-            if (arm_.msg.switch1) {
+            if (arm_.msg.switch1 == ClampState_e::CLAMP) {
                 arm_.rightHand.clamp();
-            } else {
+            } else if (arm_.msg.switch1 == ClampState_e::RELEASE) {
                 arm_.rightHand.release();
             }
             break;
@@ -73,13 +73,13 @@ public:
             for (uint8_t i = 2; i < 4; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
-            for (uint8_t i = 6; i < 7; i++) {
+            for (uint8_t i = 6; i < 8; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
             }
-            if (arm_.msg.switch1) {
+            if (arm_.msg.switch1 == ClampState_e::CLAMP) {
                 arm_.leftHand.clamp();
                 arm_.rightHand.clamp();
-            } else {
+            } else if (arm_.msg.switch1 == ClampState_e::RELEASE) {
                 arm_.leftHand.release();
                 arm_.rightHand.release();
             }
@@ -97,6 +97,8 @@ public:
             return FSMState_e::STOP;
         else if (arm_.msg.state == FSMState_e::NORMAL)
             return FSMState_e::NORMAL;
+        else if (arm_.msg.state == FSMState_e::PLAN)
+            return FSMState_e::PLAN;
         return FSMState_e::STOP;
     }
 

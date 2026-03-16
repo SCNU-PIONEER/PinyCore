@@ -21,6 +21,7 @@ namespace ARM {
 enum class OneClick_e : uint8_t { ORE_BIN_EXTRACT = 0, HIGHWAY_CROSS, ORE_PICK1, ORE_PICK2, ORE_PICK3 };
 enum class ArmMode_e : uint8_t { LEFT = 0, RIGHT, TWO };
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
+enum class ClampState_e : int8_t { CLAMP = -1, NONE = 0, RELEASE = 1 };
 using Joint10 = std::array<float, 10>;
 }
 
@@ -47,7 +48,7 @@ struct ArmMsg_s : public Msg {
     ARM::ArmMode_e mode = ARM::ArmMode_e::RIGHT;
     ARM::FSMState_e state;
     ARM::Joint10 target;
-    bool switch1 = false; // ture: clamp, false: release
+    ARM::ClampState_e switch1 = ARM::ClampState_e::NONE;
     bool isStucked = false;
 };
 

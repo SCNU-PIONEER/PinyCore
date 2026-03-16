@@ -22,6 +22,10 @@ public:
 
     void setAllAngleLimit(Joint10 &_targetJoints);
 
+    const Joint10 &getAngleMin() const { return angleMin; }
+    const Joint10 &getAngleMax() const { return angleMax; }
+    const Joint10 &getSpeedLimit() const { return speedLimit; }
+
 private:
     Motors &motors;
 

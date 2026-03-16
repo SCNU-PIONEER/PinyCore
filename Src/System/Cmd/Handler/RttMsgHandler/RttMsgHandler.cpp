@@ -39,17 +39,23 @@ void RTTMsgHandler::handle()
     memset(data_, 0, sizeof(data_));
     SEGGER_RTT_Read(0, data_, sizeof(data_) - 1);
 
-    ArmMsg_s armMsg{};
-    armMsg.state = ARM::FSMState_e::NORMAL;
+    static ArmMsg_s armMsg{};
 
-    if (strcmp((const char *)data_, "on\n") == 0) {
-        armMsg.switch1 = true;
-    } else if (strcmp((const char *)data_, "off\n") == 0) {
-        armMsg.switch1 = false;
-    } else if (strcmp((const char *)data_, "stop\n") == 0) {
-        armMsg.state = ARM::FSMState_e::STOP;
-    } else if (strcmp((const char *)data_, "run\n") == 0) {
+    // if (strcmp((const char *)data_, "on\n") == 0) {
+    //     armMsg.switch1 = true;
+    // } else if (strcmp((const char *)data_, "off\n") == 0) {
+    //     armMsg.switch1 = false;
+    // } else if (strcmp((const char *)data_, "stop\n") == 0) {
+    //     armMsg.state = ARM::FSMState_e::STOP;
+    // } else if (strcmp((const char *)data_, "run\n") == 0) {
+    //     armMsg.state = ARM::FSMState_e::NORMAL;
+    // }
+
+
+    if (data_[0] == '1') {
         armMsg.state = ARM::FSMState_e::NORMAL;
+    } else if (data_[0] == '0') {
+        armMsg.state = ARM::FSMState_e::STOP;
     }
 
     notify(&armMsg, msgBus_->armQueue);
