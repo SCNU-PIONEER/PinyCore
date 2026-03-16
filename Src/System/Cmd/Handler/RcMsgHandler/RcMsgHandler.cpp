@@ -180,7 +180,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         //拨轮控夹爪
         if (rcData->wheel == 1684)
             armMsg.switch1 = ARM::ClampState_e::CLAMP;
-        else if (rcData->wheel == 364)
+        else if (rcData->wheel > 7000)
             armMsg.switch1 = ARM::ClampState_e::RELEASE;
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
@@ -208,24 +208,24 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
-                armMsg.target[0] = lx / 314 / 50; //8016yaw
+                armMsg.target[0] = -lx / 314 / 50; //8016yaw
                 armMsg.target[1] = ly / 314 / 50; //10010pitch
                 if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[6] = rx / 314 / 50; //8009pitch
-                    armMsg.target[7] = ry / 314 / 50; //4340yaw
+                    armMsg.target[6] = ry / 314 / 50; //8009pitch
+                    armMsg.target[7] = rx / 314 / 50; //4340yaw
                 } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
-                    armMsg.target[2] = rx / 314 / 50; //8009pitch
-                    armMsg.target[3] = ry / 314 / 50; //4340yaw
+                    armMsg.target[2] = ry / 314 / 50; //8009pitch
+                    armMsg.target[3] = rx / 314 / 50; //4340yaw
                 }
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
                 if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[8] = lx / 314 / 50; //3507roll
-                    armMsg.target[9] = ly / 314 / 50; //3507pitch
+                    armMsg.target[8] = -lx / 314 / 50; //3507roll
+                    armMsg.target[9] = -ly / 314 / 50; //3507pitch
                 } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
-                    armMsg.target[4] = lx / 314 / 50; //3507roll
-                    armMsg.target[5] = ly / 314 / 50; //3507pitch
+                    armMsg.target[4] = -lx / 314 / 50; //3507roll
+                    armMsg.target[5] = -ly / 314 / 50; //3507pitch
                 }
                 //左右臂切换
                 if (rcData->rc.ch0 == -660) //rx

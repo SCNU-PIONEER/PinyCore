@@ -20,8 +20,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint10 angleMin{ -0.62f, 0.f, -1.41f, -1.15f, -2.f, -2.f, -1.f, -1.f, -1.f, -1.f };
-static Joint10 angleMax{ 0.62f, 3.f, 1.41f, 1.15f, 2.f, 2.f, 1.f, 1.f, 1.f, 1.f };
+static Joint10 angleMin{ -0.62f, 0.f, -1.41f, -1.15f, -3.f, -3.f, -1.f, -1.f, -1.f, -1.f };
+static Joint10 angleMax{ 0.62f, 3.f, 1.41f, 1.15f, 3.f, 3.f, 1.f, 1.f, 1.f, 1.f };
 
 static InitConfig_s leftHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -60,6 +60,7 @@ void Arm::update(MsgBus_s *_param)
     if (xQueueReceive(_param->armQueue, &msg, 0) == pdTRUE) {
     }
     motors.update();
+
     stateFactory_.update();
 }
 

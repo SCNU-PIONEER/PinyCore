@@ -5,6 +5,8 @@
 #include "DM3507.hpp"
 #include "DM10010L.hpp"
 #include "MG8016E_i6_RS485.hpp"
+#include "StmLog.hpp"
+#include "Buzzer.hpp"
 
 
 using namespace ARM;
@@ -126,6 +128,12 @@ void Motors::update()
             currentJoints[index] = motor->data().singleCirAng;
         }
         index++;
+
+        // 温度报警，防止堵转过热
+        if (motor->data().tempture > 40.f) {
+            LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
+            BUZZER::Buzzer::getInstance().playPinyCore();
+        }
     }
 }
 
