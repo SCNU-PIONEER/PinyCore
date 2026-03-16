@@ -52,7 +52,7 @@ public:
             //左臂 j3,4,5,6
             for (uint8_t i = 6; i < 8; i++) {
                 arm_.target_joints.joints[i] += arm_.msg.target[i];
-            } 
+            }
             if (arm_.msg.switch1 == ClampState_e::CLAMP) {
                 arm_.leftHand.clamp();
             } else if (arm_.msg.switch1 == ClampState_e::RELEASE) {
@@ -87,8 +87,8 @@ public:
             }
         }
 
-        arm_.motors.safety.setSpeed(1);
-        arm_.motors.ctrl(arm_.msg.target);
+        arm_.motors.safety.setSpeed(0.4);
+        arm_.motors.ctrl(arm_.target_joints.joints);
     }
 
     void exit() override { LOG::info("Normal", "exit"); }
