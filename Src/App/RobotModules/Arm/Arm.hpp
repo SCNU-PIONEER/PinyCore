@@ -7,6 +7,7 @@
 #include "./ArmKinematic.hpp"
 #include "./ArmHand.hpp"
 #include "./ArmOreBin.hpp"
+#include "./ArmVideo.hpp"
 
 
 namespace ARM {
@@ -60,6 +61,7 @@ public:
     bool isEnabled = false;
 
     ARM::OreBin orebin;
+    ARM::VideoCtrl videoCtrl;
 
 private:
     // ARM::Kinematic kinematic;

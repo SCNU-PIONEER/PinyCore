@@ -15,6 +15,7 @@ public:
         arm_.orebin.init();
         arm_.leftHand.enable();
         arm_.rightHand.enable();
+        arm_.videoCtrl.init();
         arm_.target_joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");
@@ -38,6 +39,7 @@ public:
     void run() override
     {
         arm_.orebin.loop(arm_.msg);
+        // arm_.videoCtrl.loop(); TODO:
 
         arm_.motors.handRollPitch(arm_.target_joints.joints, arm_.msg.target);
 
