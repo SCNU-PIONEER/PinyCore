@@ -7,12 +7,25 @@
       "dependsOn": [
         "cmake"
       ],
-      "command": "ninja -C 'build' ",
+      "command": " ninja -C build ",
       "args": [],
       "options": {
         "cwd": "${workspaceFolder}"
       },
       "detail": "make...",
+      "problemMatcher": [],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+          }
+        }
+      },
+    },
+    {
+      "type": "shell",
+      "label": "cmake",
+      "command": "cmake -B build -G Ninja",
       "problemMatcher": [],
       "windows": {
         "options": {
