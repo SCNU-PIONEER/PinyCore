@@ -10,6 +10,7 @@
 #include "PidBasic.hpp"
 #include "dsp/fast_math_functions.h"
 #include "MotorCommonMacros.hpp"
+#include "UIApp.hpp"
 
 using namespace GIMBAL;
 using namespace PINYMOTOR;
@@ -88,12 +89,15 @@ void Standard::update(const MsgBus_s *_bus)
         }
         txPacket_.setData().vx = (cmsg.vx * cosYaw) - (cmsg.vy * sinYaw);
         txPacket_.setData().vy = (cmsg.vy * cosYaw) + (cmsg.vx * sinYaw);
+
+        UI::APP::instance()->updateChassis({ .state = cmsg.state });
     };
     txPacket_.setData().deltaYaw = getMinorArc(motor_->posNorm(), 0.f);
 #endif
 
-
     this->stateFactory_.update();
+
+    UI::APP::instance()->updateGimbal({ .state = msg.state });
 }
 
 PINYMOTOR::IMotor *Standard::motor() const { return motor_; }

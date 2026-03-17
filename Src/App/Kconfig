@@ -41,14 +41,10 @@ menu "app config"
     bool "vt13 keyboard"
     default n
 
-    menu "UI config"
-    depends on APP_USE_REFEREE
-
     config APP_USE_UI
     bool "UI"
+    depends on APP_USE_REFEREE
     default n
-
-    endmenu
 
     config APP_USE_ARM
     bool "arm"

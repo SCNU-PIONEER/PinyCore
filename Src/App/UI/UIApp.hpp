@@ -42,7 +42,6 @@ public:
     void updateChassis(const ChassisUIMsg_s &_msg);
     void updateGimbal(const GimbalUIMsg_s &_msg);
     void updateArm(const ArmUIMsg_s &_msg);
-    void updateArmorBooster(const ArmorBoosterUIMsg_s &_msg);
 
 protected:
 private:

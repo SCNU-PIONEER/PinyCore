@@ -91,8 +91,6 @@ void Mecanum::update([[maybe_unused]] const QueueHandle_t *_queue)
     }
     this->curSpeed_ = forward(wSpeed_);
     this->stateFactory_.update();
-
-    // UI::APP::instance()->updateChassis({ .state = msg.state });
 }
 
 

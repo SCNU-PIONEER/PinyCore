@@ -2,6 +2,7 @@
 #include "StmLog.hpp"
 #include "UIDesigner.hpp"
 #include "sdkconfig.h"
+#include "magic_enum/magic_enum.hpp"
 
 using namespace UI;
 
@@ -27,29 +28,45 @@ void APP::init()
 
 void APP::updateChassis(const ChassisUIMsg_s &_msg)
 {
-    (void)_msg;
     //收到数据后更新UI，然后ready对应的UI
     //如果dynamicInfo_[0]为CHAR，收到_msg.state改变了，则改变dynamicInfo_[0].text，然后client_.ready(&dynamicInfo_[0]);
     //注意动态字符UI不能一直 client_.ready，不然其他UI会发不出去
     //client_.ready(&dynamicInfo_[0]);
+    using namespace UI::DYNAMIC_UI;
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)], 0, sizeof(Info_s));
+    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, "chassis ");
+    size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text);
+    const auto &str = magic_enum::enum_name(_msg.state);
+    for (size_t i = 0; i < str.size(); i++) {
+        dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text[len + i] = str[i];
+    }
+    client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)]);
 }
 
 void APP::updateGimbal(const GimbalUIMsg_s &_msg)
 {
-    (void)_msg;
-    //client_.ready(&dynamicInfo_[0]);
+    using namespace UI::DYNAMIC_UI;
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)], 0, sizeof(Info_s));
+    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, "gimbal ");
+    size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text);
+    const auto &str = magic_enum::enum_name(_msg.state);
+    for (size_t i = 0; i < str.size(); i++) {
+        dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text[len + i] = str[i];
+    }
+    client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)]);
 }
 
 void APP::updateArm(const ArmUIMsg_s &_msg)
 {
-    (void)_msg;
-    // client_.ready(&dynamicInfo_[0]);
-}
-
-void APP::updateArmorBooster(const ArmorBoosterUIMsg_s &_msg)
-{
-    (void)_msg;
-    // client_.ready(&dynamicInfo_[0]);
+    using namespace UI::DYNAMIC_UI;
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)], 0, sizeof(Info_s));
+    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, "arm ");
+    size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text);
+    const auto &str = magic_enum::enum_name(_msg.state);
+    for (size_t i = 0; i < str.size(); i++) {
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text[len + i] = str[i];
+    }
+    client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)]);
 }
 
 void APP::task()
