@@ -1,5 +1,6 @@
 #pragma once
 #include "DMMotor.hpp"
+#include "LKMotorRS485.hpp"
 #include "./ArmKinematic.hpp"
 #include "./ArmSafety.hpp"
 #include "ArmPlan.hpp"
@@ -29,16 +30,16 @@ union ArmSpeed_u {
 
 typedef union {
     struct {
-        IMotor *mgMotor1;            //mg8016
-        DMMOTOR::DMMotor *dmMotor2;  //10010
-        DMMOTOR::DMMotor *dmMotor3;  //8009
-        DMMOTOR::DMMotor *dmMotor4;  //4340
-        DMMOTOR::DMMotor *dmMotor5;  //3507
-        DMMOTOR::DMMotor *dmMotor6;  //3507
-        DMMOTOR::DMMotor *dmMotor7;  //8009
-        DMMOTOR::DMMotor *dmMotor8;  //4340
-        DMMOTOR::DMMotor *dmMotor9;  //3507
-        DMMOTOR::DMMotor *dmMotor10; //3507
+        LKMOTOR::LKMotorRS485 *mgMotor1; //mg8016
+        DMMOTOR::DMMotor *dmMotor2;      //10010
+        DMMOTOR::DMMotor *dmMotor3;      //8009
+        DMMOTOR::DMMotor *dmMotor4;      //4340
+        DMMOTOR::DMMotor *dmMotor5;      //3507
+        DMMOTOR::DMMotor *dmMotor6;      //3507
+        DMMOTOR::DMMotor *dmMotor7;      //8009
+        DMMOTOR::DMMotor *dmMotor8;      //4340
+        DMMOTOR::DMMotor *dmMotor9;      //3507
+        DMMOTOR::DMMotor *dmMotor10;     //3507
     };
 
     PINYMOTOR::IMotor *all_motors[10];
