@@ -306,5 +306,7 @@ public:
      */
 
     MotorTypeDef_e updateRegDat();
+
+    MotorTypeDef_e setPosZero();
 };
 } // namespace PINYMOTOR::DMMOTOR

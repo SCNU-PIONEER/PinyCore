@@ -235,3 +235,11 @@ void DMMotor::overrideReductionRatio(float _newReductionRatio)
     status_.Kn *= _newReductionRatio;
     LOG::info("DMMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
 }
+
+MotorTypeDef_e DMMotor::setPosZero()
+{
+    uint8_t setPosZeroCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE };
+    // BUG: 由于checkSend()，导致单次调用send()可能不会发送命令，导致电机设置当前位置为零点失败
+    return static_cast<MotorTypeDef_e>(Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+                                                                    ctrlId_, setPosZeroCmdPack, 8));
+}
