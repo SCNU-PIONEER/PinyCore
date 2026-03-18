@@ -1,12 +1,17 @@
 #include <memory>
 
+#include "MsgImpl.hpp"
+#include "Dwt.hpp"
+
 #include "./Arm.hpp"
 #include "./ArmMotor.hpp"
 #include "StmLog.hpp"
 #include "ArmNormalState.hpp"
 #include "ArmStopState.hpp"
-#include "Dwt.hpp"
+#include "ArmPlanState.hpp"
+
 #include "UIApp.hpp"
+
 
 using namespace ARM;
 
@@ -22,7 +27,7 @@ using namespace ARM;
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
 static Joint10 angleMin{ -0.62f, 0.f, -1.41f, -1.15f, -3.f, -3.f, -1.f, -1.f, -1.f, -1.f };
-static Joint10 angleMax{ 0.62f, 3.f, 1.41f, 1.15f, 3.f, 3.f, 1.f, 1.f, 1.f, 1.f };
+static Joint10 angleMax{ 0.62f, 3.f, 3.0f, 1.15f, 3.f, 3.f, 1.f, 1.f, 1.f, 1.f };
 
 static InitConfig_s leftHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -49,6 +54,7 @@ Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), r
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     stateFactory_.addState(FSMState_e::NORMAL, std::make_unique<NormalState>(*this));
+    stateFactory_.addState(FSMState_e::PLAN, std::make_unique<PlanState>(*this));
     stateFactory_.init(stateFactory_.getNextState(FSMState_e::STOP));
 
     LOG::info("ARM", "register");

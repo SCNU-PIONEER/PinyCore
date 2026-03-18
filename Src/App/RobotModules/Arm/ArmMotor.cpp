@@ -75,6 +75,7 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
         .txFreq = 500.0f,
         .posPID = nullptr,
         .velPID = nullptr,
+        .isReverse = true,
     };
     InitConfig_s dm4340Config8 = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -117,10 +118,21 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
     motors.all_motors[9] = new DMMOTOR::DM3507("joint10", dm3507Config10);
 };
 
+uint16_t id = 0;
 void Motors::update()
 {
     size_t index = 0;
     for (auto &motor : motors.all_motors) {
+        // 温度报警，防止堵转过热
+        if (motor->data().tempture > 40.f) {
+            LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
+            BUZZER::Buzzer::getInstance().playDJI();
+            id = index;
+        }
+        // if (motor->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
+        //     LOG::error("MOTORS", "Motor %u, offline", index + 1);
+        // }
+
         /* singleCirAng range: 0 ~ 2PI, we need range: -pi ~ pi */
         if (motor->data().singleCirAng >= std::numbers::pi_v<float>) {
             currentJoints[index] = motor->data().singleCirAng - (2 * std::numbers::pi_v<float>);
@@ -128,12 +140,6 @@ void Motors::update()
             currentJoints[index] = motor->data().singleCirAng;
         }
         index++;
-
-        // 温度报警，防止堵转过热
-        if (motor->data().tempture > 40.f) {
-            LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
-            BUZZER::Buzzer::getInstance().playPinyCore();
-        }
     }
 }
 

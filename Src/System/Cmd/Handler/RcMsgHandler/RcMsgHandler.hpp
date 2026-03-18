@@ -31,6 +31,9 @@ private:
     static constexpr float S_CURVE_ACC = 3.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
     static constexpr float GIMBAL_YAW_MAX = 0.002f;
+    static constexpr float GAIN_MOUSE_X = 0.0001f;
+    static constexpr float GAIN_MOUSE_Y = 0.0001f;
+
     float channelMax_;
 
     MsgBus_s *msgBus_;

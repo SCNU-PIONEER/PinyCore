@@ -197,19 +197,20 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 // gimbal
                 gimbalMsg.state = GIMBAL::FSMState_e::RUN;
                 gimbalMsg.yaw = gimbalVal;
-                if (rcData->rc.ch1 == 660) { //ry
-                    chassisMsg.state = CHASSIS::FSMState_e::SPIN;
-                } else if (rcData->rc.ch1 == -660) { //ry
-                    // chassis
-                    chassisMsg.state = CHASSIS::FSMState_e::RUN;
-                }
+                // if (rcData->rc.ch1 == 660) { //ry
+                //     chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+                // } else if (rcData->rc.ch1 == -660) { //ry
+                //     // chassis
+                //     chassisMsg.state = CHASSIS::FSMState_e::RUN;
+                // }
+                chassisMsg.state = CHASSIS::FSMState_e::RUN;
                 chassisMsg.vx = ry / 100 * INPUT_VX_MAX;
                 chassisMsg.vy = -rx / 100 * INPUT_VY_MAX;
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
                 armMsg.target[0] = -lx / 314 / 50; //8016yaw
-                armMsg.target[1] = ly / 314 / 50; //10010pitch
+                armMsg.target[1] = ly / 314 / 50;  //10010pitch
                 if (armMsg.mode == ARM::ArmMode_e::LEFT) {
                     armMsg.target[6] = ry / 314 / 50; //8009pitch
                     armMsg.target[7] = rx / 314 / 50; //4340yaw
@@ -228,10 +229,17 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                     armMsg.target[5] = -ly / 314 / 50; //3507pitch
                 }
                 //左右臂切换
-                if (rcData->rc.ch0 == -660) //rx
+                if (rcData->rc.ch0 == -660) //rx left
                     armMsg.mode = ARM::ArmMode_e::LEFT;
-                else if (rcData->rc.ch0 == 660) //rx
+                else if (rcData->rc.ch0 == 660) //rx right
                     armMsg.mode = ARM::ArmMode_e::RIGHT;
+                else if (rcData->rc.ch0 == 660 && rcData->rc.ch1 == 660) //rx ry
+                    armMsg.mode = ARM::ArmMode_e::TWO;
+                //夹爪
+                if (rcData->rc.ch1 == 660) //ry up
+                    armMsg.switch1 = ARM::ClampState_e::RELEASE;
+                else if (rcData->rc.ch1 == -660) //ry down
+                    armMsg.switch1 = ARM::ClampState_e::CLAMP;
             }
         } else if (rcData->rc.switchRight == SW::UP) {
         }
@@ -241,11 +249,6 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
-        (void)rcData;
-        updateRocker(rx, rcData->gamepad.ch[0]);
-        updateRocker(ry, rcData->gamepad.ch[1]);
-        updateRocker(lx, rcData->gamepad.ch[2]);
-        updateRocker(ly, rcData->gamepad.ch[3]);
 #if APP_USE_VT13_KEYBOARD
         /*
          * gimbal:STOP,RUN,
@@ -279,45 +282,48 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             updateRocker(rx, 0);
         }
 
-        //旋转
-        if (rcData->KBM.mouseRight == 1)
-            lxCommand = 1;
-        else if (rcData->KBM.mouseLeft == 1)
-            lxCommand = -1;
-        else
-            lxCommand = 0;
-
-        updateRocker(lx, lxCommand);
-
         chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
         chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
-        chassisMsg.yaw = SMOOTH::sCurve(accK * Chassis::MAX_WZ_SPEED, lx, T_ACC_CNT); // Scale to m/s
+
+        if (IS_KEY_VT13(SHIFT)) {
+            // 云台图传, 底盘不动
+            armMsg.videoYaw = -(rcData->KBM.mouseX);
+            armMsg.videoPitch = -(rcData->KBM.mouseY);
+        } else {
+            // 云台旋转，底盘自动跟随
+            gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) * GIMBAL_YAW_MAX;
+        }
+
         /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
-        //单双臂
-        if (IS_KEY_VT13(SHIFT) && !IS_LAST_KEY_VT13(SHIFT)) {
-            if (IS_LAST_KEY_VT13(Z) && !IS_KEY_VT13(Z)) {
-                armMsg.mode = ARM::ArmMode_e::LEFT;
-            }
-            if (IS_LAST_KEY_VT13(X) && !IS_KEY_VT13(X)) {
+        //单双臂, 鼠标右键切换，双臂模式只有自定义或者一键模式可用
+        if (rcData->KBM.mouseRight) {
+            if (armMsg.mode == ARM::ArmMode_e::LEFT)
                 armMsg.mode = ARM::ArmMode_e::RIGHT;
-            }
-            if (IS_LAST_KEY_VT13(C) && !IS_KEY_VT13(C)) {
-                armMsg.mode = ARM::ArmMode_e::TWO;
-            }
+            else if (armMsg.mode == ARM::ArmMode_e::RIGHT)
+                armMsg.mode = ARM::ArmMode_e::LEFT;
         }
         //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
-        if (IS_KEY_VT13(Q))
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-        if (IS_KEY_VT13(E))
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-        if (IS_KEY_VT13(R))
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(R))
             armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
-        if (IS_KEY_VT13(F))
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F))
             armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-        if (IS_KEY_VT13(G))
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G))
             armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
-        if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V))
-            armMsg.switch1 = !armMsg.switch1;
+        if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V)) {
+            if (armMsg.switch1 == ARM::ClampState_e::CLAMP)
+                armMsg.switch1 = ARM::ClampState_e::RELEASE;
+            else if (armMsg.switch1 == ARM::ClampState_e::RELEASE)
+                (armMsg.switch1 = ARM::ClampState_e::CLAMP);
+        }
+#else
+        updateRocker(rx, rcData->gamepad.ch[0]);
+        updateRocker(ry, rcData->gamepad.ch[1]);
+        updateRocker(lx, rcData->gamepad.ch[2]);
+        updateRocker(ly, rcData->gamepad.ch[3]);
 #endif
     }
 

@@ -1,39 +1,41 @@
 #include "ArmVideo.hpp"
 #include "StmLog.hpp"
 #include "main.h"
+#include <algorithm>
 
 using namespace ARM;
 
-static constexpr const char *TAG = "Video";
+static constexpr const char *TAG = "VideoCtrl";
 
 VideoCtrl::VideoCtrl() : pitch(&htim2, TIM_CHANNEL_1), yaw(&htim2, TIM_CHANNEL_3) {}
 
-uint32_t pitchang = 1000;
-uint32_t yawang = 1000;
-
-struct Ang {
-    uint32_t pitch = 1500;
-    uint32_t yaw = 1460;
-} ang1;
+// uint32_t pitchang = 1000;
+// uint32_t yawang = 1000;
+//
+// struct Ang {
+//     uint32_t pitch = 1500;
+//     uint32_t yaw = 1460;
+// } ang1;
 
 void VideoCtrl::init()
 {
     pitch.start();
     yaw.start();
 
-    pitch.setDutyCycle(PITCH_RESET_ANG);
-    yaw.setDutyCycle(YAW_RESET_ANG);
+    pitch.setDutyCycle(pitchAng);
+    yaw.setDutyCycle(yawAng);
 
     LOG::info(TAG, "init");
 }
 
 void VideoCtrl::loop(const float _pitch, const float _yaw)
 {
-    pitch.setDutyCycle(ang1.pitch);
-    yaw.setDutyCycle(ang1.yaw);
+    // if (_pitch)
+    //     pitchAng = std::clamp((pitchAng + _pitch), PITCH_ANG_MIN, PITCH_ANG_MAX);
+    // yawAng = std::clamp((yawAng + _yaw), PITCH_ANG_MIN, PITCH_ANG_MAX);
 
-    // pitch.setDutyCycle(_pitch);
-    // yaw.setDutyCycle(_yaw);
+    pitch.setDutyCycle(pitchAng);
+    yaw.setDutyCycle(yawAng);
 }
 
 void VideoCtrl::stop()

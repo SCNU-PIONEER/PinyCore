@@ -12,6 +12,7 @@ public:
 
     void enter() override
     {
+        arm_.msg.isStucked = false;
         arm_.orebin.stop();
         arm_.motors.stop();
         arm_.leftHand.stop();
