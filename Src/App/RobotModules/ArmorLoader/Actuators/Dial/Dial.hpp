@@ -29,7 +29,7 @@ class Dial : public ArmorLoader {
     };
 
 public:
-    static constexpr float OUTER_RR = 1.f;
+    static constexpr float OUTER_RR = 5.f / 2.f;
 
     static constexpr uint8_t BULLET_NUM_ROUND = 10;
 
@@ -40,6 +40,7 @@ public:
     static constexpr float BLOCK_CURRENT = 2.f;   // A
     static constexpr float BLOCK_SPEED_MIN = 1.f; // rad/s
     static constexpr uint16_t BLOCK_CNT_MAX = 200.f;
+    static constexpr float BARREL_HEAT_THRESHOLD_OFFSET = 40.f;
 
     FSMState_e lastState = FSMState_e::STOP;
 
@@ -95,7 +96,8 @@ private:
 
     ShooterCtrlRxPacket shooterCtrlRxPacket_;
 
-    uint16_t remainHeat;
+    float barrelHeat_ = 0.f;
+    uint16_t lastBarrelHeatFromReferee_ = 0.f;
     float vel_; // rad/s
     bool refereeFire_ = false;
 
