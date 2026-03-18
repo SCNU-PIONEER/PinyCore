@@ -124,7 +124,7 @@ void Motors::update()
     size_t index = 0;
     for (auto &motor : motors.all_motors) {
         // 温度报警，防止堵转过热
-        if (motor->data().tempture > 40.f) {
+        if (motor->data().tempture > 50.f) {
             LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
             BUZZER::Buzzer::getInstance().playDJI();
             id = index;
@@ -144,7 +144,27 @@ void Motors::update()
 }
 
 // TODO: 电机复位
-bool Motors::init() { return true; }
+bool Motors::init()
+{
+    if ((motors.dmMotor2->errorCode_ != PINYMOTOR::DMMOTOR::ErrorCode_e::MOTOR_DISABLE) &&
+        (motors.dmMotor2->errorCode_ != PINYMOTOR::DMMOTOR::ErrorCode_e::MOTOR_ENABLE)) {
+        motors.dmMotor2->clearError();
+    }
+    if (motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor5->clearError();
+    }
+    if (motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor6->clearError();
+    }
+    if (motors.dmMotor9->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor9->clearError();
+    }
+    if (motors.dmMotor10->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor10->clearError();
+    }
+    // motors.dmMotor2->setPosZero();
+    return true;
+}
 
 void Motors::stop()
 {
@@ -155,9 +175,15 @@ void Motors::stop()
 
 void Motors::enable()
 {
-    for (const auto &motor : motors.all_motors) {
-        motor->cmd(MotorCmdType_e::ON);
+    for (uint8_t i = 0; i < 10; ++i) {
+        if (i < 4 || (i >= 6 && i < 8)) {
+            motors.all_motors[i]->cmd(MotorCmdType_e::ON);
+        } else {
+        }
     }
+    // for (const auto &motor : motors.all_motors) {
+    //     motor->cmd(MotorCmdType_e::ON);
+    // }
 }
 
 bool Motors::isMoving(const Joint10 &_target)
@@ -177,7 +203,7 @@ void Motors::ctrl(const Joint10 &_targetJoints)
         if (i < 4 || (i >= 6 && i < 8)) {
             motors.all_motors[i]->cmdPosVel(temp[i], ref_speed._[i]);
         } else {
-            motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
+            // motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
         }
     }
 }

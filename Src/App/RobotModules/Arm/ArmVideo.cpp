@@ -28,7 +28,7 @@ void VideoCtrl::init()
     LOG::info(TAG, "init");
 }
 
-void VideoCtrl::loop(const float _pitch, const float _yaw)
+void VideoCtrl::loop(const int32_t _pitch, const int32_t _yaw)
 {
     // if (_pitch)
     //     pitchAng = std::clamp((pitchAng + _pitch), PITCH_ANG_MIN, PITCH_ANG_MAX);

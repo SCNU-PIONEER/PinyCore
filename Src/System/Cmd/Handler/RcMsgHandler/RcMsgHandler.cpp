@@ -178,10 +178,10 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             armMsg.switch1 = !armMsg.switch1;
 #endif
         //拨轮控夹爪
-        if (rcData->wheel == 1684)
-            armMsg.switch1 = ARM::ClampState_e::CLAMP;
-        else if (rcData->wheel > 7000)
-            armMsg.switch1 = ARM::ClampState_e::RELEASE;
+        // if (rcData->wheel == 1684)
+        //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
+        // else if (rcData->wheel > 7000)
+        // armMsg.switch1 = ARM::ClampState_e::RELEASE;
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
             armMsg.switch1 = ARM::ClampState_e::NONE;
@@ -217,7 +217,13 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
                     armMsg.target[2] = ry / 314 / 50; //8009pitch
                     armMsg.target[3] = rx / 314 / 50; //4340yaw
+                } else if (armMsg.mode == ARM::ArmMode_e::TWO) {
+                    armMsg.target[2] = ry / 314 / 50; //8009pitch
+                    armMsg.target[3] = rx / 314 / 50; //4340yaw
+                    armMsg.target[6] = ry / 314 / 50; //8009pitch
+                    armMsg.target[7] = rx / 314 / 50; //4340yaw
                 }
+
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
@@ -227,22 +233,31 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
                     armMsg.target[4] = -lx / 314 / 50; //3507roll
                     armMsg.target[5] = -ly / 314 / 50; //3507pitch
+                } else if (armMsg.mode == ARM::ArmMode_e::TWO) {
+                    armMsg.target[4] = -lx / 314 / 50; //3507roll
+                    armMsg.target[5] = -ly / 314 / 50; //3507pitch
+                    armMsg.target[8] = -lx / 314 / 50; //3507roll
+                    armMsg.target[9] = -ly / 314 / 50; //3507pitch
                 }
+
                 //左右臂切换
                 if (rcData->rc.ch0 == -660) //rx left
                     armMsg.mode = ARM::ArmMode_e::LEFT;
                 else if (rcData->rc.ch0 == 660) //rx right
                     armMsg.mode = ARM::ArmMode_e::RIGHT;
-                else if (rcData->rc.ch0 == 660 && rcData->rc.ch1 == 660) //rx ry
+                else if (rcData->rc.ch1 == 660) //rx ry
                     armMsg.mode = ARM::ArmMode_e::TWO;
                 //夹爪
-                if (rcData->rc.ch1 == 660) //ry up
-                    armMsg.switch1 = ARM::ClampState_e::RELEASE;
-                else if (rcData->rc.ch1 == -660) //ry down
-                    armMsg.switch1 = ARM::ClampState_e::CLAMP;
+                // if (rcData->rc.ch1 == 660) //ry up
+                //     armMsg.switch1 = ARM::ClampState_e::RELEASE;
+                // else if (rcData->rc.ch1 == -660) //ry down
+                //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
             }
-        } else if (rcData->rc.switchRight == SW::UP) {
         }
+
+        // if (rcData->rc.switchRight == SW::UP) {
+        //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
+        // }
 
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
