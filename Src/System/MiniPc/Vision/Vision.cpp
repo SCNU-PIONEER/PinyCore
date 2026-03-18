@@ -25,8 +25,6 @@ void Vision::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandl
         memcpy(&rxBuffer_, _buf, VISION_DATA_LEN);
         rxCnt_++;
         xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
-    } else {
-        LOG::warn("Vision", "Invalid Vision data received via USB");
     }
 };
 
