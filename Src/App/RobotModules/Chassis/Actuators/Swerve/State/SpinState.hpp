@@ -7,7 +7,7 @@
 namespace CHASSIS {
 
 class SpinState : public FSMState<FSMState_e> {
-    static constexpr float CONPENSATION = 0.8f;
+    static constexpr float CONPENSATION = 1.f;
     static constexpr float OFFSET_SPIN_SPEED = 0.5f;
     static constexpr float MAX_SPIN_SPEED = 5.0f;
     static constexpr float NORMAL_SPIN_SPEED = 0.5f * 2.f * PI; // 0.5圈/s
