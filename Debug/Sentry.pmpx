@@ -426,7 +426,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expImuAng_.Gim_s.FirstYaw</member>
-			<member name="last_addr" type="uint32">0x20001EC0</member>
+			<member name="last_addr" type="uint32">0x20001EA0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -475,7 +475,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expMotorAng_.Gim_s.FirstYaw</member>
-			<member name="last_addr" type="uint32">0x20001ED8</member>
+			<member name="last_addr" type="uint32">0x20001EB8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -524,7 +524,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.FirstYaw</member>
-			<member name="last_addr" type="uint32">0x20001EB4</member>
+			<member name="last_addr" type="uint32">0x20001E94</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -573,7 +573,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x200026C4</member>
+			<member name="last_addr" type="uint32">0x200026A4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -622,7 +622,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x200026C8</member>
+			<member name="last_addr" type="uint32">0x200026A8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -671,7 +671,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curMotorAng_.Gim_s.FirstYaw</member>
-			<member name="last_addr" type="uint32">0x20001ECC</member>
+			<member name="last_addr" type="uint32">0x20001EAC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -818,7 +818,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002850</member>
+			<member name="last_addr" type="uint32">0x20002830</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -867,7 +867,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002854</member>
+			<member name="last_addr" type="uint32">0x20002834</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -916,7 +916,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002858</member>
+			<member name="last_addr" type="uint32">0x20002838</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -965,7 +965,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x2000287C</member>
+			<member name="last_addr" type="uint32">0x2000285C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1014,7 +1014,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002880</member>
+			<member name="last_addr" type="uint32">0x20002860</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1063,7 +1063,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gRunVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002884</member>
+			<member name="last_addr" type="uint32">0x20002864</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1112,7 +1112,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorLoader.obj.msg.state</member>
-			<member name="last_addr" type="uint32">0x20001759</member>
+			<member name="last_addr" type="uint32">0x2000175D</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1161,7 +1161,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorLoader.obj.torq_</member>
-			<member name="last_addr" type="uint32">0x20001788</member>
+			<member name="last_addr" type="uint32">0x2000178C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1210,7 +1210,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">autoDialVelPID.kp</member>
-			<member name="last_addr" type="uint32">0x20002C0C</member>
+			<member name="last_addr" type="uint32">0x20002BEC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1259,7 +1259,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">autoDialVelPID.ki</member>
-			<member name="last_addr" type="uint32">0x20002C10</member>
+			<member name="last_addr" type="uint32">0x20002BF0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1304,11 +1304,11 @@
 			<member name="modif_last_addr" type="uint32">0x0</member>
 		</object>
 		<object name="ObjId0214" type="CVariable">
-			<member name="name" type="string">autoDialVelPID.kd</member>
+			<member name="name" type="string">autoDialVelPID.err[0]</member>
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
-			<member name="address" type="string">autoDialVelPID.kd</member>
-			<member name="last_addr" type="uint32">0x20002C14</member>
+			<member name="address" type="string">autoDialVelPID.err[0]</member>
+			<member name="last_addr" type="uint32">0x20002BE4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1455,7 +1455,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.curDir.Chas_s.LF</member>
-			<member name="last_addr" type="uint32">0x200013C4</member>
+			<member name="last_addr" type="uint32">0x200013C8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1504,7 +1504,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.expDir.Chas_s.LF</member>
-			<member name="last_addr" type="uint32">0x200013D4</member>
+			<member name="last_addr" type="uint32">0x200013D8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1553,7 +1553,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">swervePosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002484</member>
+			<member name="last_addr" type="uint32">0x20002464</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1602,7 +1602,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">singleDialVelPID.ki</member>
-			<member name="last_addr" type="uint32">0x20002C68</member>
+			<member name="last_addr" type="uint32">0x20002C48</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1651,7 +1651,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x200024B0</member>
+			<member name="last_addr" type="uint32">0x20002490</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1749,7 +1749,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x200024B4</member>
+			<member name="last_addr" type="uint32">0x20002494</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1798,7 +1798,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x200024B8</member>
+			<member name="last_addr" type="uint32">0x20002498</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1847,7 +1847,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002560</member>
+			<member name="last_addr" type="uint32">0x20002540</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1896,7 +1896,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002564</member>
+			<member name="last_addr" type="uint32">0x20002544</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1945,7 +1945,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002568</member>
+			<member name="last_addr" type="uint32">0x20002548</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1994,7 +1994,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.curDir.Chas_s.RF</member>
-			<member name="last_addr" type="uint32">0x200013C0</member>
+			<member name="last_addr" type="uint32">0x200013C4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2043,7 +2043,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.expDir.Chas_s.RF</member>
-			<member name="last_addr" type="uint32">0x200013D0</member>
+			<member name="last_addr" type="uint32">0x200013D4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2092,7 +2092,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002484</member>
+			<member name="last_addr" type="uint32">0x20002464</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2141,7 +2141,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002488</member>
+			<member name="last_addr" type="uint32">0x20002468</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2190,7 +2190,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x2000248C</member>
+			<member name="last_addr" type="uint32">0x2000246C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2239,7 +2239,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002534</member>
+			<member name="last_addr" type="uint32">0x20002514</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2288,7 +2288,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002538</member>
+			<member name="last_addr" type="uint32">0x20002518</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2337,7 +2337,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x2000253C</member>
+			<member name="last_addr" type="uint32">0x2000251C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2386,7 +2386,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.curDir.Chas_s.RB</member>
-			<member name="last_addr" type="uint32">0x200013CC</member>
+			<member name="last_addr" type="uint32">0x200013D0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2435,7 +2435,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.expDir.Chas_s.RB</member>
-			<member name="last_addr" type="uint32">0x200013DC</member>
+			<member name="last_addr" type="uint32">0x200013E0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2484,7 +2484,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[3].kp</member>
-			<member name="last_addr" type="uint32">0x20002508</member>
+			<member name="last_addr" type="uint32">0x200024E8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2533,7 +2533,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[3].ki</member>
-			<member name="last_addr" type="uint32">0x2000250C</member>
+			<member name="last_addr" type="uint32">0x200024EC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2582,7 +2582,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[3].kd</member>
-			<member name="last_addr" type="uint32">0x20002510</member>
+			<member name="last_addr" type="uint32">0x200024F0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2631,7 +2631,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[3].kp</member>
-			<member name="last_addr" type="uint32">0x200025B8</member>
+			<member name="last_addr" type="uint32">0x20002598</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2680,7 +2680,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[3].ki</member>
-			<member name="last_addr" type="uint32">0x200025BC</member>
+			<member name="last_addr" type="uint32">0x2000259C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2729,7 +2729,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[3].kd</member>
-			<member name="last_addr" type="uint32">0x200025C0</member>
+			<member name="last_addr" type="uint32">0x200025A0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2876,7 +2876,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002610</member>
+			<member name="last_addr" type="uint32">0x200025F0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2925,7 +2925,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002614</member>
+			<member name="last_addr" type="uint32">0x200025F4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2974,7 +2974,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002618</member>
+			<member name="last_addr" type="uint32">0x200025F8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3170,7 +3170,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.curDir.Chas_s.LB</member>
-			<member name="last_addr" type="uint32">0x200013C8</member>
+			<member name="last_addr" type="uint32">0x200013CC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3219,7 +3219,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.expDir.Chas_s.LB</member>
-			<member name="last_addr" type="uint32">0x200013D8</member>
+			<member name="last_addr" type="uint32">0x200013DC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3268,7 +3268,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x200024DC</member>
+			<member name="last_addr" type="uint32">0x200024BC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3317,7 +3317,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x200024E0</member>
+			<member name="last_addr" type="uint32">0x200024C0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3366,7 +3366,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swervePosPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x200024E4</member>
+			<member name="last_addr" type="uint32">0x200024C4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3415,7 +3415,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x2000258C</member>
+			<member name="last_addr" type="uint32">0x2000256C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3464,7 +3464,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002590</member>
+			<member name="last_addr" type="uint32">0x20002570</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3513,7 +3513,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">swerveVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002594</member>
+			<member name="last_addr" type="uint32">0x20002574</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3660,7 +3660,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x200025E4</member>
+			<member name="last_addr" type="uint32">0x200025C4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3709,7 +3709,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x200025E8</member>
+			<member name="last_addr" type="uint32">0x200025C8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3758,7 +3758,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x200025EC</member>
+			<member name="last_addr" type="uint32">0x200025CC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3905,7 +3905,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x2000263C</member>
+			<member name="last_addr" type="uint32">0x2000261C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -3954,7 +3954,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002640</member>
+			<member name="last_addr" type="uint32">0x20002620</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4003,7 +4003,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002644</member>
+			<member name="last_addr" type="uint32">0x20002624</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4150,7 +4150,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[3].kp</member>
-			<member name="last_addr" type="uint32">0x20002668</member>
+			<member name="last_addr" type="uint32">0x20002648</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4199,7 +4199,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[3].ki</member>
-			<member name="last_addr" type="uint32">0x2000266C</member>
+			<member name="last_addr" type="uint32">0x2000264C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4248,7 +4248,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">wheelVelPid[3].kd</member>
-			<member name="last_addr" type="uint32">0x20002670</member>
+			<member name="last_addr" type="uint32">0x20002650</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4297,7 +4297,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.wTorq[0]</member>
-			<member name="last_addr" type="uint32">0x20001500</member>
+			<member name="last_addr" type="uint32">0x20001504</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4346,7 +4346,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.wCurr[0]</member>
-			<member name="last_addr" type="uint32">0x20001510</member>
+			<member name="last_addr" type="uint32">0x20001514</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4395,7 +4395,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x200026CC</member>
+			<member name="last_addr" type="uint32">0x200026AC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4444,7 +4444,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002748</member>
+			<member name="last_addr" type="uint32">0x20002728</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4493,7 +4493,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x2000274C</member>
+			<member name="last_addr" type="uint32">0x2000272C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4542,7 +4542,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002750</member>
+			<member name="last_addr" type="uint32">0x20002730</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4591,7 +4591,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expImuAng_.Gim_s.SecondYaw</member>
-			<member name="last_addr" type="uint32">0x20001EC4</member>
+			<member name="last_addr" type="uint32">0x20001EA4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4640,7 +4640,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.SecondYaw</member>
-			<member name="last_addr" type="uint32">0x20001EB8</member>
+			<member name="last_addr" type="uint32">0x20001E98</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4689,7 +4689,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expMotorAng_.Gim_s.SecondYaw</member>
-			<member name="last_addr" type="uint32">0x20001EDC</member>
+			<member name="last_addr" type="uint32">0x20001EBC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4738,7 +4738,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curMotorAng_.Gim_s.SecondYaw</member>
-			<member name="last_addr" type="uint32">0x20001ED0</member>
+			<member name="last_addr" type="uint32">0x20001EB0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4787,7 +4787,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x200026F0</member>
+			<member name="last_addr" type="uint32">0x200026D0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4836,7 +4836,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x200026F4</member>
+			<member name="last_addr" type="uint32">0x200026D4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4885,7 +4885,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x200026F8</member>
+			<member name="last_addr" type="uint32">0x200026D8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4934,7 +4934,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x20002774</member>
+			<member name="last_addr" type="uint32">0x20002754</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4983,7 +4983,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002778</member>
+			<member name="last_addr" type="uint32">0x20002758</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5032,7 +5032,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x2000277C</member>
+			<member name="last_addr" type="uint32">0x2000275C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5081,7 +5081,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expImuAng_.Gim_s.Pitch</member>
-			<member name="last_addr" type="uint32">0x20001EBC</member>
+			<member name="last_addr" type="uint32">0x20001E9C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5130,7 +5130,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.Pitch</member>
-			<member name="last_addr" type="uint32">0x20001EB0</member>
+			<member name="last_addr" type="uint32">0x20001E90</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5179,7 +5179,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.expMotorAng_.Gim_s.Pitch</member>
-			<member name="last_addr" type="uint32">0x20001ED4</member>
+			<member name="last_addr" type="uint32">0x20001EB4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5228,7 +5228,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curMotorAng_.Gim_s.Pitch</member>
-			<member name="last_addr" type="uint32">0x20001EC8</member>
+			<member name="last_addr" type="uint32">0x20001EA8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5277,7 +5277,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002698</member>
+			<member name="last_addr" type="uint32">0x20002678</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5326,7 +5326,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x2000269C</member>
+			<member name="last_addr" type="uint32">0x2000267C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5375,7 +5375,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauPosPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x200026A0</member>
+			<member name="last_addr" type="uint32">0x20002680</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5424,7 +5424,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x2000271C</member>
+			<member name="last_addr" type="uint32">0x200026FC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5473,7 +5473,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002720</member>
+			<member name="last_addr" type="uint32">0x20002700</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5522,7 +5522,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gLauVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x20002724</member>
+			<member name="last_addr" type="uint32">0x20002704</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5571,7 +5571,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x200027A0</member>
+			<member name="last_addr" type="uint32">0x20002780</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5620,7 +5620,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x200027A4</member>
+			<member name="last_addr" type="uint32">0x20002784</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5669,7 +5669,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x200027A8</member>
+			<member name="last_addr" type="uint32">0x20002788</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5718,7 +5718,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002824</member>
+			<member name="last_addr" type="uint32">0x20002804</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5767,7 +5767,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002828</member>
+			<member name="last_addr" type="uint32">0x20002808</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5816,7 +5816,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x2000282C</member>
+			<member name="last_addr" type="uint32">0x2000280C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5865,7 +5865,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x200027CC</member>
+			<member name="last_addr" type="uint32">0x200027AC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5914,7 +5914,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x200027D0</member>
+			<member name="last_addr" type="uint32">0x200027B0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -5963,7 +5963,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x200027D4</member>
+			<member name="last_addr" type="uint32">0x200027B4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6012,7 +6012,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002850</member>
+			<member name="last_addr" type="uint32">0x20002830</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6061,7 +6061,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002854</member>
+			<member name="last_addr" type="uint32">0x20002834</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6110,7 +6110,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002858</member>
+			<member name="last_addr" type="uint32">0x20002838</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6159,7 +6159,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x200027F8</member>
+			<member name="last_addr" type="uint32">0x200027D8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6208,7 +6208,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x200027FC</member>
+			<member name="last_addr" type="uint32">0x200027DC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6257,7 +6257,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunPosPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002800</member>
+			<member name="last_addr" type="uint32">0x200027E0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6306,7 +6306,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x2000287C</member>
+			<member name="last_addr" type="uint32">0x2000285C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6355,7 +6355,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002880</member>
+			<member name="last_addr" type="uint32">0x20002860</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6404,7 +6404,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gRunVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002884</member>
+			<member name="last_addr" type="uint32">0x20002864</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6453,7 +6453,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">armorLoader.obj.msg.fire</member>
-			<member name="last_addr" type="uint32">0x2000175A</member>
+			<member name="last_addr" type="uint32">0x2000175E</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6502,7 +6502,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.deltaYaw</member>
-			<member name="last_addr" type="uint32">0x20001350</member>
+			<member name="last_addr" type="uint32">0x20001354</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6551,7 +6551,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gWzAP.kp</member>
-			<member name="last_addr" type="uint32">0x20002418</member>
+			<member name="last_addr" type="uint32">0x200023F8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6600,7 +6600,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gWzAP.ki</member>
-			<member name="last_addr" type="uint32">0x2000241C</member>
+			<member name="last_addr" type="uint32">0x200023FC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6649,7 +6649,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gWzAP.kd</member>
-			<member name="last_addr" type="uint32">0x20002420</member>
+			<member name="last_addr" type="uint32">0x20002400</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6698,7 +6698,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">spinWz</member>
-			<member name="last_addr" type="uint32">0x20001ADC</member>
+			<member name="last_addr" type="uint32">0x20001AE4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6747,7 +6747,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.visionControl</member>
-			<member name="last_addr" type="uint32">0x20001E78</member>
+			<member name="last_addr" type="uint32">0x20001E58</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6796,7 +6796,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.visionYaw</member>
-			<member name="last_addr" type="uint32">0x20001E7C</member>
+			<member name="last_addr" type="uint32">0x20001E5C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6845,7 +6845,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.visionFire</member>
-			<member name="last_addr" type="uint32">0x20001E79</member>
+			<member name="last_addr" type="uint32">0x20001E59</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6894,7 +6894,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.stateFactory_.currentState_</member>
-			<member name="last_addr" type="uint32">0x20001E54</member>
+			<member name="last_addr" type="uint32">0x20001E34</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6943,7 +6943,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">outMaxRunTorq[2]</member>
-			<member name="last_addr" type="uint32">0x20002BF4</member>
+			<member name="last_addr" type="uint32">0x20002BD4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -6992,7 +6992,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.msg.state</member>
-			<member name="last_addr" type="uint32">0x20001DDD</member>
+			<member name="last_addr" type="uint32">0x20001DBD</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7041,7 +7041,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.bulletSpdRxPacket_.data_.shootSpeed</member>
-			<member name="last_addr" type="uint32">0x20001F98</member>
+			<member name="last_addr" type="uint32">0x20001F78</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7090,7 +7090,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricLvel_</member>
-			<member name="last_addr" type="uint32">0x2000214C</member>
+			<member name="last_addr" type="uint32">0x2000212C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7139,7 +7139,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricRvel_</member>
-			<member name="last_addr" type="uint32">0x20002150</member>
+			<member name="last_addr" type="uint32">0x20002130</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7188,7 +7188,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[0].kp</member>
-			<member name="last_addr" type="uint32">0x200020E8</member>
+			<member name="last_addr" type="uint32">0x200020C8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7237,7 +7237,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[0].ki</member>
-			<member name="last_addr" type="uint32">0x200020EC</member>
+			<member name="last_addr" type="uint32">0x200020CC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7286,7 +7286,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[0].kd</member>
-			<member name="last_addr" type="uint32">0x200020F0</member>
+			<member name="last_addr" type="uint32">0x200020D0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7335,7 +7335,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002114</member>
+			<member name="last_addr" type="uint32">0x200020F4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7384,7 +7384,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002118</member>
+			<member name="last_addr" type="uint32">0x200020F8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7433,7 +7433,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[1].kd</member>
-			<member name="last_addr" type="uint32">0x2000211C</member>
+			<member name="last_addr" type="uint32">0x200020FC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7482,7 +7482,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">armorBooster.obj.fricPid_[0].kd</member>
-			<member name="last_addr" type="uint32">0x200020F0</member>
+			<member name="last_addr" type="uint32">0x200020D0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7531,7 +7531,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.visionPitch</member>
-			<member name="last_addr" type="uint32">0x20001E80</member>
+			<member name="last_addr" type="uint32">0x20001E60</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7580,7 +7580,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.gimbalState</member>
-			<member name="last_addr" type="uint32">0x20001E84</member>
+			<member name="last_addr" type="uint32">0x20001E64</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7629,7 +7629,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x20002A08</member>
+			<member name="last_addr" type="uint32">0x200029E8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7678,7 +7678,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002A10</member>
+			<member name="last_addr" type="uint32">0x200029F0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7727,7 +7727,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002A0C</member>
+			<member name="last_addr" type="uint32">0x200029EC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7776,7 +7776,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x20002A8C</member>
+			<member name="last_addr" type="uint32">0x20002A6C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7825,7 +7825,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002A90</member>
+			<member name="last_addr" type="uint32">0x20002A70</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7874,7 +7874,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002A94</member>
+			<member name="last_addr" type="uint32">0x20002A74</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7923,7 +7923,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x200029B0</member>
+			<member name="last_addr" type="uint32">0x20002990</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -7972,7 +7972,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002A34</member>
+			<member name="last_addr" type="uint32">0x20002A14</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8021,7 +8021,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002A38</member>
+			<member name="last_addr" type="uint32">0x20002A18</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8070,7 +8070,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x20002A3C</member>
+			<member name="last_addr" type="uint32">0x20002A1C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8119,7 +8119,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x200029B0</member>
+			<member name="last_addr" type="uint32">0x20002990</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8168,7 +8168,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x200029B4</member>
+			<member name="last_addr" type="uint32">0x20002994</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8217,7 +8217,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x200029B8</member>
+			<member name="last_addr" type="uint32">0x20002998</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8266,7 +8266,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].kp</member>
-			<member name="last_addr" type="uint32">0x20002A34</member>
+			<member name="last_addr" type="uint32">0x20002A14</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8315,7 +8315,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].ki</member>
-			<member name="last_addr" type="uint32">0x20002A38</member>
+			<member name="last_addr" type="uint32">0x20002A18</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8364,7 +8364,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[0].kd</member>
-			<member name="last_addr" type="uint32">0x20002A3C</member>
+			<member name="last_addr" type="uint32">0x20002A1C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8413,7 +8413,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002A0C</member>
+			<member name="last_addr" type="uint32">0x200029EC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8462,7 +8462,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].kp</member>
-			<member name="last_addr" type="uint32">0x20002A8C</member>
+			<member name="last_addr" type="uint32">0x20002A6C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8511,7 +8511,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].ki</member>
-			<member name="last_addr" type="uint32">0x20002A90</member>
+			<member name="last_addr" type="uint32">0x20002A70</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8560,7 +8560,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[2].kd</member>
-			<member name="last_addr" type="uint32">0x20002A94</member>
+			<member name="last_addr" type="uint32">0x20002A74</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8609,7 +8609,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.SecondYaw</member>
-			<member name="last_addr" type="uint32">0x20001EB8</member>
+			<member name="last_addr" type="uint32">0x20001E98</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8658,7 +8658,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.Pitch</member>
-			<member name="last_addr" type="uint32">0x20001EB0</member>
+			<member name="last_addr" type="uint32">0x20001E90</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8707,7 +8707,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.debug.visionAngOver</member>
-			<member name="last_addr" type="uint32">0x20001E7A</member>
+			<member name="last_addr" type="uint32">0x20001E5A</member>
 			<member name="byte_size" type="sint32">1</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8756,7 +8756,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x200029DC</member>
+			<member name="last_addr" type="uint32">0x200029BC</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8805,7 +8805,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x200029E0</member>
+			<member name="last_addr" type="uint32">0x200029C0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8854,7 +8854,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoPosPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x200029E4</member>
+			<member name="last_addr" type="uint32">0x200029C4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8903,7 +8903,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[1].kp</member>
-			<member name="last_addr" type="uint32">0x20002A60</member>
+			<member name="last_addr" type="uint32">0x20002A40</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -8952,7 +8952,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[1].ki</member>
-			<member name="last_addr" type="uint32">0x20002A64</member>
+			<member name="last_addr" type="uint32">0x20002A44</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -9001,7 +9001,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gAutoVelPid[1].kd</member>
-			<member name="last_addr" type="uint32">0x20002A68</member>
+			<member name="last_addr" type="uint32">0x20002A48</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -9050,7 +9050,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">gimbal.obj.curImuAng_.Gim_s.FirstYaw</member>
-			<member name="last_addr" type="uint32">0x20001EB4</member>
+			<member name="last_addr" type="uint32">0x20001E94</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -9099,7 +9099,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">outMaxRunTorq[2]</member>
-			<member name="last_addr" type="uint32">0x20002BF4</member>
+			<member name="last_addr" type="uint32">0x20002BD4</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -20893,10 +20893,11 @@
 			<member name="graph_x_min_auto" type="sint32">1</member>
 			<member name="graph_x_max_auto" type="sint32">1</member>
 			<member name="graph_break_line" type="sint32">0</member>
-			<member name="graph_var_count" type="sint32">2</member>
-			<member name="var_count" type="sint32">2</member>
+			<member name="graph_var_count" type="sint32">3</member>
+			<member name="var_count" type="sint32">3</member>
 			<member name="var0_info" type="CPrjItemRS_VarInfo">ObjId0224</member>
 			<member name="var1_info" type="CPrjItemRS_VarInfo">ObjId0225</member>
+			<member name="var2_info" type="CPrjItemRS_VarInfo">ObjId1968</member>
 			<member name="yblock0_info" type="CPrjItemRS_YBlockInfo">ObjId0226</member>
 			<member name="yblock1_info" type="CPrjItemRS_YBlockInfo">ObjId0227</member>
 			<member name="yblock2_info" type="CPrjItemRS_YBlockInfo">ObjId0228</member>
@@ -20919,6 +20920,12 @@
 			<member name="visible" type="sint32">1</member>
 			<member name="y_block" type="sint32">0</member>
 			<member name="color" type="uint32">0x227DF3</member>
+		</object>
+		<object name="ObjId1968" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId1415</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">1</member>
+			<member name="color" type="uint32">0xA95918</member>
 		</object>
 		<object name="ObjId0226" type="CPrjItemRS_YBlockInfo">
 			<member name="join_class" type="sint32">0</member>
