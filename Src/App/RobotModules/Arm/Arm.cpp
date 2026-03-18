@@ -54,7 +54,6 @@ Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), r
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     stateFactory_.addState(FSMState_e::NORMAL, std::make_unique<NormalState>(*this));
-    stateFactory_.addState(FSMState_e::PLAN, std::make_unique<PlanState>(*this));
     stateFactory_.init(stateFactory_.getNextState(FSMState_e::STOP));
 
     LOG::info("ARM", "register");
@@ -62,7 +61,7 @@ Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), r
     motors.stop();
 }
 
-void Arm::update(MsgBus_s *_param)
+void Arm::update(const MsgBus_s *_param)
 {
     if (xQueueReceive(_param->armQueue, &msg, 0) == pdTRUE) {
     }
@@ -70,7 +69,7 @@ void Arm::update(MsgBus_s *_param)
 
     stateFactory_.update();
 
-    UI::APP::instance()->updateArm({ .state = msg.state });
+    // UI::APP::instance()->updateArm({ .state = msg.state });
 }
 
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }

@@ -175,11 +175,8 @@ void Motors::stop()
 
 void Motors::enable()
 {
-    for (uint8_t i = 0; i < 10; ++i) {
-        if (i < 4 || (i >= 6 && i < 8)) {
-            motors.all_motors[i]->cmd(MotorCmdType_e::ON);
-        } else {
-        }
+    for (uint8_t i = 0; i < 6; ++i) {
+        motors.all_motors[i]->cmd(MotorCmdType_e::ON);
     }
     // for (const auto &motor : motors.all_motors) {
     //     motor->cmd(MotorCmdType_e::ON);

@@ -16,29 +16,15 @@ public:
         arm_.leftHand.enable();
         arm_.rightHand.enable();
         arm_.videoCtrl.init();
+        arm_.motors.enable();
         arm_.target_joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");
     }
 
-    bool change() override
-    {
-        if (arm_.msg.state == FSMState_e::STOP) {
-            arm_.isEnabled = false; //change中stop
-            return true;
-        }
-        if (!arm_.isEnabled) {
-            arm_.motors.enable();
-            arm_.isEnabled = true;
-            LOG::info("Normal", "motor enabled, start homing");
-            return false;
-        }
-        return arm_.motors.init();
-    }
-
     void run() override
     {
-        arm_.orebin.loop(arm_.msg);
+        // arm_.orebin.loop(arm_.msg);
         // arm_.videoCtrl.loop(); TODO:
 
         arm_.motors.handRollPitch(arm_.target_joints.joints, arm_.msg.target);
@@ -99,8 +85,6 @@ public:
             return FSMState_e::STOP;
         else if (arm_.msg.state == FSMState_e::NORMAL)
             return FSMState_e::NORMAL;
-        else if (arm_.msg.state == FSMState_e::PLAN)
-            return FSMState_e::PLAN;
         return FSMState_e::STOP;
     }
 

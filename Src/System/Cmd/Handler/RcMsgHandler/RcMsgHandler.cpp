@@ -258,82 +258,85 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         // if (rcData->rc.switchRight == SW::UP) {
         //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
         // }
+        notify(&chassisMsg, msgBus_->chassisQueue);
+        notify(&gimbalMsg, msgBus_->gimbalQueue);
+        notify(&armMsg, msgBus_->armQueue);
 
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
         (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
-        VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+        // VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
 #if APP_USE_VT13_KEYBOARD
-        /*
-         * gimbal:STOP,RUN,
-         * chassis:STOP,RUN,SPIN
-         * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
-         */
-        //机械臂控制使用自定义控制器
-        /*————————————————————————————————————————————————chassis——————————————————————————————————————————————*/
-        float accK = 1.f, lxCommand = 0;
-        chassisMsg.state = CHASSIS::FSMState_e::RUN;
-        //加速
-        if (IS_KEY_VT13(SHIFT))
-            accK = 1.5f;
-        else
-            accK = 1.f;
+        // /*
+        //  * gimbal:STOP,RUN,
+        //  * chassis:STOP,RUN,SPIN
+        //  * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
+        //  */
+        // //机械臂控制使用自定义控制器
+        // /*————————————————————————————————————————————————chassis——————————————————————————————————————————————*/
+        // float accK = 1.f, lxCommand = 0;
+        // chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        // //加速
+        // if (IS_KEY_VT13(SHIFT))
+        //     accK = 1.5f;
+        // else
+        //     accK = 1.f;
 
-        //前后左右
-        if (IS_KEY_VT13(W)) {
-            updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
-        } else if (IS_KEY_VT13(S)) {
-            updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
-        } else {
-            updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
-        }
+        // //前后左右
+        // if (IS_KEY_VT13(W)) {
+        //     updateRocker(ry, 1); //加速向前，ry 增加并趋近于最大值。
+        // } else if (IS_KEY_VT13(S)) {
+        //     updateRocker(ry, -1); //加速向后，ry 减少并趋近于最小值。
+        // } else {
+        //     updateRocker(ry, 0); //自然减速回中，ry 向 0 值靠近。
+        // }
 
-        if (IS_KEY_VT13(A)) {
-            updateRocker(rx, -1);
-        } else if (IS_KEY_VT13(D)) {
-            updateRocker(rx, 1);
-        } else {
-            updateRocker(rx, 0);
-        }
+        // if (IS_KEY_VT13(A)) {
+        //     updateRocker(rx, -1);
+        // } else if (IS_KEY_VT13(D)) {
+        //     updateRocker(rx, 1);
+        // } else {
+        //     updateRocker(rx, 0);
+        // }
 
-        chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
-        chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
+        // chassisMsg.vx = SMOOTH::sCurve(accK * Chassis::MAX_VX_SPEED, ry, T_ACC_CNT);  // Scale to m/s
+        // chassisMsg.vy = SMOOTH::sCurve(accK * Chassis::MAX_VY_SPEED, -rx, T_ACC_CNT); // Scale to m/s
 
-        if (IS_KEY_VT13(SHIFT)) {
-            // 云台图传, 底盘不动
-            armMsg.videoYaw = -(rcData->KBM.mouseX);
-            armMsg.videoPitch = -(rcData->KBM.mouseY);
-        } else {
-            // 云台旋转，底盘自动跟随
-            gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) * GIMBAL_YAW_MAX;
-        }
+        // if (IS_KEY_VT13(SHIFT)) {
+        //     // 云台图传, 底盘不动
+        //     armMsg.videoYaw = -(rcData->KBM.mouseX);
+        //     armMsg.videoPitch = -(rcData->KBM.mouseY);
+        // } else {
+        //     // 云台旋转，底盘自动跟随
+        //     gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) * GIMBAL_YAW_MAX;
+        // }
 
-        /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
-        //单双臂, 鼠标右键切换，双臂模式只有自定义或者一键模式可用
-        if (rcData->KBM.mouseRight) {
-            if (armMsg.mode == ARM::ArmMode_e::LEFT)
-                armMsg.mode = ARM::ArmMode_e::RIGHT;
-            else if (armMsg.mode == ARM::ArmMode_e::RIGHT)
-                armMsg.mode = ARM::ArmMode_e::LEFT;
-        }
-        //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
-        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q))
-            armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E))
-            armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(R))
-            armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
-        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F))
-            armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G))
-            armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
-        if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V)) {
-            if (armMsg.switch1 == ARM::ClampState_e::CLAMP)
-                armMsg.switch1 = ARM::ClampState_e::RELEASE;
-            else if (armMsg.switch1 == ARM::ClampState_e::RELEASE)
-                (armMsg.switch1 = ARM::ClampState_e::CLAMP);
-        }
+        // /*——————————————————————————————————————————————————————————————————————————————————————————————————————————*/
+        // //单双臂, 鼠标右键切换，双臂模式只有自定义或者一键模式可用
+        // if (rcData->KBM.mouseRight) {
+        //     if (armMsg.mode == ARM::ArmMode_e::LEFT)
+        //         armMsg.mode = ARM::ArmMode_e::RIGHT;
+        //     else if (armMsg.mode == ARM::ArmMode_e::RIGHT)
+        //         armMsg.mode = ARM::ArmMode_e::LEFT;
+        // }
+        // //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
+        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q))
+        //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
+        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E))
+        //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
+        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(R))
+        //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
+        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F))
+        //     armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
+        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G))
+        //     armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+        // if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V)) {
+        //     if (armMsg.switch1 == ARM::ClampState_e::CLAMP)
+        //         armMsg.switch1 = ARM::ClampState_e::RELEASE;
+        //     else if (armMsg.switch1 == ARM::ClampState_e::RELEASE)
+        //         (armMsg.switch1 = ARM::ClampState_e::CLAMP);
+        // }
 #else
         updateRocker(rx, rcData->gamepad.ch[0]);
         updateRocker(ry, rcData->gamepad.ch[1]);
@@ -341,10 +344,6 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         updateRocker(ly, rcData->gamepad.ch[3]);
 #endif
     }
-
-    notify(&chassisMsg, msgBus_->chassisQueue);
-    notify(&gimbalMsg, msgBus_->gimbalQueue);
-    notify(&armMsg, msgBus_->armQueue);
 }
 
 
