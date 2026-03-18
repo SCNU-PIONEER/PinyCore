@@ -165,16 +165,7 @@ void DualStage::loadChassisMsg(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->navigationQueue), &nmsg, 0) == pdTRUE) {
     };
 
-    // if (cmsg.state == CHASSIS::FSMState_e::SPIN || cmsg.state == CHASSIS::FSMState_e::TANK) {
-    //     lastChassisState_ = cmsg.state;
-    // } else {
-    //     lastChassisState_ = CHASSIS::FSMState_e::STOP;
-    // }
-    // if ((lastChassisState_ == CHASSIS::FSMState_e::SPIN || lastChassisState_ == CHASSIS::FSMState_e::TANK) &&
-    //     (lastChassisState_ != cmsg.state)) {
-    //     msg.state = FSMState_e::LAUNCH;
-    // }
-
+    // cmsg.state = CHASSIS::FSMState_e::STOP;
     chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
     chassisCtrlTxPacket_.setData().gimbalReset = isLaunched_;
 
@@ -217,7 +208,7 @@ void DualStage::sendVisionData()
     vision->eToVData().roll = insData_.roll;
     vision->eToVData().pitch = insData_.pitch;
     vision->eToVData().yaw = getMinorArc(insData_.yaw, -this->constDeltaYawArc_);
-    // vision->eToVData().yaw = curImuAng_.Gim_s.SecondYaw;
+    // vision->eToVData().yaw = insData_.yaw;
 
     //装裁判系统数据
     vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);

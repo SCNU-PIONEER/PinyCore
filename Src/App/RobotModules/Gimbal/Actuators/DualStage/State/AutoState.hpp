@@ -12,12 +12,12 @@
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(20.f, 25.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(8.f, 4.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
-    PositionalPid(30.f, 8.f, 1.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(200.f, 20.f, 5.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(1.f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.4f, 0.2f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(20.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 
 namespace GIMBAL {
@@ -28,8 +28,8 @@ class AutoState : public FSMState<FSMState_e> {
     static constexpr float IMU_PITCH_MIN_ANG = -0.64578f; // -37°
     static constexpr float IMU_PITCH_MAX_ANG = 0.35f;     //20°
 
-    static constexpr float SECOND_YAW_MAX_ANG = 0.6f;
-    static constexpr float SECOND_YAW_MIN_ANG = -0.57f;
+    static constexpr float SECOND_YAW_MAX_ANG = 1.f;//0.37f
+    static constexpr float SECOND_YAW_MIN_ANG = -0.6f;//-0.33f
 
 public:
     AutoState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::AUTO), gimbal_(_gimbal)

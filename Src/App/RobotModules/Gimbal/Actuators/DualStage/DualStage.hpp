@@ -40,13 +40,13 @@ static inline float rangeConversion(float _ang)
     return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
 };
 
-//红1机器人ID 为 1，蓝1 机器人 ID 为 101
+//红1机器人ID为1，蓝1机器人ID为101,true红
 inline bool isColor(float _robotId)
 {
     if (_robotId < 100) {
-        return 1; // 红色
+        return 1; // 己红,对蓝
     } else {
-        return 0; // 蓝色
+        return 0; // 己蓝,对红
     }
 }
 
@@ -58,7 +58,7 @@ class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
 
 class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
     friend class DualStage;
-    // ShooterCtrlTxPacket() : TxPacket(200.f) {}
+    ShooterCtrlTxPacket() : TxPacket(500.f) {}
     void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
 };
 
