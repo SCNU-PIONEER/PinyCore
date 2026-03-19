@@ -28,7 +28,7 @@ private:
     static constexpr float INPUT_VX_MAX = 3.f;
     static constexpr float INPUT_VY_MAX = 3.f;
     static constexpr uint8_t T_ACC_CNT = 100;
-    static constexpr float S_CURVE_ACC = 3.0f;
+    static constexpr float S_CURVE_ACC = 4.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
     static constexpr float GIMBAL_YAW_MAX = 0.002f;
     static constexpr float GAIN_MOUSE_X = 0.0001f;

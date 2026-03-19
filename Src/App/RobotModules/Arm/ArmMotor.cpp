@@ -1,4 +1,6 @@
 #include "ArmMotor.hpp"
+#include "ArmKinematic.hpp"
+#include "MsgImpl.hpp"
 #include "Soc.hpp"
 #include "DM8009.hpp"
 #include "DM4340.hpp"
@@ -7,6 +9,7 @@
 #include "MG8016E_i6_RS485.hpp"
 #include "StmLog.hpp"
 #include "Buzzer.hpp"
+#include <cstdint>
 
 
 using namespace ARM;
@@ -162,8 +165,31 @@ bool Motors::init()
     if (motors.dmMotor10->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
         motors.dmMotor10->clearError();
     }
-    // motors.dmMotor2->setPosZero();
+    // motors.dmMotor5->setPosZero();
+    // motors.dmMotor6->setPosZero();
     return true;
+}
+
+bool Motors::homing(const Joint10 _target_joints)
+{
+    if (isWithinRange(_target_joints, safety.getAngleMax(), safety.getAngleMin())) {
+        uint8_t index = 0;
+        for (uint8_t i = 0; i < 6; ++i) { //右臂
+            if (_target_joints[i] - currentJoints[i] < 0.05) {
+                index += 1;
+            }
+        }
+        if (index == 10) {
+            return true;
+        }
+
+
+        for (uint8_t i = 6; i < 10; ++i) {
+        }
+        safety.setSpeed(0.2);
+        ctrl(_target_joints);
+    }
+    return false;
 }
 
 void Motors::stop()
@@ -200,7 +226,7 @@ void Motors::ctrl(const Joint10 &_targetJoints)
         if (i < 4 || (i >= 6 && i < 8)) {
             motors.all_motors[i]->cmdPosVel(temp[i], ref_speed._[i]);
         } else {
-            // motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
+            motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
         }
     }
 }
@@ -211,4 +237,12 @@ void Motors::handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
     _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
     _targetJoints[8] += _msgTargetJoints[8] + _msgTargetJoints[9];
     _targetJoints[9] += _msgTargetJoints[8] - _msgTargetJoints[9];
+}
+
+void Motors::handRollPitchAbs(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
+{
+    _targetJoints[4] = _msgTargetJoints[4] + _msgTargetJoints[5];
+    _targetJoints[5] = _msgTargetJoints[4] - _msgTargetJoints[5];
+    _targetJoints[8] = _msgTargetJoints[8] + _msgTargetJoints[9];
+    _targetJoints[9] = _msgTargetJoints[8] - _msgTargetJoints[9];
 }

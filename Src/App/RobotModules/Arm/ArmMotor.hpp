@@ -51,7 +51,7 @@ struct JointInfo_s {
 };
 
 class Motors {
-    static constexpr float RATED_TORQUE = 0.4f; //M3507
+    static constexpr float RATED_TORQUE = 0.05f; //M3507
 
 public:
     Motors(Joint10 _angleMin, Joint10 _angleMax);
@@ -59,6 +59,7 @@ public:
     void update();
     void stop();
     void enable();
+    bool homing(const Joint10 _target_joints);
     void ctrl(const Joint10 &_targetJoints);
 
     bool checkGoal(Joint _goal);
@@ -66,6 +67,7 @@ public:
     bool isMoving(const Joint10 &_target);
 
     void handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints);
+    void handRollPitchAbs(Joint10 &_targetJoints, Joint10 &_msgTargetJoints);
 
     Joint10 currentJoints = {};
     ArmSpeed_u ref_speed = {};

@@ -16,6 +16,8 @@ void Safety::setSpeed(const float _speed)
     }
     float joint1Speed = std::clamp(_speed, DEFAULT_JOINT_SPEED_MIN, DEFAULT_JOINT_SPEED_MAX);
     motors.ref_speed.joint1 = joint1Speed + 0.8f;
+    motors.ref_speed.joint5 = 0.1f;
+    motors.ref_speed.joint6 = 0.1f;
 }
 
 void Safety::setJointSpeedLimit(const Joint10 _currtentAng, const Joint10 _targetAng)

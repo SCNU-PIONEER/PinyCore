@@ -2,6 +2,7 @@
 #include "StmLog.hpp"
 #include "main.h"
 #include <algorithm>
+#include <cstdint>
 
 using namespace ARM;
 
@@ -28,12 +29,12 @@ void VideoCtrl::init()
     LOG::info(TAG, "init");
 }
 
-void VideoCtrl::loop(const int32_t _pitch, const int32_t _yaw)
+void VideoCtrl::loop(const uint32_t _pitch, const uint32_t _yaw)
 {
-    // if (_pitch)
-    //     pitchAng = std::clamp((pitchAng + _pitch), PITCH_ANG_MIN, PITCH_ANG_MAX);
-    // yawAng = std::clamp((yawAng + _yaw), PITCH_ANG_MIN, PITCH_ANG_MAX);
-
+    uint32_t pitchAngScale = 100;
+    pitchAng = std::clamp((pitchAng + _pitch * pitchAngScale), PITCH_ANG_MIN, PITCH_ANG_MAX);
+    yawAng = std::clamp((yawAng + _yaw), YAW_ANG_MIN, YAW_ANG_MAX);
+    
     pitch.setDutyCycle(pitchAng);
     yaw.setDutyCycle(yawAng);
 }
