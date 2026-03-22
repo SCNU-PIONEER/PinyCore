@@ -8,6 +8,7 @@
 #include "PidBasic.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <numbers>
 #include "GM6020.hpp"
 #include "M3508.hpp"
@@ -53,10 +54,10 @@ PositionalPid swerveVelPid[4] = {
 };
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.3f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
 };
 
 Swerve::Swerve()
@@ -103,9 +104,9 @@ Swerve::Swerve()
     this->stateFactory_.addState(FSMState_e::TANK, std::make_unique<TANKState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
-    // if constexpr (APP_USE_POWERCTRL) {
-    //
-    // }
+    if constexpr (APP_USE_POWERCTRL) {
+        powerCtrl_ = new SwerveController(ChassisType_e::SWERVE, &cap_);
+    }
 }
 
 void Swerve::stop()
@@ -157,6 +158,11 @@ void Swerve::update(void *_param)
     curSpeed_.Speed.vy = v.Speed.vy * cosYaw_ - v.Speed.vx * sinYaw_;
     curSpeed_.Speed.wz = v.Speed.wz;
 
+    if constexpr (APP_USE_POWERCTRL) {
+        cap_.capTask(powerCtrl_->chargeCmdPower, powerCtrl_->capEnable_, powerCtrl_->capCharge,
+                     static_cast<uint16_t>(powerCtrl_->chassisSetPower));
+    }
+
     this->stateFactory_.update();
 }
 //向上板发送裁判系统数据
@@ -172,6 +178,9 @@ void Swerve::loadRefereeData(void *_param)
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
 
     BulletSpdTxPacket_.setData().shootSpeed = refereeMsg_.bulletSpeed;
+
+    chassisCurPower_ = refereeMsg_.chassisPowerLimit;
+    chassisPowerBuffer_ = refereeMsg_.chassisPowerBuffer;
 }
 
 /**
@@ -270,11 +279,6 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
             i += 2 * F_PI; //[0,2pi]
         }
     }
-    //传回轮速rpm
-    // refWheels.M_LF = -wheelComVel[0] / W_CIRCUMFERENCE * 60;
-    // refWheels.M_LB = -wheelComVel[1] / W_CIRCUMFERENCE * 60;
-    // refWheels.M_RB = wheelComVel[2] / W_CIRCUMFERENCE * 60;
-    // refWheels.M_RF = wheelComVel[3] / W_CIRCUMFERENCE * 60;
     //传rad/s
     refWheels.Wspeed.M_LF = -wheelComVel[0] / W_RADIUS;
     refWheels.Wspeed.M_LB = -wheelComVel[1] / W_RADIUS;
@@ -289,9 +293,13 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
  * @note 模型中逆时针角度增大，实际6020id端在上,顺时针编码值增大。
  * @param _refSpeed 
  */
+float iq[8] = {};
+float rawiq[8] = {};
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir;
+    float cmd[8] = {};
+    float expRads[8] = {};
 
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.Speed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.Speed.vy, MAX_VY_SPEED));
@@ -319,8 +327,10 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //6020
         if (_refSpeed.Speed.vx == 0 && _refSpeed.Speed.vy == 0 && _refSpeed.Speed.wz == 0) {
+            //cmd[i + 4] = 0;
             motors_._[i + 4]->cmdTorq(0);
         } else {
+            ///cmd[i + 4] = swerveFilterOutput_._[i]->process(sTorq[i]);
             motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));
         }
         // motors_.S_RF->cmdTorq(0);
@@ -330,6 +340,9 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //3508
         wTorq[i] = wheelVelPid_._[i]->calc(refWSpeed._[i], motors_._[i]->vel());
+        cmd[i] = wTorq[i];
+        expRads[i] = refWSpeed._[i];
+        expRads[i + 4] = vel[i];
         motors_._[i]->cmdTorq(wTorq[i]);
         // motors_._[i]->cmdTorq(0); //不动
 
@@ -338,10 +351,18 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         // motors_.M_LB->cmdTorq(0);
         // motors_.M_RB->cmdTorq(0);
     }
+//     memcpy(rawiq, cmd, sizeof(cmd));
+//     std::vector<float> torq;
+//     torq = powerCtrl_->powerCtrl(expRads, motors_._, cmd, refereeMsg_);
 
-    // if constexpr (APP_USE_POWERCTRL) {
-    // powerCtrl_->powerCtrl(refWSpeed._);
-    // }
+//     for (uint8_t i = 0; i < 8; i++) {
+//         iq[i] = torq[i];
+// #if APP_USE_POWERCTRL
+//         motors_._[i]->cmdTorq(torq[i]);
+// #else
+//         motors_._[i]->cmdTorq(cmd[i]);
+// #endif
+//     }
 }
 
 void Swerve::loadDeltaYaw()
@@ -349,9 +370,6 @@ void Swerve::loadDeltaYaw()
     // Master Board method
     insSub_->receive();
     deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
-    // if (msg.state == FSMState_e::TANK) {
-    //     deltaYaw = 0.f;
-    // }
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
 };

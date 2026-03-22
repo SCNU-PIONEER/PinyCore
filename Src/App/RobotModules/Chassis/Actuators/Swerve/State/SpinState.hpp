@@ -7,9 +7,9 @@
 namespace CHASSIS {
 
 class SpinState : public FSMState<FSMState_e> {
-    static constexpr float CONPENSATION = 1.f;
+    static constexpr float CONPENSATION = 0.5f;
     static constexpr float OFFSET_SPIN_SPEED = 0.5f;
-    static constexpr float MAX_SPIN_SPEED = 5.0f;
+    static constexpr float MAX_SPIN_SPEED = 1.3f;
     static constexpr float NORMAL_SPIN_SPEED = 0.5f * 2.f * PI; // 0.5圈/s
 
 public:
@@ -30,17 +30,16 @@ public:
 
         ref.Speed.vx = std::fmax(chassis_->msg.vx - CONPENSATION,
                                  std::fmin(chassis_->msg.vx, chassis_->msg.vx + CONPENSATION));
-
         ref.Speed.vy = std::fmax(chassis_->msg.vy - CONPENSATION,
                                  std::fmin(chassis_->msg.vy, chassis_->msg.vy + CONPENSATION));
-        // ref.wz = getSpinVel(spinCnt_++);
+        // // ref.wz = getSpinVel(spinCnt_++);
         // if (spinCnt_ + 5 >= MAX_SPIN_CNT)
         //     maxSpinCount = 0;
         // else if (spinCnt_ - 5 <= 0)
         //     maxSpinCount = MAX_SPIN_CNT;
         // SMOOTH::slopeFollowing(&maxSpinCount, &spinCnt_, 1.f);
-        // ref.Speed.wz = NORMAL_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
-        ref.Speed.wz = NORMAL_SPIN_SPEED;
+        // ref.Speed.wz = MAX_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
+        ref.Speed.wz = MAX_SPIN_SPEED;
         chassis_->ctrl(ref);
     }
 

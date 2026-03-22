@@ -26,15 +26,16 @@ void PowerController::update(const RefereeMsg_s &_msg)
 
 void PowerController::dynamicPower(float _capVoltage)
 {
-    float bufferDP = std::clamp(energyPid_.calc(expPowerBuffer_, powerBuffer_), -1.f, 1.f);
-    capRealRatio_ = (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
+    // float bufferDP = std::clamp(energyPid_.calc(expPowerBuffer_, powerBuffer_), -1.f, 1.f);
+    // capRealRatio_ = (powf(_capVoltage, 2.f) - powf(VCAP_MIN, 2.f)) / VOLTAGE_RANGE;
 
-    float ratioErr = capRealRatio_ - capCmdRatio_;
-    float capExpRatio = std::clamp(capCmdRatio_ + (ratioErr * bufferDP), 0.f, 1.f);
+    // float ratioErr = capRealRatio_ - capCmdRatio_;
+    // float capExpRatio = std::clamp(capCmdRatio_ + (ratioErr * bufferDP), 0.f, 1.f);
 
-    offsetPower_ = powerPid_.calc(capExpRatio, capRealRatio_);
+    // offsetPower_ = powerPid_.calc(capExpRatio, capRealRatio_);
 
-    maxPower_ = std::clamp(limitPower_ - offsetPower_, limitPower_, (_capVoltage * CAP_CURRENT_MAX) + limitPower_);
+    // maxPower_ = std::clamp(limitPower_ - offsetPower_, limitPower_, (_capVoltage * CAP_CURRENT_MAX) + limitPower_);
+    maxPower_ = limitPower_;
 }
 
 void PowerController::updateReferee(const RefereeMsg_s &_msg)

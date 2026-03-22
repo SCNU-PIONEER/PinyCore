@@ -22,7 +22,15 @@ CONFIG_APP_USE_CHASSIS=y
 CONFIG_APP_USE_SWERVE=y
 CONFIG_CHASSIS_TYPE="Swerve"
 CONFIG_CHASSIS_FILE="\"Swerve.hpp\""
-# CONFIG_APP_USE_POWERCTRL is not set
+CONFIG_APP_USE_POWERCTRL=y
+
+#
+# power control settings
+#
+CONFIG_POWERCTRL_USE_RLS=y
+CONFIG_POWERCTRL_USE_REFEREE=y
+# end of power control settings
+
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 
@@ -58,23 +66,26 @@ CONFIG_ARMORBOOSTER_FILE="\"DualFric.hpp\""
 # end of ArmorBooster config
 
 # CONFIG_APP_USE_TEST is not set
-# CONFIG_APP_USE_INS is not set
-# CONFIG_APP_USE_MINIPC is not set
-# CONFIG_APP_USE_DAEMONS is not set
+CONFIG_APP_USE_INS=y
+
+#
+# INS config
+#
+# CONFIG_INS_ACCEL_CALIBRATION is not set
+# end of INS config
+
+CONFIG_APP_USE_MINIPC=y
+
+#
+# MiniPc config
+#
+CONFIG_APP_USE_VISION=y
+CONFIG_APP_USE_NAV=y
+# end of MiniPc config
+
+CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
-CONFIG_APP_USE_REFEREE=y
-
-#
-# UI config
-#
 # CONFIG_APP_USE_UI is not set
-
-#
-# UI config
-#
-CONFIG_UI_ROBOT_ID=0
-# end of UI config
-# end of UI config
 # end of app config
 
 #
@@ -93,8 +104,8 @@ CONFIG_BSP_USE_USB=y
 #
 # extension config
 #
-CONFIG_EXTENSION_DT7=y
-# CONFIG_EXTENSION_ET08A is not set
+# CONFIG_EXTENSION_DT7 is not set
+CONFIG_EXTENSION_ET08A=y
 # CONFIG_EXTENSION_VT13 is not set
 CONFIG_EXTENSION_BUZZER=y
 CONFIG_EXTENSION_LED=y
@@ -110,7 +121,7 @@ CONFIG_LED_WS2812_SPI=y
 CONFIG_EXTENSION_MOTOR=y
 CONFIG_EXTENSION_REFEREE=y
 CONFIG_EXTENSION_SENSOR=y
-# CONFIG_EXTENSION_SUPERCAP is not set
+CONFIG_EXTENSION_SUPERCAP=y
 # end of extension config
 
 #

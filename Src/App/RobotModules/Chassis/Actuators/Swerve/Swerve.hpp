@@ -21,6 +21,8 @@
 #include "PacketImpl.hpp"
 #include "main.h"
 
+#include "SwerveController.hpp"
+
 namespace CHASSIS {
 
 //以下两个模板专为舵向电机使用(控制较为复杂)
@@ -158,6 +160,8 @@ private:
     BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
 
     REFEREE::SentryCmd_s sentryCmd; //哨兵指令
+    float chassisCurPower_;
+    float chassisPowerBuffer_;
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};
@@ -192,6 +196,9 @@ private:
     Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};
     //轮速
     Swerve_u<PositionalPid *> wheelVelPid_ = {};
+
+    SwerveController *powerCtrl_;
+    CAP cap_{ &HCAN2 };
 };
 
 } // namespace CHASSIS
