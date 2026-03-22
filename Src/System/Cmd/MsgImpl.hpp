@@ -50,8 +50,8 @@ struct ArmMsg_s : public Msg {
     ARM::Joint10 target;
     ARM::ClampState_e switch1 = ARM::ClampState_e::NONE;
     bool isStucked = false;
-    int32_t videoYaw = 0.f;   // 图传 yaw，相对值
-    int32_t videoPitch = 0.f; // 图传 pitch, 相对值
+    float videoYaw = 0.f;   // 图传 yaw，相对值
+    float videoPitch = 0.f; // 图传 pitch, 相对值
 };
 
 struct RefereeMsg_s : public Msg {

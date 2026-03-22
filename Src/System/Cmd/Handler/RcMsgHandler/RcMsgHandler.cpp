@@ -99,18 +99,22 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         // static constexpr float CH_RANGE = DT7::CH_VALUE_MAX - DT7::CH_VALUE_OFFSET;
         DT7::RcData_s *rcData = static_cast<DT7::RcData_s *>(rc_->getData());
 
-        updateRocker(rx, rcData->rc.ch0);
-        updateRocker(ry, rcData->rc.ch1);
-        updateRocker(lx, rcData->rc.ch2);
-        updateRocker(ly, rcData->rc.ch3);
+        // keyBoardCtrl = (rcData->rc.switchRight == DT7::Sw_e::DOWN);
 
-        // rx = ((float)rcData->rc.ch0 * 100 / 660);
-        // ry = ((float)rcData->rc.ch1 * 100 / 660);
-        // lx = ((float)rcData->rc.ch2 * 100 / 660);
-        // ly = ((float)rcData->rc.ch3 * 100 / 660);
-
-        gimbalVal = -((float)rcData->rc.ch2 * GIMBAL_YAW_MAX / 660);
-
+        // ctrlEnable = (keyBoardCtrl ? ((IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::CTRL) &&
+        //                                IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::Z)) ?
+        //                                       ([&]() {
+        //                                           chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //                                           gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+        //                                           armMsg.state = ARM::FSMState_e::TEACH;
+        //                                           return true;
+        //                                       }()) :
+        //                               (IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::CTRL) &&
+        //                                IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::C)) ?
+        //                                       false :
+        //                               (ctrlSwitch != static_cast<uint8_t>(DT7::Sw_e::DOWN)) ? false :
+        //                                                                                       ctrlEnable) :
+        //                              true);
 
 #if APP_USE_DT7_KEYBOARD
         /*
@@ -185,6 +189,20 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         if (IS_KEY_DT7(V) && !IS_LAST_KEY_DT7(V))
             armMsg.switch1 = !armMsg.switch1;
 #endif
+        // keyBoardCtrl = 0;
+
+        // if (!keyBoardCtrl) {
+        updateRocker(rx, rcData->rc.ch0);
+        updateRocker(ry, rcData->rc.ch1);
+        updateRocker(lx, rcData->rc.ch2);
+        updateRocker(ly, rcData->rc.ch3);
+
+        // rx = ((float)rcData->rc.ch0 * 100 / 660);
+        // ry = ((float)rcData->rc.ch1 * 100 / 660);
+        // lx = ((float)rcData->rc.ch2 * 100 / 660);
+        // ly = ((float)rcData->rc.ch3 * 100 / 660);
+
+        gimbalVal = -((float)rcData->rc.ch2 * GIMBAL_YAW_MAX / 660);
         //拨轮控夹爪
         // if (rcData->wheel == 1684)
         //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
@@ -262,11 +280,40 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 else if (rcData->rc.ch1 == -660) //ry down
                     armMsg.switch1 = ARM::ClampState_e::CLAMP;
             }
+        } else if (rcData->rc.switchRight == SW::UP) {
+            armMsg.videoYaw = (float)rcData->rc.ch0 / 660;
+            armMsg.videoPitch = (float)rcData->rc.ch1 / 660;
+
+            if (rcData->rc.switchLeft == SW::UP) {
+                if (rcData->rc.ch0 == 660 && rcData->rc.ch1 == 660) { // 右上
+                    __set_FAULTMASK(1);
+                    NVIC_SystemReset();
+                }
+            }
+
+            // if (rcData->rc.ch1 == 660) {
+            //     if (((VT13 *)rc_.get())->isOnline()) {
+            //         armMsg.state = ARM::FSMState_e::TEACH;
+            //         auto customData = ((VT13 *)rc_.get())->getCtrlData();
+            //         armMsg.target[0] = customData.joint[0]; //8016yaw
+            //         armMsg.target[1] = customData.joint[1]; //10010pitch
+            //         armMsg.target[2] = customData.joint[2]; //8009pitch
+            //         armMsg.target[3] = customData.joint[3]; //4340yaw
+            //         armMsg.target[4] = customData.joint[4]; //3507pitch
+            //         armMsg.target[5] = customData.joint[5]; //3507roll
+            //     }
+            // }
+            // if (armMsg.state == ARM::FSMState_e::TEACH) {
+            //     auto customData = ((VT13 *)rc_.get())->getCtrlData();
+            //     armMsg.target[0] = customData.joint[0]; //8016yaw
+            //     armMsg.target[1] = customData.joint[1]; //10010pitch
+            //     armMsg.target[2] = customData.joint[2]; //8009pitch
+            //     armMsg.target[3] = customData.joint[3]; //4340yaw
+            //     armMsg.target[4] = customData.joint[4]; //3507pitch
+            //     armMsg.target[5] = customData.joint[5]; //3507roll
+            // }
         }
 
-        // if (rcData->rc.switchRight == SW::UP) {
-        //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
-        // }
         notify(&chassisMsg, msgBus_->chassisQueue);
         notify(&gimbalMsg, msgBus_->gimbalQueue);
         notify(&armMsg, msgBus_->armQueue);
@@ -276,14 +323,30 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
         // VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+
+        // keyBoardCtrl = (rcData->gamepad.sw == VT13::Sw_e::C);
+        // ctrlEnable = (keyBoardCtrl ?
+        //                       ((IS_KEY_PRESS(rcData->KBM.key, VT13::CTRL) && IS_KEY_PRESS(rcData->KBM.key, VT13::Z)) ?
+        //                                ([&]() {
+        //                                    chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //                                    gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+        //                                    return true;
+        //                                }()) :
+        //                        (IS_KEY_PRESS(rcData->KBM.key, VT13::E) && IS_KEY_PRESS(rcData->KBM.key, VT13::C) &&
+        //                         IS_KEY_PRESS(rcData->KBM.key, VT13::V)) ?
+        //                                false :
+        //                        (ctrlSwitch != static_cast<uint8_t>(VT13::Sw_e::C)) ? false :
+        //                                                                              ctrlEnable) :
+        //                       true);
+        // ctrlSwitch = static_cast<uint8_t>(rcData->gamepad.sw);
 #if APP_USE_VT13_KEYBOARD
-        // /*
-        //  * gimbal:STOP,RUN,
-        //  * chassis:STOP,RUN,SPIN
-        //  * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
-        //  */
-        // //机械臂控制使用自定义控制器
-        // /*————————————————————————————————————————————————chassis——————————————————————————————————————————————*/
+        /*
+         * gimbal:STOP,哦RUN,
+         * chassis:STOP,RUN,SPIN
+         * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
+         */
+        //机械臂控制使用自定义控制器
+        /*————————————————————————————————————————————————chassis——————————————————————————————————————————————*/
 
         // if (rcData->gamepad.sw == VT13::Sw_e::S) {
         //     chassisMsg.state = CHASSIS::FSMState_e::STOP;
@@ -295,20 +358,20 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         //     armMsg.state = ARM::FSMState_e::NORMAL;
         // }
 
-        // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Z)) {
-        //     chassisMsg.state = CHASSIS::FSMState_e::RUN;
-        //     gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-        //     armMsg.state = ARM::FSMState_e::NORMAL;
+        // if (keyBoardCtrl) {
+        //     if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Z)) {
+        //         chassisMsg.state = CHASSIS::FSMState_e::RUN;
+        //         gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+        //         armMsg.state = ARM::FSMState_e::NORMAL;
 
-        //     useDT7 = false;
 
-        // } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(C)) {
-        //     chassisMsg.state = CHASSIS::FSMState_e::STOP;
-        //     gimbalMsg.state = GIMBAL::FSMState_e::STOP;
-        //     armMsg.state = ARM::FSMState_e::STOP;
-        // }
+        //     } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(C)) {
+        //         chassisMsg.state = CHASSIS::FSMState_e::STOP;
+        //         gimbalMsg.state = GIMBAL::FSMState_e::STOP;
+        //         armMsg.state = ARM::FSMState_e::STOP;
+        //     }
 
-        // if (!useDT7) {
+
         //     float accK = 1.f;
         //     if (chassisMsg.state == CHASSIS::FSMState_e::RUN) {
         //         //加速
@@ -340,6 +403,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         //         chassisMsg.vx = 0.f;
         //         chassisMsg.vy = 0.f;
         //     }
+
 
         //     // if (IS_KEY_VT13(SHIFT)) {
         //     //     // 云台图传, 底盘不动
@@ -383,29 +447,31 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         //         //     armMsg.target[8] = customData.joint[5]; //3507roll
         //         //     armMsg.target[9] = customData.joint[4]; //3507pitch
         //         // }
+        //         // }
+
+        //         //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
+        //         // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q))
+        //         //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
+        //         // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E))
+        //         //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
+        //         // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(R))
+        //         //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
+        //         // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F))
+        //         //     armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
+        //         // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G))
+        //         //     armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+        //         // if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V)) {
+        //         //     if (armMsg.switch1 == ARM::ClampState_e::CLAMP)
+        //         //         armMsg.switch1 = ARM::ClampState_e::RELEASE;
+        //         //     else if (armMsg.switch1 == ARM::ClampState_e::RELEASE)
+        //         //         armMsg.switch1 = ARM::ClampState_e::CLAMP;
+        //         // }
         //     }
 
-        //     //一键: 取矿*3，从矿仓取矿，公路区跨越, 夹爪
-        //     // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q))
-        //     //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-        //     // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E))
-        //     //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-        //     // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(R))
-        //     //     armMsg.oneClick = ARM::OneClick_e::ORE_PICK3;
-        //     // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F))
-        //     //     armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-        //     // if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G))
-        //     //     armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
-        //     // if (IS_KEY_VT13(V) && !IS_LAST_KEY_VT13(V)) {
-        //     //     if (armMsg.switch1 == ARM::ClampState_e::CLAMP)
-        //     //         armMsg.switch1 = ARM::ClampState_e::RELEASE;
-        //     //     else if (armMsg.switch1 == ARM::ClampState_e::RELEASE)
-        //     //         armMsg.switch1 = ARM::ClampState_e::CLAMP;
-        //     // }
-
-        //     notify(&chassisMsg, msgBus_->chassisQueue);
-        //     notify(&gimbalMsg, msgBus_->gimbalQueue);
-        //     notify(&armMsg, msgBus_->armQueue);
+        // notify(&chassisMsg, msgBus_->chassisQueue);
+        // notify(&gimbalMsg, msgBus_->gimbalQueue);
+        // notify(&armMsg, msgBus_->armQueue);
+        // }
     }
 #else
         updateRocker(rx, rcData->gamepad.ch[0]);

@@ -1,6 +1,7 @@
 #pragma once
 #include "Bsp.hpp"
 #include "Handler.hpp"
+#include <cstdint>
 #include <memory>
 #include "RemoteControl.hpp"
 
@@ -54,6 +55,10 @@ private:
     float ry = 0.f;
     float lx = 0.f;
     float ly = 0.f;
+
+    uint8_t keyBoardCtrl = false;
+    uint8_t ctrlEnable = false;
+    uint8_t ctrlSwitch = false;
 
     float gimbalVal = 0.f;
 };
