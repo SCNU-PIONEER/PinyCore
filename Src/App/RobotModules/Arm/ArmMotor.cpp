@@ -128,8 +128,8 @@ void Motors::update()
     for (auto &motor : motors.all_motors) {
         // 温度报警，防止堵转过热
         if (motor->data().tempture > 50.f) {
-            LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
-            BUZZER::Buzzer::getInstance().playDJI();
+            LOG::error("MOTORS", "%u, temp: %.2f C", index, motor->data().tempture);
+            // BUZZER::Buzzer::getInstance().playDJI();
             id = index;
         }
         // if (motor->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
@@ -153,10 +153,12 @@ bool Motors::init()
         (motors.dmMotor2->errorCode_ != PINYMOTOR::DMMOTOR::ErrorCode_e::MOTOR_ENABLE)) {
         motors.dmMotor2->clearError();
     }
-    if (motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+    if (motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT ||
+        motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
         motors.dmMotor5->clearError();
     }
-    if (motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+    if (motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT ||
+        motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
         motors.dmMotor6->clearError();
     }
     if (motors.dmMotor9->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
@@ -186,7 +188,7 @@ bool Motors::homing(const Joint10 _target_joints)
 
         for (uint8_t i = 6; i < 10; ++i) {
         }
-        safety.setSpeed(0.2);
+        safety.setSpeed(0.1);
         ctrl(_target_joints);
     }
     return false;

@@ -51,7 +51,7 @@ struct JointInfo_s {
 };
 
 class Motors {
-    static constexpr float RATED_TORQUE = 0.05f; //M3507
+    static constexpr float RATED_TORQUE = 0.6f; //M3507
 
 public:
     Motors(Joint10 _angleMin, Joint10 _angleMax);

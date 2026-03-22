@@ -8,7 +8,7 @@
 #include "StmLog.hpp"
 #include "ArmNormalState.hpp"
 #include "ArmStopState.hpp"
-#include "ArmPlanState.hpp"
+#include "ArmTeachState.hpp"
 
 #include "UIApp.hpp"
 
@@ -26,8 +26,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint10 angleMin{ -0.62f, -3.10f, -1.41f, -1.15f, -2.f, -2.f, 0.f, -1.41f, -3.f, -3.f };
-static Joint10 angleMax{ 0.62f, 3.10f, 3.0f, 1.15f, 2.f, 2.f, 3.5f, 1.41f, 3.f, 3.f };
+static Joint10 angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -2.f, -2.f, 0.f, -1.41f, -3.f, -3.f };
+static Joint10 angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 2.f, 2.f, 3.5f, 1.41f, 3.f, 3.f };
 
 static InitConfig_s leftHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -54,6 +54,7 @@ Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), r
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     stateFactory_.addState(FSMState_e::NORMAL, std::make_unique<NormalState>(*this));
+    // stateFactory_.addState(FSMState_e::TEACH, std::make_unique<TeachState>(*this));
     stateFactory_.init(stateFactory_.getNextState(FSMState_e::STOP));
 
     LOG::info("ARM", "register");
@@ -69,7 +70,7 @@ void Arm::update(const MsgBus_s *_param)
 
     stateFactory_.update();
 
-    // UI::APP::instance()->updateArm({ .state = msg.state });
+    UI::APP::instance()->updateArm({ .state = msg.state });
 }
 
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }

@@ -547,7 +547,7 @@ MotorTypeDef_e LKMotorRS485::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     if (!this->cmd_.SW && this->cmd_.prevSW) {
-        rslt |= disable();
+        rslt |= disable(); // BUG: not safety only send once
     } else if (!this->cmd_.SW && !this->cmd_.prevSW) {
         if (checkSend())
             rslt |= readState2();

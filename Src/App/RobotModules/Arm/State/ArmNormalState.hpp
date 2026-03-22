@@ -41,7 +41,8 @@ public:
     {
         // arm_.orebin.loop(arm_.msg);
 
-        arm_.videoCtrl.loop(static_cast<uint32_t>(arm_.target_joints.joints[1]), static_cast<uint32_t>(0)); //  TODO:
+        // arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw); //  TODO:
+        arm_.videoCtrl.loop(arm_.msg.videoPitch, arm_.msg.videoYaw);
 
         arm_.motors.handRollPitch(arm_.target_joints.joints, arm_.msg.target);
 
@@ -89,7 +90,7 @@ public:
             }
         }
 
-        arm_.motors.safety.setSpeed(0.7);
+        arm_.motors.safety.setSpeed(0.5);
         arm_.motors.ctrl(arm_.target_joints.joints);
     }
 
