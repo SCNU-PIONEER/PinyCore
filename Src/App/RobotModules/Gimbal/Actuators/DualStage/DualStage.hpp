@@ -107,6 +107,7 @@ public:
     static constexpr bool FIRST_YAW_REVERSE = false;
     static constexpr bool SECOND_YAW_REVERSE = true;
 
+    static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
     static constexpr float ANGLE_JUMP_VALUE = 0.035169213f; //0.033169213f; // rad,现状为每圈只跳一次
 
     static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
@@ -145,7 +146,8 @@ protected:
         */
     float ctrlYawAng_ = 0.f; //主控yaw的角度
 
-    float constDeltaYawArc_ = 0.f;  // 上电后就有的底盘和云台系的差角
+    float deltaBYawArc_ = 0.f; // 上电后就有的底盘和云台系的差角
+    float deltaSYawArc_ = 0.f;
     bool isConfirmYawZero_ = false; // 确认是否两系转换完成
     bool isSetBYZeroAng_ = false;   // 是否重置状态
 

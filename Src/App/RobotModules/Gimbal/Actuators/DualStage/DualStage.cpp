@@ -175,7 +175,7 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + nmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + nmsg.wz;
         if (msg.state == FSMState_e::NAV) {
-            msg.wYaw = 0.3f;
+            msg.wYaw = 0.5f;
         }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -199,15 +199,18 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
-
-    shooterCtrlTxPacket_.setData().fire &= (vmsg.control) ? vmsg.fire : true;
+    if (msg.state == FSMState_e::RUN) {
+        shooterCtrlTxPacket_.setData().fire &= (vmsg.control) ? vmsg.fire : true;
+    } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
+        shooterCtrlTxPacket_.setData().fire &= vmsg.fire;
+    }
 }
 
 void DualStage::sendVisionData()
 { // vision send
     vision->eToVData().roll = insData_.roll;
     vision->eToVData().pitch = insData_.pitch;
-    vision->eToVData().yaw = getMinorArc(insData_.yaw, -this->constDeltaYawArc_);
+    vision->eToVData().yaw = getMinorArc(insData_.yaw, -this->deltaSYawArc_);
     // vision->eToVData().yaw = insData_.yaw;
 
     //装裁判系统数据
@@ -231,8 +234,8 @@ void DualStage::compensateImuAngle()
     float tempComAng;
     if (this->isConfirmYawZero_) {
         //控制大yaw
-        this->curImuAng_.Gim_s.SecondYaw = getMinorArc(this->curImuAng_.Gim_s.SecondYaw, -this->constDeltaYawArc_);
-        this->curImuAng_.Gim_s.FirstYaw = getMinorArc(this->curImuAng_.Gim_s.FirstYaw, -this->constDeltaYawArc_);
+        this->curImuAng_.Gim_s.SecondYaw = getMinorArc(this->curImuAng_.Gim_s.SecondYaw, -this->deltaSYawArc_);
+        this->curImuAng_.Gim_s.FirstYaw = getMinorArc(this->curImuAng_.Gim_s.FirstYaw, -this->deltaBYawArc_);
         //与gimbal类保持相同
         this->ctrlYawAng_ = this->curImuAng_.Gim_s.FirstYaw;
     } else {
@@ -244,9 +247,12 @@ void DualStage::compensateImuAngle()
             tempComAng = motors_.Gim_s.SecondYaw->posNorm() + motors_.Gim_s.FirstYaw->posNorm();
             //0~2pi
             tempComAng = PINYMOTOR::rangeMap(tempComAng);
-            this->constDeltaYawArc_ = FIRST_YAW_REVERSE ? getMinorArc(0.f, tempComAng) : getMinorArc(tempComAng, 0.f);
+            this->deltaSYawArc_ = SECOND_YAW_REVERSE ?
+                                          getMinorArc(0.f, rangeConversion(motors_.Gim_s.SecondYaw->posNorm())) :
+                                          getMinorArc(rangeConversion(motors_.Gim_s.SecondYaw->posNorm()), 0.f);
+            this->deltaBYawArc_ = FIRST_YAW_REVERSE ? getMinorArc(0.f, tempComAng) : getMinorArc(tempComAng, 0.f);
             this->isConfirmYawZero_ = true;
-            this->isSetBYZeroAng_ = true;
+            // this->isSetBYZeroAng_ = true;
         } else {
             this->isConfirmYawZero_ = false;
         }

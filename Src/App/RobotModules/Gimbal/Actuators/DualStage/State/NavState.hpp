@@ -71,7 +71,7 @@ public:
             maxPatCount = MAX_PAT_CNT;
         SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
-        eMA_s.Pitch = PINYMOTOR::rangeMap((0.2f * cos(omiga * patrolCnt)) + 0.1f);
+        eMA_s.Pitch = PINYMOTOR::rangeMap((0.25f * cos(omiga * patrolCnt)) + 0.1f);
         eMA_s.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
 
         // eMA_s.Pitch = 0.f;

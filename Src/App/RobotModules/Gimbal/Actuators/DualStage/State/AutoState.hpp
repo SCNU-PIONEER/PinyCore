@@ -8,17 +8,25 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 #include "Vision.hpp"
+#include <cmath>
 
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(20.f, 25.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(8.f, 4.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
-    PositionalPid(200.f, 20.f, 5.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
+//PositionalPid(200.f, 20.f, 5.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(1.f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.4f, 0.2f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(20.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
+//PositionalPid(20.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+
+static PositionalPid wBYawFollowPid = {
+    PositionalPid(2.f, 0.3f, 0.0001f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.01f),
+};
+float debugWBYaw;
 
 namespace GIMBAL {
 
@@ -28,8 +36,8 @@ class AutoState : public FSMState<FSMState_e> {
     static constexpr float IMU_PITCH_MIN_ANG = -0.64578f; // -37°
     static constexpr float IMU_PITCH_MAX_ANG = 0.35f;     //20°
 
-    static constexpr float SECOND_YAW_MAX_ANG = 1.f;//0.37f
-    static constexpr float SECOND_YAW_MIN_ANG = -0.6f;//-0.33f
+    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13
+    static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
 
 public:
     AutoState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::AUTO), gimbal_(_gimbal)
@@ -38,6 +46,7 @@ public:
             autoPosPid_._[i] = &gAutoPosPid[i];
             autoVelPid_._[i] = &gAutoVelPid[i];
         }
+        wBYawFollowPid_ = &wBYawFollowPid;
     }
 
     void enter() final
@@ -47,7 +56,7 @@ public:
             eMA._[i] = cMA._[i];
         }
         visionExpBigYaw_ = cIA_s.FirstYaw; //进入auto状态时，钉住大yaw角度
-        sYResetTime_ = 0;
+
         gimbal_->debug.gimbalState = FSMState_e::AUTO;
         gimbal_->enter();
 
@@ -58,23 +67,36 @@ public:
     {
         DualStage_s<float> delArc = {};
 
-        deltaVisionAng_ = PINYMOTOR::getMinorArc(gimbal_->vmsg.yaw, cIA_s.SecondYaw);
+        eIA_s.Pitch = gimbal_->vmsg.pitch;
+        eIA_s.SecondYaw = gimbal_->vmsg.yaw;
+
+        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
+        eMA_s.SecondYaw = rangeConversion(cMA_s.SecondYaw) + delArc.SecondYaw;
+        eMA_s.SecondYaw = PINYMOTOR::rangeMap(eMA_s.SecondYaw);
+
+        deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA_s.SecondYaw, cMA_s.SecondYaw);
         //超量程为正
         gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
 
         if (gimbal_->isVisionAngOver_) {
-            eIA_s.Pitch = gimbal_->vmsg.pitch;
-            eIA_s.SecondYaw = 0.f; //cIA_s.SecondYaw;
-            eIA_s.FirstYaw = gimbal_->vmsg.yaw;
+            float deltaYawAng = rangeConversion(gimbal_->motors()->Gim_s.SecondYaw->posNorm());
+            if (deltaYawAng <= 0) {
+                dir_ = -1;
+            } else {
+                dir_ = 1;
+            }
+            // wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
+            wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
+            eIA_s.FirstYaw += dir_ * wBYaw_ * 0.001f;
+            visionExpBigYaw_ = cIA_s.FirstYaw; //重载当前大yaw角度
+
+            debugWBYaw = wBYaw_;
         } else {
-            eIA_s.Pitch = gimbal_->vmsg.pitch;
-            eIA_s.SecondYaw = gimbal_->vmsg.yaw;
             eIA_s.FirstYaw = visionExpBigYaw_;
         }
 
         eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
-        eIA_s.SecondYaw = PINYMOTOR::clampArc(eIA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
 
         delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
         delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
@@ -82,23 +104,11 @@ public:
 
         eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
         eMA_s.FirstYaw = PINYMOTOR::rangeMap(cMA_s.FirstYaw + delArc.FirstYaw);
-        eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
 
-        if (gimbal_->isVisionAngOver_) {
-            eMA_s.SecondYaw = 0.f;
+        eMA_s.SecondYaw = rangeConversion(cMA_s.SecondYaw) + delArc.SecondYaw;
+        eMA_s.SecondYaw = PINYMOTOR::clampArc(eMA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+        eMA_s.SecondYaw = PINYMOTOR::rangeMap(eMA_s.SecondYaw);
 
-            if (isSecondYawReset_ == false) {
-                sYResetTime_++;
-                eMA_s.FirstYaw = cMA_s.FirstYaw;
-            }
-
-            if ((sYResetTime_ > MAX_RESET_TIME) || (std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.SecondYaw)) < 0.1f)) {
-                isSecondYawReset_ = true;
-                sYResetTime_ = 0;
-            } else {
-                isSecondYawReset_ = false;
-            }
-        }
         gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
     }
 
@@ -128,9 +138,11 @@ public:
 private:
     DualStage *gimbal_;
     float visionExpBigYaw_; //视觉进行自瞄，钉住大yaw角度
+    float wBYaw_;
+    float dir_;
     float deltaVisionAng_;
-    bool isSecondYawReset_ = false;
-    uint16_t sYResetTime_ = 0;
+    // bool isSecondYawReset_ = false;
+    // uint16_t sYResetTime_ = 0;
 
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
@@ -147,5 +159,6 @@ private:
 
     DualStage_u<PositionalPid *> autoPosPid_;
     DualStage_u<PositionalPid *> autoVelPid_;
+    PositionalPid *wBYawFollowPid_;
 };
 } // namespace GIMBAL
