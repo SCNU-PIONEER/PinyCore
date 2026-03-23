@@ -22,15 +22,7 @@ CONFIG_APP_USE_CHASSIS=y
 CONFIG_APP_USE_SWERVE=y
 CONFIG_CHASSIS_TYPE="Swerve"
 CONFIG_CHASSIS_FILE="\"Swerve.hpp\""
-CONFIG_APP_USE_POWERCTRL=y
-
-#
-# power control settings
-#
-CONFIG_POWERCTRL_USE_RLS=y
-CONFIG_POWERCTRL_USE_REFEREE=y
-# end of power control settings
-
+# CONFIG_APP_USE_POWERCTRL is not set
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 

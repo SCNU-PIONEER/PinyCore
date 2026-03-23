@@ -127,34 +127,7 @@ public:
     float deltaYaw = 0.f;
 
 protected:
-    /*
-     * @brief: calculate the speed of chassis
-     * @param: _wSpeed: speed of each wheel
-     * @return: speed of the chassis in m/s and rad/s
-    */
-    Speed_u forward(const WheelsSpeed_u &_wSpeed);
-
-    /*
-     * @brief: calculate the speed of each wheel
-     * @param: _speed: speed of the chassis in m/s and rad/s
-     * @return: speed of each wheel
-    */
-    WheelsSpeed_u reverse(const Speed_u &_speed);
-
-    void loadRefereeData(void *_param);
-
-private:
-    Motors_u motors_;
-    WheelsSpeed_u wSpeed_;
-    Speed_u curSpeed_;
-
     RefereeMsg_s refereeMsg_;
-
-    WheelsSpeed_u refWSpeed_; //期望轮速rad/s
-
-    Swerve_u<float> curDir; //舵轮当前方向角
-    Swerve_u<float> expDir; //舵轮期望方向角
-
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
     BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
@@ -163,42 +136,44 @@ private:
     float chassisCurPower_;
     float chassisPowerBuffer_;
 
-    Subscriber<INS_SYS::INSData_s> *insSub_;
-    INS_SYS::INSData_s insData_ = {};
-
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;
     float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
 
-    //舵轮零位角度，用于回正方向,rad
+    Speed_u forward(const WheelsSpeed_u &_wSpeed);
+    WheelsSpeed_u reverse(const Speed_u &_speed);
+    void loadRefereeData(void *_param);
+
+private:
+    Motors_u motors_;
+
+    Subscriber<INS_SYS::INSData_s> *insSub_;
+    INS_SYS::INSData_s insData_ = {};
+
+    SwerveController *powerCtrl_;
+    CAP cap_{ &HCAN2 };
+
+    WheelsSpeed_u wSpeed_;
+    Speed_u curSpeed_;
+    WheelsSpeed_u refWSpeed_; //期望轮速rad/s
+    Swerve_u<float> curDir;   //舵轮当前方向角
+    Swerve_u<float> expDir;   //舵轮期望方向角
+
     Swerve_u<float> SwerveZero = { {
             .RF = 5.0083f,
             .LF = 4.95766449f,
             .LB = 6.122f,
             .RB = 1.35620451f,
-    } };
+    } }; //舵轮零位角度，用于回正方向,rad
 
     canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
     canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
 
-    //舵轮位置环
-    Swerve_u<PositionalPid *> swervePosPid_ = {};
-    //舵轮速度环
-    Swerve_u<PositionalPid *> swerveVelPid_ = {};
-    //舵轮输入滤波器
-    FILTER::LPFIIR3 swerveFilterInput_[4] = {
-        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
-        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
-        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
-        { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
-    };
-    //舵轮输出滤波器
-    Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};
-    //轮速
-    Swerve_u<PositionalPid *> wheelVelPid_ = {};
-
-    SwerveController *powerCtrl_;
-    CAP cap_{ &HCAN2 };
+    Swerve_u<PositionalPid *> swervePosPid_ = {};        //舵轮位置环
+    Swerve_u<PositionalPid *> swerveVelPid_ = {};        //舵轮速度环
+    Swerve_u<FILTER::LPFIIR3 *> swerveFilterInput_ = {}; //舵轮输入滤波器
+    Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};    //舵轮输出滤波器
+    Swerve_u<PositionalPid *> wheelVelPid_ = {};         //轮速
 };
 
 } // namespace CHASSIS

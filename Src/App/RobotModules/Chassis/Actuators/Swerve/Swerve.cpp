@@ -33,6 +33,14 @@ constexpr float F_PI = std::numbers::pi_v<float>;
 
 //以下数组可以塞到类内。但不好用free master
 //RF 0 ,LF 1 ,LB 2 ,RB 3
+
+FILTER::LPFIIR3 swerveFilterInput[4] = {
+    { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+    { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+    { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+    { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
+};
+
 FILTER::LPF swerveFilterOutput[4]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 4.f),
@@ -67,6 +75,7 @@ Swerve::Swerve()
     for (uint8_t i = 1; i <= 4; i++) {
         swervePosPid_._[i - 1] = &swervePosPid[i - 1];
         swerveVelPid_._[i - 1] = &swerveVelPid[i - 1];
+        swerveFilterInput_._[i - 1] = &swerveFilterInput[i - 1];
         swerveFilterOutput_._[i - 1] = &swerveFilterOutput[i - 1];
         wheelVelPid_._[i - 1] = &wheelVelPid[i - 1];
 
@@ -149,7 +158,7 @@ void Swerve::update(void *_param)
 
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRadps;
-        curDir._[i] = swerveFilterInput_[i].process(motors_._[i + 4]->data().ang);
+        curDir._[i] = swerveFilterInput_._[i]->process(motors_._[i + 4]->data().ang);
         wCurr[i] = motors_._[i]->data().torq; //debug
     }
 
@@ -351,18 +360,18 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         // motors_.M_LB->cmdTorq(0);
         // motors_.M_RB->cmdTorq(0);
     }
-//     memcpy(rawiq, cmd, sizeof(cmd));
-//     std::vector<float> torq;
-//     torq = powerCtrl_->powerCtrl(expRads, motors_._, cmd, refereeMsg_);
+    //     memcpy(rawiq, cmd, sizeof(cmd));
+    //     std::vector<float> torq;
+    //     torq = powerCtrl_->powerCtrl(expRads, motors_._, cmd, refereeMsg_);
 
-//     for (uint8_t i = 0; i < 8; i++) {
-//         iq[i] = torq[i];
-// #if APP_USE_POWERCTRL
-//         motors_._[i]->cmdTorq(torq[i]);
-// #else
-//         motors_._[i]->cmdTorq(cmd[i]);
-// #endif
-//     }
+    //     for (uint8_t i = 0; i < 8; i++) {
+    //         iq[i] = torq[i];
+    // #if APP_USE_POWERCTRL
+    //         motors_._[i]->cmdTorq(torq[i]);
+    // #else
+    //         motors_._[i]->cmdTorq(cmd[i]);
+    // #endif
+    //     }
 }
 
 void Swerve::loadDeltaYaw()
