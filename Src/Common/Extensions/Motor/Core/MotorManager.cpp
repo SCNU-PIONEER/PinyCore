@@ -19,8 +19,7 @@ void MotorManager::task()
             IMotor *motor = motorPair.second;
             motor->update();
         }
-        vTaskDelayUntil(&xLastWakeTime,
-                        static_cast<TickType_t>(1000.f / this->motorTaskFreq_));
+        vTaskDelayUntil(&xLastWakeTime, static_cast<TickType_t>(1000.f / TASK_FREQ));
     }
 }
 

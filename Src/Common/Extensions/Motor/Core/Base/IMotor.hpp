@@ -44,6 +44,10 @@ protected:
     void calcRecvFreq();
     void parseCmd();
 
+protected:
+    MotorTypeDef_e registerMotor();
+    MotorTypeDef_e cancelMotor();
+
 public:
     IMotor(const char _name[16], InitConfig_s _config);
     virtual ~IMotor() = default;
@@ -53,9 +57,6 @@ public:
     GlobalState_e globalState;
 
     uint16_t uid() const;
-
-    MotorTypeDef_e registerMotor();
-    MotorTypeDef_e cancelMotor();
 
     MotorTypeDef_e cmd(MotorCmdType_e _type);
 
