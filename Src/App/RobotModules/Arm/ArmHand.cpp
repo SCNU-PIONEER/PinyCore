@@ -35,7 +35,7 @@ void Hand::release()
         LOG::error("HAND", "Over current! Current: %.2f", motor.data().curr);
         state = RELEASE;
     }
-    if (motor.data().tempture > 48.f) {
+    if (motor.data().tempture > 43.f) {
         motor.cmdTorq(0);
         LOG::error("HAND", "Over temperature! Temperature: %.2f", motor.data().tempture);
         state = FAULT;
@@ -44,6 +44,12 @@ void Hand::release()
     motor.cmdTorq(RELEASE_TORQ);
 }
 
-void Hand::enable() { motor.cmd(MotorCmdType_e::ON); }
+void Hand::enable()
+{
+    if (motor.globalState == GlobalState_e::OFFLINE) {
+        LOG::error("HAND", "Motor is offline, cannot enable");
+    }
+    motor.cmd(MotorCmdType_e::ON);
+}
 
 void Hand::stop() { motor.cmd(MotorCmdType_e::OFF); }

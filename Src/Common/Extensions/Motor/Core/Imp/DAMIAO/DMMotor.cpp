@@ -222,10 +222,10 @@ MotorTypeDef_e DMMotor::disable()
 
 MotorTypeDef_e DMMotor::clearError()
 {
-    MotorTypeDef_e rslt = 0;
     uint8_t enableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB };
-    rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
-    return rslt;
+    return static_cast<MotorTypeDef_e>(Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+                                                                    this->ctrlId_, enableCmdPack, 8));
+    // fix: bug
 }
 
 void DMMotor::overrideReductionRatio(float _newReductionRatio)

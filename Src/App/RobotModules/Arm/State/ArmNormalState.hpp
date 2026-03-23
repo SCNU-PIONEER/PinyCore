@@ -3,6 +3,7 @@
 #include "Arm.hpp"
 #include "ArmMotor.hpp"
 #include "StmLog.hpp"
+#include <cstdint>
 
 namespace ARM {
 
@@ -16,7 +17,7 @@ public:
         arm_.leftHand.enable();
         arm_.rightHand.enable();
         arm_.videoCtrl.init();
-        arm_.target_joints = arm_.motors.currentJoints;
+        arm_.target_joints.joints = arm_.motors.currentJoints;
 
         LOG::info("Normal", "enter");
     }
@@ -38,8 +39,10 @@ public:
 
     void run() override
     {
-        arm_.orebin.loop(arm_.msg);
-        // arm_.videoCtrl.loop(); TODO:
+        // arm_.orebin.loop(arm_.msg);
+
+        // arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw); //  TODO:
+        arm_.videoCtrl.loop(arm_.msg.videoPitch, arm_.msg.videoYaw);
 
         arm_.motors.handRollPitch(arm_.target_joints.joints, arm_.msg.target);
 
@@ -87,7 +90,7 @@ public:
             }
         }
 
-        arm_.motors.safety.setSpeed(0.4);
+        arm_.motors.safety.setSpeed(0.5);
         arm_.motors.ctrl(arm_.target_joints.joints);
     }
 
@@ -99,8 +102,10 @@ public:
             return FSMState_e::STOP;
         else if (arm_.msg.state == FSMState_e::NORMAL)
             return FSMState_e::NORMAL;
-        else if (arm_.msg.state == FSMState_e::PLAN)
-            return FSMState_e::PLAN;
+        // else if (arm_.msg.state == FSMState_e::PLAN)
+        //     return FSMState_e::PLAN;
+        // else if (arm_.msg.state == FSMState_e::TEACH)
+        //     return FSMState_e::TEACH;
         return FSMState_e::STOP;
     }
 

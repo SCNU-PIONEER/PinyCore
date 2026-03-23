@@ -185,7 +185,6 @@ protected:
     float MITKp_ = 0;
     float MITKd_ = 0;
 
-    ErrorCode_e errorCode_;
 
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
 
@@ -193,6 +192,7 @@ public:
     DMMotor(const char _name[16], InitConfig_s _config);
     ~DMMotor() override;
 
+    ErrorCode_e errorCode_;
     /**
      * @brief Override the status of the motor
      * 

@@ -1,6 +1,7 @@
 #pragma once
 #include "Bsp.hpp"
 #include "Handler.hpp"
+#include <cstdint>
 #include <memory>
 #include "RemoteControl.hpp"
 
@@ -25,12 +26,15 @@ public:
     void notify(Msg *_msg, QueueHandle_t _queue) final;
 
 private:
-    static constexpr float INPUT_VX_MAX = 3.f;
-    static constexpr float INPUT_VY_MAX = 3.f;
+    static constexpr float INPUT_VX_MAX = 5.f;
+    static constexpr float INPUT_VY_MAX = 5.f;
     static constexpr uint8_t T_ACC_CNT = 100;
-    static constexpr float S_CURVE_ACC = 3.0f;
+    static constexpr float S_CURVE_ACC = 4.0f;
     static constexpr float INPUT_YAW_MAX = 3.f;
     static constexpr float GIMBAL_YAW_MAX = 0.002f;
+    static constexpr float GAIN_MOUSE_X = 0.0001f;
+    static constexpr float GAIN_MOUSE_Y = 0.0001f;
+
     float channelMax_;
 
     MsgBus_s *msgBus_;
@@ -51,6 +55,10 @@ private:
     float ry = 0.f;
     float lx = 0.f;
     float ly = 0.f;
+
+    uint8_t keyBoardCtrl = false;
+    uint8_t ctrlEnable = false;
+    uint8_t ctrlSwitch = false;
 
     float gimbalVal = 0.f;
 };

@@ -40,7 +40,7 @@ struct ChassisMsg_s : public Msg {
 
 struct GimbalMsg_s : public Msg {
     GIMBAL::FSMState_e state;
-    float roll, pitch, yaw;
+    float pitch, yaw;
 };
 
 struct ArmMsg_s : public Msg {
@@ -50,6 +50,8 @@ struct ArmMsg_s : public Msg {
     ARM::Joint10 target;
     ARM::ClampState_e switch1 = ARM::ClampState_e::NONE;
     bool isStucked = false;
+    float videoYaw = 0.f;   // 图传 yaw，相对值
+    float videoPitch = 0.f; // 图传 pitch, 相对值
 };
 
 struct RefereeMsg_s : public Msg {

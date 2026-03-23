@@ -20,7 +20,7 @@ class Arm {
 public:
     Arm();
 
-    void update(MsgBus_s *_param);
+    void update(const MsgBus_s *_param);
     void updatePose(const ARM::Joint &_joints);
 
     void setTargetPose(const ARM::JointRoute_s _route);

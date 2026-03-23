@@ -1,4 +1,6 @@
 #include "ArmMotor.hpp"
+#include "ArmKinematic.hpp"
+#include "MsgImpl.hpp"
 #include "Soc.hpp"
 #include "DM8009.hpp"
 #include "DM4340.hpp"
@@ -7,6 +9,7 @@
 #include "MG8016E_i6_RS485.hpp"
 #include "StmLog.hpp"
 #include "Buzzer.hpp"
+#include <cstdint>
 
 
 using namespace ARM;
@@ -75,6 +78,7 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
         .txFreq = 500.0f,
         .posPID = nullptr,
         .velPID = nullptr,
+        .isReverse = true,
     };
     InitConfig_s dm4340Config8 = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -117,10 +121,21 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
     motors.all_motors[9] = new DMMOTOR::DM3507("joint10", dm3507Config10);
 };
 
+uint16_t id = 0;
 void Motors::update()
 {
     size_t index = 0;
     for (auto &motor : motors.all_motors) {
+        // 温度报警，防止堵转过热
+        if (motor->data().tempture > 50.f) {
+            LOG::error("MOTORS", "%u, temp: %.2f C", index, motor->data().tempture);
+            // BUZZER::Buzzer::getInstance().playDJI();
+            id = index;
+        }
+        // if (motor->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
+        //     LOG::error("MOTORS", "Motor %u, offline", index + 1);
+        // }
+
         /* singleCirAng range: 0 ~ 2PI, we need range: -pi ~ pi */
         if (motor->data().singleCirAng >= std::numbers::pi_v<float>) {
             currentJoints[index] = motor->data().singleCirAng - (2 * std::numbers::pi_v<float>);
@@ -128,17 +143,56 @@ void Motors::update()
             currentJoints[index] = motor->data().singleCirAng;
         }
         index++;
-
-        // 温度报警，防止堵转过热
-        if (motor->data().tempture > 40.f) {
-            LOG::error("MOTORS", "Motor %u, temperature high: %.2f C", index, motor->data().tempture);
-            BUZZER::Buzzer::getInstance().playPinyCore();
-        }
     }
 }
 
 // TODO: 电机复位
-bool Motors::init() { return true; }
+bool Motors::init()
+{
+    if ((motors.dmMotor2->errorCode_ != PINYMOTOR::DMMOTOR::ErrorCode_e::MOTOR_DISABLE) &&
+        (motors.dmMotor2->errorCode_ != PINYMOTOR::DMMOTOR::ErrorCode_e::MOTOR_ENABLE)) {
+        motors.dmMotor2->clearError();
+    }
+    if (motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT ||
+        motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
+        motors.dmMotor5->clearError();
+    }
+    if (motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT ||
+        motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
+        motors.dmMotor6->clearError();
+    }
+    if (motors.dmMotor9->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor9->clearError();
+    }
+    if (motors.dmMotor10->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
+        motors.dmMotor10->clearError();
+    }
+    // motors.dmMotor5->setPosZero();
+    // motors.dmMotor6->setPosZero();
+    return true;
+}
+
+bool Motors::homing(const Joint10 _target_joints)
+{
+    if (isWithinRange(_target_joints, safety.getAngleMax(), safety.getAngleMin())) {
+        uint8_t index = 0;
+        for (uint8_t i = 0; i < 6; ++i) { //右臂
+            if (_target_joints[i] - currentJoints[i] < 0.05) {
+                index += 1;
+            }
+        }
+        if (index == 10) {
+            return true;
+        }
+
+
+        for (uint8_t i = 6; i < 10; ++i) {
+        }
+        safety.setSpeed(0.1);
+        ctrl(_target_joints);
+    }
+    return false;
+}
 
 void Motors::stop()
 {
@@ -149,9 +203,12 @@ void Motors::stop()
 
 void Motors::enable()
 {
-    for (const auto &motor : motors.all_motors) {
-        motor->cmd(MotorCmdType_e::ON);
+    for (uint8_t i = 0; i < 6; ++i) {
+        motors.all_motors[i]->cmd(MotorCmdType_e::ON);
     }
+    // for (const auto &motor : motors.all_motors) {
+    //     motor->cmd(MotorCmdType_e::ON);
+    // }
 }
 
 bool Motors::isMoving(const Joint10 &_target)
@@ -182,4 +239,12 @@ void Motors::handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
     _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
     _targetJoints[8] += _msgTargetJoints[8] + _msgTargetJoints[9];
     _targetJoints[9] += _msgTargetJoints[8] - _msgTargetJoints[9];
+}
+
+void Motors::handRollPitchAbs(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
+{
+    _targetJoints[4] = _msgTargetJoints[4] + _msgTargetJoints[5];
+    _targetJoints[5] = _msgTargetJoints[4] - _msgTargetJoints[5];
+    _targetJoints[8] = _msgTargetJoints[8] + _msgTargetJoints[9];
+    _targetJoints[9] = _msgTargetJoints[8] - _msgTargetJoints[9];
 }

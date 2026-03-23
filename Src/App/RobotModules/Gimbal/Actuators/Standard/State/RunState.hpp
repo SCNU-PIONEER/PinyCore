@@ -30,7 +30,7 @@ public:
         gimbal_.ctrl(insYawDelArc);
     }
 
-    void exit() final
+    void exit() final   
     {
         targetAng = gimbal_.motor()->posNorm();
         gimbal_.isLaunched = false;
