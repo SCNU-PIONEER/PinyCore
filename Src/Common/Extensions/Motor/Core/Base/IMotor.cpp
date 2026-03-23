@@ -228,7 +228,6 @@ void IMotor::setZeroAng()
 {
     // TODO: setZeroAng need a semaphore to protect
     data_.zeroAng = data_.rawAng;
-    data_.cirNum = data_.multipCirAng = 0.f;
 }
 
 void IMotor::setZeroAng(float _zeroAng)
@@ -236,7 +235,6 @@ void IMotor::setZeroAng(float _zeroAng)
     // TODO: setZeroAng need a semaphore to protect
     // _zeroAng is a rawAng in "current reverse situation"
     data_.zeroAng = _zeroAng;
-    data_.cirNum = data_.multipCirAng = 0.f;
 }
 float IMotor::getCmdCurr()
 {
@@ -275,8 +273,6 @@ float IMotor::posNorm() const { return data_.singleCirAng; }
 float IMotor::vel() const { return data_.spdRadps; }
 
 float IMotor::torq() const { return data_.torq; }
-
-float IMotor::cirNum() const { return data_.multipCirAng / 2.f / PI; }
 
 void IMotor::overrideMeasureMax(float _newMeasureMax)
 {

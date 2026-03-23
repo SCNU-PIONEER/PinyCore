@@ -6,8 +6,7 @@ using namespace MTMOTOR;
 
 static constexpr char TAG[] = "RMDX436";
 
-RMDX436::RMDX436(const char _name[16], InitConfig_s _config)
-        : MTMotor(_name, _config)
+RMDX436::RMDX436(const char _name[16], InitConfig_s _config) : MTMotor(_name, _config)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -25,12 +24,11 @@ RMDX436::RMDX436(const char _name[16], InitConfig_s _config)
                              KN         // Kn
     );
 
-    this->registerMotor();
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     updateCtrlMode();
 
-    LOG::info(TAG, " %s: created, rxBaseId:0x%hx, txBaseId:0x%hx",
-              regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info(TAG, " %s: created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name, regInfo_.model.rxBaseId,
+              regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e RMDX436::checkBaseConfig()
