@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ArmPlan.hpp"
+#include "./ArmPlan.hpp"
 #include "FSMState.hpp"
 #include "./ArmMotor.hpp"
 #include "MsgImpl.hpp"
@@ -8,7 +8,6 @@
 #include "./ArmHand.hpp"
 #include "./ArmOreBin.hpp"
 #include "./ArmVideo.hpp"
-
 
 namespace ARM {
 
@@ -27,7 +26,7 @@ public:
 
     void moveRoute();
 
-    ARM::JointState_e moveOneGoal(const ARM::Joint10D_s &_goal);
+    ARM::JointState_e moveOneGoal(const ARM::Joint_s &_goal);
 
     ARM::JointState_e jointStateFlag = ARM::JointState_e::FINISH_STATE;
 
@@ -38,10 +37,9 @@ public:
 
     ArmMsg_s msg = {};
 
-    ARM::Hand leftHand;
-    ARM::Hand rightHand;
+    ARM::Hand hand;
 
-    ARM::Joint10D_s target_joints = {};
+    ARM::Joint_s target_joints = {};
 
     ARM::JointRoute_s RouteDta = {};
 

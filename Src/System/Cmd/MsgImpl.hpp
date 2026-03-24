@@ -13,16 +13,13 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 }
 
-namespace ARMORBOOSTER {
-enum class FSMState_e : uint8_t;
-}
+
 namespace ARM {
 //一键：从矿仓取矿，公路穿越，资源区取矿（一次取两个，针对不同位置有123）
 enum class OneClick_e : uint8_t { ORE_BIN_EXTRACT = 0, HIGHWAY_CROSS, ORE_PICK1, ORE_PICK2, ORE_PICK3 };
-enum class ArmMode_e : uint8_t { LEFT = 0, RIGHT, TWO };
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
 enum class ClampState_e : int8_t { CLAMP = -1, NONE = 0, RELEASE = 1 };
-using Joint10 = std::array<float, 10>;
+using Joint = std::array<float, 6>;
 }
 
 struct MsgBus_s {
@@ -45,9 +42,8 @@ struct GimbalMsg_s : public Msg {
 
 struct ArmMsg_s : public Msg {
     ARM::OneClick_e oneClick;
-    ARM::ArmMode_e mode = ARM::ArmMode_e::RIGHT;
     ARM::FSMState_e state;
-    ARM::Joint10 target;
+    ARM::Joint target;
     ARM::ClampState_e switch1 = ARM::ClampState_e::NONE;
     bool isStucked = false;
     float videoYaw = 0.f;   // 图传 yaw，相对值
@@ -81,8 +77,4 @@ struct GimbalUIMsg_s {
 
 struct ArmUIMsg_s {
     ARM::FSMState_e state;
-};
-
-struct ArmorBoosterUIMsg_s {
-    ARMORBOOSTER::FSMState_e state;
 };

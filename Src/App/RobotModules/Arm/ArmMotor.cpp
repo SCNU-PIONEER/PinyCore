@@ -1,6 +1,5 @@
 #include "ArmMotor.hpp"
 #include "ArmKinematic.hpp"
-#include "MsgImpl.hpp"
 #include "Soc.hpp"
 #include "DM8009.hpp"
 #include "DM4340.hpp"
@@ -8,13 +7,12 @@
 #include "DM10010L.hpp"
 #include "MG8016E_i6_RS485.hpp"
 #include "StmLog.hpp"
-#include "Buzzer.hpp"
 #include <cstdint>
 
 
 using namespace ARM;
 
-Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, _angleMax)
+Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _angleMax)
 {
     InitConfig_s mg8016Config1 = {
         .pComHandle = reinterpret_cast<uint32_t *>(&huart3),
@@ -70,43 +68,6 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
         .posPID = nullptr,
         .velPID = nullptr,
     };
-    InitConfig_s dm8009Config7 = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
-        .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::PDESVDES,
-        .offsetId = 7,
-        .txFreq = 500.0f,
-        .posPID = nullptr,
-        .velPID = nullptr,
-        .isReverse = true,
-    };
-    InitConfig_s dm4340Config8 = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
-        .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::PDESVDES,
-        .offsetId = 8,
-        .txFreq = 500.0f,
-        .posPID = nullptr,
-        .velPID = nullptr,
-    };
-    InitConfig_s dm3507Config9 = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
-        .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::EMIT,
-        .offsetId = 9,
-        .txFreq = 500.0f,
-        .posPID = nullptr,
-        .velPID = nullptr,
-    };
-    InitConfig_s dm3507Config10 = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
-        .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::EMIT,
-        .offsetId = 10,
-        .txFreq = 500.0f,
-        .posPID = nullptr,
-        .velPID = nullptr,
-    };
 
 
     motors.all_motors[0] = new LKMOTOR::MG8016Ei6RS485("joint1", mg8016Config1);
@@ -115,10 +76,6 @@ Motors::Motors(Joint10 _angleMin, Joint10 _angleMax) : safety(*this, _angleMin, 
     motors.all_motors[3] = new DMMOTOR::DM4340("joint4", dm4340Config4);
     motors.all_motors[4] = new DMMOTOR::DM3507("joint5", dm3507Config5);
     motors.all_motors[5] = new DMMOTOR::DM3507("joint6", dm3507Config6);
-    motors.all_motors[6] = new DMMOTOR::DM8009("joint7", dm8009Config7);
-    motors.all_motors[7] = new DMMOTOR::DM4340("joint8", dm4340Config8);
-    motors.all_motors[8] = new DMMOTOR::DM3507("joint9", dm3507Config9);
-    motors.all_motors[9] = new DMMOTOR::DM3507("joint10", dm3507Config10);
 };
 
 uint16_t id = 0;
@@ -161,33 +118,25 @@ bool Motors::init()
         motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
         motors.dmMotor6->clearError();
     }
-    if (motors.dmMotor9->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
-        motors.dmMotor9->clearError();
-    }
-    if (motors.dmMotor10->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT) {
-        motors.dmMotor10->clearError();
-    }
     // motors.dmMotor5->setPosZero();
     // motors.dmMotor6->setPosZero();
     return true;
 }
 
-bool Motors::homing(const Joint10 _target_joints)
+bool Motors::homing(const Joint _target_joints)
 {
     if (isWithinRange(_target_joints, safety.getAngleMax(), safety.getAngleMin())) {
-        uint8_t index = 0;
+        uint8_t index = 0;                //BUG:
         for (uint8_t i = 0; i < 6; ++i) { //右臂
             if (_target_joints[i] - currentJoints[i] < 0.05) {
                 index += 1;
             }
         }
-        if (index == 10) {
+        if (index == 6) {
             return true;
         }
 
 
-        for (uint8_t i = 6; i < 10; ++i) {
-        }
         safety.setSpeed(0.1);
         ctrl(_target_joints);
     }
@@ -203,29 +152,26 @@ void Motors::stop()
 
 void Motors::enable()
 {
-    for (uint8_t i = 0; i < 6; ++i) {
-        motors.all_motors[i]->cmd(MotorCmdType_e::ON);
+    for (const auto &motor : motors.all_motors) {
+        motor->cmd(MotorCmdType_e::ON);
     }
-    // for (const auto &motor : motors.all_motors) {
-    //     motor->cmd(MotorCmdType_e::ON);
-    // }
 }
 
-bool Motors::isMoving(const Joint10 &_target)
+bool Motors::isMoving(const Joint &_target)
 {
-    Joint10 deltaJoints = _target - currentJoints;
-    float maxDeltaAngle = AbsMaxOf10(deltaJoints);
+    Joint deltaJoints = _target - currentJoints;
+    float maxDeltaAngle = Kinematic::absMax(deltaJoints);
     return maxDeltaAngle < 0.02f;
 }
 
-void Motors::ctrl(const Joint10 &_targetJoints)
+void Motors::ctrl(const Joint &_targetJoints)
 {
-    Joint10 temp = _targetJoints;
+    Joint temp = _targetJoints;
 
     safety.setAllAngleLimit(temp);
 
-    for (uint8_t i = 0; i < 10; ++i) {
-        if (i < 4 || (i >= 6 && i < 8)) {
+    for (uint8_t i = 0; i < 6; ++i) {
+        if (i < 4) {
             motors.all_motors[i]->cmdPosVel(temp[i], ref_speed._[i]);
         } else {
             motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
@@ -233,18 +179,14 @@ void Motors::ctrl(const Joint10 &_targetJoints)
     }
 }
 
-void Motors::handRollPitch(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
+void Motors::handRollPitch(Joint &_targetJoints, Joint &_msgTargetJoints)
 {
     _targetJoints[4] += _msgTargetJoints[4] + _msgTargetJoints[5];
     _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
-    _targetJoints[8] += _msgTargetJoints[8] + _msgTargetJoints[9];
-    _targetJoints[9] += _msgTargetJoints[8] - _msgTargetJoints[9];
 }
 
-void Motors::handRollPitchAbs(Joint10 &_targetJoints, Joint10 &_msgTargetJoints)
+void Motors::handRollPitchAbs(Joint &_targetJoints, Joint &_msgTargetJoints)
 {
     _targetJoints[4] = _msgTargetJoints[4] + _msgTargetJoints[5];
     _targetJoints[5] = _msgTargetJoints[4] - _msgTargetJoints[5];
-    _targetJoints[8] = _msgTargetJoints[8] + _msgTargetJoints[9];
-    _targetJoints[9] = _msgTargetJoints[8] - _msgTargetJoints[9];
 }

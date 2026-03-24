@@ -12,7 +12,6 @@
 
 #include "UIApp.hpp"
 
-
 using namespace ARM;
 
 
@@ -26,18 +25,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint10 angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -2.f, -2.f, 0.f, -1.41f, -3.f, -3.f };
-static Joint10 angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 2.f, 2.f, 3.5f, 1.41f, 3.f, 3.f };
-
-static InitConfig_s leftHandConfig = {
-    .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
-    .comType = ComType_e::CAN,
-    .workMode = WorkMode_e::QUAD_CURR,
-    .offsetId = 1,
-    .txFreq = 500.0f,
-    .posPID = nullptr,
-    .velPID = nullptr,
-};
+static Joint angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -2.f, -2.f };
+static Joint angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 2.f, 2.f };
 
 static InitConfig_s rightHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -49,12 +38,12 @@ static InitConfig_s rightHandConfig = {
     .velPID = nullptr,
 };
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Arm::Arm() : motors(angleMin, angleMax), leftHand("LeftHand", leftHandConfig), rightHand("RightHand", rightHandConfig)
+Arm::Arm() : motors(angleMin, angleMax), hand("RightHand", rightHandConfig)
 {
     /* FSM */
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     stateFactory_.addState(FSMState_e::NORMAL, std::make_unique<NormalState>(*this));
-    // stateFactory_.addState(FSMState_e::TEACH, std::make_unique<TeachState>(*this));
+    stateFactory_.addState(FSMState_e::TEACH, std::make_unique<TeachState>(*this));
     stateFactory_.init(stateFactory_.getNextState(FSMState_e::STOP));
 
     LOG::info("ARM", "register");
@@ -92,12 +81,12 @@ void Arm::moveRoute()
     }
 }
 
-JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
+JointState_e Arm::moveOneGoal(const Joint_s &_goal)
 {
     auto angMin = motors.safety.getAngleMin();
     auto angMax = motors.safety.getAngleMax();
     {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 6; i++) {
             if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
                 LOG::error("ARM", "Joint%d move goal error", i + 1);
                 return jointStateFlag;
@@ -109,8 +98,8 @@ JointState_e Arm::moveOneGoal(const Joint10D_s &_goal)
         jointStateFlag = JointState_e::MOVING_STATE;
     }
 
-    Joint10 initDeltaJoints = _goal.joints - motors.currentJoints;
-    float maxDeltaAngle = AbsMaxOf10(initDeltaJoints);
+    Joint initDeltaJoints = _goal.joints - motors.currentJoints;
+    float maxDeltaAngle = Kinematic::absMax(initDeltaJoints);
     if (maxDeltaAngle < 0.02f) {
         jointStateFlag = JointState_e::FINISH_STATE;
         LOG::info("ARM", "Move point%d done", RouteDta.point_cnt);

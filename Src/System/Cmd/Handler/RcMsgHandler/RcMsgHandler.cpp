@@ -238,42 +238,15 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 armMsg.state = ARM::FSMState_e::NORMAL;
                 armMsg.target[0] = -lx / 314 / 50; //8016yaw
                 armMsg.target[1] = ly / 314 / 50;  //10010pitch
-                if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[6] = ry / 314 / 50; //8009pitch
-                    armMsg.target[7] = rx / 314 / 50; //4340yaw
-                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
-                    armMsg.target[2] = ry / 314 / 50; //8009pitch
-                    armMsg.target[3] = rx / 314 / 50; //4340yaw
-                } else if (armMsg.mode == ARM::ArmMode_e::TWO) {
-                    armMsg.target[2] = ry / 314 / 50; //8009pitch
-                    armMsg.target[3] = rx / 314 / 50; //4340yaw
-                    armMsg.target[6] = ry / 314 / 50; //8009pitch
-                    armMsg.target[7] = rx / 314 / 50; //4340yaw
-                }
+                armMsg.target[2] = ry / 314 / 50;  //8009pitch
+                armMsg.target[3] = rx / 314 / 50;  //4340yaw
 
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
-                if (armMsg.mode == ARM::ArmMode_e::LEFT) {
-                    armMsg.target[8] = -lx / 314 / 50; //3507roll
-                    armMsg.target[9] = -ly / 314 / 50; //3507pitch
-                } else if (armMsg.mode == ARM::ArmMode_e::RIGHT) {
-                    armMsg.target[4] = -lx / 314 / 50; //3507roll
-                    armMsg.target[5] = -ly / 314 / 50; //3507pitch
-                } else if (armMsg.mode == ARM::ArmMode_e::TWO) {
-                    armMsg.target[4] = -lx / 314 / 50; //3507roll
-                    armMsg.target[5] = -ly / 314 / 50; //3507pitch
-                    armMsg.target[8] = -lx / 314 / 50; //3507roll
-                    armMsg.target[9] = -ly / 314 / 50; //3507pitch
-                }
+                armMsg.target[4] = -lx / 314 / 50; //3507roll
+                armMsg.target[5] = -ly / 314 / 50; //3507pitch
 
-                //左右臂切换
-                if (rcData->rc.ch0 == -660) //rx left
-                    armMsg.mode = ARM::ArmMode_e::LEFT;
-                else if (rcData->rc.ch0 == 660) //rx right
-                    armMsg.mode = ARM::ArmMode_e::RIGHT;
-                else if (rcData->rc.ch1 == 660) //rx ry
-                    armMsg.mode = ARM::ArmMode_e::TWO;
                 //夹爪
                 if (rcData->rc.ch1 == 660) //ry up
                     armMsg.switch1 = ARM::ClampState_e::RELEASE;
@@ -314,15 +287,12 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             // }
         }
 
-        notify(&chassisMsg, msgBus_->chassisQueue);
-        notify(&gimbalMsg, msgBus_->gimbalQueue);
-        notify(&armMsg, msgBus_->armQueue);
 
     } else if constexpr (DEV_TYPE == RCDevType_e::ET08A) {
         ET08A::RcData_s *rcData = static_cast<ET08A::RcData_s *>(rc_->getData());
         (void)rcData;
     } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
-        // VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+        VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
 
         // keyBoardCtrl = (rcData->gamepad.sw == VT13::Sw_e::C);
         // ctrlEnable = (keyBoardCtrl ?
@@ -341,7 +311,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         // ctrlSwitch = static_cast<uint8_t>(rcData->gamepad.sw);
 #if APP_USE_VT13_KEYBOARD
         /*
-         * gimbal:STOP,哦RUN,
+         * gimbal:STOP,RUN,
          * chassis:STOP,RUN,SPIN
          * arm:ONECLICK,MODE,STOP,NORMAL,PLAN,TEACH,夹爪
          */
@@ -472,13 +442,76 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
         // notify(&gimbalMsg, msgBus_->gimbalQueue);
         // notify(&armMsg, msgBus_->armQueue);
         // }
-    }
-#else
+#endif
+
         updateRocker(rx, rcData->gamepad.ch[0]);
         updateRocker(ry, rcData->gamepad.ch[1]);
         updateRocker(lx, rcData->gamepad.ch[2]);
         updateRocker(ly, rcData->gamepad.ch[3]);
-#endif
+
+        // if (rcData->gamepad.wheel == -660)
+        //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
+        // else if (rcData->gamepad.wheel > 660)
+        //     armMsg.switch1 = ARM::ClampState_e::RELEASE;
+        if (rcData->gamepad.sw == VT13::Sw_e::S) {
+            //arm
+            armMsg.switch1 = ARM::ClampState_e::NONE;
+            armMsg.state = ARM::FSMState_e::STOP;
+            armMsg.switch1 = ARM::ClampState_e::NONE;
+            // gimbal
+            gimbalMsg.state = GIMBAL::FSMState_e::STOP;
+            gimbalMsg.yaw = 0.f;
+            // chassis
+            chassisMsg.state = CHASSIS::FSMState_e::STOP;
+            chassisMsg.vx = chassisMsg.vy = 0.f;
+        } else if (rcData->gamepad.sw == VT13::Sw_e::N) {
+            //拨轮控云台
+            gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+            gimbalMsg.yaw = -((float)rcData->gamepad.wheel * GIMBAL_YAW_MAX / 660);
+
+            if (rcData->gamepad.trigger) {
+                chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+            }
+            chassisMsg.vx = ry / 100 * INPUT_VX_MAX;
+            chassisMsg.vy = -rx / 100 * INPUT_VY_MAX;
+
+            armMsg.state = ARM::FSMState_e::NORMAL;
+            armMsg.target[0] = -lx / 314 / 50; //8016yaw
+            armMsg.target[1] = ly / 314 / 50;  //10010pitch
+        } else if (rcData->gamepad.sw == VT13::Sw_e::C) {
+            //arm
+            armMsg.state = ARM::FSMState_e::NORMAL;
+            armMsg.target[2] = ry / 314 / 50;  //8009pitch
+            armMsg.target[3] = rx / 314 / 50;  //4340yaw
+            armMsg.target[4] = -lx / 314 / 50; //3507roll
+            armMsg.target[5] = -ly / 314 / 50; //3507pitch
+        }
+
+        // if (rcData->gamepad.ch[1] == 660) {
+        //     if (((VT13 *)rc_.get())->isOnline()) {
+        //         armMsg.state = ARM::FSMState_e::TEACH;
+        //         auto customData = ((VT13 *)rc_.get())->getCtrlData();
+        //         armMsg.target[0] = customData.joint[0]; //8016yaw
+        //         armMsg.target[1] = customData.joint[1]; //10010pitch
+        //         armMsg.target[2] = customData.joint[2]; //8009pitch
+        //         armMsg.target[3] = customData.joint[3]; //4340yaw
+        //         armMsg.target[4] = customData.joint[4]; //3507pitch
+        //         armMsg.target[5] = customData.joint[5]; //3507roll
+        //     }
+        // }
+        // if (armMsg.state == ARM::FSMState_e::TEACH) {
+        //     auto customData = ((VT13 *)rc_.get())->getCtrlData();
+        //     armMsg.target[0] = customData.joint[0]; //8016yaw
+        //     armMsg.target[1] = customData.joint[1]; //10010pitch
+        //     armMsg.target[2] = customData.joint[2]; //8009pitch
+        //     armMsg.target[3] = customData.joint[3]; //4340yaw
+        //     armMsg.target[4] = customData.joint[4]; //3507pitch
+        //     armMsg.target[5] = customData.joint[5]; //3507roll
+        // }
+    }
+    notify(&chassisMsg, msgBus_->chassisQueue);
+    notify(&gimbalMsg, msgBus_->gimbalQueue);
+    notify(&armMsg, msgBus_->armQueue);
 }
 
 

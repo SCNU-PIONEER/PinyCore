@@ -6,7 +6,7 @@
 using namespace ARM;
 
 
-Safety::Safety(Motors &_motors, Joint10 _angleMin, Joint10 _angleMax)
+Safety::Safety(Motors &_motors, Joint _angleMin, Joint _angleMax)
         : motors(_motors), angleMin(_angleMin), angleMax(_angleMax) {};
 
 void Safety::setSpeed(const float _speed)
@@ -20,10 +20,10 @@ void Safety::setSpeed(const float _speed)
     motors.ref_speed.joint6 = 0.1f;
 }
 
-void Safety::setJointSpeedLimit(const Joint10 _currtentAng, const Joint10 _targetAng)
+void Safety::setJointSpeedLimit(const Joint _currtentAng, const Joint _targetAng)
 {
-    const Joint10 deltaAng = _targetAng - _currtentAng;
-    const float maxDeltaAngle = AbsMaxOf10(deltaAng);
+    const Joint deltaAng = _targetAng - _currtentAng;
+    const float maxDeltaAngle = Kinematic::absMax(deltaAng);
     const float maxTime = maxDeltaAngle / DEFAULT_JOINT_SPEED;
 
     for (uint8_t i = 1; i < 10; i++) {
@@ -35,7 +35,7 @@ void Safety::setJointSpeedLimit(const Joint10 _currtentAng, const Joint10 _targe
     }
 }
 
-void Safety::setAllAngleLimit(Joint10 &_targetJoints)
+void Safety::setAllAngleLimit(Joint &_targetJoints)
 {
     for (uint8_t i = 0; i < 10; i++) {
         _targetJoints[i] = std::clamp(_targetJoints[i], angleMin[i], angleMax[i]);
