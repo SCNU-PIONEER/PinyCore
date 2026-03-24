@@ -20,4 +20,7 @@ menu "utils config"
     config USE_LAZY
         bool "lazy init"
         default y
+    config USE_SINGLETON
+        bool "singleton class base"
+        default y
 endmenu

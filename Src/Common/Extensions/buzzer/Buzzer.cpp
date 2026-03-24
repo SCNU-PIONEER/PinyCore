@@ -74,7 +74,7 @@ void Buzzer::playDJI()
 
 void Buzzer::callBackFromISR()
 {
-    Buzzer &buzzer = Buzzer::getInstance();
+    Buzzer &buzzer = Buzzer::instance();
     if (buzzer.delay_)
         __HAL_TIM_SetCompare(buzzer.htim_, buzzer.channel_, buzzer.freq_);
     buzzer.delay_--;

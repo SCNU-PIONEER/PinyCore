@@ -4,10 +4,11 @@
 #include HAL_INCLUDE
 #include "BuzzerNote.hpp"
 #include "Task.hpp"
+#include "Singleton.hpp"
 
 namespace BUZZER {
 
-class Buzzer : public Task<Buzzer, 128> {
+class Buzzer : public Singleton<Buzzer>, public Task<Buzzer, 128> {
 public:
     void init(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq);
 
@@ -25,20 +26,12 @@ public:
 
     static void callBackFromISR();
 
-    /**
-    * @brief fdcan get Instance
-    */
-    static Buzzer &getInstance()
-    {
-        static Buzzer instance;
-        return instance;
-    }
-
     void task();
 
 private:
     Buzzer() : Task<Buzzer, 128>("BuzzerTask", TaskPriority_e::LOW1) {}
-    // static Buzzer *instance;
+    friend class Singleton<Buzzer>;
+
     TIM_HandleTypeDef *htim_;
     uint32_t timerFreq_;
     uint32_t channel_;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "main.h"
-#include "Soc.hpp"
+#include "Singleton.hpp"
 
 #define DWT_CR           *(__IO uint32_t *)0xE0001000
 #define DWT_CYCCNT       *(__IO uint32_t *)0xE0001004
@@ -22,14 +22,9 @@ uint32_t dwtRead();
 
 #ifdef __cplusplus
 
-class Dwt {
-public:
-    static Dwt &instance()
-    {
-        static Dwt instance;
-        return instance;
-    }
 
+class Dwt : public Singleton<Dwt> {
+public:
     /**
     * @brief  读取当前时间戳
     * @param  无
@@ -78,6 +73,7 @@ private:
     * @note   使用延时函数前，必须调用本函数
     */
     Dwt();
+    friend class Singleton<Dwt>;
 };
 }
 #endif

@@ -24,7 +24,7 @@ void RefereeHandler::handle()
     msg_.robotId = rx.getRefereeData().gameRobotStatus.robotId;
 
 #if APP_USE_UI
-    UI::APP::instance()->client().updateID(msg_.robotId);
+    UI::APP::instance().client().updateID(msg_.robotId);
 #endif
 
     msg_.remainHeat = rx.getRefereeData().gameRobotStatus.shooterHeatLimit -

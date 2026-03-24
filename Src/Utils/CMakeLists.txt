@@ -47,6 +47,10 @@ if(USE_LAZY)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Lazy)
 endif()
 
+if(USE_SINGLETON)
+  target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Singleton)
+endif()
+
 target_sources(${CMAKE_PROJECT_NAME}
                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNew/OperatorNew.cpp)
 

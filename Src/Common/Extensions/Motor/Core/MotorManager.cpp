@@ -4,12 +4,6 @@
 
 using namespace PINYMOTOR;
 
-MotorManager *MotorManager::instance()
-{
-    static MotorManager instance;
-    return &instance;
-}
-
 void MotorManager::task()
 {
     portTickType xLastWakeTime;
