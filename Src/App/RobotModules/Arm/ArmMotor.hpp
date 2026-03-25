@@ -57,9 +57,6 @@ public:
 
     bool isMoving(const Joint &_target);
 
-    void handRollPitch(Joint &_targetJoints, Joint &_msgTargetJoints);
-    void handRollPitchAbs(Joint &_targetJoints, Joint &_msgTargetJoints);
-
     Joint currentJoints = {};
     ArmSpeed_u ref_speed = {};
     Safety safety;

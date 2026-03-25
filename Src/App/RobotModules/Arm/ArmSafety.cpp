@@ -15,7 +15,7 @@ void Safety::setSpeed(const float _speed)
         speed = std::clamp(_speed, DEFAULT_JOINT_SPEED_MIN, DEFAULT_JOINT_SPEED_MAX);
     }
     float joint1Speed = std::clamp(_speed, DEFAULT_JOINT_SPEED_MIN, DEFAULT_JOINT_SPEED_MAX);
-    motors.ref_speed.joint1 = joint1Speed + 1.0f;
+    motors.ref_speed.joint1 = joint1Speed + 0.8f;
     motors.ref_speed.joint5 = 0.1f;
     motors.ref_speed.joint6 = 0.1f;
 }
@@ -26,18 +26,43 @@ void Safety::setJointSpeedLimit(const Joint _currtentAng, const Joint _targetAng
     const float maxDeltaAngle = Kinematic::absMax(deltaAng);
     const float maxTime = maxDeltaAngle / DEFAULT_JOINT_SPEED;
 
-    for (uint8_t i = 1; i < 10; i++) {
+    for (uint8_t i = 0; i < 6; i++) {
         motors.ref_speed._[i] = fabsf(deltaAng[i] * maxTime);
     }
 
-    for (uint8_t i = 1; i < 10; i++) {
+    for (uint8_t i = 0; i < 6; i++) {
         motors.ref_speed._[i] = std::clamp(motors.ref_speed._[i], angleMin[i], angleMax[i]);
     }
 }
 
 void Safety::setAllAngleLimit(Joint &_targetJoints)
 {
-    for (uint8_t i = 0; i < 10; i++) {
+    for (uint8_t i = 0; i < 6; i++) {
         _targetJoints[i] = std::clamp(_targetJoints[i], angleMin[i], angleMax[i]);
     }
+}
+
+
+void Safety::setYawPitchAngLimit(Joint &_targetJoints, Joint &_msgJoints)
+{
+    float J4 = motors.currentJoints[4];
+    float J5 = -motors.currentJoints[5];
+
+    float pitch = (J4 + J5) / 2 + _msgJoints[5];
+    float roll = (J4 - J5) / 2 + _msgJoints[4];
+
+    pitch = std::clamp(pitch, PITCH_ANG_MIN, PITCH_ANG_MAX);
+    roll = std::clamp(roll, ROLL_ANG_MIN, ROLL_ANG_MAX);
+
+    _targetJoints[4] = pitch + roll;
+    _targetJoints[5] = -(pitch - roll);
+}
+
+void Safety::setYawPitchAngLimitAbs(Joint &_targetJoints, Joint &_msgJoints)
+{
+    float pitch = std::clamp(_msgJoints[4], PITCH_ANG_MIN, PITCH_ANG_MAX);
+    float roll = std::clamp(_msgJoints[5], ROLL_ANG_MIN, ROLL_ANG_MAX);
+
+    _targetJoints[4] = pitch + roll;
+    _targetJoints[5] = -(pitch - roll);
 }

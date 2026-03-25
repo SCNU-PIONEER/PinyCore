@@ -40,7 +40,7 @@ public:
         arm_.orebin.loop(arm_.msg);
         arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw);
 
-        arm_.motors.handRollPitchAbs(arm_.target_joints.joints, arm_.msg.target);
+        arm_.motors.safety.setYawPitchAngLimitAbs(arm_.target_joints.joints, arm_.msg.target);
 
         for (uint8_t i = 0; i < 4; i++) {
             arm_.target_joints.joints[i] = arm_.msg.target[i];

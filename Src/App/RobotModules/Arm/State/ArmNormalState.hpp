@@ -43,9 +43,8 @@ public:
         // arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw); //  TODO:
         arm_.videoCtrl.loop(arm_.msg.videoPitch, arm_.msg.videoYaw);
 
-        arm_.motors.handRollPitch(arm_.target_joints.joints, arm_.msg.target);
 
-        for (uint8_t i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < 6; i++) {
             arm_.target_joints.joints[i] += arm_.msg.target[i];
         }
 
@@ -55,7 +54,8 @@ public:
             arm_.hand.release();
         }
 
-        arm_.motors.safety.setSpeed(0.5);
+        arm_.motors.safety.setSpeed(2.f);
+        arm_.motors.safety.setYawPitchAngLimit(arm_.target_joints.joints, arm_.msg.target);
         arm_.motors.ctrl(arm_.target_joints.joints);
     }
 

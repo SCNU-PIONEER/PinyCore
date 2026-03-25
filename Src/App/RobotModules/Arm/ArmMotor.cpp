@@ -178,15 +178,3 @@ void Motors::ctrl(const Joint &_targetJoints)
         }
     }
 }
-
-void Motors::handRollPitch(Joint &_targetJoints, Joint &_msgTargetJoints)
-{
-    _targetJoints[4] += _msgTargetJoints[4] + _msgTargetJoints[5];
-    _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
-}
-
-void Motors::handRollPitchAbs(Joint &_targetJoints, Joint &_msgTargetJoints)
-{
-    _targetJoints[4] = _msgTargetJoints[4] + _msgTargetJoints[5];
-    _targetJoints[5] = _msgTargetJoints[4] - _msgTargetJoints[5];
-}
