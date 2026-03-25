@@ -9,22 +9,10 @@ void initPinyCore();
 #ifdef __cplusplus
 }
 
-#include "StmLog.hpp"
+#include "Singleton.hpp"
 
-
-class PinyCore {
+class PinyCore : public Singleton<PinyCore> {
 public:
-    static PinyCore *instance()
-    {
-        static PinyCore instance;
-        return &instance;
-    }
-
-    PinyCore(const PinyCore &) = delete;
-    PinyCore &operator=(const PinyCore &) = delete;
-
-    LOG::Logger &log = LOG::Logger::instance();
-
     void bspInit();  // TODO:
     void coreInit(); // TODO:
 
@@ -32,6 +20,7 @@ public:
 
 private:
     PinyCore() = default;
+    friend class Singleton<PinyCore>;
 };
 
 #endif

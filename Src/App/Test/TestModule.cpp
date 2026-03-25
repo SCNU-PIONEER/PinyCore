@@ -9,12 +9,6 @@
 
 using namespace TEST;
 
-TestModule *TestModule::instance()
-{
-    static TestModule instance;
-    return &instance;
-}
-
 void TestModule::init() {}
 
 void TestModule::update() { stateFactory_.update(); }
