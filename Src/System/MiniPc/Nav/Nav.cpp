@@ -25,7 +25,7 @@ void Nav::usbIdleCallback(uint8_t *_buf, uint16_t _len, const EventGroupHandle_t
         memcpy(&rxBuffer_, _buf, NAV_DATA_LEN);
         rxCnt_++;
         xEventGroupSetBitsFromISR(_event, _eventBit, nullptr);
-    } 
+    }
 };
 
 void Nav::parseData() { memcpy(&navToEcDatas_, &rxBuffer_, NAV_DATA_LEN); }

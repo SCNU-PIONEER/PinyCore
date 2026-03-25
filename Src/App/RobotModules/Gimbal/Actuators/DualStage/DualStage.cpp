@@ -309,6 +309,7 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
     // motors_.Gim_s.Pitch->cmdTorq(0.f);
 }
 
+//前馈pid,暂时无用
 volatile float accDebug = 0;
 volatile float torqDebug = 0;
 volatile float velDebug = 0;
