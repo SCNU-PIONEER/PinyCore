@@ -25,8 +25,8 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -2.f, -2.f };
-static Joint angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 2.f, 2.f };
+static Joint angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -3.14f, -3.14f };
+static Joint angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 3.14f, 3.14f };
 
 static InitConfig_s rightHandConfig = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),

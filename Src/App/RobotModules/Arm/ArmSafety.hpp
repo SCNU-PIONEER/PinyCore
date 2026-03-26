@@ -7,6 +7,11 @@ namespace ARM {
 class Motors;
 
 class Safety {
+    static constexpr float PITCH_ANG_MIN = -1.34f;
+    static constexpr float PITCH_ANG_MAX = 1.28f;
+    static constexpr float ROLL_ANG_MIN = -3.1f;
+    static constexpr float ROLL_ANG_MAX = 2.38f;
+
     static constexpr float DEFAULT_JOINT_SPEED = 0.4f;             // rad/s
     static constexpr float DEFAULT_JOINT_SPEED_MIN = 0.f;          // rad/s
     static constexpr float DEFAULT_JOINT_SPEED_MAX = 0.8f;         // rad/s
@@ -21,6 +26,10 @@ public:
     void setJointSpeedLimit(const Joint _currtentAng, const Joint _targetAng);
 
     void setAllAngleLimit(Joint &_targetJoints);
+
+    void setYawPitchAngLimit(Joint &_targetJoints, Joint &_msgJoints);
+
+    void setYawPitchAngLimitAbs(Joint &_targetJoints, Joint &_msgJoints);
 
     const Joint &getAngleMin() const { return angleMin; }
     const Joint &getAngleMax() const { return angleMax; }

@@ -69,6 +69,17 @@ Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _ang
         .velPID = nullptr,
     };
 
+    regPm5 = { .regId = RegId_e::DM_REG_P_M, 
+               .dat = { 0 },
+               .isWrite = false,
+               .isRead = true,
+               .isStorage = false };
+
+    regPm6 = { .regId = RegId_e::DM_REG_P_M,
+               .dat = { 0 },
+               .isWrite = false,
+               .isRead = true,
+               .isStorage = false };
 
     motors.all_motors[0] = new LKMOTOR::MG8016Ei6RS485("joint1", mg8016Config1);
     motors.all_motors[1] = new DMMOTOR::DM10010L("joint2", dm10010Config2);
@@ -76,6 +87,9 @@ Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _ang
     motors.all_motors[3] = new DMMOTOR::DM4340("joint4", dm4340Config4);
     motors.all_motors[4] = new DMMOTOR::DM3507("joint5", dm3507Config5);
     motors.all_motors[5] = new DMMOTOR::DM3507("joint6", dm3507Config6);
+
+    motors.dmMotor5->registerReg(&regPm5, &regPmValue5);
+    motors.dmMotor6->registerReg(&regPm6, &regPmValue6);
 };
 
 uint16_t id = 0;
@@ -101,6 +115,12 @@ void Motors::update()
         }
         index++;
     }
+    motors.dmMotor5->readOneReg(RegId_e::DM_REG_P_M);
+    motors.dmMotor6->readOneReg(RegId_e::DM_REG_P_M);
+
+    memcpy(regPmValue5.dat, regPm5.dat, 4);
+    memcpy(regPmValue6.dat, regPm6.dat, 4);
+
 }
 
 // TODO: 电机复位
@@ -177,16 +197,4 @@ void Motors::ctrl(const Joint &_targetJoints)
             motors.all_motors[i]->cmdMIT(temp[i], ref_speed._[i], RATED_TORQUE);
         }
     }
-}
-
-void Motors::handRollPitch(Joint &_targetJoints, Joint &_msgTargetJoints)
-{
-    _targetJoints[4] += _msgTargetJoints[4] + _msgTargetJoints[5];
-    _targetJoints[5] += _msgTargetJoints[4] - _msgTargetJoints[5];
-}
-
-void Motors::handRollPitchAbs(Joint &_targetJoints, Joint &_msgTargetJoints)
-{
-    _targetJoints[4] = _msgTargetJoints[4] + _msgTargetJoints[5];
-    _targetJoints[5] = _msgTargetJoints[4] - _msgTargetJoints[5];
 }

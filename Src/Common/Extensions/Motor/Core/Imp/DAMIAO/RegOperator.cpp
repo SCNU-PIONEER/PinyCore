@@ -1,5 +1,6 @@
 #include "DMMotor.hpp"
-
+#include "Soc.hpp"
+#include "Bsp_can.hpp"
 #include "StmLog.hpp"
 
 using namespace PINYMOTOR;
@@ -74,7 +75,9 @@ MotorTypeDef_e DMMotor::readOneReg(RegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        this->send(0x7FF, readTxBuffer, 8);
+        // this->send(0x7FF, readTxBuffer, 8);
+        rslt = static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                reinterpret_cast<canHandle *>(regInfo_.pComHandle), 0x7FF, readTxBuffer, 8)); //BUG
     }
     return rslt;
 }
@@ -108,8 +111,8 @@ MotorTypeDef_e DMMotor::updateRegDat()
         auto datCompare = [&]() -> bool {
             return std::equal(
                     std::begin(this->regValueList_[regObj.first]->dat),
-                    std::end(this->regValueList_[regObj.first]->dat),
-                    std::begin(this->preRegValue_[regObj.first]));
+                              std::end(this->regValueList_[regObj.first]->dat),
+                              std::begin(this->preRegValue_[regObj.first]));
         };
         if (!datCompare()) {
             memcpy(&regObj.second->dat, &this->regValueList_[regObj.first]->dat,
