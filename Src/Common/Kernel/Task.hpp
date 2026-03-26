@@ -24,6 +24,14 @@ enum class TaskPriority_e : uint8_t {
 // refer to https://bitbucket.org/fjrg76/crtp_threadx/src/master/crtp_threadX.cpp
 template <class Derived, size_t N> class Task {
 public:
+    virtual ~Task()
+    {
+        if (htask_ != nullptr) {
+            vTaskDelete(htask_);
+            htask_ = nullptr;
+        }
+    }
+
     void loopBase() { static_cast<Derived *>(this)->task(); }
 
     TaskHandle_t &getTaskHandler() { return htask_; }
