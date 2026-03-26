@@ -10,9 +10,10 @@ extern "C" void vApplicationMallocFailedHook()
     __BKPT(0x01);
 }
 
-extern "C" void vApplicationStackOverflowHook()
+extern "C" void vApplicationStackOverflowHook(TaskHandle_t _xTask, char *_pcTaskName)
 {
-    LOG::error("Daemons", "stack overflow");
+    (void)_xTask;
+    LOG::error("Daemons", "task: %s stack overflow", _pcTaskName);
     __BKPT(0x01);
 }
 
