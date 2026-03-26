@@ -1,42 +1,56 @@
 #pragma once
 
-#include "Soc.hpp"
-#include HAL_INCLUDE
 #include "BuzzerNote.hpp"
+#include "Bsp_pwm.hpp"
 #include "Task.hpp"
-#include "Singleton.hpp"
+#include "queue.h"
+#include "Lazy.hpp"
 
 namespace BUZZER {
 
-class Buzzer : public Singleton<Buzzer>, public Task<Buzzer, 128> {
+class Buzzer : public Task<Buzzer, 128> {
+    static constexpr uint32_t PSC = 100;
+    struct PlaySequenceParams_s {
+        Buzzer *buzzer;
+        const Note_s *sequence;
+        size_t noteNum;
+    };
+
 public:
-    void init(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq);
+    Buzzer(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq);
 
-    void deInit();
+    ~Buzzer();
 
-    void set(uint32_t _freq, uint32_t _duration);
+    QueueHandle_t getQueue() const { return queue_; }
 
-    void playAllNotes();
+    void setPSC(uint32_t _psc);
 
-    void playPinyCore();
-
-    void playDJI();
-
-    void playNote(const Note &_note);
-
-    static void callBackFromISR();
+    void playNote(const Note_s &_note);
+    void playNote(Tone_e _tone = Tone_e::REST, uint16_t _dura = 0);
+    // predefined sound
+    template <size_t N> void playNote(const Note_s (&_sequence)[N]) { playSequence(_sequence, N); }
 
     void task();
 
 private:
-    Buzzer() : Task<Buzzer, 128>("BuzzerTask", TaskPriority_e::LOW1) {}
-    friend class Singleton<Buzzer>;
-
-    TIM_HandleTypeDef *htim_;
+    Pwm pwm_;
     uint32_t timerFreq_;
-    uint32_t channel_;
-    uint32_t delay_;
-    uint32_t freq_;
+    uint32_t prescaler_;
+
+    QueueHandle_t queue_ = nullptr;
+    Note_s note_;
+
+    void enable();
+    void disable();
+    void load(const Note_s &_note);
+    void play();
+
+    static void playSequenceTask(void *_params);
+    void playSequence(const Note_s *_sequence, size_t _noteNum);
 };
 
-}
+#if EXTENSION_BUZZER
+inline Lazy<BUZZER::Buzzer> buzz;
+#endif
+
+} // namespace BUZZER
