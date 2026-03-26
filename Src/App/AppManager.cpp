@@ -5,7 +5,6 @@
 #endif
 
 #include "Cmd.hpp"
-#include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
@@ -16,6 +15,10 @@
 #if APP_USE_GIMBAL
 #include GIMBAL_FILE
 #include "Arm.hpp"
+#endif
+
+#if EXTENSION_BUZZER
+#include "Buzzer.hpp"
 #endif
 
 #if APP_USE_DAEMONS
@@ -50,8 +53,11 @@ Lazy<Arm> arm;
 void AppManager::initApp()
 {
     Power_5V_ON();
-    // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
+
+#if EXTENSION_BUZZER
+    BUZZER::buzz.init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
+    BUZZER::buzz->playNote(BUZZER::PinyCore);
+#endif
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
@@ -64,8 +70,8 @@ void AppManager::initApp()
     cmd.init();
 
 #if APP_USE_UI
-    UI::APP::instance()->init();
-    schedule([]() { UI::APP::instance()->task(); });
+    UI::APP::instance().init();
+    schedule([]() { UI::APP::instance().task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();
@@ -87,7 +93,7 @@ void AppManager::initApp()
 
     // TestModule
     if constexpr (APP_USE_TEST) {
-        TestModule::instance()->init();
+        TestModule::instance().init();
     }
 
 #if APP_USE_COMM

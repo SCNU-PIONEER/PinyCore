@@ -1,19 +1,22 @@
 #pragma once
 
-#include "BspBase.hpp"
 #include "Soc.hpp"
 #include <functional>
 #include <array>
+#include "Singleton.hpp"
 #include HAL_INCLUDE
 
-class Can : public BspBase<Can> {
+class Can : public Singleton<Can> {
+private:
+    Can() = default;
+    friend class Singleton<Can>;
+
 public:
     using callback = std::function<void(const uint8_t *)>;
     /**
      * @brief can registerCallback
      */
-    HAL_StatusTypeDef registerCallback(canHandle *_hcan, uint32_t _stdid,
-                                       callback _pCallback);
+    HAL_StatusTypeDef registerCallback(canHandle *_hcan, uint32_t _stdid, callback _pCallback);
 
     /**
      * @brief can unregisterCallback
@@ -27,14 +30,12 @@ public:
 
     /**
     * @brief can发送普通数据帧 */
-    HAL_StatusTypeDef transmitData(canHandle *_hcan, uint16_t _stdid,
-                                   uint8_t *_txData, uint32_t _len);
+    HAL_StatusTypeDef transmitData(canHandle *_hcan, uint16_t _stdid, uint8_t *_txData, uint32_t _len);
 
     /**
     * @brief can发送可变波特率数据帧
     */
-    HAL_StatusTypeDef transmitBrsData(canHandle *_hcan, uint16_t _stdid,
-                                      uint8_t *_txData, uint32_t _len);
+    HAL_StatusTypeDef transmitBrsData(canHandle *_hcan, uint16_t _stdid, uint8_t *_txData, uint32_t _len);
 
     /**
     * @brief can rx callbackFromISR

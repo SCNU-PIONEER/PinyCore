@@ -1,10 +1,10 @@
 #pragma once
 
-#include "BspBase.hpp"
+#include "Singleton.hpp"
 #include "Soc.hpp"
 #include HAL_INCLUDE
 
-class Dma : public BspBase<Dma> {
+class Dma : public Singleton<Dma> {
 public:
     /**
      * @brief dma ram auto alloc 
@@ -20,4 +20,8 @@ public:
      * @brief dma ram free 
      */
     void ram_free(void *_ptr);
+
+private:
+    Dma() = default;
+    friend class Singleton<Dma>;
 };

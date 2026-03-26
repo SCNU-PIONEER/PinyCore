@@ -59,7 +59,7 @@ void Arm::update(const MsgBus_s *_param)
 
     stateFactory_.update();
 
-    UI::APP::instance()->updateArm({ .state = msg.state });
+    UI::APP::instance().updateArm({ .state = msg.state });
 }
 
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
