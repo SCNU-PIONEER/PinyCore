@@ -236,10 +236,10 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (rcData->rc.switchLeft == SW::MID) {
                 //arm
                 armMsg.state = ARM::FSMState_e::NORMAL;
-                armMsg.target[0] = -lx / 314 / 400; //8016yaw
-                armMsg.target[1] = ly / 314 / 400;  //10010pitch
-                armMsg.target[2] = ry / 314 / 100;  //8009pitch
-                armMsg.target[3] = rx / 314 / 100;  //4340yaw
+                armMsg.target[0] = -lx / 314 / 200; //8016yaw
+                armMsg.target[1] = ly / 314 / 200;  //10010pitch
+                armMsg.target[2] = ry / 314 / 50;   //8009pitch
+                armMsg.target[3] = rx / 314 / 50;   //4340yaw
 
             } else if (rcData->rc.switchLeft == SW::UP) {
                 //arm
