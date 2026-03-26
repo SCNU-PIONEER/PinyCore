@@ -1,89 +1,94 @@
 #include "Buzzer.hpp"
-
-#include "BuzzerNote.hpp"
-#include <cstdint>
-#include "main.h"
-#include "FreeRTOS.h"
-#include "task.h"
+#include <memory>
 
 namespace BUZZER {
 
-void Buzzer::init(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq)
+Buzzer::Buzzer(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq)
+        : Task("BuzzerTask", TaskPriority_e::MID5)
+        , pwm_(_htim, _channel)
+        , timerFreq_(_timerFreq)
+        , queue_(xQueueCreate(10, sizeof(Note_s)))
 {
-    this->htim_ = _htim;
-    this->channel_ = _channel;
-    this->timerFreq_ = _timerFreq;
-    HAL_TIM_PWM_Start(htim_, channel_);
+    setPSC(PSC);
+    disable();
+};
+
+Buzzer ::~Buzzer()
+{
+    disable();
+    vQueueDelete(queue_);
 }
 
-void Buzzer::deInit() { HAL_TIM_PWM_Stop(htim_, channel_); }
+void Buzzer::enable() { pwm_.start(); }
+void Buzzer::disable() { pwm_.stop(); }
 
-void Buzzer::set(uint32_t _freq, uint32_t _duration)
+void Buzzer::setPSC(uint32_t _psc)
 {
-    freq_ = _freq;
-    delay_ = _duration;
+    prescaler_ = _psc;
+    pwm_.setPrescaler(prescaler_ - 1);
 }
 
-void Buzzer::playNote(const Note &_note)
+void Buzzer::play()
 {
-    if (_note.frequency == NOTE_REST) {
-        __HAL_TIM_SetCompare(htim_, channel_, 0);
-        vTaskDelay(_note.duration / portTICK_PERIOD_MS);
+    if (note_.tone == Tone_e::REST) {
+        pwm_.setDutyCycle(0);
+        vTaskDelay(note_.duration / portTICK_PERIOD_MS);
         return;
     }
-    HAL_TIM_PWM_Stop(htim_, channel_);
-    freq_ = _note.frequency;
-    uint32_t prescaler = 100;
-    uint32_t period = (timerFreq_ / (freq_ * prescaler)) - 1;
-    __HAL_TIM_SET_PRESCALER(htim_, prescaler - 1);
-    __HAL_TIM_SetAutoreload(htim_, period);
-    delay_ = _note.duration / portTICK_PERIOD_MS;
-    __HAL_TIM_SetCompare(htim_, channel_, period / 2);
-    HAL_TIM_PWM_Start(htim_, channel_);
-    vTaskDelay(delay_);
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-}
 
-void Buzzer::playAllNotes()
-{
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (auto i : allNote) {
-        playNote(i);
-        playNote({ NOTE_REST, 500 }); // Rest for 500ms between notes
-    }
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-}
+    disable();
 
-void Buzzer::playPinyCore()
-{
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (auto i : PinyCore) {
-        playNote(i);
-    }
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-}
+    uint16_t freq = static_cast<uint16_t>(note_.tone);
+    uint32_t delay = note_.duration / portTICK_PERIOD_MS;
+    uint32_t period = (timerFreq_ / (freq * prescaler_)) - 1;
+    pwm_.setAutoLoader(period);
+    pwm_.setDutyCycle(period / 2);
 
-void Buzzer::playDJI()
-{
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-    for (auto i : dji) {
-        playNote(i);
-    }
-    __HAL_TIM_SetCompare(htim_, channel_, 0);
-}
+    enable();
 
-void Buzzer::callBackFromISR()
-{
-    Buzzer &buzzer = Buzzer::instance();
-    if (buzzer.delay_)
-        __HAL_TIM_SetCompare(buzzer.htim_, buzzer.channel_, buzzer.freq_);
-    buzzer.delay_--;
+    vTaskDelay(delay);
+    pwm_.setDutyCycle(0);
 }
 
 void Buzzer::task()
 {
-    playPinyCore();
+    while (true) {
+        if (xQueueReceive(queue_, &note_, portMAX_DELAY) == pdPASS) {
+            play();
+        }
+    }
+}
+
+void Buzzer::playNote(const Note_s &_note)
+{
+    // no delay
+    xQueueSend(queue_, &_note, 0);
+}
+
+void Buzzer::playNote(Tone_e _tone, uint16_t _dura)
+{
+    Note_s note{ _tone, _dura };
+    playNote(note);
+}
+
+void Buzzer::playSequenceTask(void *_params)
+{
+    std::unique_ptr<PlaySequenceParams_s> p(static_cast<PlaySequenceParams_s *>(_params));
+    for (size_t i = 0; i < p->noteNum; ++i) {
+        xQueueSend(p->buzzer->getQueue(), &(p->sequence[i]), portMAX_DELAY);
+        vTaskDelay(1);
+    }
     vTaskDelete(nullptr);
+}
+
+void Buzzer::playSequence(const Note_s *_sequence, size_t _noteNum)
+{
+    auto p = std::make_unique<PlaySequenceParams_s>();
+    p->buzzer = this;
+    p->sequence = _sequence;
+    p->noteNum = _noteNum;
+    xTaskCreate(Buzzer::playSequenceTask, "PlaySequenceTask", 256, p.release(),
+                static_cast<uint8_t>(TaskPriority_e::MID5), nullptr);
 }
 
 } // namespace BUZZER

@@ -31,9 +31,19 @@ public:
     void setDutyCycle(uint32_t _dutyCycle);
 
     /**
-     * @brief pwm set frequency
+     * @brief pwm set auto loader
      */
-    void setFrequency(uint32_t _frequency);
+    void setAutoLoader(uint32_t _arr);
+
+    /**
+     * @brief pwm set prescaler
+     */
+    void setPrescaler(uint32_t _prescaler);
+
+    /**
+     * @brief pwm set counter
+     */
+    void setCounter(uint32_t _counter);
 
 private:
     TIM_HandleTypeDef *htim_;

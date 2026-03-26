@@ -6,10 +6,10 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "Task.hpp"
 
 #include "CmdType.h"
 #include <vector>
-#include <memory>
 
 namespace LED {
 
@@ -25,13 +25,9 @@ enum IOChipsets_e : uint8_t {
     RGBLED = 0,
 };
 
-class LEDs {
+class LEDs : public Singleton<LEDs>, public Task<LEDs, 128> {
 public:
-    static LEDs &instance();
-    LEDs(const LEDs &) = delete;
-    LEDs &operator=(const LEDs &) = delete;
-
-    static void task(void *_param);
+    void task();
 
     /**
      * @brief Adds a new driver to the LED manager system
@@ -129,7 +125,8 @@ public:
     static void off();
 
 private:
-    LEDs();
+    LEDs() : Task("LEDTask", TaskPriority_e::MID5), queue_(xQueueCreate(3, sizeof(Cmd_s))) {};
+    friend class Singleton<LEDs>;
 
     QueueHandle_t queue_ = nullptr;
 
