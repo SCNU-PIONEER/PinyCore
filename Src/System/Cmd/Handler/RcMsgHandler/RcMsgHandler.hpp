@@ -39,7 +39,9 @@ private:
 
     MsgBus_s *msgBus_;
 
-    ChassisMsg_s cMsg_ = {}; // sample
+    ChassisMsg_s chassisMsg{};
+    GimbalMsg_s gimbalMsg{};
+    ArmMsg_s armMsg{};
 
     std::unique_ptr<RemoteControl> rc_ = nullptr;
 
