@@ -9,6 +9,7 @@
 namespace ARM {
 
 using namespace PINYMOTOR;
+using namespace PINYMOTOR::DMMOTOR;
 
 union ArmSpeed_u {
     struct {
@@ -59,6 +60,10 @@ public:
 
     Joint currentJoints = {};
     ArmSpeed_u ref_speed = {};
+    Reg_s regPm5;
+    Reg_s regPm6;
+    RegValue_u regPmValue5;
+    RegValue_u regPmValue6;
     Safety safety;
 
 private:
