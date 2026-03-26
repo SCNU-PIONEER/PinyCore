@@ -7,10 +7,10 @@ namespace ARM {
 class Motors;
 
 class Safety {
-    static constexpr float PITCH_ANG_MIN = -1.4f;
-    static constexpr float PITCH_ANG_MAX = 1.f;
-    static constexpr float ROLL_ANG_MIN = -2.9f;
-    static constexpr float ROLL_ANG_MAX = 2.f;
+    static constexpr float PITCH_ANG_MIN = -1.34f;
+    static constexpr float PITCH_ANG_MAX = 1.28f;
+    static constexpr float ROLL_ANG_MIN = -3.1f;
+    static constexpr float ROLL_ANG_MAX = 2.38f;
 
     static constexpr float DEFAULT_JOINT_SPEED = 0.4f;             // rad/s
     static constexpr float DEFAULT_JOINT_SPEED_MIN = 0.f;          // rad/s
