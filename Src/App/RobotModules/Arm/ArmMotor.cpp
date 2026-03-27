@@ -84,7 +84,6 @@ Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _ang
     motors.dmMotor6->registerReg(&regPm6, &regPmValue6);
 };
 
-uint16_t id = 0;
 void Motors::update()
 {
     size_t index = 0;
@@ -93,7 +92,6 @@ void Motors::update()
         if (motor->data().tempture > 50.f) {
             LOG::error("MOTORS", "%u, temp: %.2f C", index, motor->data().tempture);
             // BUZZER::Buzzer::getInstance().playDJI();
-            id = index;
         }
         // if (motor->globalState == PINYMOTOR::GlobalState_e::OFFLINE) {
         //     LOG::error("MOTORS", "Motor %u, offline", index + 1);
@@ -144,7 +142,7 @@ bool Motors::homing(const Joint _target_joints)
             return true;
         }
 
-        safety.setSpeed(0.2);
+        safety.setSpeed(0.1);
         Joint temp = _target_joints;
         safety.setYawPitchAngLimitAbs(temp, _target_joints);
         ctrl(temp);
