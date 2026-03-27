@@ -140,19 +140,14 @@ bool Motors::init()
 bool Motors::homing(const Joint _target_joints)
 {
     if (isWithinRange(_target_joints, safety.getAngleMax(), safety.getAngleMin())) {
-        uint8_t index = 0;                //BUG:
-        for (uint8_t i = 0; i < 6; ++i) { //右臂
-            if (_target_joints[i] - currentJoints[i] < 0.05) {
-                index += 1;
-            }
-        }
-        if (index == 6) {
+        if (isMoving(_target_joints)) {
             return true;
         }
 
-
-        safety.setSpeed(0.1);
-        ctrl(_target_joints);
+        safety.setSpeed(0.2);
+        Joint temp = _target_joints;
+        safety.setYawPitchAngLimitAbs(temp, _target_joints);
+        ctrl(temp);
     }
     return false;
 }
@@ -173,9 +168,16 @@ void Motors::enable()
 
 bool Motors::isMoving(const Joint &_target)
 {
+    static uint16_t cnt = 0;
     Joint deltaJoints = _target - currentJoints;
     float maxDeltaAngle = Kinematic::absMax(deltaJoints);
-    return maxDeltaAngle < 0.02f;
+    cnt++;
+    if (cnt > 100) {
+        cnt = 0;
+        LOG::info("motor", "moving, max delta: %.2f", maxDeltaAngle);
+    }
+
+    return maxDeltaAngle < 0.04f;
 }
 
 void Motors::ctrl(const Joint &_targetJoints)

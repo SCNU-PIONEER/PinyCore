@@ -24,7 +24,7 @@
 struct CtrlData_s {    // 30-bytes
     float joint[6];    // 24-bytes
     uint8_t push;      // 1-byte
-    uint8_t direction; // left: 0, right: 1
+    uint8_t allonline; // online: 1 , offline: 0
     uint8_t reserved[4];
 };
 

@@ -87,11 +87,11 @@ void VT13::parse()
                 ctrlData_.joint[j] = ((TxData_s *)&buf_[i])->ctrlData.joint[j];
                 ang[j] = ((TxData_s *)&buf_[i])->ctrlData.joint[j];
                 ctrlData_.push = ((TxData_s *)&buf_[i])->ctrlData.push;
-                ctrlData_.direction = ((TxData_s *)&buf_[i])->ctrlData.direction;
+                ctrlData_.allonline = ((TxData_s *)&buf_[i])->ctrlData.allonline;
             }
             freq = Dwt::instance().getFreq(&cnt);
             i += sizeof(TxData_s);
-            printf("angle: %.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
+            // printf("angle: %.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
             ctrlLostCnt_ = 0;
         }
 #endif
