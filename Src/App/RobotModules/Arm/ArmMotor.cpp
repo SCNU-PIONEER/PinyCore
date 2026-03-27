@@ -69,17 +69,9 @@ Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _ang
         .velPID = nullptr,
     };
 
-    regPm5 = { .regId = RegId_e::DM_REG_P_M, 
-               .dat = { 0 },
-               .isWrite = false,
-               .isRead = true,
-               .isStorage = false };
+    regPm5 = { .regId = RegId_e::DM_REG_P_M, .dat = { 0 }, .isWrite = false, .isRead = true, .isStorage = false };
 
-    regPm6 = { .regId = RegId_e::DM_REG_P_M,
-               .dat = { 0 },
-               .isWrite = false,
-               .isRead = true,
-               .isStorage = false };
+    regPm6 = { .regId = RegId_e::DM_REG_P_M, .dat = { 0 }, .isWrite = false, .isRead = true, .isStorage = false };
 
     motors.all_motors[0] = new LKMOTOR::MG8016Ei6RS485("joint1", mg8016Config1);
     motors.all_motors[1] = new DMMOTOR::DM10010L("joint2", dm10010Config2);
@@ -121,6 +113,8 @@ void Motors::update()
     memcpy(regPmValue5.dat, regPm5.dat, 4);
     memcpy(regPmValue6.dat, regPm6.dat, 4);
 
+    currentJoints[4] = (regPmValue5.value - regPmValue6.value) / 2;
+    currentJoints[5] = (regPmValue5.value + regPmValue6.value) / 2;
 }
 
 // TODO: 电机复位

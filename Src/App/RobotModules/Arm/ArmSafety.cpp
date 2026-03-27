@@ -45,12 +45,8 @@ void Safety::setAllAngleLimit(Joint &_targetJoints)
 
 void Safety::setYawPitchAngLimit(Joint &_targetJoints, Joint &_msgJoints)
 {
-    float j4 = motors.regPmValue5.value;
-    float j5 = motors.regPmValue6.value;
-
-
-    float pitch = ((j4 - j5) / 2) + _msgJoints[5];
-    float roll = ((j4 + j5) / 2) + _msgJoints[4];
+    float pitch = motors.currentJoints[4] + _msgJoints[5];
+    float roll = motors.currentJoints[5] + _msgJoints[4];
 
     pitch = std::clamp(pitch, PITCH_ANG_MIN, PITCH_ANG_MAX);
     roll = std::clamp(roll, ROLL_ANG_MIN, ROLL_ANG_MAX);
