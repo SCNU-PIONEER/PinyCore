@@ -42,7 +42,6 @@ private:
 
     void enable();
     void disable();
-    void load(const Note_s &_note);
     void play();
 
     static void playSequenceTask(void *_params);
