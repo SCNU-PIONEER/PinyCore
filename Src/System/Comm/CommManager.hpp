@@ -5,18 +5,10 @@
 #include <unordered_map>
 
 #include "StmLog.hpp"
+#include "Singleton.hpp"
 
-class CommManager {
+class CommManager : public Singleton<CommManager> {
 public:
-    static CommManager &instance()
-    {
-        static CommManager instance;
-        return instance;
-    }
-
-    CommManager(const CommManager &) = delete;
-    CommManager &operator=(const CommManager &) = delete;
-
     void registerTransmitter(std::function<void()> _tx, uint16_t _id)
     {
         if (transmitter_.contains(_id)) {
@@ -55,6 +47,7 @@ public:
 
 private:
     CommManager() = default;
+    friend class Singleton<CommManager>;
 
     std::unordered_map<uint16_t, std::function<void()> > transmitter_;
     std::unordered_map<uint16_t, std::function<void()> > receiver_;

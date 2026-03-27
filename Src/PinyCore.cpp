@@ -23,7 +23,7 @@ void PinyCore::bspInit()
 
 void PinyCore::coreInit()
 {
-    AppManager::instance()->initApp();
+    AppManager::instance().initApp();
 
     LOG::info("Piny", "kernal start");
 
@@ -37,4 +37,4 @@ void PinyCore::init()
     coreInit();
 }
 
-void initPinyCore() { PinyCore::instance()->init(); }
+void initPinyCore() { PinyCore::instance().init(); }

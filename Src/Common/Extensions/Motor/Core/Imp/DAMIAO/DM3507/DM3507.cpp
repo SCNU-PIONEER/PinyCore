@@ -51,9 +51,9 @@ MotorTypeDef_e DM3507::checkBaseConfig()
         LOG::error("DM3507", " %s: WorkMode is not supported", regInfo_.name);
     }
 
-    if (regInfo_.offsetId > 9) {
+    if (regInfo_.offsetId > 0xE) {
         rslt |= 1;
-        LOG::error("DM3507", " %s: Max Offset ID is only 9!", regInfo_.name);
+        LOG::error("DM3507", " %s: Max Offset ID is only 15!", regInfo_.name);
     }
 
     if (AUX_.txFreq > 1000) {

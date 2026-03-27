@@ -4,7 +4,7 @@
 
 namespace PINYMOTOR::LKMOTOR {
 
-enum class ErrorState_e : uint8_t {
+enum class [[nodiscard]] ErrorState_e : uint8_t {
     NONE = 0,
     UNDER_VOLTAGE,           // 欠压
     OVER_VOLTAGE,            // 过压

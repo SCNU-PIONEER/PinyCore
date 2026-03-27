@@ -5,15 +5,17 @@
 #endif
 
 #include "Cmd.hpp"
-#include "Buzzer.hpp"
 #include "Test/TestModule.hpp"
 #include "Bsp.hpp"
 #include "Lazy.hpp"
 
+#if EXTENSION_BUZZER
+#include "Buzzer.hpp"
+#endif
+
 #if APP_USE_DAEMONS
 #include "Daemons.hpp"
 #endif
-
 
 //---------------------------------------------------------------------------------------------------
 
@@ -27,7 +29,6 @@ Lazy<INS_SYS::INS> ins;
 Lazy<Cmd> cmd;
 
 //---------------------------------------------------------------------------------------------------
-
 
 #if APP_USE_UI
 #include "UI/UIApp.hpp"
@@ -56,8 +57,10 @@ Lazy<ARMORBOOSTER::ARMORBOOSTER_TYPE> armorBooster;
 
 void AppManager::initApp()
 {
-    // Buzzer
-    BUZZER::Buzzer::getInstance().init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
+#if EXTENSION_BUZZER
+    BUZZER::buzz.init(&BEEP_TIMER, BEEP_TIM_CHANNEL, BEEP_APB_FREQ);
+    BUZZER::buzz->playNote(BUZZER::PinyCore);
+#endif
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().rxTask(); });
@@ -70,8 +73,8 @@ void AppManager::initApp()
     cmd.init();
 
 #if APP_USE_UI
-    UI::APP::instance()->init();
-    schedule([]() { UI::APP::instance()->task(); });
+    UI::APP::instance().init();
+    schedule([]() { UI::APP::instance().task(); });
 #endif
 #if APP_USE_DAEMONS
     Daemons::instance().init();
@@ -80,7 +83,7 @@ void AppManager::initApp()
 
     // TestModule
     if constexpr (APP_USE_TEST) {
-        TestModule::instance()->init();
+        TestModule::instance().init();
     }
 
 #if !APP_USE_COMM || TARGET_SLAVE

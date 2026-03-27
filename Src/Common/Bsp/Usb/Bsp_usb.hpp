@@ -11,13 +11,13 @@ void usbParse(uint8_t *_data, uint16_t _len);
 #ifdef __cplusplus
 }
 
-#include "BspBase.hpp"
+#include "Singleton.hpp"
 #include <functional>
 #include <vector>
 #include "Task.hpp"
 #include "semphr.h"
 
-class Usb : public BspBase<Usb>, public Task<Usb, 256> {
+class Usb : public Singleton<Usb>, public Task<Usb, 256> {
 public:
     void parse(uint8_t *_data, uint16_t _len);
     int8_t send(const uint8_t *_data, uint16_t _len);
@@ -25,7 +25,7 @@ public:
 
 
 private:
-    friend class BspBase<Usb>;
+    friend class Singleton<Usb>;
     friend class Task<Usb, 256>;
 
     static constexpr uint8_t TX_MAX_SIZE = 64;

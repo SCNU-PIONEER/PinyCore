@@ -81,8 +81,8 @@ void Bipedal::bal(const STController::States_s &_ref, float _yaw)
 
 void Bipedal::noBal(float _vx, float _wz)
 {
-    float twL = dsPid_[0].calc(_vx + (_wz * W_DISTANCE), motors_.WheelL->vel() * W_RADIUS);
-    float twR = dsPid_[1].calc(_vx - (_wz * W_DISTANCE), motors_.WheelR->vel() * W_RADIUS);
+    float twL = dsPid_[0].calc(_vx + (_wz * W_DISTANCE_HALF), motors_.WheelL->vel() * W_RADIUS);
+    float twR = dsPid_[1].calc(_vx - (_wz * W_DISTANCE_HALF), motors_.WheelR->vel() * W_RADIUS);
     legL_.setTw(twL);
     legR_.setTw(twR);
 }

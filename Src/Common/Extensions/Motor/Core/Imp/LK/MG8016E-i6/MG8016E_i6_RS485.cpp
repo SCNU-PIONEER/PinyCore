@@ -23,7 +23,5 @@ MG8016Ei6RS485::MG8016Ei6RS485(const char _name[16], InitConfig_s _config) : LKM
     regInfo_.model.rxBaseId = 0;
     regInfo_.model.txBaseId = 0;
 
-    this->registerMotor();
-
     LOG::info("LKMOTOR", "%s: An instance of MG8016_Ei6_RS485 created", this->regInfo_.name);
 }

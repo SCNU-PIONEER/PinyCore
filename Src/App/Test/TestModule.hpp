@@ -2,6 +2,7 @@
 
 #include "FSMState.hpp"
 #include "StmLog.hpp"
+#include "Singleton.hpp"
 
 #include "Task.hpp"
 
@@ -9,12 +10,8 @@ namespace TEST {
 enum class FSMState_e : uint8_t {};
 }
 
-class TestModule : public Task<TestModule, 256> {
+class TestModule : public Singleton<TestModule>, public Task<TestModule, 256> {
 public:
-    static TestModule *instance();
-
-    TestModule(const TestModule &) = delete;
-
     void init();
 
     void update();
@@ -27,4 +24,5 @@ public:
 
 private:
     TestModule() : Task("TestTask", TaskPriority_e::HIGH1) {};
+    friend class Singleton<TestModule>;
 };

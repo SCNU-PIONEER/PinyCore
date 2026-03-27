@@ -8,8 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
-M2006::M2006(const char _name[16], InitConfig_s _config)
-        : DJIMotor(_name, _config)
+M2006::M2006(const char _name[16], InitConfig_s _config) : DJIMotor(_name, _config)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -18,7 +17,7 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     regInfo_.model.reductionRatio = 1.f;
     regInfo_.model.rxBaseId = 0x200;
 
-    if (_config.offsetId > 3)
+    if (_config.offsetId > 4)
         regInfo_.model.txBaseId = 0x1FF;
     else
         regInfo_.model.txBaseId = 0x200;
@@ -36,10 +35,8 @@ M2006::M2006(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
-    LOG::info(
-            "M2006",
-            " %s: An instance of M2006 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("M2006", " %s: An instance of M2006 created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e M2006::checkBaseConfig()

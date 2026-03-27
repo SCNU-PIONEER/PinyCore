@@ -35,8 +35,6 @@ Status_e Client::initList(Info_s *_dynamicInfo, uint8_t _dynamicNum, Info_s *_in
 
 void Client::sendInit()
 {
-    static uint8_t isIniting = 1;
-    static uint8_t initTimes = 0;
     if (isIniting == 1) {
         if (sendForce() == Status_e::OK) {
             initTimes++;
@@ -555,9 +553,6 @@ Status_e Client::send()
 
 Status_e Client::sendForce()
 {
-    static Node_s *graphicListCursor = nullptr;
-    static Node_s *charListCursor = nullptr;
-
     /*判断graphic_list和charListHead_有某东西*******************************/
     if (graphicListHead_ == nullptr) {
         isGraphicInit = true; //某嘢就当发完了啰
