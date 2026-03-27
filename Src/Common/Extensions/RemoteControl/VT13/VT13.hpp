@@ -126,6 +126,7 @@ public:
     void *getData() final;
 
 #if EXTENSION_CUSTOM_CTRL
+    bool isCtrlOnline();
     const CtrlData_s &getCtrlData();
 #endif
 
@@ -138,6 +139,6 @@ private:
 
 #if EXTENSION_CUSTOM_CTRL
     CtrlData_s ctrlData_;
+    std::atomic<uint8_t> ctrlLostCnt_ = RX_LOST_MAX;
 #endif
 };
-

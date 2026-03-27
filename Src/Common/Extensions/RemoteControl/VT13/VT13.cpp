@@ -92,6 +92,7 @@ void VT13::parse()
             freq = Dwt::instance().getFreq(&cnt);
             i += sizeof(TxData_s);
             printf("angle: %.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
+            ctrlLostCnt_ = 0;
         }
 #endif
     }
@@ -149,5 +150,15 @@ bool VT13::isOnline()
 void *VT13::getData() { return &data_; }
 
 #if EXTENSION_CUSTOM_CTRL
+
+bool VT13::isCtrlOnline()
+{
+    if (ctrlLostCnt_ < RX_LOST_MAX) {
+        ctrlLostCnt_.fetch_add(1, std::memory_order_relaxed);
+        return true;
+    } else
+        return false;
+}
+
 const CtrlData_s &VT13::getCtrlData() { return ctrlData_; }
 #endif
