@@ -45,6 +45,7 @@ private:
     Info_s dynamicInfo_[DYNAIMIC_NUM] = {};
     Info_s constInfo_[STATIC_NUM] = {};
     uint32_t updateCnt = 0;
+    uint32_t resetCnt = 0;
 };
 
 } // namespace UI

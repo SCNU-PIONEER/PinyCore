@@ -171,6 +171,14 @@ public:
     void updateID(uint16_t _id) { sender_.idUpdate(_id); }
     bool isGraphicInit = false;
     bool isCharInit = false;
+    uint8_t isIniting = true;
+    uint8_t initTimes = 0;
+
+    void nodeReset()
+    {
+        graphicListCursor = graphicListHead_;
+        charListCursor = charListHead_;
+    }
 
 protected:
     /**
@@ -266,6 +274,8 @@ private:
 
     Sender sender_;
     GraphicBuilder builder_;
+    Node_s *graphicListCursor = nullptr;
+    Node_s *charListCursor = nullptr;
 };
 
 } // namespace UI
