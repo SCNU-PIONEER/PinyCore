@@ -87,7 +87,7 @@ void VT13::parse()
                 ctrlData_.joint[j] = ((TxData_s *)&buf_[i])->ctrlData.joint[j];
                 ang[j] = ((TxData_s *)&buf_[i])->ctrlData.joint[j];
                 ctrlData_.push = ((TxData_s *)&buf_[i])->ctrlData.push;
-                ctrlData_.direction = ((TxData_s *)&buf_[i])->ctrlData.direction;
+                ctrlData_.allonline = ((TxData_s *)&buf_[i])->ctrlData.allonline;
             }
             freq = Dwt::instance().getFreq(&cnt);
             i += sizeof(TxData_s);
