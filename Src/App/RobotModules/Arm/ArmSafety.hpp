@@ -27,9 +27,9 @@ public:
 
     void setAllAngleLimit(Joint &_targetJoints);
 
-    void setYawPitchAngLimit(Joint &_targetJoints, Joint &_msgJoints);
+    void setYawPitchAngLimit(Joint &_targetJoints, const Joint &_msgJoints);
 
-    void setYawPitchAngLimitAbs(Joint &_targetJoints, Joint &_msgJoints);
+    void setYawPitchAngLimitAbs(Joint &_targetJoints, const Joint &_msgJoints);
 
     const Joint &getAngleMin() const { return angleMin; }
     const Joint &getAngleMax() const { return angleMax; }

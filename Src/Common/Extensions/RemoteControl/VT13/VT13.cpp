@@ -91,7 +91,7 @@ void VT13::parse()
             }
             freq = Dwt::instance().getFreq(&cnt);
             i += sizeof(TxData_s);
-            printf("angle: %.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
+            // printf("angle: %.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", ang[0], ang[1], ang[2], ang[3], ang[4], ang[5]);
             ctrlLostCnt_ = 0;
         }
 #endif

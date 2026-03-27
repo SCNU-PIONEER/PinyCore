@@ -358,30 +358,27 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
         armMsg.state = ARM::FSMState_e::NORMAL;
         armMsg.target[0] = -lx / 314 / 200; //8016yaw
         armMsg.target[1] = ly / 314 / 200;  //10010pitch
+        armMsg.target[2] = 0.f;             //8009pitch
+        armMsg.target[3] = 0.f;             //4340yaw
+        armMsg.target[4] = 0.f;             //3507pitch
+        armMsg.target[5] = 0.f;             //3507roll
     } else if (rcData->gamepad.sw == VT13::Sw_e::C) {
-        //arm
-        armMsg.state = ARM::FSMState_e::NORMAL;
-        armMsg.target[2] = ry / 314 / 200; //8009pitch
-        armMsg.target[3] = rx / 314 / 100; //4340yaw
-        armMsg.target[4] = -lx / 314;      //3507roll
-        armMsg.target[5] = -ly / 314;      //3507pitch
-
         if (rcData->gamepad.fn2) {
-            if (armMsg.state == ARM::FSMState_e::NORMAL) {
-                if (((VT13 *)rc_.get())->isCtrlOnline()) {
-                    armMsg.state = ARM::FSMState_e::TEACH;
-                    auto customData = ((VT13 *)rc_.get())->getCtrlData();
-                    armMsg.target[0] = customData.joint[0]; //8016yaw
-                    armMsg.target[1] = customData.joint[1]; //10010pitch
-                    armMsg.target[2] = customData.joint[2]; //8009pitch
-                    armMsg.target[3] = customData.joint[3]; //4340yaw
-                    armMsg.target[4] = customData.joint[4]; //3507pitch
-                    armMsg.target[5] = customData.joint[5]; //3507roll
-                }
+            if (((VT13 *)rc_.get())->isCtrlOnline()) {
+                armMsg.state = ARM::FSMState_e::TEACH;
+                auto customData = ((VT13 *)rc_.get())->getCtrlData();
+                armMsg.target[0] = customData.joint[0]; //8016yaw
+                armMsg.target[1] = customData.joint[1]; //10010pitch
+                armMsg.target[2] = customData.joint[2]; //8009pitch
+                armMsg.target[3] = customData.joint[3]; //4340yaw
+                armMsg.target[4] = customData.joint[4]; //3507pitch
+                armMsg.target[5] = customData.joint[5]; //3507roll
             }
-        } else if (armMsg.state == ARM::FSMState_e::TEACH)
-            armMsg.state = ARM::FSMState_e::NORMAL;
+        }
 
+        if (rcData->gamepad.fn1) {
+            armMsg.state = ARM::FSMState_e::NORMAL;
+        }
 
         if (armMsg.state == ARM::FSMState_e::TEACH) {
             auto customData = ((VT13 *)rc_.get())->getCtrlData();
@@ -391,9 +388,22 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             armMsg.target[3] = customData.joint[3]; //4340yaw
             armMsg.target[4] = customData.joint[4]; //3507pitch
             armMsg.target[5] = customData.joint[5]; //3507roll
+
+            if (customData.push) {
+                armMsg.switch1 = ARM::ClampState_e::CLAMP;
+            } else if (!customData.push) {
+                armMsg.switch1 = ARM::ClampState_e::RELEASE;
+            }
+
+        } else if (armMsg.state == ARM::FSMState_e::NORMAL) {
+            armMsg.target[0] = 0.f;
+            armMsg.target[1] = 0.f;
+            armMsg.target[2] = ry / 314 / 200; //8009pitch
+            armMsg.target[3] = rx / 314 / 100; //4340yaw
+            armMsg.target[4] = -lx / 314;      //3507roll
+            armMsg.target[5] = -ly / 314;      //3507pitch
         }
     }
-
 
     notify(&chassisMsg, msgBus_->chassisQueue);
     notify(&gimbalMsg, msgBus_->gimbalQueue);

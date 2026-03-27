@@ -25,13 +25,11 @@ public:
         if (arm_.msg.state == FSMState_e::STOP) {
             arm_.isEnabled = false; //change中stop
             return true;
+        } else if (arm_.msg.state == FSMState_e::NORMAL) {
+            return true;
         }
-        if (!arm_.isEnabled) {
-            // arm_.motors.enable();
-            arm_.isEnabled = true;
-            LOG::info("Teach", "motor enabled, start homing");
-            return false;
-        }
+
+        arm_.target_joints.joints = arm_.msg.target;
         return arm_.motors.homing(arm_.target_joints.joints);
     }
 
