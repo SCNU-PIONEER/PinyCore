@@ -28,6 +28,7 @@ public:
     Singleton(Singleton &&) = delete;
     Singleton &operator=(Singleton &&) = delete;
 
-protected:
+private:
     Singleton() = default;
+    friend Derived;
 };
