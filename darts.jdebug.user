@@ -1,0 +1,39 @@
+
+GraphedExpression="angTurnwheelDisp", Color=#a00909
+GraphedExpression="angTurnwheelExp", Color=#09a01b
+OpenDocument="tasks.c", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/ThirdParty/FreeRTOS/tasks.c", Line=5835
+OpenDocument="Gimbal.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Gimbal/Gimbal.hpp", Line=73
+OpenDocument="RunState.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Gimbal/Actuators/Standard/State/RunState.hpp", Line=51
+OpenDocument="Standard.cpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Gimbal/Actuators/Standard/Standard.cpp", Line=81
+OpenDocument="main.c", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/Common/Soc/stm32f407/hal/Core/Src/main.c", Line=90
+OpenDocument="Leather.cpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Shooter/Actuators/Leather.cpp", Line=81
+OpenDocument="LaunchState.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Shooter/Actuators/State/LaunchState.hpp", Line=0
+OpenDocument="LaunchState.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Gimbal/Actuators/Standard/State/LaunchState.hpp", Line=6
+OpenDocument="Standard.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Gimbal/Actuators/Standard/Standard.hpp", Line=18
+OpenDocument="RunState.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Shooter/Actuators/State/RunState.hpp", Line=0
+OpenDocument="Leather.hpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/RobotModules/Shooter/Actuators/Leather.hpp", Line=0
+OpenDocument="AppManager.cpp", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/Src/App/AppManager.cpp", Line=0
+OpenDocument="SEGGER_SYSVIEW.c", FilePath="C:/Users/SHININGYUAN/Desktop/PinyDart/ThirdParty/systemview/SYSVIEW/SEGGER_SYSVIEW.c", Line=2234
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=633, h=433, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=1004, h=138, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Break & Tracepoints", DockArea=LEFT, x=0, y=2, w=633, h=285, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VectorCatchIndexMask=254
+OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1285, h=282, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x2000113C
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=633, h=419, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=RIGHT, x=0, y=2, w=1004, h=370, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=RIGHT, x=0, y=1, w=1004, h=629, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=0, CodePaneShown=0, PinCursor="Cursor Movable", TimePerDiv="20 s", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="37;27", PowerGraphDrawAsPoints=0, PowerGraphLegendShown=0, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="777;0", CodeGraphLegendShown=0, CodeGraphLegendPosition="793;0"
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1274, h=282, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+TableHeader="Vector Catches", SortCol="None", SortOrder="ASCENDING", VisibleCols=["";"Vector Catch";"Description"], ColWidths=[50;300;500]
+TableHeader="Break & Tracepoints", SortCol="None", SortOrder="ASCENDING", VisibleCols=["";"Type";"Location";"Extras"], ColWidths=[100;100;102;331]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[335;100;100;100;1062]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" angTurnwheelDisp";" angTurnwheelExp"], ColWidths=[100;100;100;100]
+TableHeader="Data Sampling Setup", SortCol="Value", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[118;154;114;144;114;114;110;134;126]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[218;279;100;100]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[26;26;26;26]
+WatchedExpression="gimbal", Window=Watched Data 1
+WatchedExpression="shooter", Window=Watched Data 1
+WatchedExpression="torqScrew", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="angTurnwheelDisp", RefreshRate=5, Window=Watched Data 1
+WatchedExpression="angTurnwheelExp", RefreshRate=5, Window=Watched Data 1

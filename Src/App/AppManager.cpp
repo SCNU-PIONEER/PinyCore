@@ -14,7 +14,8 @@
 #include "Daemons.hpp"
 #endif
 
-
+#include "Standard.hpp"
+#include "Leather.hpp"
 //---------------------------------------------------------------------------------------------------
 
 #if APP_USE_INS
@@ -25,9 +26,9 @@ Lazy<INS_SYS::INS> ins;
 //---------------------------------------------------------------------------------------------------
 
 Lazy<Cmd> cmd;
-
+Lazy<GIMBAL::Standard>gimbal;
+Lazy<SHOOTER::Leather>shooter;
 //---------------------------------------------------------------------------------------------------
-
 
 #if APP_USE_UI
 #include "UI/UIApp.hpp"
@@ -49,7 +50,12 @@ void AppManager::initApp()
 #endif
 
     cmd.init();
+    gimbal.init();
+    shooter.init();
 
+    schedule([]() { gimbal->update(cmd->getMsgBus()); });
+    schedule([]() { shooter->update(cmd->getMsgBus()); });
+    
 #if APP_USE_UI
     UI::APP::instance()->init();
     schedule([]() { UI::APP::instance()->task(); });

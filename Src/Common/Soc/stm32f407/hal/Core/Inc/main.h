@@ -113,6 +113,10 @@ void MX_SPI2_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define GPIO_TRIG_Pin GPIO_PIN_7
+#define GPIO_TRIG_GPIO_Port GPIOI
+#define GPIO_YAW_Pin GPIO_PIN_6
+#define GPIO_YAW_GPIO_Port GPIOI
 #define LED_RED_Pin GPIO_PIN_12
 #define LED_RED_GPIO_Port GPIOH
 #define LED_GREEN_Pin GPIO_PIN_11

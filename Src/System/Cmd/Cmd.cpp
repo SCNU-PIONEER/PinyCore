@@ -5,10 +5,8 @@
 Cmd::Cmd() : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
 
 {
-    msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
-    msgBus_.armQueue = xQueueCreate(30, sizeof(ArmMsg_s));
-    msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
+    msgBus_.shooterQueue = xQueueCreate(30, sizeof(ShooterMsg_s));
 
     for (auto i : Handler::getHandlerList()) {
         i.handler->init(&msgBus_, eventGroup_);

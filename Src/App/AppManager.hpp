@@ -4,6 +4,11 @@
 #include "etl/delegate.h"
 #include <vector>
 
+#define GIMBAL_TYPE Standard
+#define GIMBAL_FILE "Standard.hpp"
+#define SHOOTER_TYPE Leather
+#define SHOOTER_FILE "Leather.hpp"
+
 class AppManager : public Task<AppManager, 512> {
 public:
     static AppManager *instance()

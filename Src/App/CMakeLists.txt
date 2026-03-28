@@ -32,12 +32,18 @@ if(APP_USE_STANDARD)
 elseif(APP_USE_STACKED)
   set(GIMBAL_TYPE "Stacked")
 endif()
+# shooter type
+set(SHOOTER_TYPE "Leather")
 
-if(APP_USE_GIMBAL)
-  file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
-    "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp")
-  list(APPEND SOURCES ${GIMBAL_SOURCES})
-endif()
+file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/Gimbal/Actuators/${Standard}/*.cpp")
+list(APPEND SOURCES ${GIMBAL_SOURCES})
+file(GLOB_RECURSE SHOOTER_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/Shooter/Actuators/${Leather}/*.cpp")
+list(APPEND SOURCES ${SHOOTER_SOURCES})
+file(GLOB_RECURSE VISION_SOURCES CMAKE_CONFIGURE_DEPENDS
+  "RobotModules/Gimbal/Vision/${Vision}/*.cpp")
+list(APPEND SOURCES ${VISION_SOURCES})
 
 # ui
 if(APP_USE_UI)

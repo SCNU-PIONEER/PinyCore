@@ -12,6 +12,10 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
+namespace SHOOTER {
+enum class FSMState_e : uint8_t;
+}
+
 namespace ARM {
 enum class FSMState_e : uint8_t;
 }
@@ -21,9 +25,8 @@ enum class FSMState_e : uint8_t;
 }
 
 struct MsgBus_s {
-    QueueHandle_t chassisQueue;
+    QueueHandle_t shooterQueue;
     QueueHandle_t gimbalQueue;
-    QueueHandle_t armQueue;
     QueueHandle_t refereeQueue;
 };
 
@@ -35,7 +38,18 @@ struct ChassisMsg_s : public Msg {
 
 struct GimbalMsg_s : public Msg {
     GIMBAL::FSMState_e state;
-    float roll, pitch, yaw;
+    float gainYaw = 0.f;
+    float gainTrig = 0.f;
+    bool isConstant = false;
+    bool visFollow = false;
+};
+
+struct ShooterMsg_s : public Msg {
+    SHOOTER::FSMState_e state;
+    int8_t turnId = 0;
+    float gainScrew = 0.f;
+    bool isConstant = false;
+    bool fireFlag = false;
 };
 
 struct ArmMsg_s : public Msg {

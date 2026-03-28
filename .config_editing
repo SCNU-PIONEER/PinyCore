@@ -1,0 +1,90 @@
+CONFIG_TARGET_MASTER=y
+# CONFIG_TARGET_SLAVE is not set
+
+#
+# Soc config
+#
+CONFIG_TARGET_STM32F407=y
+# CONFIG_TARGET_STM32H723 is not set
+# end of Soc config
+
+#
+# app config
+#
+CONFIG_APP_USE_CHASSIS=y
+
+#
+# chassis config
+#
+CONFIG_APP_USE_MECANUM=y
+# CONFIG_APP_USE_OMNI is not set
+# CONFIG_APP_USE_BIPEDAL is not set
+# CONFIG_APP_USE_SWERVE is not set
+CONFIG_CHASSIS_TYPE="Mecanum"
+CONFIG_CHASSIS_FILE="\"Mecanum.hpp\""
+# CONFIG_APP_USE_POWERCTRL is not set
+# CONFIG_APP_USE_ODOMETER is not set
+# end of chassis config
+
+# CONFIG_APP_USE_GIMBAL is not set
+# CONFIG_APP_USE_TEST is not set
+# CONFIG_APP_USE_INS is not set
+# CONFIG_APP_USE_DAEMONS is not set
+# CONFIG_APP_USE_COMM is not set
+# CONFIG_APP_USE_UI is not set
+# end of app config
+
+#
+# Bsp config
+#
+CONFIG_BSP_USE_CAN=y
+CONFIG_BSP_USE_DMA=y
+CONFIG_BSP_USE_PWM=y
+CONFIG_BSP_USE_UART=y
+CONFIG_BSP_USE_SPI=y
+# CONFIG_BSP_USE_IIC is not set
+CONFIG_BSP_USE_TIM=y
+CONFIG_BSP_USE_USB=y
+# end of Bsp config
+
+#
+# extension config
+#
+CONFIG_EXTENSION_DT7=y
+# CONFIG_EXTENSION_ET08A is not set
+CONFIG_EXTENSION_VT13=y
+CONFIG_EXTENSION_BUZZER=y
+CONFIG_EXTENSION_LED=y
+
+#
+# LEDDriver config
+#
+CONFIG_LED_WS2812_SPI=y
+# CONFIG_LED_WS2812_PWM is not set
+# CONFIG_LED_RGBLED is not set
+# end of LEDDriver config
+
+CONFIG_EXTENSION_MOTOR=y
+CONFIG_EXTENSION_REFEREE=y
+CONFIG_EXTENSION_SENSOR=y
+# CONFIG_EXTENSION_SUPERCAP is not set
+# end of extension config
+
+#
+# utils config
+#
+CONFIG_USE_ALGORITHM=y
+CONFIG_USE_DWT=y
+CONFIG_USE_FSM=y
+CONFIG_USE_HARDFAULT=y
+CONFIG_USE_STM_LOG=y
+CONFIG_USE_VOFA=y
+CONFIG_USE_LAZY=y
+# end of utils config
+
+#
+# Kernel hacking
+#
+CONFIG_RTOS_DEBUG=y
+# CONFIG_USE_VSCODE_XRTOS is not set
+# end of Kernel hacking
