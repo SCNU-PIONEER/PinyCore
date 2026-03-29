@@ -118,7 +118,6 @@ public:
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
 
-
     void loadDeltaYaw();
     bool isGimbalReset;
 
@@ -138,7 +137,7 @@ protected:
 
     float cosYaw_ = 0.f;
     float sinYaw_ = 0.f;
-    float del[4], vel[4], sTorq[4], wTorq[4], wCurr[4];
+    float sDel[4], sExpVel[4], sTorq[4], wTorq[4], wCurr[4];
 
     Speed_u forward(const WheelsSpeed_u &_wSpeed);
     WheelsSpeed_u reverse(const Speed_u &_speed);
@@ -156,24 +155,24 @@ private:
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
     WheelsSpeed_u refWSpeed_; //期望轮速rad/s
+
     Swerve_u<float> curDir;   //舵轮当前方向角
     Swerve_u<float> expDir;   //舵轮期望方向角
+    Swerve_u<float> sCurVel;  //舵轮当前速度
+    Swerve_u<float> sCurTorq; //舵轮当前扭矩
 
-    Swerve_u<float> SwerveZero = { {
-            .RF = 5.0083f,
-            .LF = 4.95766449f,
-            .LB = 6.122f,
-            .RB = 1.35620451f,
-    } }; //舵轮零位角度，用于回正方向,rad
+    Swerve_u<float> SwerveZero = {
+        { .RF = 5.0083f, .LF = 4.95766449f, .LB = 3.41889358f, .RB = 1.35620451f }
+    }; //舵轮零位角度，用于回正方向,rad
 
     canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
     canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
 
-    Swerve_u<PositionalPid *> swervePosPid_ = {};        //舵轮位置环
-    Swerve_u<PositionalPid *> swerveVelPid_ = {};        //舵轮速度环
-    Swerve_u<FILTER::LPFIIR3 *> swerveFilterInput_ = {}; //舵轮输入滤波器
-    Swerve_u<FILTER::LPF *> swerveFilterOutput_ = {};    //舵轮输出滤波器
-    Swerve_u<PositionalPid *> wheelVelPid_ = {};         //轮速
+    Swerve_u<PositionalPid *> swervePosPid_ = {};         //舵轮位置环
+    Swerve_u<PositionalPid *> swerveVelPid_ = {};         //舵轮速度环
+    Swerve_u<FILTER::LPF *> swerveFilterInput_ = {};      //舵轮输入滤波器
+    Swerve_u<FILTER::LPFIIR3 *> swerveFilterOutput_ = {}; //舵轮输出滤波器
+    Swerve_u<PositionalPid *> wheelVelPid_ = {};          //轮速
 };
 
 } // namespace CHASSIS

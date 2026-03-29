@@ -7,12 +7,12 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid gWzAP{ 10.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.1f };
+static PositionalPid gWzAP{ 8.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.12f };
 static float spinWz;
 
 namespace CHASSIS {
 class RunState : public FSMState<FSMState_e> {
-    static constexpr float ACC = 0.5f;
+    static constexpr float ACC = 0.25f;
 
 public:
     RunState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::RUN), chassis_(_chassis), wzAngPid_(&gWzAP) {}

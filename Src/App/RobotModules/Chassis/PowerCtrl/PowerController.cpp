@@ -45,7 +45,7 @@ void PowerController::updateReferee(const RefereeMsg_s &_msg)
     limitPower_ = _msg.chassisPowerLimit;
 #else
     powerBuffer_ = 60.f;
-    limitPower_ = 50.f;
+    limitPower_ = 150.f - 10.f;
 #endif
 }
 

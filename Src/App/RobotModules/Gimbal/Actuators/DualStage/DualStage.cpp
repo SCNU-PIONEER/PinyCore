@@ -30,8 +30,6 @@ extern canHandle HCAN1;
 using namespace GIMBAL;
 using namespace PINYMOTOR;
 
-float bigYawZeroAng; //强制要求上电必须摆正大yaw
-
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 5.f),
@@ -259,6 +257,7 @@ void DualStage::compensateImuAngle()
     }
 }
 
+float bigYawZeroAng; //强制要求上电必须摆正大yaw
 void DualStage::resetZeroPoint()
 {
     if (fabsf(getMinorArc(motors_.Gim_s.FirstYaw->posNorm(), 0.f)) < 0.05f) {

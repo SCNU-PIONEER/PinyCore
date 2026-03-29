@@ -62,8 +62,8 @@ public:
             return FSMState_e::BLOCK;
         else if (loader_->msg.state == FSMState_e::AUTO)
             return FSMState_e::AUTO;
-        else if (loader_->msg.state == FSMState_e::SINGLE)
-            return FSMState_e::SINGLE;
+        // else if (loader_->msg.state == FSMState_e::SINGLE)
+        //     return FSMState_e::SINGLE;
         else
             return FSMState_e::STOP;
     }

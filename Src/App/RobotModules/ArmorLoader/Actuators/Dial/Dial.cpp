@@ -39,7 +39,7 @@ Dial::Dial()
 
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
     this->stateFactory_.addState(FSMState_e::BLOCK, std::make_unique<BlockState>(this));
-    this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
+    // this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 }

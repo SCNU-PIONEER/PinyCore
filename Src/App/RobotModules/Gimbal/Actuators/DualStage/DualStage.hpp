@@ -94,9 +94,9 @@ class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
  */
 class DualStage : public Gimbal {
 public:
-    static constexpr float PITCH_LAUNCH_ANG = 1.22764301f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.679594994f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.42607498f;
+    static constexpr float PITCH_LAUNCH_ANG = 1.19466066f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.739423871f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.52502871f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;

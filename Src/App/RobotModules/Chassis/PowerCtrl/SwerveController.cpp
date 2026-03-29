@@ -9,17 +9,18 @@ SwerveController::SwerveController(ChassisType_e _chassisType, CAP *_cap) : Powe
     Wheel.overrideParams(WheelLaunchMotion);
     float wheelEstVector[PowerModel_s::FIT_RANK] = { WheelUniformMotion.K0, WheelUniformMotion.MLC,
                                                      WheelUniformMotion.ESR };
-    wheelRLS_ = new RLS<PowerModel_s::FIT_RANK>(0.999f, Matrix<PowerModel_s::FIT_RANK, 1>(wheelEstVector));
+    wheelRLS_ = new RLS<PowerModel_s::FIT_RANK>(0.9999f, Matrix<PowerModel_s::FIT_RANK, 1>(wheelEstVector));
 
     Steer.overrideParams(SteerLaunchMotion);
 #if ENABLE_STEER_RLS
     float steerEstVector[PowerModel_s::FIT_RANK] = { SteerLaunchMotion.K0, SteerLaunchMotion.MLC,
                                                      SteerLaunchMotion.ESR };
-    steerRLS_ = new RLS<PowerModel_s::FIT_RANK>(0.999f, Matrix<PowerModel_s::FIT_RANK, 1>(steerEstVector));
+    steerRLS_ = new RLS<PowerModel_s::FIT_RANK>(0.999999999f, Matrix<PowerModel_s::FIT_RANK, 1>(steerEstVector));
 #endif
 }
 float motorCmdRads[8] = {};
-void SwerveController::cmdPowerCalc(const float *_motorSpeed, IMotor *_motor[8], const float *_cmd)
+void SwerveController::cmdPowerCalc(const float *_motorSpeed, IMotor *_motor[8], const float *_cmd,
+                                    const float _sVel[4])
 {
     wheelCmdPower_ = 0.f;
     steerCmdPower_ = 0.f;
@@ -28,16 +29,16 @@ void SwerveController::cmdPowerCalc(const float *_motorSpeed, IMotor *_motor[8],
         cmdPower_[i] = Wheel.power(_cmd[i], wheelCmdVel);
         wheelCmdPower_ += cmdPower_[i];
 
-        const float steerCmdVel = _motor[i + 4]->vel() * _motor[i + 4]->rr();
+        const float steerCmdVel = _sVel[i] * _motor[i + 4]->rr();
         cmdPower_[i + 4] = Steer.power(_cmd[i + 4], steerCmdVel);
         steerCmdPower_ += cmdPower_[i + 4];
         motorCmdRads[i] = wheelCmdVel;
         motorCmdRads[i + 4] = steerCmdVel;
     }
-    chassisRawPower_ = wheelCmdPower_ + steerCmdPower_;
+    chassisRawPower_ = wheelCmdPower_; //+ steerCmdPower_; //steerCmdPower_;
 }
 float motorRelRads[8] = {};
-void SwerveController::relPowerCalc(IMotor *_motor[8])
+void SwerveController::relPowerCalc(IMotor *_motor[8], const float _sVel[4])
 {
     wheelRelPower_ = 0;
     steerRelPower_ = 0;
@@ -46,16 +47,16 @@ void SwerveController::relPowerCalc(IMotor *_motor[8])
         relPower_[i] = Wheel.power(_motor[i]->torq(), wheelRelVel);
         wheelRelPower_ += relPower_[i];
 
-        const float steerRelVel = _motor[i + 4]->vel() * _motor[i + 4]->rr();
+        const float steerRelVel = _sVel[i] * _motor[i + 4]->rr();
         relPower_[i + 4] = Steer.power(_motor[i + 4]->torq(), steerRelVel);
         steerRelPower_ += relPower_[i + 4];
         motorRelRads[i] = wheelRelVel;
         motorRelRads[i + 4] = steerRelVel;
     }
-    chassisRealPower_ = wheelRelPower_ + steerRelPower_;
+    chassisRealPower_ = wheelRelPower_; // + steerRelPower_; //steerRelPower_;
 }
 
-void SwerveController::torqueCalc(IMotor *_motor[8], const float *_cmd)
+void SwerveController::torqueCalc(IMotor *_motor[8], const float *_cmd, const float _sVel[4])
 {
     for (uint8_t i = 0; i < motorNum_ / 2; i++) {
         const float wheelRelVel = _motor[i]->vel() * _motor[i]->rr();
@@ -68,7 +69,7 @@ void SwerveController::torqueCalc(IMotor *_motor[8], const float *_cmd)
                                                        (2 * Wheel.modelParams.ESR),
                                                _cmd[i], 0.f);
 
-        const float steerRelVel = _motor[i + 4]->vel() * _motor[i + 4]->rr();
+        const float steerRelVel = _sVel[i] * _motor[i + 4]->rr();
         discriminant = std::max(Steer.delta(steerRelVel, setPower_[i + 4]), 0.f);
         sign = (_cmd[i + 4] == 0) ? 0.f : ((_cmd[i + 4] > 0) ? 1.f : -1.f);
         setTorq_[i + 4] = (sign >= 0) ?
@@ -83,7 +84,7 @@ void SwerveController::torqueCalc(IMotor *_motor[8], const float *_cmd)
 float kn = 0;
 float mlc = 0;
 float esr = 0;
-void SwerveController::rlsUpdate(IMotor *_motor[8])
+void SwerveController::rlsUpdate(IMotor *_motor[8], const float _sVel[4])
 {
     std::array<float, 4> vel = {};
     float vectorValue[PowerModel_s::FIT_RANK] = {};
@@ -105,7 +106,7 @@ void SwerveController::rlsUpdate(IMotor *_motor[8])
 #if ENABLE_STEER_RLS
     float steerVector[PowerModel_s::FIT_RANK] = {};
     for (uint8_t i = 0; i < motorNum_ / 2; i++) {
-        const float vel = _motor[i + 4]->vel() * _motor[i + 4]->rr();
+        const float vel = _sVel[i] * _motor[i + 4]->rr();
         steerVector[0] += _motor[i + 4]->torq() * vel;
         steerVector[1] += vel * vel;
         steerVector[2] += _motor[i + 4]->torq() * _motor[i + 4]->torq();
@@ -119,6 +120,9 @@ void SwerveController::rlsUpdate(IMotor *_motor[8])
     kn = Wheel.modelParams.K0;
     mlc = Wheel.modelParams.MLC;
     esr = Wheel.modelParams.ESR;
+    // kn = Steer.modelParams.K0;
+    // mlc = Steer.modelParams.MLC;
+    // esr = Steer.modelParams.ESR;
 }
 float rawPower = 0;
 float realPower = 0;
@@ -126,18 +130,18 @@ float clacPower = 0;
 float setpower = 0;
 float steerPower = 0;
 std::vector<float> SwerveController::powerCtrl(const float *_motorSpeed, PINYMOTOR::IMotor *_motor[8],
-                                               const float *_cmd, RefereeMsg_s _msg)
+                                               const float *_cmd, RefereeMsg_s _msg, const float _sVel[4])
 {
 #if POWERCTRL_USE_RLS
-    //rlsUpdate(_motor);
+    // rlsUpdate(_motor, _sVel);
 #endif
     update(_msg);
 
-    cmdPowerCalc(_motorSpeed, _motor, _cmd);
+    cmdPowerCalc(_motorSpeed, _motor, _cmd, _sVel);
 
     float steerMaxPower = maxPower_ * 0.8f;
     float wheelMaxPower = std::max(maxPower_ * 0.2f, maxPower_ - steerCmdPower_);
-    steerPower = steerCmdPower_;
+    steerPower = steerRelPower_;
     wheelPowerRatio_ = (wheelCmdPower_ > wheelMaxPower) ? (wheelMaxPower / wheelCmdPower_) : 1.f;
     steerPowerRatio_ = (steerCmdPower_ > steerMaxPower) ? (steerMaxPower / steerCmdPower_) : 1.f;
     float chassisSetPower = 0;
@@ -149,8 +153,8 @@ std::vector<float> SwerveController::powerCtrl(const float *_motorSpeed, PINYMOT
         chassisSetPower += setPower_[i + 4];
     }
 
-    torqueCalc(_motor, _cmd);
-    relPowerCalc(_motor);
+    torqueCalc(_motor, _cmd, _sVel);
+    relPowerCalc(_motor, _sVel);
 
     rawPower = chassisRawPower_;
     realPower = capFeedbackPower_;

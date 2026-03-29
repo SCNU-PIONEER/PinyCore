@@ -9,7 +9,7 @@ namespace CHASSIS {
 class SpinState : public FSMState<FSMState_e> {
     static constexpr float CONPENSATION = 0.5f;
     static constexpr float OFFSET_SPIN_SPEED = 0.5f;
-    static constexpr float MAX_SPIN_SPEED = 1.3f;
+    static constexpr float MAX_SPIN_SPEED = 2.f;
     static constexpr float NORMAL_SPIN_SPEED = 0.5f * 2.f * PI; // 0.5圈/s
 
 public:
@@ -32,14 +32,14 @@ public:
                                  std::fmin(chassis_->msg.vx, chassis_->msg.vx + CONPENSATION));
         ref.Speed.vy = std::fmax(chassis_->msg.vy - CONPENSATION,
                                  std::fmin(chassis_->msg.vy, chassis_->msg.vy + CONPENSATION));
-        // // ref.wz = getSpinVel(spinCnt_++);
+        // ref.wz = getSpinVel(spinCnt_++);
         // if (spinCnt_ + 5 >= MAX_SPIN_CNT)
         //     maxSpinCount = 0;
         // else if (spinCnt_ - 5 <= 0)
         //     maxSpinCount = MAX_SPIN_CNT;
         // SMOOTH::slopeFollowing(&maxSpinCount, &spinCnt_, 1.f);
-        // ref.Speed.wz = MAX_SPIN_SPEED * (sin(omiga * spinCnt_) + 1);
-        ref.Speed.wz = MAX_SPIN_SPEED;
+        // ref.Speed.wz = MAX_SPIN_SPEED * (sin(omiga * spinCnt_) + 1.5f);
+        ref.Speed.wz = MAX_SPIN_SPEED * 2.f;
         chassis_->ctrl(ref);
     }
 
@@ -78,7 +78,7 @@ private:
     bool spinDir_ = false; // true : left, false: right
     // uint32_t spinCnt_ = 0;
     static constexpr float SPIN_FREQ = 1000.f; //hz,代码运行频率
-    static constexpr float PERIOD = 4;         //s
+    static constexpr float PERIOD = 2;         //s
     static constexpr float MAX_SPIN_CNT = PERIOD * SPIN_FREQ;
     float spinCnt_ = 0;
     float maxSpinCount = 0;

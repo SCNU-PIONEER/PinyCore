@@ -34,38 +34,38 @@ constexpr float F_PI = std::numbers::pi_v<float>;
 //以下数组可以塞到类内。但不好用free master
 //RF 0 ,LF 1 ,LB 2 ,RB 3
 
-FILTER::LPFIIR3 swerveFilterInput[4] = {
+FILTER::LPFIIR3 swerveFilterOutput[4] = {
     { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
 };
 
-FILTER::LPF swerveFilterOutput[4]{
+FILTER::LPF swerveFilterInput[4]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 4.f),
-    FILTER::LPF(1000.f, 3.f),
+    FILTER::LPF(1000.f, 4.f),
 };
 
 PositionalPid swervePosPid[4] = {
-    PositionalPid(15.f, 0.f, 0.2f, 1.f / 1000.f, 10.f, 35.f, 0.f),
-    PositionalPid(15.f, 0.f, 0.1f, 1.f / 1000.f, 10.f, 35.f, 0.f),
-    PositionalPid(15.f, 0.f, 0.25f, 1.f / 1000.f, 10.f, 35.f, 0.f),
-    PositionalPid(30.f, 0.f, 0.02f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
+    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
+    PositionalPid(30.f, 10.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
+    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
 };
 PositionalPid swerveVelPid[4] = {
-    PositionalPid(0.45f, 0.05f, 0.01f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.5f, 0.05f, 0.025f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.5f, 0.01f, 0.02f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
-    PositionalPid(0.45f, 0.3f, 0.02f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
+    PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
+    PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
+    PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
 };
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
-    PositionalPid(0.45f, 0.000f, 0.0025f, 1.f / 1000.f, 1.f, 4.f, 0.f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
 };
 
 Swerve::Swerve()
@@ -152,14 +152,16 @@ void Swerve::update(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
 
-    // TODO: yaw
     loadDeltaYaw();
     loadRefereeData(_param);
 
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRadps;
-        curDir._[i] = swerveFilterInput_._[i]->process(motors_._[i + 4]->data().ang);
-        wCurr[i] = motors_._[i]->data().torq; //debug
+        curDir._[i] = motors_._[i + 4]->posNorm();
+        sCurVel._[i] = swerveFilterInput_._[i]->process(motors_._[i + 4]->data().spdRadps);
+        //debug
+        sCurTorq._[i] = motors_._[i + 4]->data().torq;
+        wCurr[i] = motors_._[i]->data().torq;
     }
 
     Speed_u v = forward(wSpeed_);
@@ -304,11 +306,13 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
  */
 float iq[8] = {};
 float rawiq[8] = {};
+float powerCmd[8] = {}; //功率控制
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir;
-    float cmd[8] = {};
-    float expRads[8] = {};
+    WheelsSpeed_u refWSpeed = {};
+    float expRads[8] = {}; //功率控制
+    float sDebugVel[4] = {};
 
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.Speed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.Speed.vy, MAX_VY_SPEED));
@@ -317,61 +321,60 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     Speed_u refSpeed = { .Speed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
                                     .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
                                     .wz = wz } };
-    WheelsSpeed_u refWSpeed = reverse(refSpeed);
+
+    if (vx != 0 || vy != 0 || wz != 0)
+        refWSpeed = reverse(refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
+        //6020
         tempDir._[i] = expDir._[i];
-
         //先决定正反转,要6020转角最小，最好一个对角线上的3508速度直接反向。
-        if (fabs(getMinorArc(expDir._[i], motors_._[i + 4]->posNorm())) >= F_PI / 2) {
+        if (fabs(getMinorArc(expDir._[i], curDir._[i])) >= F_PI / 2) {
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
 
         refWSpeed_ = refWSpeed; //debug
 
-        del[i] = getMinorArc(tempDir._[i], motors_._[i + 4]->posNorm());
-        vel[i] = swervePosPid_._[i]->calc(del[i], 0);
-        sTorq[i] = swerveVelPid_._[i]->calc(vel[i], motors_._[i + 4]->vel());
+        sDel[i] = getMinorArc(tempDir._[i], curDir._[i]);
+        sExpVel[i] = swervePosPid_._[i]->calc(sDel[i], 0);
+        sTorq[i] = swerveVelPid_._[i]->calc(sExpVel[i], sCurVel._[i]);
 
-        //6020
-        if (_refSpeed.Speed.vx == 0 && _refSpeed.Speed.vy == 0 && _refSpeed.Speed.wz == 0) {
-            //cmd[i + 4] = 0;
-            motors_._[i + 4]->cmdTorq(0);
-        } else {
-            ///cmd[i + 4] = swerveFilterOutput_._[i]->process(sTorq[i]);
-            motors_._[i + 4]->cmdTorq(swerveFilterOutput_._[i]->process(sTorq[i]));
-        }
-        // motors_.S_RF->cmdTorq(0);
-        // motors_.S_LF->cmdTorq(0);
-        // motors_.S_LB->cmdTorq(0);
-        // motors_.S_RB->cmdTorq(0);
+        powerCmd[i + 4] = sTorq[i];
+        // motors_.Motor.S_RF->cmdTorq(0);
+        // motors_.Motor.S_LF->cmdTorq(0);
+        // motors_.Motor.S_LB->cmdTorq(0);
+        // motors_.Motor.S_RB->cmdTorq(0);
 
         //3508
-        wTorq[i] = wheelVelPid_._[i]->calc(refWSpeed._[i], motors_._[i]->vel());
-        cmd[i] = wTorq[i];
-        expRads[i] = refWSpeed._[i];
-        expRads[i + 4] = vel[i];
-        motors_._[i]->cmdTorq(wTorq[i]);
+        wTorq[i] = wheelVelPid_._[i]->calc(refWSpeed._[i], wSpeed_._[i]);
+        powerCmd[i] = wTorq[i];
+        // powerCmd[i] = 0;
+
         // motors_._[i]->cmdTorq(0); //不动
-
-        // motors_.M_RF->cmdTorq(0);
-        // motors_.M_LF->cmdTorq(0);
-        // motors_.M_LB->cmdTorq(0);
-        // motors_.M_RB->cmdTorq(0);
+        // motors_.Motor.M_RF->cmdTorq(0);
+        // motors_.Motor.M_LF->cmdTorq(0);
+        // motors_.Motor.M_LB->cmdTorq(0);
+        // motors_.Motor.M_RB->cmdTorq(0);
+        expRads[i] = refWSpeed._[i];
+        expRads[i + 4] = sExpVel[i];
+        rawiq[i] = powerCmd[i];
+        rawiq[i + 4] = powerCmd[i + 4];
+        sDebugVel[i] = motors_._[i + 4]->vel();
     }
-    //     memcpy(rawiq, cmd, sizeof(cmd));
-    //     std::vector<float> torq;
-    //     torq = powerCtrl_->powerCtrl(expRads, motors_._, cmd, refereeMsg_);
 
-    //     for (uint8_t i = 0; i < 8; i++) {
-    //         iq[i] = torq[i];
-    // #if APP_USE_POWERCTRL
-    //         motors_._[i]->cmdTorq(torq[i]);
-    // #else
-    //         motors_._[i]->cmdTorq(cmd[i]);
-    // #endif
-    //     }
+    std::vector<float> torq;
+    torq = powerCtrl_->powerCtrl(expRads, motors_._, powerCmd, refereeMsg_, sDebugVel);
+
+    for (uint8_t i = 0; i < 8; i++) {
+        iq[i] = torq[i];
+#if APP_USE_POWERCTRL
+        motors_._[i]->cmdTorq(torq[i]); //功率控制
+                                        // motors_._[i]->cmdTorq(powerCmd[i]);
+#else
+        motors_._[i]->cmdTorq(powerCmd[i]);
+#endif
+    }
 }
 
 void Swerve::loadDeltaYaw()

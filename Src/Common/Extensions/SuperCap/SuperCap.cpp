@@ -1,6 +1,9 @@
 #include "SuperCap.hpp"
+#include <cstdint>
 #include <cstring>
-
+#include "Dwt.hpp"
+uint32_t cnt = 0;
+float freq = 0;
 CAP::CAP(canHandle *_hcan) : hcan_(_hcan), rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
 {
     Can::instance().registerCallback(hcan_, CAP_DATA_ID, [this](const uint8_t *_rxBuf) {
@@ -39,6 +42,7 @@ uint8_t CAP::capDataSend(float _capChargePower, bool _capEnableFlag, bool _enabl
 
         ret = static_cast<uint8_t>(Can::instance().transmitData(hcan_, CAP_CMD_ID, txbuf, 8));
         lastSendTick_ = xTaskGetTickCount();
+        freq = Dwt::instance().getFreq(&cnt);
     }
     return ret;
 }

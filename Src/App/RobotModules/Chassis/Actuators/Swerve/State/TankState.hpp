@@ -9,7 +9,7 @@
 
 namespace CHASSIS {
 class TANKState : public FSMState<FSMState_e> {
-    static constexpr float ACC = 0.5f;
+    static constexpr float ACC = 0.25f;
 
 public:
     TANKState(Swerve *_chassis) : FSMState<FSMState_e>(FSMState_e::TANK), chassis_(_chassis) {}
