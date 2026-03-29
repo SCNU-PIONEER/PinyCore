@@ -15,7 +15,7 @@ endif()
 
 if(APP_USE_CHASSIS)
   file(GLOB_RECURSE CHASSIS_SOURCES CMAKE_CONFIGURE_DEPENDS
-    "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
+      "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
   list(APPEND SOURCES ${CHASSIS_SOURCES})
 endif()
 

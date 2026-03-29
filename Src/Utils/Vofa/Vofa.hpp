@@ -6,6 +6,7 @@
 #include <utility>
 #include <stdarg.h>
 #include HAL_INCLUDE
+#include "Singleton.hpp"
 
 class Vofa {
 public:
@@ -24,21 +25,10 @@ public:
      */
     void JustFloat(float *_data, uint8_t _num);
 
-    /**
-     * @brief get vofa instance
-     */
-    inline static Vofa &instance()
-    {
-        static Vofa instance;
-        return instance;
-    }
-
-protected:
-    Vofa(const Vofa &);
-    Vofa &operator=(const Vofa &);
-    Vofa() = default;
-
 private:
+    Vofa() = default;
+    friend class Singleton<Vofa>;
+
     uint8_t *FWBuffer_;
     // uint8_t *JFBuffer_;
     UART_HandleTypeDef *uartHandle_;

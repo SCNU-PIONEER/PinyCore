@@ -4,19 +4,14 @@
 #include "StmLogMsg.hpp"
 #include <string_view>
 #include <cstring>
+#include "Singleton.hpp"
 
 #define LOCATION std::source_location::current()
 
 namespace LOG {
 
-class Logger {
+class Logger : public Singleton<Logger> {
 public:
-    static Logger &instance()
-    {
-        static Logger instance;
-        return instance;
-    }
-
     template <typename... Args> void raw(const char *_format, Args &&..._args)
     {
         SEGGER_RTT_printf(0, _format, std::forward<Args>(_args)...);
@@ -152,6 +147,7 @@ protected:
     Logger(const Logger &);
     Logger &operator=(const Logger &);
     Logger() { SEGGER_RTT_Init(); }
+    friend class Singleton<Logger>;
 
 private:
     Config config;

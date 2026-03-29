@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "MsgImpl.hpp"
 #include "./UIDesigner.hpp"
+#include "Singleton.hpp"
 
 namespace UI {
 
@@ -22,17 +23,8 @@ struct Msg_s {
     void *pdata;
 };
 
-class APP {
+class APP : public Singleton<APP> {
 public:
-    static APP *instance()
-    {
-        static APP instance;
-        return &instance;
-    }
-
-    APP(const APP &) = delete;
-    APP &operator=(const APP &) = delete;
-
     void init();
     void task();
 
@@ -47,10 +39,13 @@ public:
 protected:
 private:
     APP();
+    friend class Singleton<APP>;
+
     Client client_;
     Info_s dynamicInfo_[DYNAIMIC_NUM] = {};
     Info_s constInfo_[STATIC_NUM] = {};
     uint32_t updateCnt = 0;
+    uint32_t resetCnt = 0;
 };
 
 } // namespace UI

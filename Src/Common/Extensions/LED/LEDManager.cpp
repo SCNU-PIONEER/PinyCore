@@ -1,39 +1,27 @@
 #include "LEDManager.hpp"
 
-#include "FreeRTOS.h"
-#include "task.h"
-
 using namespace LED;
 
 LEDDriver *LEDDriver::headDriver_ = nullptr;
 LEDDriver *LEDDriver::tailDriver_ = nullptr;
 
-LEDs::LEDs() : queue_(xQueueCreate(3, sizeof(Cmd_s)))
+void LEDs::task()
 {
-    // uxStackDepth depends on the number of lights
-    xTaskCreate(task, "led_task", 128, nullptr, 10, nullptr);
-};
-
-void LEDs::task(void *_param)
-{
-    (void)(_param);
-    auto instance = &LEDs::instance();
-
     for (;;) {
         Cmd_s cmd;
-        if (xQueueReceive(instance->queue_, &cmd, portMAX_DELAY) == pdTRUE) {
+        if (xQueueReceive(queue_, &cmd, portMAX_DELAY) == pdTRUE) {
             switch (cmd.type) {
             case CmdType_e::OFF:
-                instance->handleOff(cmd.index, cmd.ctrlNum);
+                handleOff(cmd.index, cmd.ctrlNum);
                 break;
             case CmdType_e::ON_IN_NORMAL:
-                instance->handleOnInNormal(cmd.index, cmd.ctrlNum);
+                handleOnInNormal(cmd.index, cmd.ctrlNum);
                 break;
             case CmdType_e::BLINK_RGB:
-                instance->handleBlinkRGB(cmd.index, cmd.ctrlNum);
+                handleBlinkRGB(cmd.index, cmd.ctrlNum);
                 break;
             case CmdType_e::RAINBOW_FLOW:
-                instance->handleRainbowFlow(cmd.index, cmd.ctrlNum);
+                handleRainbowFlow(cmd.index, cmd.ctrlNum);
                 break;
             default:
                 // TODO: other effects
@@ -41,12 +29,6 @@ void LEDs::task(void *_param)
             }
         }
     }
-}
-
-LEDs &LEDs::instance()
-{
-    static LEDs instance;
-    return instance;
 }
 
 void LEDs::addLEDs(LEDDriver *_driver)

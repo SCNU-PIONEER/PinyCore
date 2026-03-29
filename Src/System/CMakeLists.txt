@@ -69,6 +69,7 @@ endif()
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SOURCES})
 
 find_include_dir(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
+find_include_dir(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${HEADERS})
 
 target_link_libraries(

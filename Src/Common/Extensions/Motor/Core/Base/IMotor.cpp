@@ -11,7 +11,7 @@ using namespace PINYMOTOR;
 IMotor::IMotor(const char _name[16], InitConfig_s _config)
         : posPID_(_config.posPID), velPID_(_config.velPID), globalState(GlobalState_e::UNRECOGNIZED)
 {
-    regInfo_.uid = MotorManager::instance()->assignId();
+    regInfo_.uid = MotorManager::instance().assignId();
     regInfo_.pComHandle = _config.pComHandle;
     regInfo_.comType = _config.comType;
     regInfo_.workMode = _config.workMode;
@@ -56,23 +56,23 @@ void IMotor::calcRecvFreq()
 
 MotorTypeDef_e IMotor::registerMotor()
 {
-    auto *instance = MotorManager::instance();
-    auto it = instance->motors().find(uid());
-    if (it != instance->motors().end()) {
+    auto &instance = MotorManager::instance();
+    auto it = instance.motors().find(uid());
+    if (it != instance.motors().end()) {
         return false;
     }
-    instance->motors().insert({ uid(), this });
+    instance.motors().insert({ uid(), this });
     return 0;
 }
 
 MotorTypeDef_e IMotor::cancelMotor()
 {
-    auto *instance = MotorManager::instance();
-    auto it = instance->motors().find(uid());
-    if (it == instance->motors().end()) {
+    auto &instance = MotorManager::instance();
+    auto it = instance.motors().find(uid());
+    if (it == instance.motors().end()) {
         return false;
     }
-    instance->motors().erase(it);
+    instance.motors().erase(it);
     return 0;
 }
 

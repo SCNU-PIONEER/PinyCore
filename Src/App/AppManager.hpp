@@ -3,18 +3,10 @@
 #include "Task.hpp"
 #include "etl/delegate.h"
 #include <vector>
+#include "Singleton.hpp"
 
-class AppManager : public Task<AppManager, 512> {
+class AppManager : public Singleton<AppManager>, public Task<AppManager, 512> {
 public:
-    static AppManager *instance()
-    {
-        static AppManager instance;
-        return &instance;
-    }
-
-    AppManager(const AppManager &) = delete;
-    AppManager &operator=(const AppManager &) = delete;
-
     void initApp();
 
     template <typename F> requires std::invocable<F> void schedule(F _callback) { tasks.push_back(_callback); }
@@ -23,6 +15,8 @@ public:
 
 private:
     AppManager() : Task("AppTask", TaskPriority_e::HIGH1) {};
+    friend class Singleton<AppManager>;
+
     void createApp();
 
     std::vector<etl::delegate<void()> > tasks;

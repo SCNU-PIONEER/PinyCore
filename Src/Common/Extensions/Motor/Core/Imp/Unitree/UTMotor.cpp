@@ -80,20 +80,32 @@ MotorTypeDef_e UTMotor::parse(Feedback_s *_rxBuf)
     } else {
         constexpr float B2C = 2 * PI / 32768;
         this->status_.error_ = static_cast<ErrorStatus_e>(fb->mode.status);
-        this->data_.angLast = this->data_.rawAng;
         float noumenaAng = static_cast<float>(fb->fbk.pos) * B2C;
         this->data_.rawAng = regInfo_.isReverse ? (2 * PI) - noumenaAng : noumenaAng;
         float del = this->data_.rawAng - this->data_.zeroAng;
         this->data_.ang = del < 0 ? del + (2 * std::numbers::pi_v<float>) : del;
-        this->data_.multipCirAng += (this->data_.rawAng - this->data_.angLast) / this->rr();
-        this->data_.cirNum = this->data_.multipCirAng / (2 * PI);
-        this->data_.singleCirAng = rangeMap(this->data_.multipCirAng, 0, (2 * PI));
+        this->data_.singleCirAng = rangeMap(data_.ang / this->rr());
+        if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
+            this->globalState = GlobalState_e::ONLINE;
+            this->data_.angLast = this->data_.ang;
+        }
+        float angDiff = this->data_.ang - this->data_.angLast;
+        if (angDiff > PI) {
+            this->data_.cirNum -= 1.f / this->rr();
+        } else if (angDiff < -PI) {
+            this->data_.cirNum += 1.f / this->rr();
+        }
+        this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
+        this->data_.angLast = this->data_.ang;
+
         float noumenaVel = ((float)fb->fbk.speed / 256) * (2 * PI);
         this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
         this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
+
         float noumenaTorq = ((float)fb->fbk.torque) / 256;
         this->data_.torq = regInfo_.isReverse ? -noumenaTorq : noumenaTorq;
         this->data_.curr = this->data_.torq / status_.Kn;
+
         this->data_.tempture = fb->fbk.temp;
     }
 
