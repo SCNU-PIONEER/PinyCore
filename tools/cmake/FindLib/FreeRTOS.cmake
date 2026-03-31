@@ -1,8 +1,8 @@
-  FetchContent_Declare(
+FetchContent_Declare(
     FreeRTOS
-    URL https://github.com/FreeRTOS/FreeRTOS-Kernel/archive/refs/tags/V11.2.0.tar.gz
+    URL https://github.com/FreeRTOS/FreeRTOS-Kernel/releases/download/V11.3.0/FreeRTOS-KernelV11.3.0.zip
     URL_HASH
-      SHA256=e148d3a442ac7652c998e0a932c4cc2a3c6abff66a3a0a96a7678c0cd092d41c
+    SHA256=e9187bb79db6115c81b50f4d9fc48ac91a1d42a738378f56a540965fd26feee7
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE SOURCE_DIR "${THIRD_PARTY_DIR}/FreeRTOS")
 
 add_library(freertos_config INTERFACE)
