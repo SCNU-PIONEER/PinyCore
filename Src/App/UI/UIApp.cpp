@@ -33,7 +33,7 @@ void APP::updateChassis(const ChassisUIMsg_s &_msg)
     //注意动态字符UI不能一直 client_.ready，不然其他UI会发不出去
     //client_.ready(&dynamicInfo_[0]);
     using namespace UI::DYNAMIC_UI;
-    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)], 0, sizeof(Info_s));
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, 0, 30);
     strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, "chassis ");
     size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text);
     const auto &str = magic_enum::enum_name(_msg.state);
@@ -46,7 +46,7 @@ void APP::updateChassis(const ChassisUIMsg_s &_msg)
 void APP::updateGimbal(const GimbalUIMsg_s &_msg)
 {
     using namespace UI::DYNAMIC_UI;
-    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)], 0, sizeof(Info_s));
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, 0, 30);
     strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, "gimbal ");
     size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text);
     const auto &str = magic_enum::enum_name(_msg.state);
@@ -59,7 +59,7 @@ void APP::updateGimbal(const GimbalUIMsg_s &_msg)
 void APP::updateArm(const ArmUIMsg_s &_msg)
 {
     using namespace UI::DYNAMIC_UI;
-    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)], 0, sizeof(Info_s));
+    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, 0, 30);
     strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, "arm ");
     size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text);
     const auto &str = magic_enum::enum_name(_msg.state);

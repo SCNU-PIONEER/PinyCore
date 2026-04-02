@@ -10,8 +10,6 @@
 #include "ArmStopState.hpp"
 #include "ArmTeachState.hpp"
 
-#include "UIApp.hpp"
-
 using namespace ARM;
 
 
@@ -58,8 +56,6 @@ void Arm::update(const MsgBus_s *_param)
     motors.update();
 
     stateFactory_.update();
-
-    UI::APP::instance().updateArm({ .state = msg.state });
 }
 
 void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
