@@ -22,6 +22,9 @@ void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
     Can::instance().transmitData(&HCAN3, uid(), _buf, _len);
 }
 
+void UITxPacket::transmit(uint8_t *_buf, uint16_t _len) { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
+
+
 Standard::Standard()
 {
     InitConfig_s yawConfig = {
@@ -90,6 +93,7 @@ void Standard::update(const MsgBus_s *_bus)
         txPacket_.setData().vy = (cmsg.vy * cosYaw) + (cmsg.vx * sinYaw);
     };
     txPacket_.setData().deltaYaw = getMinorArc(motor_->posNorm(), 0.f);
+    uiPacket_.setData().gimbalState = msg.state;
 #endif
 
     this->stateFactory_.update();

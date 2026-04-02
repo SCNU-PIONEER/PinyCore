@@ -6,7 +6,22 @@
 #include "./UIDesigner.hpp"
 #include "Singleton.hpp"
 
+#include "RxPacket.hpp"
+#include "PacketImpl.hpp"
+
 namespace UI {
+
+class ArmRxPacket : public COMM::RxPacket<COMM::UIArmMsgPacket, 1> {
+public:
+    ArmRxPacket() { registerCallback(); }
+    void registerCallback() final;
+};
+
+class GimbalRxPacket : public COMM::RxPacket<COMM::UIGimbalMsgPacket, 1> {
+public:
+    GimbalRxPacket() { registerCallback(); }
+    void registerCallback() final;
+};
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 用户配置区 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -44,6 +59,9 @@ private:
     Info_s dynamicInfo_[DYNAIMIC_NUM] = {};
     Info_s constInfo_[STATIC_NUM] = {};
     uint32_t updateCnt = 0;
+
+    ArmRxPacket armRxPacket_;
+    GimbalRxPacket gimbalRxPacket_;
 };
 
 } // namespace UI

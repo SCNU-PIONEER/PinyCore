@@ -9,9 +9,18 @@
 #include "./ArmOreBin.hpp"
 #include "./ArmVideo.hpp"
 
+#include "TxPacket.hpp"
+#include "PacketImpl.hpp"
+
 namespace ARM {
 
 enum class JointState_e : uint8_t { FINISH_STATE = 0, MOVING_STATE };
+
+class UITxPacket : public COMM::TxPacket<COMM::UIArmMsgPacket> {
+public:
+    UITxPacket() : COMM::TxPacket<COMM::UIArmMsgPacket>(30.f) {}
+    void transmit(uint8_t *_buf, uint16_t _len) final;
+};
 
 } //namespace ARM
 
@@ -45,6 +54,7 @@ public:
 
     ARM::Pose_s pose = {};
 
+    ARM::UITxPacket uiPacket;
 
     // TODO: Cubic polynomial trajectory planning in joint spaces
     // TODO: quintic polynomial trajectory planning in joint spaces

@@ -2,6 +2,7 @@
 
 #include "MsgImpl.hpp"
 #include "Dwt.hpp"
+#include "Bsp_can.hpp"
 
 #include "./Arm.hpp"
 #include "./ArmMotor.hpp"
@@ -36,6 +37,10 @@ static InitConfig_s rightHandConfig = {
     .velPID = nullptr,
 };
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+void UITxPacket::transmit(uint8_t *_buf, uint16_t _len) { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
+
+
 Arm::Arm() : motors(angleMin, angleMax), hand("RightHand", rightHandConfig)
 {
     /* FSM */
@@ -54,6 +59,9 @@ void Arm::update(const MsgBus_s *_param)
     if (xQueueReceive(_param->armQueue, &msg, 0) == pdTRUE) {
     }
     motors.update();
+
+    uiPacket.setData().armState = msg.state;
+    uiPacket.setData().clampState = msg.switch1;
 
     stateFactory_.update();
 }

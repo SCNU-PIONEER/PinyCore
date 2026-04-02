@@ -87,4 +87,61 @@ public:
     }
 };
 
+class UIGimbalMsgPacket {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x22;
+    struct ProtoData_s {
+        GIMBAL::FSMState_e gimbalState;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            uint8_t gimbalState;
+            uint8_t reversed[7];
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        _data.content.gimbalState = static_cast<uint8_t>(_protoData.gimbalState);
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.gimbalState = static_cast<GIMBAL::FSMState_e>(_data.content.gimbalState);
+    }
+};
+
+class UIArmMsgPacket {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x23;
+    struct ProtoData_s {
+        ARM::FSMState_e armState = ARM::FSMState_e::STOP;
+         ARM::ClampState_e clampState = ARM::ClampState_e::NONE;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            uint8_t armState;
+            uint8_t clampState;
+            uint8_t reversed[6];
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        _data.content.armState = static_cast<uint8_t>(_protoData.armState);
+        _data.content.clampState = static_cast<uint8_t>(_protoData.clampState);
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.armState = static_cast<ARM::FSMState_e>(_data.content.armState);
+        _protoData.clampState = static_cast<ARM::ClampState_e>(_data.content.clampState);
+    }
+};
+
+
 } // namespace COMM

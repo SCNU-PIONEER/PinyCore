@@ -15,6 +15,12 @@ class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     void transmit(uint8_t *_buf, uint16_t _len) final;
 };
 
+class UITxPacket : public COMM::TxPacket<COMM::UIGimbalMsgPacket> {
+public:
+    UITxPacket() : COMM::TxPacket<COMM::UIGimbalMsgPacket>(30.f) {}
+    void transmit(uint8_t *_buf, uint16_t _len) final;
+};
+
 class Standard : public Gimbal {
 public:
     static constexpr float YAW_LAUNCH_ANG = 4.74211359f;
@@ -38,6 +44,7 @@ private:
     PINYMOTOR::IMotor *motor_;
 
     ChassisCtrlTxPacket txPacket_;
+    UITxPacket uiPacket_;
 };
 
 } // namespace GIMBAL

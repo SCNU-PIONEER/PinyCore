@@ -1,5 +1,7 @@
 #include "./UIApp.hpp"
+#include "Bsp_can.hpp"
 #include "StmLog.hpp"
+#include "UIApp.hpp"
 #include "UIDesigner.hpp"
 #include "sdkconfig.h"
 #include "magic_enum/magic_enum.hpp"
@@ -69,14 +71,39 @@ void APP::updateArm(const ArmUIMsg_s &_msg)
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)]);
 }
 
+void ArmRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+    });
+    LOG::info("ArmRxPacket", " Receive cb registered, uId:0x%hx \n", uid());
+}
+
+void GimbalRxPacket::registerCallback()
+{
+    Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+        xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+    });
+    LOG::info("GimbalRxPacket", " Receive cb registered, uId:0x%hx \n", uid());
+}
+
 void APP::task()
 {
     if (xTaskGetTickCount() - updateCnt >= SEND_INTERVAL) {
         updateCnt = xTaskGetTickCount();
         if (!client_.isCharInit || !client_.isGraphicInit)
             client_.sendInit();
-        else
+        else {
+            GimbalUIMsg_s gimbalMsg;
+            gimbalMsg.state = gimbalRxPacket_.data().gimbalState;
+            updateGimbal(gimbalMsg);
+
+            ArmUIMsg_s armMsg;
+            armMsg.state = armRxPacket_.data().armState;
+            updateArm(armMsg);
+
             client_.send();
+        }
     }
 }
 
