@@ -203,7 +203,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
                 abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
             } else if (sl == SW::UP) {
-                alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+                // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
             // cMsg_.state = CHASSIS::FSMState_e::STOP;
 

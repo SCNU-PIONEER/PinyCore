@@ -282,9 +282,6 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angP
         vel[i] = _angPID._[i]->calc(del[i], 0);
         outMaxRunVel[i] = vel[i];
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
-        if (msg.state == FSMState_e::STOP) {
-            torq[i] = 0.f;
-        }
         outMaxRunTorq[i] = torq[i];
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }

@@ -11,20 +11,20 @@
 #include <cmath>
 
 static PositionalPid gAutoPosPid[3] = {
-    PositionalPid(20.f, 25.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
+    PositionalPid(15.f, 10.f, 0.5f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //PositionalPid(200.f, 20.f, 5.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 static PositionalPid gAutoVelPid[3] = {
-    PositionalPid(1.f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(2.5f, 0.f, 0.005f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 //PositionalPid(20.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 
-static PositionalPid wBYawFollowPid = {
-    PositionalPid(2.f, 0.3f, 0.0001f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.01f),
+static PositionalPid wBYFollowPid = {
+    PositionalPid(10.f, 0.3f, 0.001f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.01f),
 };
 float debugWBYaw;
 
@@ -46,7 +46,7 @@ public:
             autoPosPid_._[i] = &gAutoPosPid[i];
             autoVelPid_._[i] = &gAutoVelPid[i];
         }
-        wBYawFollowPid_ = &wBYawFollowPid;
+        wBYawFollowPid_ = &wBYFollowPid;
     }
 
     void enter() final
@@ -71,23 +71,17 @@ public:
         eIA_s.SecondYaw = gimbal_->vmsg.yaw;
 
         delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
-        eMA_s.SecondYaw = rangeConversion(cMA_s.SecondYaw) + delArc.SecondYaw;
-        eMA_s.SecondYaw = PINYMOTOR::rangeMap(eMA_s.SecondYaw);
+        eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
 
         deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA_s.SecondYaw, cMA_s.SecondYaw);
         //超量程为正
         gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
 
         if (gimbal_->isVisionAngOver_) {
-            float deltaYawAng = rangeConversion(gimbal_->motors()->Gim_s.SecondYaw->posNorm());
-            if (deltaYawAng <= 0) {
-                dir_ = -1;
-            } else {
-                dir_ = 1;
-            }
-            // wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
-            wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
-            eIA_s.FirstYaw += dir_ * wBYaw_ * 0.001f;
+            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->vmsg.yaw, cIA_s.FirstYaw);
+            wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
+            // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
+            eIA_s.FirstYaw += wBYaw_ * 0.001f;
             visionExpBigYaw_ = cIA_s.FirstYaw; //重载当前大yaw角度
 
             debugWBYaw = wBYaw_;
@@ -100,14 +94,10 @@ public:
 
         delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
         delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
-        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
 
         eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
         eMA_s.FirstYaw = PINYMOTOR::rangeMap(cMA_s.FirstYaw + delArc.FirstYaw);
-
-        eMA_s.SecondYaw = rangeConversion(cMA_s.SecondYaw) + delArc.SecondYaw;
         eMA_s.SecondYaw = PINYMOTOR::clampArc(eMA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
-        eMA_s.SecondYaw = PINYMOTOR::rangeMap(eMA_s.SecondYaw);
 
         gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
     }
@@ -139,7 +129,6 @@ private:
     DualStage *gimbal_;
     float visionExpBigYaw_; //视觉进行自瞄，钉住大yaw角度
     float wBYaw_;
-    float dir_;
     float deltaVisionAng_;
     // bool isSecondYawReset_ = false;
     // uint16_t sYResetTime_ = 0;
