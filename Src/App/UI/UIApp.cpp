@@ -61,13 +61,21 @@ void APP::updateGimbal(const GimbalUIMsg_s &_msg)
 void APP::updateArm(const ArmUIMsg_s &_msg)
 {
     using namespace UI::DYNAMIC_UI;
-    memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, 0, 30);
-    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, "arm ");
-    size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text);
-    const auto &str = magic_enum::enum_name(_msg.state);
-    for (size_t i = 0; i < str.size(); i++) {
-        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text[len + i] = str[i];
-    }
+
+    auto copyString = []<typename T>(char *_text, T _id) {
+        memset(_text, 0, 30);
+        strcpy(_text, "arm ");
+        size_t len = strlen(_text);
+        const auto &str = magic_enum::enum_name(_id);
+        for (size_t i = 0; i < str.size(); i++) {
+            _text[len + i] = str[i];
+        }
+    };
+
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, _msg.state);
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAME_STATE)].config.text, _msg.clampState);
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)].config.text, _msg.customCtrlisOnline);
+
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)]);
 }
 
@@ -100,6 +108,8 @@ void APP::task()
 
             ArmUIMsg_s armMsg;
             armMsg.state = armRxPacket_.data().armState;
+            armMsg.clampState = armRxPacket_.data().clampState;
+            armMsg.customCtrlisOnline = armRxPacket_.data().customCtrlisOnline;
             updateArm(armMsg);
 
             client_.send();

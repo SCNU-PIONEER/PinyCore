@@ -4,8 +4,6 @@
 #include "IMotor.hpp"
 #include "TxPacket.hpp"
 #include "PacketImpl.hpp"
-#include "PidBasic.hpp"
-#include <cmath>
 
 namespace GIMBAL {
 

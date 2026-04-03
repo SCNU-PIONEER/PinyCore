@@ -62,6 +62,7 @@ void Arm::update(const MsgBus_s *_param)
 
     uiPacket.setData().armState = msg.state;
     uiPacket.setData().clampState = msg.switch1;
+    uiPacket.setData().customCtrlisOnline = msg.customCtrlisOnline;
 
     stateFactory_.update();
 }

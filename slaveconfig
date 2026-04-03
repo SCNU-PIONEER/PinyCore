@@ -17,8 +17,6 @@ CONFIG_APP_USE_CHASSIS=y
 # chassis config
 #
 CONFIG_APP_USE_MECANUM=y
-# CONFIG_APP_USE_OMNI is not set
-# CONFIG_APP_USE_BIPEDAL is not set
 # CONFIG_APP_USE_SWERVE is not set
 CONFIG_CHASSIS_TYPE="Mecanum"
 CONFIG_CHASSIS_FILE="\"Mecanum.hpp\""
@@ -26,26 +24,13 @@ CONFIG_CHASSIS_FILE="\"Mecanum.hpp\""
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 
-# CONFIG_APP_USE_GIMBAL is not set
 # CONFIG_APP_USE_TEST is not set
 # CONFIG_APP_USE_INS is not set
 CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
 CONFIG_APP_USE_REFEREE=y
 # CONFIG_APP_USE_VT13_KEYBOARD is not set
-
-#
-# UI config
-#
-# CONFIG_APP_USE_UI is not set
-
-#
-# UI config
-#
-CONFIG_UI_ROBOT_ID=0
-# end of UI config
-# end of UI config
-
+CONFIG_APP_USE_UI=y
 # CONFIG_APP_USE_ARM is not set
 # CONFIG_APP_USE_DT7_KEYBOARD is not set
 # CONFIG_APP_USE_TEACH is not set
@@ -97,6 +82,7 @@ CONFIG_USE_HARDFAULT=y
 CONFIG_USE_STM_LOG=y
 CONFIG_USE_VOFA=y
 CONFIG_USE_LAZY=y
+CONFIG_USE_SINGLETON=y
 # end of utils config
 
 #
