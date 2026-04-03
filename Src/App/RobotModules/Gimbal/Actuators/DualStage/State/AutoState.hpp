@@ -67,8 +67,8 @@ public:
     {
         DualStage_s<float> delArc = {};
 
-        eIA_s.Pitch = gimbal_->vmsg.pitch;
-        eIA_s.SecondYaw = gimbal_->vmsg.yaw;
+        eIA_s.Pitch = gimbal_->v2eData.pitch;
+        eIA_s.SecondYaw = gimbal_->v2eData.yaw;
 
         delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
         eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
@@ -78,7 +78,7 @@ public:
         gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
 
         if (gimbal_->isVisionAngOver_) {
-            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->vmsg.yaw, cIA_s.FirstYaw);
+            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA_s.FirstYaw);
             wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
             // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
             eIA_s.FirstYaw += wBYaw_ * 0.001f;
@@ -117,9 +117,9 @@ public:
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
 
-        if (gimbal_->msg.state == FSMState_e::NAV && !gimbal_->vmsg.control)
+        if (gimbal_->msg.state == FSMState_e::NAV && !gimbal_->v2eData.control)
             return FSMState_e::NAV;
-        else if (gimbal_->msg.state == FSMState_e::RUN && !gimbal_->vmsg.control)
+        else if (gimbal_->msg.state == FSMState_e::RUN && !gimbal_->v2eData.control)
             return FSMState_e::RUN;
         else
             return FSMState_e::AUTO;

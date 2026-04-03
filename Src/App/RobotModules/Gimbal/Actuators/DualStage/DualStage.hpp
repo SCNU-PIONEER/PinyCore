@@ -6,7 +6,8 @@
 #include "IMotor.hpp"
 #include "MsgImpl.hpp"
 #include "RefereeProt.hpp"
-#include "Nav.hpp"
+// #include "Nav.hpp"
+#include "MiniPC.hpp"
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
@@ -116,10 +117,18 @@ public:
 
     DualStage();
 
+    MiniPC miniPC_;
+    VisionToEc_s v2eData;
+    NavToEc_s n2eData;
+    DecesionToEc_s d2eData;
+    EcToVision_s &e2vData = miniPC_.setData().e2vData;
+    EcToNav_s &e2nData = miniPC_.setData().e2nData;
+    EcToDecesion_s &e2dData = miniPC_.setData().e2dData;
+
     DualStageDebug_s debug = {};
     bool isLaunched_ = false;
     bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
-    VisionMsg_s vmsg = {};
+    // VisionMsg_s vmsg = {};
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi
@@ -158,15 +167,12 @@ protected:
     void loadShooterMsg(void *_param);
     void sendVisionData();
     void sendNavData();
-
-    void resetZeroPoint(); //大yaw跳齿
+    void sendDecesionData();
 
     float calcYawTorq(float _vel, float _acc);
 
 private:
     ChassisMsg_s cmsg{};
-    NavMsg_s nmsg{};
-    // CHASSIS::FSMState_e lastChassisState_ = CHASSIS::FSMState_e::STOP;
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_;
     ShooterCtrlTxPacket shooterCtrlTxPacket_;

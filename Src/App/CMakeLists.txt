@@ -15,7 +15,7 @@ endif()
 
 if(APP_USE_CHASSIS)
   file(GLOB_RECURSE CHASSIS_SOURCES CMAKE_CONFIGURE_DEPENDS
-      "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
+    "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
   list(APPEND SOURCES ${CHASSIS_SOURCES})
 endif()
 
@@ -35,7 +35,8 @@ endif()
 
 if(APP_USE_GIMBAL)
   file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
-    "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp")
+    "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp"
+    "RobotModules/Gimbal/MiniPC/*.cpp")
   list(APPEND SOURCES ${GIMBAL_SOURCES})
 endif()
 

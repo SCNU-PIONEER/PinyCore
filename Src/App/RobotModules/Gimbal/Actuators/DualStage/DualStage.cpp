@@ -1,6 +1,7 @@
 #include "Bsp_uart.hpp"
 #include "Chassis.hpp"
 #include "Gimbal.hpp"
+#include "MiniPCPacketImpl.hpp"
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
 
@@ -10,7 +11,7 @@
 #include "DM4310.hpp"
 #include "Bsp_Usb.hpp"
 
-#include "Vision.hpp"
+// #include "Vision.hpp"
 #include "sdkconfig.h"
 
 
@@ -119,6 +120,10 @@ void DualStage::update(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->gimbalQueue), &msg, 0) == pdTRUE) {
     };
 
+    v2eData = miniPC_.data().v2eData;
+    n2eData = miniPC_.data().n2eData;
+    d2eData = miniPC_.data().d2eData;
+
     for (uint8_t i = 0; i < 3; i++) {
         curMotorAng_._[i] = motors_._[i]->posNorm(); // 0~2*pi
     }
@@ -128,29 +133,18 @@ void DualStage::update(void *_param)
     curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
     compensateImuAngle();
 
-    // if (isConfirmYawZero_) {
-    //     if (isSetBYZeroAng_) {
-    //         //强制要求上电必须摆正大yaw
-    //         bigYawZeroAng = motors_.Gim_s.FirstYaw->data().rawAng;
-    //         isSetBYZeroAng_ = false;
-    //     }
-    //     // resetZeroPoint();
-    // }
-
     loadChassisMsg(_param);
     loadShooterMsg(_param);
 
-    if (xQueueReceive((((MsgBus_s *)_param)->visionQueue), &vmsg, 0) == pdTRUE) {
-    }
-
     sendVisionData();
     sendNavData();
+    sendDecesionData();
 
     //与云台控制无关，debug使用
-    debug.visionControl = vmsg.control;
-    debug.visionFire = vmsg.fire;
-    debug.visionYaw = vmsg.yaw;
-    debug.visionPitch = vmsg.pitch;
+    debug.visionControl = v2eData.control;
+    debug.visionFire = v2eData.fire;
+    debug.visionYaw = v2eData.yaw;
+    debug.visionPitch = v2eData.pitch;
     debug.visionAngOver = isVisionAngOver_;
 
     this->stateFactory_.update();
@@ -160,18 +154,15 @@ void DualStage::loadChassisMsg(void *_param)
 {
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) == pdTRUE) {
     };
-    if (xQueueReceive((((MsgBus_s *)_param)->navigationQueue), &nmsg, 0) == pdTRUE) {
-    };
 
     // cmsg.state = CHASSIS::FSMState_e::STOP;
     chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
     chassisCtrlTxPacket_.setData().gimbalReset = isLaunched_;
 
-#if APP_USE_NAV
     if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
-        chassisCtrlTxPacket_.setData().vx = cmsg.vx + nmsg.vx;
-        chassisCtrlTxPacket_.setData().vy = cmsg.vy + nmsg.vy;
-        chassisCtrlTxPacket_.setData().wz = cmsg.wz + nmsg.wz;
+        chassisCtrlTxPacket_.setData().vx = cmsg.vx + n2eData.vx;
+        chassisCtrlTxPacket_.setData().vy = cmsg.vy + n2eData.vy;
+        chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
             msg.wYaw = 0.5f;
         }
@@ -179,15 +170,11 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
         chassisCtrlTxPacket_.setData().vy = cmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz;
-        nmsg = {};
+        n2eData = {};
     }
-#else
-    chassisCtrlTxPacket_.setData().vx = cmsg.vx;
-    chassisCtrlTxPacket_.setData().vy = cmsg.vy;
-    chassisCtrlTxPacket_.setData().wz = cmsg.wz;
-#endif
+
     chassisCtrlTxPacket_.setData().deltaYaw = motors_.Gim_s.FirstYaw->posNorm();
-    chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(nav->navToEData().posture);
+    chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(miniPC_.data().d2eData.posture);
 }
 
 void DualStage::loadShooterMsg(void *_param)
@@ -198,33 +185,42 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
     if (msg.state == FSMState_e::RUN) {
-        shooterCtrlTxPacket_.setData().fire &= (vmsg.control) ? vmsg.fire : true;
+        shooterCtrlTxPacket_.setData().fire &= (v2eData.control) ? v2eData.fire : true;
     } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
-        shooterCtrlTxPacket_.setData().fire &= vmsg.fire;
+        shooterCtrlTxPacket_.setData().fire &= v2eData.fire;
     }
 }
 
 void DualStage::sendVisionData()
 { // vision send
-    vision->eToVData().roll = insData_.roll;
-    vision->eToVData().pitch = insData_.pitch;
-    vision->eToVData().yaw = getMinorArc(insData_.yaw, -this->deltaSYawArc_);
-    // vision->eToVData().yaw = insData_.yaw;
+    e2vData.roll = insData_.roll;
+    e2vData.pitch = insData_.pitch;
+    e2vData.yaw = getMinorArc(insData_.yaw, -this->deltaSYawArc_);
+    // e2vData.yaw = insData_.yaw;
 
     //装裁判系统数据
-    vision->eToVData().detectColor = isColor(refereeRxPacket_.data().robotId);
-    vision->eToVData().isPlay = refereeRxPacket_.data().isPlay;
-    vision->eToVData().bulletSpeed = bulletSpdRxPacket_.data().shootSpeed;
+    e2vData.detectColor = isColor(refereeRxPacket_.data().robotId);
+    e2vData.isPlay = refereeRxPacket_.data().isPlay;
+    e2vData.bulletSpeed = bulletSpdRxPacket_.data().shootSpeed;
 }
 
 void DualStage::sendNavData()
 { //nav send
-    nav->ecToNavData().pitch = insData_.pitch;
-    nav->ecToNavData().yaw = motors_.Gim_s.FirstYaw->posNorm();
+    e2nData.yaw = motors_.Gim_s.FirstYaw->posNorm();
+}
+
+void DualStage::sendDecesionData()
+{ //decesion send
     //装裁判系统数据
-    nav->ecToNavData().navHPstate = refereeRxPacket_.data().HP;
-    nav->ecToNavData().gameTime = refereeRxPacket_.data().gameTime;
-    nav->ecToNavData().gameProgress = refereeRxPacket_.data().gameProgress;
+    e2dData.myHP = refereeRxPacket_.data().HP;
+    e2dData.gameTime = refereeRxPacket_.data().gameTime;
+    e2dData.gameProgress = refereeRxPacket_.data().gameProgress;
+
+    e2dData.currentChassisEnergy = -1;
+    e2dData.outpostStatus = -1;
+    e2dData.enemyBaseStatus = -1;
+    e2dData.enemyOutpostStatus = -1;
+    e2dData.eventData = -1;
 }
 
 void DualStage::compensateImuAngle()
@@ -255,18 +251,6 @@ void DualStage::compensateImuAngle()
             this->isConfirmYawZero_ = false;
         }
     }
-}
-
-float bigYawZeroAng; //强制要求上电必须摆正大yaw
-void DualStage::resetZeroPoint()
-{
-    if (fabsf(getMinorArc(motors_.Gim_s.FirstYaw->posNorm(), 0.f)) < 0.05f) {
-        return;
-    }
-    float cirNum = (motors_.Gim_s.FirstYaw->data().cirNum);
-    float newZeroAng = bigYawZeroAng + (cirNum * ANGLE_JUMP_VALUE);
-    motors_.Gim_s.FirstYaw->setZeroAng(newZeroAng);
-    // motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG + (cirNum * ANGLE_JUMP_VALUE));
 }
 
 void DualStage::updateBaseYaw() {}
@@ -316,8 +300,8 @@ void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackP
     float del = getMinorArc(pos, motors_.Gim_s.SecondYaw->posNorm());
     float vel = _angPID->calc(del, 0);
     velDebug = vel;
-    float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(vmsg.yawVel, insData_.body.gz);
-    accDebug = acc += vmsg.yawAcc; // forward feedbac
+    float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(v2eData.yawVel, insData_.body.gz);
+    accDebug = acc += v2eData.yawAcc; // forward feedbac
     float torq = calcYawTorq(insData_.body.gz, acc);
     torqDebug = torq = std::clamp(torq, -DJIMOTOR::GM6020::TORQ_MAX, DJIMOTOR::GM6020::TORQ_MAX);
     motors_.Gim_s.SecondYaw->cmdTorq(gimbalFilterOutput_.Gim_s.SecondYaw->process(torq));

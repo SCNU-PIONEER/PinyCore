@@ -82,9 +82,9 @@ public:
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
 
-        if (gimbal_->msg.state == FSMState_e::NAV && gimbal_->vmsg.control)
+        if (gimbal_->msg.state == FSMState_e::NAV && gimbal_->v2eData.control)
             return FSMState_e::AUTO;
-        else if (gimbal_->msg.state == FSMState_e::RUN && gimbal_->vmsg.control)
+        else if (gimbal_->msg.state == FSMState_e::RUN && gimbal_->v2eData.control)
             return FSMState_e::AUTO; //平时调试用
         else if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;
