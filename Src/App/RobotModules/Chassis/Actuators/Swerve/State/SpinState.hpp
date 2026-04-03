@@ -7,7 +7,8 @@
 namespace CHASSIS {
 
 class SpinState : public FSMState<FSMState_e> {
-    static constexpr float CONPENSATION = 0.5f;
+    static constexpr float CONPENSATION = 0.f;
+    static constexpr float ACC = 0.5f;
     static constexpr float OFFSET_SPIN_SPEED = 0.5f;
     static constexpr float MAX_SPIN_SPEED = 2.f;
     static constexpr float NORMAL_SPIN_SPEED = 0.5f * 2.f * PI; // 0.5圈/s
@@ -25,13 +26,12 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.Speed.vx = std::clamp(chassis_->msg.vx, -1.1f, 1.1f);
-        ref.Speed.vy = std::clamp(chassis_->msg.vy, -1.1f, 1.1f);
 
-        ref.Speed.vx = std::fmax(chassis_->msg.vx - CONPENSATION,
-                                 std::fmin(chassis_->msg.vx, chassis_->msg.vx + CONPENSATION));
-        ref.Speed.vy = std::fmax(chassis_->msg.vy - CONPENSATION,
-                                 std::fmin(chassis_->msg.vy, chassis_->msg.vy + CONPENSATION));
+        ref.Speed.vx = std::fmax(chassis_->getSpeed().Speed.vx - ACC,
+                                 std::fmin(chassis_->msg.vx, chassis_->getSpeed().Speed.vx + ACC));
+
+        ref.Speed.vy = std::fmax(chassis_->getSpeed().Speed.vy - ACC,
+                                 std::fmin(chassis_->msg.vy, chassis_->getSpeed().Speed.vy + ACC));
         // ref.wz = getSpinVel(spinCnt_++);
         // if (spinCnt_ + 5 >= MAX_SPIN_CNT)
         //     maxSpinCount = 0;

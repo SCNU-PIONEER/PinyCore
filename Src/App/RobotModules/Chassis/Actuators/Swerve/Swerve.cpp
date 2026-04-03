@@ -3,6 +3,7 @@
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
+#include "dsp/fast_math_functions.h"
 #include "sdkconfig.h"
 #include "Bsp_can.hpp"
 #include "PidBasic.hpp"
@@ -164,6 +165,7 @@ void Swerve::update(void *_param)
         wCurr[i] = motors_._[i]->data().torq;
     }
 
+    //转为头向速度
     Speed_u v = forward(wSpeed_);
     curSpeed_.Speed.vx = v.Speed.vx * cosYaw_ + v.Speed.vy * sinYaw_;
     curSpeed_.Speed.vy = v.Speed.vy * cosYaw_ - v.Speed.vx * sinYaw_;
@@ -260,31 +262,23 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
     //LF:0
     wheelVx[0] = _speed.Speed.vx - _speed.Speed.wz * rY;
     wheelVy[0] = _speed.Speed.vy + _speed.Speed.wz * rX;
-    wheelComVel[0] = sqrtf((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]));
-
-    expDir.Chas_s.LF = atan2(wheelVy[0], wheelVx[0]);
-
+    arm_sqrt_f32((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]), &wheelComVel[0]);
+    arm_atan2_f32(wheelVy[0], wheelVx[0], &expDir.Chas_s.LF);
     //LB:1
     wheelVx[1] = _speed.Speed.vx - _speed.Speed.wz * rY;
     wheelVy[1] = _speed.Speed.vy - _speed.Speed.wz * rX;
-    wheelComVel[1] = sqrtf((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]));
-
-    expDir.Chas_s.LB = atan2(wheelVy[1], wheelVx[1]);
-
+    arm_sqrt_f32((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]), &wheelComVel[1]);
+    arm_atan2_f32(wheelVy[1], wheelVx[1], &expDir.Chas_s.LB);
     //RB:2
     wheelVx[2] = _speed.Speed.vx + _speed.Speed.wz * rY;
     wheelVy[2] = _speed.Speed.vy - _speed.Speed.wz * rX;
-    wheelComVel[2] = sqrtf((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]));
-
-    expDir.Chas_s.RB = atan2(wheelVy[2], wheelVx[2]);
-
+    arm_sqrt_f32((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]), &wheelComVel[2]);
+    arm_atan2_f32(wheelVy[2], wheelVx[2], &expDir.Chas_s.RB);
     //RF:3
     wheelVx[3] = _speed.Speed.vx + _speed.Speed.wz * rY;
     wheelVy[3] = _speed.Speed.vy + _speed.Speed.wz * rX;
-    wheelComVel[3] = sqrtf((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]));
-
-    expDir.Chas_s.RF = atan2(wheelVy[3], wheelVx[3]); //反正切返回(-pi,pi)
-
+    arm_sqrt_f32((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]), &wheelComVel[3]);
+    arm_atan2_f32(wheelVy[3], wheelVx[3], &expDir.Chas_s.RF); //反正切返回(-pi,pi)
     for (float &i : expDir._) {
         if (i < 0) {
             i += 2 * F_PI; //[0,2pi]
