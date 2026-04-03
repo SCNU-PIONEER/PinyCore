@@ -93,7 +93,7 @@ void APP::task()
         updateCnt = xTaskGetTickCount();
         if (!client_.isCharInit || !client_.isGraphicInit) {
             client_.sendInit();
-        else {
+        } else {
             GimbalUIMsg_s gimbalMsg;
             gimbalMsg.state = gimbalRxPacket_.data().gimbalState;
             updateGimbal(gimbalMsg);

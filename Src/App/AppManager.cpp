@@ -34,7 +34,7 @@ Lazy<INS_SYS::INS> ins;
 Lazy<Cmd> cmd;
 
 #if APP_USE_CHASSIS
-Lazy<CHASSIS::Mecanum> chassis;
+Lazy<CHASSIS::CHASSIS_TYPE> chassis;
 #endif
 //---------------------------------------------------------------------------------------------------
 

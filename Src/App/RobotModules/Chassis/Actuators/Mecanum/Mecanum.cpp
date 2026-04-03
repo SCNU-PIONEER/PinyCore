@@ -11,7 +11,9 @@
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
 
+#ifdef APP_USE_UI
 #include "UIApp.hpp"
+#endif
 
 extern Cmd *cmd;
 
@@ -90,6 +92,12 @@ void Mecanum::update([[maybe_unused]] const QueueHandle_t *_queue)
         wSpeed_._[i] = iir3_[i].process(motors_._[i]->data().spdRpm);
     }
     this->curSpeed_ = forward(wSpeed_);
+
+#ifdef APP_USE_UI
+    ChassisUIMsg_s msg{ .state = stateFactory_.getCurrentState()->getName() };
+    UI::APP::instance().updateChassis(msg);
+#endif
+
     this->stateFactory_.update();
 }
 

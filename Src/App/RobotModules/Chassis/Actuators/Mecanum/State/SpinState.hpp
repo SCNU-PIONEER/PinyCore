@@ -53,7 +53,7 @@ public:
     float getSpinVel(uint32_t _cnt)
     {
         float x = 2.1f * (static_cast<float>(_cnt) * 0.001f);
-        float rslt = (MAX_SPIN_SPEED * sinf(x) * sinf(x)) + 2.5f;
+        float rslt = (MAX_SPIN_SPEED * arm_sin_f32(x) * arm_sin_f32(x)) + 2.5f;
         return static_cast<bool>(spinDir_) ? rslt : -rslt;
     }
 
