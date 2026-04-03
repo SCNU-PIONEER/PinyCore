@@ -13,10 +13,6 @@ namespace GIMBAL {
 enum class FSMState_e : uint8_t;
 }
 
-namespace MINIPC {
-enum class SentryPosture_e : uint8_t;
-}
-
 namespace ARMORBOOSTER {
 enum class FSMState_e : uint8_t;
 }
@@ -31,8 +27,6 @@ struct MsgBus_s {
     QueueHandle_t armorBoosterQueue;
     QueueHandle_t armorLoaderQueue;
     QueueHandle_t refereeQueue;
-    QueueHandle_t visionQueue;
-    QueueHandle_t navigationQueue;
 };
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -62,23 +56,6 @@ struct RefereeMsg_s : public Msg {
     bool isPlay;
 };
 
-struct VisionMsg_s : public Msg {
-    uint8_t control;
-    uint8_t fire;
-    float yaw;
-    float yawVel;
-    float yawAcc;
-    float pitch;
-    float pitchVel;
-    float pitchAcc;
-};
-
-struct NavMsg_s : public Msg {
-    MINIPC ::SentryPosture_e posture;
-    float vx;
-    float vy;
-    float wz;
-};
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ other msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct INSEularMsg_s : public Msg {

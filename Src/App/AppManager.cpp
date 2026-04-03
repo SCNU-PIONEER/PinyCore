@@ -3,11 +3,6 @@
 #if APP_USE_COMM
 #include "CommManager.hpp"
 #endif
-#if APP_USE_MINIPC
-#include "MiniPcManager.hpp"
-#endif
-
-
 #include "Cmd.hpp"
 #include "Test/TestModule.hpp"
 #include "Bsp.hpp"
@@ -33,9 +28,6 @@ Lazy<INS_SYS::INS> ins;
 
 Lazy<Cmd> cmd;
 
-#if APP_USE_MINIPC
-Lazy<MINIPC::PcManager> miniPcManager;
-#endif
 
 #ifdef CHASSIS_TYPE
 #if !APP_USE_COMM || TARGET_SLAVE
@@ -79,10 +71,6 @@ void AppManager::initApp()
 #endif
 
     cmd.init();
-
-#if APP_USE_MINIPC
-    schedule([]() { MINIPC::PcManager::instance().txTask(); });
-#endif
 
 #if APP_USE_UI
     UI::APP::instance().init();

@@ -66,15 +66,6 @@ CONFIG_APP_USE_INS=y
 # CONFIG_INS_ACCEL_CALIBRATION is not set
 # end of INS config
 
-CONFIG_APP_USE_MINIPC=y
-
-#
-# MiniPc config
-#
-CONFIG_APP_USE_VISION=y
-CONFIG_APP_USE_NAV=y
-# end of MiniPc config
-
 CONFIG_APP_USE_DAEMONS=y
 CONFIG_APP_USE_COMM=y
 # CONFIG_APP_USE_UI is not set

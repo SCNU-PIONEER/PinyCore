@@ -7,7 +7,7 @@
 
 #include "RttMsgHandler.hpp"
 #include "RcMsgHandler.hpp"
-#include "MiniPcHandler.hpp"
+
 #if EXTENSION_REFEREE
 #include "RefereeHandler.hpp"
 #endif
@@ -38,12 +38,5 @@ private:
 
 #if EXTENSION_REFEREE
     RefereeHandler refereeHandler_;
-#endif
-
-#if APP_USE_NAV
-    NavHandler navHandler_;
-#endif
-#if APP_USE_VISION
-    VisionHandler visionHandler_;
 #endif
 };

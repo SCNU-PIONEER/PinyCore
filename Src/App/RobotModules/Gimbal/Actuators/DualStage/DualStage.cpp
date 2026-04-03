@@ -1,19 +1,13 @@
+#include "sdkconfig.h"
 #include "Bsp_uart.hpp"
 #include "Chassis.hpp"
 #include "Gimbal.hpp"
 #include "MiniPCPacketImpl.hpp"
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
-
 #include "PidBasic.hpp"
-
 #include "GM6020.hpp"
 #include "DM4310.hpp"
-#include "Bsp_Usb.hpp"
-
-// #include "Vision.hpp"
-#include "sdkconfig.h"
-
 
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"

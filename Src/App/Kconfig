@@ -35,11 +35,6 @@ menu "app config"
 
     source "Src/System/INS/Kconfig"
 
-    config APP_USE_MINIPC
-    bool "MiniPc"
-    default n
-    source "Src/System/MiniPc/Kconfig"
-
     config APP_USE_DAEMONS
     bool "daemons"
     default n

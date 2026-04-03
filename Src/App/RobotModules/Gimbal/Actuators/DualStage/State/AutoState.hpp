@@ -7,7 +7,6 @@
 
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
-#include "Vision.hpp"
 #include <cmath>
 
 static PositionalPid gAutoPosPid[3] = {

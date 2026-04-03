@@ -10,8 +10,6 @@ Cmd::Cmd() : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
     msgBus_.armorBoosterQueue = xQueueCreate(10, sizeof(ArmorBoosterMsg_s));
     msgBus_.armorLoaderQueue = xQueueCreate(10, sizeof(ArmorLoaderMsg_s));
     msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
-    msgBus_.visionQueue = xQueueCreate(30, sizeof(VisionMsg_s));
-    msgBus_.navigationQueue = xQueueCreate(30, sizeof(NavMsg_s));
 
     for (auto i : Handler::getHandlerList()) {
         i.handler->init(&msgBus_, eventGroup_);

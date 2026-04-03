@@ -57,15 +57,6 @@ file(GLOB_RECURSE TOPIC_SOURCES CMAKE_CONFIGURE_DEPENDS
     "Topic/*.cpp")
 list(APPEND SOURCES ${TOPIC_SOURCES})
 
-# MiniPcHandler
-if(APP_USE_MINIPC)
-    file(GLOB_RECURSE MINIPCHANDLER_SOURCES CMAKE_CONFIGURE_DEPENDS
-        "Cmd/Handler/MiniPcHandler/MiniPcHandler.cpp"
-        "MiniPc/Nav/Nav.cpp"
-        "MiniPc/Vision/Vision.cpp")
-    list(APPEND SOURCES ${MINIPCHANDLER_SOURCES})
-endif()
-
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SOURCES})
 
 find_include_dir(HEADERS ${CMAKE_CURRENT_SOURCE_DIR})
