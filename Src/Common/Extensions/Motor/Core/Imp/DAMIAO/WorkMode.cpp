@@ -12,12 +12,12 @@ void DMMotor::serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf)
     _txBuf.len = 8;
     _txBuf.data[0] = static_cast<uint8_t>((_msgMIT.exptScale & 0xFF00) >> 8);
     _txBuf.data[1] = static_cast<uint8_t>(_msgMIT.exptScale & 0x00FF);
-    _txBuf.data[2] = static_cast<uint8_t>((_msgMIT.exptVel & 0x0FF0) >> 4);
-    _txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x000F) << 4 | ((_msgMIT.Kp & 0x0FF0) >> 8));
-    _txBuf.data[4] = static_cast<uint8_t>(_msgMIT.Kp & 0x000F);
-    _txBuf.data[5] = static_cast<uint8_t>((_msgMIT.Kd & 0x0FF0) >> 4);
-    _txBuf.data[6] = static_cast<uint8_t>((_msgMIT.Kd & 0x000F) << 4 | ((_msgMIT.torqueForward & 0x0F00) >> 8));
-    _txBuf.data[7] = static_cast<uint8_t>(_msgMIT.torqueForward & 0x00FF);
+    _txBuf.data[2] = static_cast<uint8_t>((_msgMIT.exptVel & 0xFF0) >> 4);
+    _txBuf.data[3] = static_cast<uint8_t>((_msgMIT.exptVel & 0x00F) << 4 | ((_msgMIT.Kp & 0xF00) >> 8));
+    _txBuf.data[4] = static_cast<uint8_t>(_msgMIT.Kp & 0x0FF);
+    _txBuf.data[5] = static_cast<uint8_t>((_msgMIT.Kd & 0xFF0) >> 4);
+    _txBuf.data[6] = static_cast<uint8_t>((_msgMIT.Kd & 0x00F) << 4 | ((_msgMIT.torqueForward & 0xF00) >> 8));
+    _txBuf.data[7] = static_cast<uint8_t>(_msgMIT.torqueForward & 0x0FF);
 }
 
 void DMMotor::updateCtrlMode()
@@ -100,9 +100,8 @@ void DMMotor::convertMitTt(TxBus &_txBuf)
 void DMMotor::convertMitVdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
-    msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
+    msgMIT.Kd = float2uint(this->MITKd_, 0, status_.MITKdMax, 12);
     msgMIT.Kp = 0;
-    msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_VEL:
@@ -134,8 +133,8 @@ void DMMotor::convertMitVdes(TxBus &_txBuf)
 void DMMotor::convertMitVdesPdes(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
-    msgMIT.Kd = float2uint(this->MITKd_, -status_.MITKdMax, status_.MITKdMax, 12);
-    msgMIT.Kp = float2uint(this->MITKp_, -status_.MITKpMax, status_.MITKpMax, 12);
+    msgMIT.Kd = float2uint(this->MITKd_, 0, status_.MITKdMax, 12);
+    msgMIT.Kp = float2uint(this->MITKp_, 0, status_.MITKpMax, 12);
 
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_POS:
