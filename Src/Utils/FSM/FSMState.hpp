@@ -25,6 +25,8 @@ public:
     virtual void exit() = 0;
     virtual T checkChange() = 0;
 
+    T getName() const { return name_; }
+
     /* Manages state specific change */
     virtual bool change() { return true; };
 
@@ -58,6 +60,8 @@ public:
         }
         return nullptr;
     }
+
+    const FSMState<T> *getCurrentState() { return currentState_; }
 
     void update()
     {

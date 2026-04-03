@@ -91,7 +91,7 @@ void APP::task()
 {
     if (xTaskGetTickCount() - updateCnt >= SEND_INTERVAL) {
         updateCnt = xTaskGetTickCount();
-        if (!client_.isCharInit || !client_.isGraphicInit)
+        if (!client_.isCharInit || !client_.isGraphicInit) {
             client_.sendInit();
         else {
             GimbalUIMsg_s gimbalMsg;
@@ -111,4 +111,7 @@ void APP::uiReInit()
 {
     client_.isCharInit = false;
     client_.isGraphicInit = false;
+    client_.isIniting = true;
+    client_.initTimes = 0;
+    client_.nodeReset();
 }
