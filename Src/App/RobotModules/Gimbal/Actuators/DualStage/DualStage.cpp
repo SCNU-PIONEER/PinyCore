@@ -36,9 +36,9 @@ DualStage::DualStage()
         gimbalFilterOutput_._[i] = &gimbalFilterOutput[i];
     }
 
-    isGimbalResverse.Gim_s.Pitch = DualStage::PITCH_REVERSE;
-    isGimbalResverse.Gim_s.FirstYaw = DualStage::FIRST_YAW_REVERSE;
-    isGimbalResverse.Gim_s.SecondYaw = DualStage::SECOND_YAW_REVERSE;
+    isGimbalResverse.Pitch = DualStage::PITCH_REVERSE;
+    isGimbalResverse.FirstYaw = DualStage::FIRST_YAW_REVERSE;
+    isGimbalResverse.SecondYaw = DualStage::SECOND_YAW_REVERSE;
 
     InitConfig_s pitchDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -50,9 +50,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.Gim_s.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
-    motors_.Gim_s.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
-    LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Gim_s.Pitch->data().zeroAng);
+    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
+    motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
+    LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
     InitConfig_s firstYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
@@ -64,9 +64,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
-    motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
-    LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
+    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
+    motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
+    LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
     InitConfig_s secondYawGM6020Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
@@ -78,9 +78,9 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
-    motors_.Gim_s.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
-    motors_.Gim_s.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
-    LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.Gim_s.SecondYaw->data().zeroAng);
+    motors_.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
+    motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
+    LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);
 
     this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(this));
     this->stateFactory_.addState(FSMState_e::LAUNCH, std::make_unique<LaunchState>(this));
@@ -121,19 +121,13 @@ void DualStage::update(void *_param)
         d2eData = {};
     }
 
-    if (msg.state == FSMState_e::STOP) {
-        v2eData = {};
-        n2eData = {};
-        d2eData = {};
-    }
-
     for (uint8_t i = 0; i < 3; i++) {
         curMotorAng_._[i] = motors_._[i]->posNorm(); // 0~2*pi
     }
     //ins -pi~pi
-    curImuAng_.Gim_s.Pitch = insData_.pitch;
-    curImuAng_.Gim_s.SecondYaw = insData_.yaw; //云台imu在小yaw上
-    curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
+    curImuAng_.Pitch = insData_.pitch;
+    curImuAng_.SecondYaw = insData_.yaw; //云台imu在小yaw上
+    curImuAng_.FirstYaw = getMinorArc(curImuAng_.SecondYaw, rangeConversion(curMotorAng_.SecondYaw));
 
     loadChassisMsg(_param);
     loadShooterMsg(_param);
@@ -175,7 +169,7 @@ void DualStage::loadChassisMsg(void *_param)
         n2eData = {};
     }
 
-    chassisCtrlTxPacket_.setData().deltaYaw = curMotorAng_.Gim_s.FirstYaw;
+    chassisCtrlTxPacket_.setData().deltaYaw = curMotorAng_.FirstYaw;
     chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(miniPC_.data().d2eData.posture);
 }
 
@@ -206,8 +200,8 @@ void DualStage::sendVisionData()
 }
 
 void DualStage::sendNavData()
-{ //nav send
-    e2nData.yaw = motors_.Gim_s.FirstYaw->posNorm();
+{                                        //nav send
+    e2nData.yaw = curMotorAng_.FirstYaw; //雷达在大yaw上
 }
 
 void DualStage::sendDecesionData()
@@ -242,9 +236,9 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
-    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
-    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
-    // motors_.Gim_s.Pitch->cmdTorq(0.f);
+    // motors_.FirstYaw->cmdTorq(0.f);
+    // motors_.SecondYaw->cmdTorq(0.f);
+    // motors_.Pitch->cmdTorq(0.f);
 }
 
 /**
@@ -262,11 +256,10 @@ void DualStage::ctrl(DualStage_u<float> _inPos, DualStage_u<PositionalPid *> _an
         delArc._[i] = getMinorArc(_inPos._[i], curImuAng_._[i]);
         expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
     }
-    expMotorAng_.Gim_s.SecondYaw =
-            PINYMOTOR::clampArc(expMotorAng_.Gim_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+    expMotorAng_.SecondYaw = PINYMOTOR::clampArc(expMotorAng_.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
 
     if (msg.state == FSMState_e::RUN) {
-        expMotorAng_.Gim_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
+        expMotorAng_.SecondYaw = 0.f; //run模式下小yaw不改变方向
     }
     ctrlMotor(expMotorAng_, _angPID, _velPID);
 }
@@ -292,9 +285,9 @@ void DualStage::ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPi
         outMaxRunTorq[i] = torq[i];
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
     }
-    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
-    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
-    // motors_.Gim_s.Pitch->cmdTorq(0.f);
+    // motors_.FirstYaw->cmdTorq(0.f);
+    // motors_.SecondYaw->cmdTorq(0.f);
+    // motors_.Pitch->cmdTorq(0.f);
 }
 
 
@@ -305,15 +298,15 @@ volatile float velDebug = 0;
 void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos)
 {
     float insYawDelArc = getMinorArc(_pos, ins().yaw);
-    float pos = rangeMap(motors_.Gim_s.SecondYaw->posNorm() + insYawDelArc);
-    float del = getMinorArc(pos, motors_.Gim_s.SecondYaw->posNorm());
+    float pos = rangeMap(motors_.SecondYaw->posNorm() + insYawDelArc);
+    float del = getMinorArc(pos, motors_.SecondYaw->posNorm());
     float vel = _angPID->calc(del, 0);
     velDebug = vel;
     float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(v2eData.yawVel, insData_.body.gz);
     accDebug = acc += v2eData.yawAcc; // forward feedbac
     float torq = calcYawTorq(insData_.body.gz, acc);
     torqDebug = torq = std::clamp(torq, -DJIMOTOR::GM6020::TORQ_MAX, DJIMOTOR::GM6020::TORQ_MAX);
-    motors_.Gim_s.SecondYaw->cmdTorq(gimbalFilterOutput_.Gim_s.SecondYaw->process(torq));
+    motors_.SecondYaw->cmdTorq(gimbalFilterOutput_.SecondYaw->process(torq));
 }
 
 float DualStage::calcYawTorq(float _vel, float _acc)

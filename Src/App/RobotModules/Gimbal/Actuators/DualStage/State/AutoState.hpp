@@ -54,7 +54,7 @@ public:
             eIA._[i] = cIA._[i];
             eMA._[i] = cMA._[i];
         }
-        visionExpBigYaw_ = cIA_s.FirstYaw; //进入auto状态时，钉住大yaw角度
+        visionExpBigYaw_ = cIA.FirstYaw; //进入auto状态时，钉住大yaw角度
 
         gimbal_->debug.gimbalState = FSMState_e::AUTO;
         gimbal_->enter();
@@ -64,28 +64,28 @@ public:
     //auto下视觉进行控制,此时只控小yaw,转动范围不应该超出小yaw范围，
     void run() final
     {
-        DualStage_s<float> delArc = {};
+        DualStage_u<float> delArc = {};
 
-        eIA_s.Pitch = gimbal_->v2eData.pitch;
-        eIA_s.SecondYaw = gimbal_->v2eData.yaw;
+        eIA.Pitch = gimbal_->v2eData.pitch;
+        eIA.SecondYaw = gimbal_->v2eData.yaw;
 
-        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA_s.SecondYaw, cIA_s.SecondYaw);
-        eMA_s.SecondYaw = PINYMOTOR::rangeMap(cMA_s.SecondYaw + delArc.SecondYaw);
+        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
+        eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
 
-        deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA_s.SecondYaw, cMA_s.SecondYaw);
+        deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA.SecondYaw, cMA.SecondYaw);
         //超量程为正
         gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
 
         if (gimbal_->isVisionAngOver_) {
-            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA_s.FirstYaw);
+            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA.FirstYaw);
             wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
             // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
-            eIA_s.FirstYaw += wBYaw_ * 0.001f;
-            visionExpBigYaw_ = cIA_s.FirstYaw; //重载当前大yaw角度
+            eIA.FirstYaw += wBYaw_ * 0.001f;
+            visionExpBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
 
             debugWBYaw = wBYaw_;
         } else {
-            eIA_s.FirstYaw = visionExpBigYaw_;
+            eIA.FirstYaw = visionExpBigYaw_;
         }
 
         gimbal_->ctrl(eIA, autoPosPid_, autoVelPid_);
@@ -119,21 +119,11 @@ private:
     float visionExpBigYaw_; //视觉进行自瞄，钉住大yaw角度
     float wBYaw_;
     float deltaVisionAng_;
-    // bool isSecondYawReset_ = false;
-    // uint16_t sYResetTime_ = 0;
-
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
-    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
-
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
-    DualStage_s<float> &cIA_s = this->gimbal_->curImuAng_.Gim_s;
-
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
-    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
-
     DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
-    DualStage_s<float> &eIA_s = this->gimbal_->expImuAng_.Gim_s;
 
     DualStage_u<PositionalPid *> autoPosPid_;
     DualStage_u<PositionalPid *> autoVelPid_;

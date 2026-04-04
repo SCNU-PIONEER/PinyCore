@@ -15,13 +15,13 @@
 #include "RxPacket.hpp"
 
 namespace GIMBAL {
-template <typename T> struct DualStage_s {
-    T Pitch;
-    T FirstYaw;  //大yaw
-    T SecondYaw; //小yaw
-};
+
 template <typename T> union DualStage_u {
-    DualStage_s<T> Gim_s;
+    struct {
+        T Pitch;
+        T FirstYaw;  //大yaw
+        T SecondYaw; //小yaw
+    };
     T _[3];
 };
 

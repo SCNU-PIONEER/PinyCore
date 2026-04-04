@@ -39,9 +39,9 @@ public:
             lauPosPid_._[i] = &gLauPosPid[i];
             lauVelPid_._[i] = &gLauVelPid[i];
         }
-        launchStep.Gim_s.Pitch = PITCH_LAUNCH_STEP;
-        launchStep.Gim_s.FirstYaw = FIRST_YAW_LAUNCH_STEP;
-        launchStep.Gim_s.SecondYaw = SECOND_YAW_LAUNCH_STEP;
+        launchStep.Pitch = PITCH_LAUNCH_STEP;
+        launchStep.FirstYaw = FIRST_YAW_LAUNCH_STEP;
+        launchStep.SecondYaw = SECOND_YAW_LAUNCH_STEP;
     }
 
     void enter() final
@@ -59,18 +59,18 @@ public:
         }
 
         float targetAng = 0;
-        if (cMA.Gim_s.FirstYaw > PI / 2.f && cMA.Gim_s.FirstYaw < 3.f * PI / 2.f) {
+        if (cMA.FirstYaw > PI / 2.f && cMA.FirstYaw < 3.f * PI / 2.f) {
             targetAng = PI;
-            eMA.Gim_s.FirstYaw = PI;
+            eMA.FirstYaw = PI;
         } else
             targetAng = 0;
 
         if (launchTime_ < MAX_LAUNCH_TIME) {
             launchTime_++;
 
-            if (std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.Pitch)) < PITCH_LAUNCH_ANG_DEADBAND &&
-                std::fabs(PINYMOTOR::getMinorArc(targetAng, cMA_s.FirstYaw)) < YAW_LAUNCH_ANG_DEADBAND &&
-                std::fabs(PINYMOTOR::getMinorArc(0, cMA_s.SecondYaw)) < YAW_LAUNCH_ANG_DEADBAND) {
+            if (std::fabs(PINYMOTOR::getMinorArc(0, cMA.Pitch)) < PITCH_LAUNCH_ANG_DEADBAND &&
+                std::fabs(PINYMOTOR::getMinorArc(targetAng, cMA.FirstYaw)) < YAW_LAUNCH_ANG_DEADBAND &&
+                std::fabs(PINYMOTOR::getMinorArc(0, cMA.SecondYaw)) < YAW_LAUNCH_ANG_DEADBAND) {
                 gimbal_->isLaunched_ = true;
             }
 
@@ -109,10 +109,7 @@ private:
     DualStage_u<PositionalPid *> lauVelPid_;
 
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
-    DualStage_s<float> &eMA_s = this->gimbal_->expMotorAng_.Gim_s;
-
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
-    DualStage_s<float> &cMA_s = this->gimbal_->curMotorAng_.Gim_s;
 
     uint16_t launchTime_ = 0;
 };

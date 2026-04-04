@@ -49,12 +49,12 @@ public:
 
     void run() final
     {
-        eIA_s.Pitch += gimbal_->msg.wPitch * 0.001f;
-        eIA_s.FirstYaw += gimbal_->msg.wYaw * 0.001f;
-        eIA_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
+        eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
+        eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA.SecondYaw = 0.f; //run模式下小yaw不改变方向
 
-        eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
+        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         gimbal_->ctrl(eIA, runPosPid_, runVelPid_);
     }
@@ -86,12 +86,10 @@ public:
 
 private:
     DualStage *gimbal_;
-    
-    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
-    DualStage_s<float> &cIA_s = this->gimbal_->curImuAng_.Gim_s;;
 
+    DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
     DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
-    DualStage_s<float> &eIA_s = this->gimbal_->expImuAng_.Gim_s;
+
 
     DualStage_u<PositionalPid *> runPosPid_;
     DualStage_u<PositionalPid *> runVelPid_;

@@ -21,7 +21,13 @@ public:
         LOG::info("GimbalStop", "enter");
     }
 
-    void run() final { gimbal_->stop(); }
+    void run() final
+    {
+        gimbal_->v2eData = {};
+        gimbal_->n2eData = {};
+        gimbal_->d2eData = {};
+        gimbal_->stop();
+    }
 
     void exit() final { LOG::info("GimbalStop", "exit"); }
 
