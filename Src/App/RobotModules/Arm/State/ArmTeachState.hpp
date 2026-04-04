@@ -3,7 +3,7 @@
 #include "Arm.hpp"
 #include "ArmMotor.hpp"
 #include "StmLog.hpp"
-#include "LPF.hpp"
+
 
 namespace ARM {
 
@@ -40,16 +40,11 @@ public:
         arm_.orebin.loop(arm_.msg);
         arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw);
 
-        Joint lpfJoint;
         for (uint8_t i = 0; i < 6; i++) {
-            lpfJoint[i] = lpf[i].process(arm_.msg.target[i]);
+            arm_.target_joints.joints[i] = arm_.msg.target[i];
         }
 
-        arm_.motors.safety.setYawPitchAngLimitAbs(arm_.target_joints.joints, lpfJoint);
-
-        for (uint8_t i = 0; i < 4; i++) {
-            arm_.target_joints.joints[i] =lpfJoint[i];
-        }
+        arm_.motors.safety.setYawPitchAngLimitAbs(arm_.target_joints.joints, arm_.msg.target);
 
         if (arm_.msg.switch1 == ClampState_e::CLAMP) {
             arm_.hand.clamp();
@@ -61,13 +56,7 @@ public:
         arm_.motors.ctrl(arm_.target_joints.joints);
     }
 
-    void exit() override { 
-        
-        for(uint8_t i = 0; i < 6; i++) {
-            lpf[i].reset();
-        }
-
-        LOG::info("Teach", "exit"); }
+    void exit() override { LOG::info("Teach", "exit"); }
 
     FSMState_e checkChange() override
     {
@@ -82,9 +71,6 @@ public:
 
 private:
     Arm &arm_;
-
-    FILTER::LPF lpf[6]{ FILTER::LPF(1000.f, 2.f), FILTER::LPF(1000.f, 2.f), FILTER::LPF(1000.f, 2.f),
-                        FILTER::LPF(1000.f, 2.f), FILTER::LPF(1000.f, 2.f), FILTER::LPF(1000.f, 2.f) };
 };
 
 } // namespace ARM
