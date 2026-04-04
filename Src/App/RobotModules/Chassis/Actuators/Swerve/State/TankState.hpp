@@ -23,13 +23,10 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.Speed.vx = std::fmax(chassis_->getSpeed().Speed.vx - ACC,
-                                 std::fmin(chassis_->msg.vx, chassis_->getSpeed().Speed.vx + ACC));
+        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
-        ref.Speed.vy = std::fmax(chassis_->getSpeed().Speed.vy - ACC,
-                                 std::fmin(chassis_->msg.vy, chassis_->getSpeed().Speed.vy + ACC));
-        ref.Speed.wz = std::fmax(chassis_->getSpeed().Speed.wz - ACC,
-                                 std::fmin(chassis_->msg.wz, chassis_->getSpeed().Speed.wz + ACC));
+        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
+        ref.wz = std::fmax(chassis_->getSpeed().wz - ACC, std::fmin(chassis_->msg.wz, chassis_->getSpeed().wz + ACC));
         chassis_->ctrl(ref);
     }
 

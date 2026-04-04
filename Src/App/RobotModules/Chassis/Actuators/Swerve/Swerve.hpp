@@ -25,16 +25,14 @@
 
 namespace CHASSIS {
 
-//以下两个模板专为舵向电机使用(控制较为复杂)
-template <typename T> struct Swerve_s {
-    T RF;
-    T LF;
-    T LB;
-    T RB;
-};
-
+//以下模板专为舵向电机使用(控制较为复杂)
 template <typename T> union Swerve_u {
-    Swerve_s<T> Chas_s;
+    struct {
+        T RF;
+        T LF;
+        T LB;
+        T RB;
+    };
     T _[4];
 };
 
@@ -43,7 +41,7 @@ union Speed_u {
         float vx; // m/s
         float vy; // m/s
         float wz; // rad/s
-    } Speed;
+    };
     float _[3];
 };
 union WheelsSpeed_u {
@@ -52,7 +50,7 @@ union WheelsSpeed_u {
         float M_LF; // motor of the left front
         float M_LB; // motor of the left back
         float M_RB; // motor of the right back
-    } Wspeed;
+    };
     float _[4]; // rad/s
 };
 //RF 1 ,LF 2 ,LB 3 ,RB 4
@@ -67,7 +65,7 @@ union Motors_u {
         PINYMOTOR::IMotor *S_LF;
         PINYMOTOR::IMotor *S_LB;
         PINYMOTOR::IMotor *S_RB;
-    } Motor;
+    };
     PINYMOTOR::IMotor *_[8];
 };
 

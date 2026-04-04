@@ -18,7 +18,7 @@ public:
     {
         Speed_u ref;
 
-        ref.Speed.vx = 0.5f;
+        ref.vx = 0.5f;
         chassis_->ctrl(ref);
     }
 

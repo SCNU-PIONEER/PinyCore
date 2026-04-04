@@ -26,15 +26,13 @@ public:
     void run() final
     {
         Speed_u ref;
-        ref.Speed.vx = std::fmax(chassis_->getSpeed().Speed.vx - ACC,
-                                 std::fmin(chassis_->msg.vx, chassis_->getSpeed().Speed.vx + ACC));
+        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
-        ref.Speed.vy = std::fmax(chassis_->getSpeed().Speed.vy - ACC,
-                                 std::fmin(chassis_->msg.vy, chassis_->getSpeed().Speed.vy + ACC));
+        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
         float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
-        ref.Speed.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(targetYaw, chassis_->deltaYaw));
+        ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(targetYaw, chassis_->deltaYaw));
 
-        spinWz = ref.Speed.wz;
+        spinWz = ref.wz;
         chassis_->ctrl(ref);
     }
 

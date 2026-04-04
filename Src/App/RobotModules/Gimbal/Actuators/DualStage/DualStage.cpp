@@ -248,12 +248,12 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
  * @param _angPID 
  * @param _velPID 
  */
-void DualStage::ctrl(DualStage_u<float> _inPos, DualStage_u<PositionalPid *> _angPID,
+void DualStage::ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _angPID,
                      DualStage_u<PositionalPid *> _velPID)
 {
     DualStage_u<float> delArc = {};
     for (uint8_t i = 0; i < 3; i++) {
-        delArc._[i] = getMinorArc(_inPos._[i], curImuAng_._[i]);
+        delArc._[i] = getMinorArc(_insPos._[i], curImuAng_._[i]);
         expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
     }
     expMotorAng_.SecondYaw = PINYMOTOR::clampArc(expMotorAng_.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);

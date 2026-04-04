@@ -184,7 +184,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 alMsg_.state = ARMORLOADER::FSMState_e::STOP;
                 abMsg_.state = ARMORBOOSTER::FSMState_e::OFF;
             }
-            cMsg_.state = CHASSIS::FSMState_e::STOP;
+            // cMsg_.state = CHASSIS::FSMState_e::STOP;
 
         } else if (sr == SW::UP) {
             cMsg_.vx = static_cast<float>(rcData->ch1) / CH_RANGE * INPUT_VX_MAX;
@@ -204,7 +204,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             } else if (sl == SW::UP) {
                 // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
-            cMsg_.state = CHASSIS::FSMState_e::STOP;
+            // cMsg_.state = CHASSIS::FSMState_e::STOP;
 
             memcpy(&rcDataPrev, rcData, sizeof(ET08A::RcData_s));
         } else if constexpr (DEV_TYPE == RCDevType_e::VT13) {
