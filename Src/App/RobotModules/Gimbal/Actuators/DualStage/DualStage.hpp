@@ -91,12 +91,13 @@ class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
 /**
  * @brief 双级yaw轴,大小yaw.
  * @note 当前版本imu装在小yaw上,但是控制的是大yaw
+ * @note 尝试大yaw跟小yaw，小yaw跟imu
  */
 class DualStage : public Gimbal {
 public:
-    static constexpr float PITCH_LAUNCH_ANG = 1.19466066f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.739423871f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.52502871f;
+    static constexpr float PITCH_LAUNCH_ANG = 1.19734526f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.662336648f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.63702297f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -108,7 +109,9 @@ public:
     static constexpr bool SECOND_YAW_REVERSE = true;
 
     static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
-    static constexpr float ANGLE_JUMP_VALUE = 0.035169213f; //0.033169213f; // rad,现状为每圈只跳一次
+
+    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13度,电机系
+    static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
 
     static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
     static constexpr float YAW_FRICTION = 0.00570616219f;
@@ -127,7 +130,6 @@ public:
     DualStageDebug_s debug = {};
     bool isLaunched_ = false;
     bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
-    // VisionMsg_s vmsg = {};
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi
@@ -138,7 +140,9 @@ public:
     void enter();
     void update(void *_param);
 
-    void ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
+    void ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
+    void ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPid *> _angPID,
+                   DualStage_u<PositionalPid *> _velPID);
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
                     DualStage_u<PositionalPid *> _velPID);
     void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
@@ -147,21 +151,6 @@ public:
     DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
 
 protected:
-    /**
-        * @brief 双轴云台就是大小yaw，控制大yaw
-        * @note 上电后云台系与底盘系会有差角,(imu上电即为0,而云台当前角度不一定为0)
-        *       imu系需要补偿此差角得到当前云台数据,叫gimbalYawAng可能会更好理解;
-        */
-    float ctrlYawAng_ = 0.f; //主控yaw的角度
-
-    float deltaBYawArc_ = 0.f; // 上电后就有的底盘和云台系的差角
-    float deltaSYawArc_ = 0.f;
-    bool isConfirmYawZero_ = false; // 确认是否两系转换完成
-    bool isSetBYZeroAng_ = false;   // 是否重置状态
-
-    void compensateImuAngle();
-    void updateBaseYaw();
-
     void loadChassisMsg(void *_param);
     void loadShooterMsg(void *_param);
     void sendVisionData();

@@ -73,11 +73,8 @@ public:
 
         eMA_s.Pitch = PINYMOTOR::rangeMap((0.25f * cos(omiga * patrolCnt)) + 0.1f);
         eMA_s.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
-
-        // eMA_s.Pitch = 0.f;
-        // eMA_s.SecondYaw = 0.f;
-
-        gimbal_->ctrl(eMA, navPosPid_, navVelPid_);
+        
+        gimbal_->ctrlMotor(eMA, navPosPid_, navVelPid_);
     }
 
     void exit() final

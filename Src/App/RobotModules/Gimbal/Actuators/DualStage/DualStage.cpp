@@ -12,7 +12,6 @@
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
 #include "./State/RunState.hpp"
-#include "./State/PatrolState.hpp"
 #include "./State/AutoState.hpp"
 #include "./State/NavState.hpp"
 #include <cmath>
@@ -66,7 +65,6 @@ DualStage::DualStage()
         .isReverse = FIRST_YAW_REVERSE,
     };
     motors_.Gim_s.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
-    // motors_.Gim_s.FirstYaw->setZeroAng();
     motors_.Gim_s.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.Gim_s.FirstYaw->data().zeroAng);
 
@@ -87,7 +85,6 @@ DualStage::DualStage()
     this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(this));
     this->stateFactory_.addState(FSMState_e::LAUNCH, std::make_unique<LaunchState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
-    this->stateFactory_.addState(FSMState_e::PATROL, std::make_unique<PatrolState>(this));
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
     this->stateFactory_.addState(FSMState_e::NAV, std::make_unique<NavState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
@@ -114,9 +111,21 @@ void DualStage::update(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->gimbalQueue), &msg, 0) == pdTRUE) {
     };
 
-    v2eData = miniPC_.data().v2eData;
-    n2eData = miniPC_.data().n2eData;
-    d2eData = miniPC_.data().d2eData;
+    if (miniPC_.pcState == MiniPC::PCState_e::ONLINE) {
+        v2eData = miniPC_.data().v2eData;
+        n2eData = miniPC_.data().n2eData;
+        d2eData = miniPC_.data().d2eData;
+    } else {
+        v2eData = {};
+        n2eData = {};
+        d2eData = {};
+    }
+
+    if (msg.state == FSMState_e::STOP) {
+        v2eData = {};
+        n2eData = {};
+        d2eData = {};
+    }
 
     for (uint8_t i = 0; i < 3; i++) {
         curMotorAng_._[i] = motors_._[i]->posNorm(); // 0~2*pi
@@ -125,7 +134,6 @@ void DualStage::update(void *_param)
     curImuAng_.Gim_s.Pitch = insData_.pitch;
     curImuAng_.Gim_s.SecondYaw = insData_.yaw; //云台imu在小yaw上
     curImuAng_.Gim_s.FirstYaw = getMinorArc(curImuAng_.Gim_s.SecondYaw, rangeConversion(curMotorAng_.Gim_s.SecondYaw));
-    compensateImuAngle();
 
     loadChassisMsg(_param);
     loadShooterMsg(_param);
@@ -167,7 +175,7 @@ void DualStage::loadChassisMsg(void *_param)
         n2eData = {};
     }
 
-    chassisCtrlTxPacket_.setData().deltaYaw = motors_.Gim_s.FirstYaw->posNorm();
+    chassisCtrlTxPacket_.setData().deltaYaw = curMotorAng_.Gim_s.FirstYaw;
     chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(miniPC_.data().d2eData.posture);
 }
 
@@ -189,8 +197,7 @@ void DualStage::sendVisionData()
 { // vision send
     e2vData.roll = insData_.roll;
     e2vData.pitch = insData_.pitch;
-    e2vData.yaw = getMinorArc(insData_.yaw, -this->deltaSYawArc_);
-    // e2vData.yaw = insData_.yaw;
+    e2vData.yaw = insData_.yaw;
 
     //装裁判系统数据
     e2vData.detectColor = isColor(refereeRxPacket_.data().robotId);
@@ -217,46 +224,68 @@ void DualStage::sendDecesionData()
     e2dData.eventData = -1;
 }
 
-void DualStage::compensateImuAngle()
-{
-    float tempComAng;
-    if (this->isConfirmYawZero_) {
-        //控制大yaw
-        this->curImuAng_.Gim_s.SecondYaw = getMinorArc(this->curImuAng_.Gim_s.SecondYaw, -this->deltaSYawArc_);
-        this->curImuAng_.Gim_s.FirstYaw = getMinorArc(this->curImuAng_.Gim_s.FirstYaw, -this->deltaBYawArc_);
-        //与gimbal类保持相同
-        this->ctrlYawAng_ = this->curImuAng_.Gim_s.FirstYaw;
-    } else {
-        // confirm zero
-        if (motors_.Gim_s.SecondYaw->posNorm() != 0.f && motors_.Gim_s.FirstYaw->posNorm() != 0.f) {
-            // TODO: prefer to globalState
-            /*实际在获取上电后imu确定的坐标系与车体坐标系正方向的差角,当前imu在小yaw上.
-            小yaw+大yaw=imu坐标系与车体坐标系正方向的差角*/
-            tempComAng = motors_.Gim_s.SecondYaw->posNorm() + motors_.Gim_s.FirstYaw->posNorm();
-            //0~2pi
-            tempComAng = PINYMOTOR::rangeMap(tempComAng);
-            this->deltaSYawArc_ = SECOND_YAW_REVERSE ?
-                                          getMinorArc(0.f, rangeConversion(motors_.Gim_s.SecondYaw->posNorm())) :
-                                          getMinorArc(rangeConversion(motors_.Gim_s.SecondYaw->posNorm()), 0.f);
-            this->deltaBYawArc_ = FIRST_YAW_REVERSE ? getMinorArc(0.f, tempComAng) : getMinorArc(tempComAng, 0.f);
-            this->isConfirmYawZero_ = true;
-            // this->isSetBYZeroAng_ = true;
-        } else {
-            this->isConfirmYawZero_ = false;
-        }
-    }
-}
-
-void DualStage::updateBaseYaw() {}
-
-float outMaxRunVel[3];
-float outMaxRunTorq[3];
-void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angPID,
-                     DualStage_u<PositionalPid *> _velPID)
+/**
+ * @brief 缓启动专用
+ * 
+ * @param _pos 电机系角度
+ * @param _step 缓启动步长
+ * @param _angPID 
+ * @param _velPID 
+ */
+void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
+                           DualStage_u<PositionalPid *> _velPID)
 {
     float del[3], vel[3], torq[3];
     for (uint8_t i = 0; i < 3; i++) {
-        del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
+        del[i] = getMinorArc(_pos._[i], curMotorAng_._[i]);
+        vel[i] = _angPID._[i]->calc(fmax(-_step._[i], fmin(del[i], _step._[i])), 0);
+        torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
+        motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
+    }
+    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
+    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
+    // motors_.Gim_s.Pitch->cmdTorq(0.f);
+}
+
+/**
+ * @brief 云台的电机控制接口，输入imu角度,传入电机控制函数
+ * 
+ * @param _insPos imu系角度
+ * @param _angPID 
+ * @param _velPID 
+ */
+void DualStage::ctrl(DualStage_u<float> _inPos, DualStage_u<PositionalPid *> _angPID,
+                     DualStage_u<PositionalPid *> _velPID)
+{
+    DualStage_u<float> delArc = {};
+    for (uint8_t i = 0; i < 3; i++) {
+        delArc._[i] = getMinorArc(_inPos._[i], curImuAng_._[i]);
+        expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
+    }
+    expMotorAng_.Gim_s.SecondYaw =
+            PINYMOTOR::clampArc(expMotorAng_.Gim_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+
+    if (msg.state == FSMState_e::RUN) {
+        expMotorAng_.Gim_s.SecondYaw = 0.f; //run模式下小yaw不改变方向
+    }
+    ctrlMotor(expMotorAng_, _angPID, _velPID);
+}
+
+float outMaxRunVel[3];
+float outMaxRunTorq[3];
+/**
+ * @brief 云台的电机控制接口，输入电机系角度，输出电机转矩
+ * 
+ * @param _motorAng 电机系角度
+ * @param _angPID 
+ * @param _velPID 
+ */
+void DualStage::ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPid *> _angPID,
+                          DualStage_u<PositionalPid *> _velPID)
+{
+    float del[3], vel[3], torq[3];
+    for (uint8_t i = 0; i < 3; i++) {
+        del[i] = getMinorArc(_motorAng._[i], curMotorAng_._[i]);
         vel[i] = _angPID._[i]->calc(del[i], 0);
         outMaxRunVel[i] = vel[i];
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
@@ -268,20 +297,6 @@ void DualStage::ctrl(DualStage_u<float> _pos, DualStage_u<PositionalPid *> _angP
     // motors_.Gim_s.Pitch->cmdTorq(0.f);
 }
 
-void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
-                           DualStage_u<PositionalPid *> _velPID)
-{
-    float del[3], vel[3], torq[3];
-    for (uint8_t i = 0; i < 3; i++) {
-        del[i] = getMinorArc(_pos._[i], motors_._[i]->posNorm());
-        vel[i] = _angPID._[i]->calc(fmax(-_step._[i], fmin(del[i], _step._[i])), 0);
-        torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
-        motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
-    }
-    // motors_.Gim_s.FirstYaw->cmdTorq(0.f);
-    // motors_.Gim_s.SecondYaw->cmdTorq(0.f);
-    // motors_.Gim_s.Pitch->cmdTorq(0.f);
-}
 
 //前馈pid,暂时无用
 volatile float accDebug = 0;

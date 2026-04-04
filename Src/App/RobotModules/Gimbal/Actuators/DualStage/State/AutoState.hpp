@@ -88,17 +88,7 @@ public:
             eIA_s.FirstYaw = visionExpBigYaw_;
         }
 
-        eIA_s.Pitch = PINYMOTOR::clampArc(eIA_s.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        eIA_s.FirstYaw = rangeConversion(eIA_s.FirstYaw);
-
-        delArc.Pitch = PINYMOTOR::getMinorArc(eIA_s.Pitch, cIA_s.Pitch);
-        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA_s.FirstYaw, cIA_s.FirstYaw);
-
-        eMA_s.Pitch = PINYMOTOR::rangeMap(cMA_s.Pitch + delArc.Pitch);
-        eMA_s.FirstYaw = PINYMOTOR::rangeMap(cMA_s.FirstYaw + delArc.FirstYaw);
-        eMA_s.SecondYaw = PINYMOTOR::clampArc(eMA_s.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
-
-        gimbal_->ctrl(eMA, autoPosPid_, autoVelPid_);
+        gimbal_->ctrl(eIA, autoPosPid_, autoVelPid_);
     }
 
     void exit() final

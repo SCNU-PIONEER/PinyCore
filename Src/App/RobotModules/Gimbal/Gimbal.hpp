@@ -4,7 +4,7 @@
 #include "TopicRouter.hpp"
 
 namespace GIMBAL {
-enum class FSMState_e : uint8_t { STOP = 0, LAUNCH, RUN, PATROL, NAV, AUTO };
+enum class FSMState_e : uint8_t { STOP = 0, LAUNCH, RUN, NAV, AUTO };
 }
 
 class Gimbal {
