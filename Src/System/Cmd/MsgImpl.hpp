@@ -18,7 +18,7 @@ namespace ARM {
 //一键：从矿仓取矿，公路穿越，资源区取矿（一次取两个，针对不同位置有123）
 enum class OneClick_e : uint8_t { ORE_BIN_EXTRACT = 0, HIGHWAY_CROSS, ORE_PICK1, ORE_PICK2, ORE_PICK3 };
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
-enum class ClampState_e : int8_t { CLAMP = 0, NONE = 1, RELEASE = 2 };
+enum class ClampState_e : int8_t { NONE = 0, CLAMP = 1, RELEASE = 2 };
 enum class CustomCtrlStateState_e : uint8_t { OFFLINE = 0, ONLINE = 1 };
 using Joint = std::array<float, 6>;
 }

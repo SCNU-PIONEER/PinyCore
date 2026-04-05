@@ -36,11 +36,22 @@ void APP::updateChassis(const ChassisUIMsg_s &_msg)
     //client_.ready(&dynamicInfo_[0]);
     using namespace UI::DYNAMIC_UI;
     memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, 0, 30);
-    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, "chassis ");
+    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text, "chassis:");
     size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text);
     const auto &str = magic_enum::enum_name(_msg.state);
     for (size_t i = 0; i < str.size(); i++) {
         dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.text[len + i] = str[i];
+    }
+    switch (_msg.state) {
+    case CHASSIS::FSMState_e::RUN:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.color = Color_e::GREEN;
+        break;
+    case CHASSIS::FSMState_e::SPIN:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.color = Color_e::CYAN_BLUE;
+        break;
+    case CHASSIS::FSMState_e::STOP:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)].config.color = Color_e::YELLOW;
+        break;
     }
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::CHASSIS_STATE)]);
 }
@@ -49,11 +60,22 @@ void APP::updateGimbal(const GimbalUIMsg_s &_msg)
 {
     using namespace UI::DYNAMIC_UI;
     memset(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, 0, 30);
-    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, "gimbal ");
+    strcpy(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text, "gimbal:");
     size_t len = strlen(dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text);
     const auto &str = magic_enum::enum_name(_msg.state);
     for (size_t i = 0; i < str.size(); i++) {
         dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.text[len + i] = str[i];
+    }
+    switch (_msg.state) {
+    case GIMBAL::FSMState_e::RUN:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.color = Color_e::GREEN;
+        break;
+    case GIMBAL::FSMState_e::STOP:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.color = Color_e::YELLOW;
+        break;
+    case GIMBAL::FSMState_e::LAUNCH:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)].config.color = Color_e::CYAN_BLUE;
+        break;
     }
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::GIMBAL_STATE)]);
 }
@@ -62,9 +84,9 @@ void APP::updateArm(const ArmUIMsg_s &_msg)
 {
     using namespace UI::DYNAMIC_UI;
 
-    auto copyString = []<typename T>(char *_text, T _id) {
+    auto copyString = []<typename T>(char *_text, char *_name, T _id) {
         memset(_text, 0, 30);
-        strcpy(_text, "arm ");
+        strcpy(_text, _name);
         size_t len = strlen(_text);
         const auto &str = magic_enum::enum_name(_id);
         for (size_t i = 0; i < str.size(); i++) {
@@ -72,9 +94,32 @@ void APP::updateArm(const ArmUIMsg_s &_msg)
         }
     };
 
-    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, _msg.state);
-    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAME_STATE)].config.text, _msg.clampState);
-    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)].config.text, _msg.customCtrlisOnline);
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.text, (char *)"arm:", _msg.state);
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAME_STATE)].config.text,
+               (char *)"armclamp:", _msg.clampState);
+    copyString(dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)].config.text,
+               (char *)"armcustom:", _msg.customCtrlisOnline);
+
+    switch (_msg.state) {
+    case ARM::FSMState_e::STOP:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.color = Color_e::YELLOW;
+        break;
+    case ARM::FSMState_e::NORMAL:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.color = Color_e::GREEN;
+        break;
+    case ARM::FSMState_e::PLAN:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.color = Color_e::CYAN_BLUE;
+        break;
+    case ARM::FSMState_e::TEACH:
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)].config.color = Color_e::ORANGE;
+        break;
+    }
+
+    if (_msg.customCtrlisOnline == ARM::CustomCtrlStateState_e::ONLINE) {
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)].config.color = Color_e::GREEN;
+    } else {
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)].config.color = Color_e::YELLOW;
+    }
 
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)]);
 }
