@@ -25,8 +25,8 @@ public:
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) final;
     void handle() final;
     void notify(Msg *_msg, QueueHandle_t _queue) final;
-    static void setArmState(ARM::FSMState_e _state) { armMsg.state = _state; }
-    static void setArmHandSwitch(ARM::ClampState_e _switch) { armMsg.switch1 = _switch; }
+    void setArmState(ARM::FSMState_e _state) { armMsg.state = _state; }
+    void setArmHandSwitch(ARM::ClampState_e _switch) { armMsg.switch1 = _switch; }
 
 private:
     static constexpr float INPUT_VX_MAX = 3.f;
@@ -48,7 +48,7 @@ private:
 
     ChassisMsg_s chassisMsg{};
     GimbalMsg_s gimbalMsg{};
-    static ArmMsg_s armMsg;
+    ArmMsg_s armMsg{};
 
     std::unique_ptr<RemoteControl> rc_ = nullptr;
 
@@ -65,7 +65,8 @@ private:
     float lx = 0.f;
     float ly = 0.f;
 
-    volatile uint8_t keyBoardCtrl = false;
+    uint8_t keyBoardCtrl = true;
+    uint8_t lastKeyBoardCtrl = true;
     uint8_t ctrlEnable = false;
     uint8_t ctrlSwitch = false;
     uint8_t isInNMode = false;

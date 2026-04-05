@@ -24,7 +24,6 @@
 
 #include "magic_enum/magic_enum.hpp"
 
-template <RCDevType_e DEV_TYPE> ArmMsg_s RcMsgHandler<DEV_TYPE>::armMsg{};
 template <RCDevType_e DEV_TYPE>
 RcMsgHandler<DEV_TYPE>::RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event)
 {
@@ -225,15 +224,15 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
     }
 
 /*------------------------------------------------------图传键鼠-----------------------------------------------------------------*/
-//单独键盘WSAD,BV,R,SHIFT已使用，注意判断能否参与和其他键盘的共同控制
+//单独键盘WSAD,R,SHIFT已使用，注意判断能否参与和其他键盘的共同控制
 #if APP_USE_VT13_KEYBOARD
-
-    if (IS_KEY_VT13(B)) {
-        keyBoardCtrl = true;
-    } else if (IS_KEY_VT13(V)) {
-        keyBoardCtrl = false;
-    }
+    keyBoardCtrl = (rcData->gamepad.sw == VT13::Sw_e::C);
     if (keyBoardCtrl) {
+        if (keyBoardCtrl && !lastKeyBoardCtrl) {
+            chassisMsg.state = CHASSIS::FSMState_e::STOP;
+            gimbalMsg.state = GIMBAL::FSMState_e::STOP;
+            armMsg.state = ARM::FSMState_e::STOP;
+        }
         /*—————————————————————————————————————————————————上下控—————————————————————————————————————————————————————————*/
         if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Z)) {
             chassisMsg.state = CHASSIS::FSMState_e::RUN;
@@ -322,23 +321,22 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             } else if (!customData.push) {
                 armMsg.switch1 = ARM::ClampState_e::RELEASE;
             }
-
-            //一键: 取矿*3，从矿仓取矿，公路区跨越
-            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
-            }
         } else if (armMsg.state == ARM::FSMState_e::NORMAL) {
             armMsg.target = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+        }
+        //一键: 取矿*3，从矿仓取矿，公路区跨越
+        if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q)) {
+            armMsg.state = ARM::FSMState_e::PLAN;
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
+        } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E)) {
+            armMsg.state = ARM::FSMState_e::PLAN;
+            armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
+        } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F)) {
+            armMsg.state = ARM::FSMState_e::PLAN;
+            armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
+        } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G)) {
+            armMsg.state = ARM::FSMState_e::PLAN;
+            armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
         }
 
         /*—————————————————————————————————————————————————Teach,Plan,Normal—————————————————————————————————————————————————————————*/
@@ -355,7 +353,7 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
         updateRocker(ry, rcData->gamepad.ch[1]);
         updateRocker(ly, rcData->gamepad.ch[2]);
         updateRocker(lx, rcData->gamepad.ch[3]);
-        if (rcData->gamepad.sw == VT13::Sw_e::S) {
+        if (rcData->gamepad.sw == VT13::Sw_e::C) {
             //arm
             armMsg.switch1 = ARM::ClampState_e::NONE;
             armMsg.state = ARM::FSMState_e::STOP;
@@ -366,26 +364,32 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             chassisMsg.state = CHASSIS::FSMState_e::STOP;
             chassisMsg.vx = chassisMsg.vy = 0.f;
             isInNMode = false;
-        } else if (rcData->gamepad.sw == VT13::Sw_e::N) {
-            //拨轮控云台
-            gimbalMsg.state = GIMBAL::FSMState_e::RUN;
-            gimbalMsg.yaw = -((float)rcData->gamepad.wheel * GIMBAL_YAW_MAX / 660);
-            //进入N档后，默认底盘RUN，之后通过fn1/fn2控制RUN/SPIN切换
-            //BUG:由于按键抖动，无法单独通过trigger或某个按键控制RUN/SPIN切换
-            if (!isInNMode) {
-                chassisMsg.state = CHASSIS::FSMState_e::RUN;
-                isInNMode = true;
+        } else {
+            if (rcData->gamepad.trigger) {
+                armMsg.switch1 = ARM::ClampState_e::CLAMP;
+            } else if (rcData->gamepad.pause) {
+                armMsg.switch1 = ARM::ClampState_e::RELEASE;
             }
-            if (rcData->gamepad.fn2) {
-                // chassisMsg.state = CHASSIS::FSMState_e::SPIN;
-                LOG::info("RcMsgHandler", "Spin!");
-            }
-            if (rcData->gamepad.fn1) {
-                chassisMsg.state = CHASSIS::FSMState_e::RUN;
-                LOG::info("RcMsgHandler", "Run!");
-            }
-            chassisMsg.vx = ry / 400 * INPUT_VX_MAX;
-            chassisMsg.vy = -rx / 300 * INPUT_VY_MAX;
+            if (rcData->gamepad.sw == VT13::Sw_e::N) {
+                //拨轮控云台
+                gimbalMsg.state = GIMBAL::FSMState_e::RUN;
+                gimbalMsg.yaw = -((float)rcData->gamepad.wheel * GIMBAL_YAW_MAX / 660);
+                //进入N档后，默认底盘RUN，之后通过fn1/fn2控制RUN/SPIN切换
+                //BUG:由于按键抖动，无法单独通过trigger或某个按键控制RUN/SPIN切换
+                if (!isInNMode) {
+                    chassisMsg.state = CHASSIS::FSMState_e::RUN;
+                    isInNMode = true;
+                }
+                if (rcData->gamepad.fn2) {
+                    // chassisMsg.state = CHASSIS::FSMState_e::SPIN;
+                    LOG::info("RcMsgHandler", "Spin!");
+                }
+                if (rcData->gamepad.fn1) {
+                    chassisMsg.state = CHASSIS::FSMState_e::RUN;
+                    LOG::info("RcMsgHandler", "Run!");
+                }
+                chassisMsg.vx = ry / 400 * INPUT_VX_MAX;
+                chassisMsg.vy = -rx / 300 * INPUT_VY_MAX;
 
             armMsg.state = ARM::FSMState_e::NORMAL;
             armMsg.target[0] = -lx / 314 / 200; //8016yaw
@@ -412,42 +416,43 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
                 }
             }
 
-            if (rcData->gamepad.fn1) {
-                armMsg.state = ARM::FSMState_e::NORMAL;
-            }
-
-            if (armMsg.state == ARM::FSMState_e::TEACH) {
-                auto customData = ((VT13 *)rc_.get())->getCtrlData();
-                for (uint8_t i = 0; i < 6; i++) {
-                    lpfJoint[i] = lpf[i].process(customData.joint[i]);
-                }
-                armMsg.target[0] = lpfJoint[0]; //8016yaw
-                armMsg.target[1] = lpfJoint[1]; //10010pitch
-                armMsg.target[2] = lpfJoint[2]; //8009pitch
-                armMsg.target[3] = lpfJoint[3]; //4340yaw
-                armMsg.target[4] = lpfJoint[4]; //3507pitch
-                armMsg.target[5] = lpfJoint[5]; //3507roll
-
-                if (customData.push) {
-                    armMsg.switch1 = ARM::ClampState_e::CLAMP;
-                } else if (!customData.push) {
-                    armMsg.switch1 = ARM::ClampState_e::RELEASE;
+                if (rcData->gamepad.fn1) {
+                    armMsg.state = ARM::FSMState_e::NORMAL;
                 }
 
-            } else if (armMsg.state == ARM::FSMState_e::NORMAL) {
-                armMsg.target[0] = 0.f;
-                armMsg.target[1] = 0.f;
-                armMsg.target[2] = ry / 314 / 200; //8009pitch
-                armMsg.target[3] = rx / 314 / 100; //4340yaw
-                armMsg.target[4] = -lx / 314;      //3507roll
-                armMsg.target[5] = -ly / 314;      //3507pitch
+                if (armMsg.state == ARM::FSMState_e::TEACH) {
+                    auto customData = ((VT13 *)rc_.get())->getCtrlData();
+                    for (uint8_t i = 0; i < 6; i++) {
+                        lpfJoint[i] = lpf[i].process(customData.joint[i]);
+                    }
+                    armMsg.target[0] = lpfJoint[0]; //8016yaw
+                    armMsg.target[1] = lpfJoint[1]; //10010pitch
+                    armMsg.target[2] = lpfJoint[2]; //8009pitch
+                    armMsg.target[3] = lpfJoint[3]; //4340yaw
+                    armMsg.target[4] = lpfJoint[4]; //3507pitch
+                    armMsg.target[5] = lpfJoint[5]; //3507roll
+
+                    if (customData.push) {
+                        armMsg.switch1 = ARM::ClampState_e::CLAMP;
+                    } else if (!customData.push) {
+                        armMsg.switch1 = ARM::ClampState_e::RELEASE;
+                    }
+
+                } else if (armMsg.state == ARM::FSMState_e::NORMAL) {
+                    armMsg.target[0] = 0.f;
+                    armMsg.target[1] = 0.f;
+                    armMsg.target[2] = ry / 314 / 200; //8009pitch
+                    armMsg.target[3] = rx / 314 / 100; //4340yaw
+                    armMsg.target[4] = -lx / 314;      //3507roll
+                    armMsg.target[5] = -ly / 314;      //3507pitch
+                }
             }
         }
-
         notify(&chassisMsg, msgBus_->chassisQueue);
         notify(&gimbalMsg, msgBus_->gimbalQueue);
         notify(&armMsg, msgBus_->armQueue);
     }
+    lastKeyBoardCtrl = keyBoardCtrl;
     /*----------------------------------------图传遥控器-------------------------------------------------------------------------------*/
 }
 /*---------------------------------------VT13----------------------------------------------------------------------------------*/

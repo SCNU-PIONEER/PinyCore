@@ -18,6 +18,8 @@ public:
 
     void task();
     MsgBus_s *getMsgBus() { return &msgBus_; }
+    RcMsgHandler<RCDevType_e::DT7> &getDT7() { return rcDT7Handler_; }
+    RcMsgHandler<RCDevType_e::VT13> &getVT13() { return rcVT13Handler_; }
 
 protected:
     void parseMsg();
