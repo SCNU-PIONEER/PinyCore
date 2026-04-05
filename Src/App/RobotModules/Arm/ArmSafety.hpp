@@ -23,8 +23,6 @@ public:
 
     void setSpeed(const float _speed);
 
-    void setJointSpeedLimit(const Joint _currtentAng, const Joint _targetAng);
-
     void setAllAngleLimit(Joint &_targetJoints);
 
     void setYawPitchAngLimit(Joint &_targetJoints, const Joint &_msgJoints);

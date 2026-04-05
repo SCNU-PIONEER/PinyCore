@@ -11,10 +11,10 @@
 #include "ArmStopState.hpp"
 #include "ArmTeachState.hpp"
 #include "ArmPlanState.hpp"
-#include "RcMsgHandler.hpp"
+#include "Cmd.hpp"
 
 using namespace ARM;
-
+extern Lazy<Cmd> cmd;
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // static std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
@@ -76,25 +76,27 @@ void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
 void Arm::moveRoute()
 {
     if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == JointState_e::FINISH_STATE) {
-        if (RouteDta.pose[RouteDta.point_cnt]._delay != 0) {
-            LOG::info("ARM", "Start move delay");
-            Dwt::instance().delayMs(static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay));
-            LOG::info("ARM", "End move delay");
+        if (xTaskGetTickCount() - updateCnt >= static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay)) {
+            updateCnt = xTaskGetTickCount();
+            RouteDta.point_cnt++;
         }
-        RouteDta.point_cnt++;
         if (RouteDta.point_cnt == RouteDta.target_point) {
             RouteDta.point_cnt = 0;
             LOG::info("ARM", "Move all point done");
-            RcMsgHandler<RCDevType_e::DT7>::setArmState(ARM::FSMState_e::NORMAL);
-            RcMsgHandler<RCDevType_e::VT13>::setArmState(ARM::FSMState_e::NORMAL);
+            auto &dt7 = cmd->getDT7();
+            auto &vt13 = cmd->getVT13();
+            dt7.setArmState(ARM::FSMState_e::NORMAL);
+            vt13.setArmState(ARM::FSMState_e::NORMAL);
         }
     }
 }
 
 JointState_e Arm::moveOneGoal(const Joint_s &_goal)
 {
-    RcMsgHandler<RCDevType_e::DT7>::setArmHandSwitch(_goal.clampState);
-    RcMsgHandler<RCDevType_e::VT13>::setArmHandSwitch(_goal.clampState);
+    auto &dt7 = cmd->getDT7();
+    auto &vt13 = cmd->getVT13();
+    dt7.setArmHandSwitch(_goal.clampState);
+    vt13.setArmHandSwitch(_goal.clampState);
 
     auto angMin = motors.safety.getAngleMin();
     auto angMax = motors.safety.getAngleMax();
@@ -106,7 +108,6 @@ JointState_e Arm::moveOneGoal(const Joint_s &_goal)
             }
         }
         target_joints.joints = _goal.joints;
-        motors.safety.setJointSpeedLimit(motors.currentJoints, target_joints.joints);
         motors.safety.setAllAngleLimit(target_joints.joints);
         jointStateFlag = JointState_e::MOVING_STATE;
     }
