@@ -398,7 +398,7 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             armMsg.target[3] = 0.f;             //4340yaw
             armMsg.target[4] = 0.f;             //3507pitch
             armMsg.target[5] = 0.f;             //3507roll
-        } else if (rcData->gamepad.sw == VT13::Sw_e::C) {
+        } else if (rcData->gamepad.sw == VT13::Sw_e::S) {
             isInNMode = false;
             if (rcData->gamepad.fn2) {
                 if (armMsg.customCtrlisOnline == ARM::CustomCtrlStateState_e::ONLINE) {
