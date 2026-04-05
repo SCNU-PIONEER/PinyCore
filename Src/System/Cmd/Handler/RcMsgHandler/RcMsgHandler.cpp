@@ -20,7 +20,6 @@
 #include "StmLog.hpp"
 
 #include <cmath>
-#include <cstring>
 #include "Smooth.hpp"
 
 #include "magic_enum/magic_enum.hpp"
@@ -199,6 +198,12 @@ template <> void RcMsgHandler<RCDevType_e::ET08A>::masterHandle()
 template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
 {
     VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
+    if (((VT13 *)rc_.get())->isCtrlOnline()) {
+        armMsg.customCtrlisOnline = ARM::CustomCtrlStateState_e::ONLINE;
+    } else {
+        armMsg.customCtrlisOnline = ARM::CustomCtrlStateState_e::OFFLINE;
+    }
+
 #if APP_USE_VT13_KEYBOARD
     /*
          * gimbal:STOP,RUN,
@@ -364,7 +369,7 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
         armMsg.target[5] = 0.f;             //3507roll
     } else if (rcData->gamepad.sw == VT13::Sw_e::C) {
         if (rcData->gamepad.fn2) {
-            if (((VT13 *)rc_.get())->isCtrlOnline()) {
+            if (armMsg.customCtrlisOnline == ARM::CustomCtrlStateState_e::ONLINE) {
                 armMsg.state = ARM::FSMState_e::TEACH;
                 auto customData = ((VT13 *)rc_.get())->getCtrlData();
                 armMsg.target[0] = customData.joint[0]; //8016yaw

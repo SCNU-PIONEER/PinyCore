@@ -119,14 +119,16 @@ public:
     static constexpr uint16_t ID = 0x23;
     struct ProtoData_s {
         ARM::FSMState_e armState = ARM::FSMState_e::STOP;
-         ARM::ClampState_e clampState = ARM::ClampState_e::NONE;
+        ARM::ClampState_e clampState = ARM::ClampState_e::NONE;
+        ARM::CustomCtrlStateState_e customCtrlisOnline = ARM::CustomCtrlStateState_e::OFFLINE;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
             uint8_t armState;
             uint8_t clampState;
-            uint8_t reversed[6];
+            uint8_t customCtrlisOnline;
+            uint8_t reversed[5];
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -135,6 +137,7 @@ public:
     {
         _data.content.armState = static_cast<uint8_t>(_protoData.armState);
         _data.content.clampState = static_cast<uint8_t>(_protoData.clampState);
+        _data.content.customCtrlisOnline = static_cast<uint8_t>(_protoData.customCtrlisOnline);
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
