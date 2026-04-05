@@ -116,3 +116,31 @@ Please adhere to this project's [CODE_OF_CONDUCT](./.docs/CODE_OF_CONDUCT.md).
 > PinyCore is still in early development, and is not yet complete. It should be stable enough and we have
 > been daily driving it for quite a while, but expect some bugs and possibly breaking changes to the
 > config file.
+
+## 图传键鼠&遥控器
+图传遥控器三档CNS
+C：键鼠模式
+not C: 遥控器模式
+
+键鼠：
+Ctrl + Z : 上控（底盘，云台，臂）
+Ctrl + C : 下控（底盘，云台，臂）
+上控后：
+1. 底盘
+    W : 前进
+    S ：后退
+    A ：左移
+    D ：右移
+    同时按Shift,底盘运动加速
+
+2. 云台
+    按Shift的同时
+        x方向移动鼠标：云台图传沿yaw轴旋转
+        y方向移动鼠标：云台图传沿pitch轴旋转
+    不按Shift
+        x方向移动鼠标：云台沿yaw轴旋转
+
+3. 臂
+    R : 按了之后臂进入Teach,可使用示教器控制机械臂运动
+    可按Ctrl + Q/E/F/G进入Plan执行对应的一键
+
