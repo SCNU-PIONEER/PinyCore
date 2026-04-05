@@ -1,5 +1,6 @@
 #include "SuperCap.hpp"
 #include <cstring>
+#include "Referee.hpp"
 
 CAP::CAP(canHandle *_hcan) : hcan_(_hcan), rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
 {
@@ -11,27 +12,33 @@ CAP::CAP(canHandle *_hcan) : hcan_(_hcan), rxQueue_(xQueueCreate(2, sizeof(PINYM
 
 void CAP::praseCapData(const uint8_t *_rxbuf)
 {
-    //TODO: 昭庆蜜汁换算magic number ,后续跟琪宝交流
     memcpy(&rawCapData_, _rxbuf, sizeof(RawCapData_s));
 
-    capData_.inputVoltage = BATTERY_VOLTAGE + static_cast<float>(rawCapData_.busVoltage) / 100.0f;
-    capData_.capVoltage = static_cast<float>(rawCapData_.capVoltage) / 70.0f;
-    capData_.inputCurrent = static_cast<float>(rawCapData_.inputCurrent) / 1000.0f;
-    capData_.outputCurrent = capData_.inputCurrent - static_cast<float>(rawCapData_.chargeCurrent) / 1000.0f;
-    capData_.powerSet = static_cast<float>(rawCapData_.setPower);
-
-    capData_.CapEnableFlag = rawCapData_.CapEnableFlag;
-    capData_.LowVoltageFlag = rawCapData_.LowVoltageFlag;
+    memcpy(&capData_.capState, &rawCapData_.statusCode, sizeof(CapState_s));
+    capData_.chassisPower = (static_cast<float>(rawCapData_.chassisPower) - 16384.f) / 64.f;
+    capData_.refereePower = (static_cast<float>(rawCapData_.refereePower) - 16384.f) / 64.f;
+    capData_.chassisPowerLimit = static_cast<float>(rawCapData_.chassisPowerLimit);
+    capData_.capEnergyRatio = static_cast<float>(rawCapData_.capEnergy) / CAP_ENERGY_MAX;
 }
 
-uint8_t CAP::capDataSend(float _capChargePower, bool _capEnableFlag, bool _enableCharge, uint16_t _chassisPower)
+uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
+                         uint8_t _chargeRatioLimit)
 {
     uint8_t ret = 0;
-
-    capCmd_.chargePower = _capChargePower;
-    capCmd_.EnableCAP = _capEnableFlag;
-    capCmd_.EnableCharge = _enableCharge;
-    capCmd_.chassisCmdPower = _chassisPower;
+    capCmd_.enableDCDC = _capEnable;
+    capCmd_.systemRestart = _systemRestart;
+    capCmd_.clearError = _clearError;
+    capCmd_.enChargeLimit = _enChargeLimit;
+    capCmd_.chargeRatioLimit = _chargeRatioLimit;
+#if EXTENSION_REFEREE
+    capCmd_.powerLimit = referee->receiver.getRefereeData().gameRobotStatus.chassisPowerLimit;
+    capCmd_.energyBuffer = referee->receiver.getRefereeData().powerHeatData.chassisPowerBuffer;
+#else
+    capCmd_.powerLimit = 60;
+    capCmd_.energyBuffer = 60;
+#endif
+    capCmd_.reserved1 = 0;
+    capCmd_.reserved2 = 0;
 
     if (checkSend()) {
         uint8_t txbuf[8] = {};
@@ -43,14 +50,15 @@ uint8_t CAP::capDataSend(float _capChargePower, bool _capEnableFlag, bool _enabl
     return ret;
 }
 
-void CAP::capTask(float _capChargePower, bool _capEnableFlag, bool _enableCharge, uint16_t _chassisPower)
+void CAP::capTask(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
+                  uint8_t _chargeRatioLimit)
 {
     if (xQueueReceive(rxQueue_, &rxBuf_.data, 0) == pdTRUE) {
         rxCnt_++;
         praseCapData(rxBuf_.data);
     }
 
-    capDataSend(_capChargePower, _capEnableFlag, _enableCharge, _chassisPower);
+    capDataSend(_capEnable, _systemRestart, _clearError, _enChargeLimit, _chargeRatioLimit);
     rxFreqCalc();
 }
 
