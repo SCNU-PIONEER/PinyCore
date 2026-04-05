@@ -18,8 +18,14 @@ public:
 
     void task();
     MsgBus_s *getMsgBus() { return &msgBus_; }
+#if EXTENSION_DT7
     RcMsgHandler<RCDevType_e::DT7> &getDT7() { return rcDT7Handler_; }
+#elif EXTENSION_ET08A
+    RcMsgHandler<RCDevType_e::ET08A> &getET08A() { return rcET08AHandler_; }
+#endif
+#if EXTENSION_VT13
     RcMsgHandler<RCDevType_e::VT13> &getVT13() { return rcVT13Handler_; }
+#endif
 
 protected:
     void parseMsg();
