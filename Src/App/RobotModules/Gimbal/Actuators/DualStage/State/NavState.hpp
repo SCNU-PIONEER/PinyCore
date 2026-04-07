@@ -59,10 +59,8 @@ public:
         eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
-        for (uint8_t i = 0; i < 3; i++) {
-            delArc._[i] = PINYMOTOR::getMinorArc(eIA._[i], cIA._[i]);
-            eMA._[i] = PINYMOTOR::rangeMap(cMA._[i] + delArc._[i]);
-        }
+        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
+        eMA.FirstYaw = PINYMOTOR::rangeMap(cMA.FirstYaw + delArc.FirstYaw);
 
         //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
         if (patrolCnt + 5 >= MAX_PAT_CNT)

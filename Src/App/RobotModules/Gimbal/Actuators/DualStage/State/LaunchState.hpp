@@ -58,12 +58,13 @@ public:
             i = 0;
         }
 
-        float targetAng = 0;
-        if (cMA.FirstYaw > PI / 2.f && cMA.FirstYaw < 3.f * PI / 2.f) {
-            targetAng = PI;
-            eMA.FirstYaw = PI;
-        } else
-            targetAng = 0;
+        float targetAng = 0; //缓启动大yaw目标角度为0或pi,根据当前角度选择较近的一个
+        //导航要求必须一个缓启动方向，因此暂不实现双方向缓启动
+        // if (cMA.FirstYaw > PI / 2.f && cMA.FirstYaw < 3.f * PI / 2.f) {
+        //     targetAng = PI;
+        //     eMA.FirstYaw = PI;
+        // } else
+        //     targetAng = 0;
 
         if (launchTime_ < MAX_LAUNCH_TIME) {
             launchTime_++;

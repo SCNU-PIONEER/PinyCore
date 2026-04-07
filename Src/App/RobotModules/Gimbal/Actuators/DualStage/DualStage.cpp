@@ -242,7 +242,7 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
 }
 
 /**
- * @brief 云台的电机控制接口，输入imu角度,传入电机控制函数
+ * @brief 输入imu角度,传入电机控制函数
  * 
  * @param _insPos imu系角度
  * @param _angPID 
