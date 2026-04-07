@@ -92,7 +92,7 @@ public:
     static constexpr uint8_t LEN = 8;
     static constexpr uint16_t ID = 0x22;
     struct ProtoData_s {
-        GIMBAL::FSMState_e gimbalState;
+        GIMBAL::FSMState_e gimbalState = GIMBAL::FSMState_e::STOP;
     };
 #pragma pack(push, 1)
     union Data_u {
@@ -120,7 +120,7 @@ public:
     struct ProtoData_s {
         ARM::FSMState_e armState = ARM::FSMState_e::STOP;
         ARM::ClampState_e clampState = ARM::ClampState_e::NONE;
-        ARM::CustomCtrlStateState_e customCtrlisOnline = ARM::CustomCtrlStateState_e::OFFLINE;
+        ARM::CustomCtrlState_e customCtrlisOnline = ARM::CustomCtrlState_e::OFFLINE;
     };
 #pragma pack(push, 1)
     union Data_u {
@@ -143,6 +143,7 @@ public:
     {
         _protoData.armState = static_cast<ARM::FSMState_e>(_data.content.armState);
         _protoData.clampState = static_cast<ARM::ClampState_e>(_data.content.clampState);
+        _protoData.customCtrlisOnline = static_cast<ARM::CustomCtrlState_e>(_data.content.customCtrlisOnline);
     }
 };
 
