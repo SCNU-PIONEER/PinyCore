@@ -1,5 +1,6 @@
 #include "Swerve.hpp"
 #include "Chassis.hpp"
+#include "MiniPCPacketImpl.hpp"
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
@@ -135,10 +136,11 @@ void Swerve::enter()
 
 void Swerve::update(void *_param)
 {
+    TickType_t cnt = xTaskGetTickCount();
 #if !APP_USE_COMM
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
-
+    sentryCmd.posture = static_cast<uint32_t>(SentryPosture_e::MOVE);
 #else
     msg.state = static_cast<FSMState_e>(chassisCtrlRxPacket_.data().state);
     msg.vx = chassisCtrlRxPacket_.data().vx;
@@ -146,13 +148,17 @@ void Swerve::update(void *_param)
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
 
-    // sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
-    // referee->transmitter.sendData(0x0120, reinterpret_cast<uint8_t *>(&sentryCmd), sizeof(REFEREE::SentryCmd_s));
+    // robotInteractionData.sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
+    if (cnt % 10000 == 0) {
+        robotInteractionData.sentryCmd.posture++;
+    }
 #endif
+    robotInteractionData.senderId = refereeMsg_.robotId;
 
-    if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
-    };
-
+    if (cnt % 100 == 0) { //10Hz向裁判系统发送一次数据
+        referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&robotInteractionData),
+                                      sizeof(robotInteractionData));
+    }
     loadDeltaYaw();
     loadRefereeData(_param);
 

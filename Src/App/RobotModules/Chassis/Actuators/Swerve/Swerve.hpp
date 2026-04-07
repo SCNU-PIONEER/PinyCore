@@ -129,7 +129,15 @@ protected:
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
     BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
 
-    REFEREE::SentryCmd_s sentryCmd; //哨兵指令
+    struct {
+        uint16_t dataCmdId = 0x0120;    //需为开放的子内容 ID
+        uint16_t senderId;              //需与自身 ID 匹配,机器人ID
+        uint16_t receiverId = 0x8080;   //裁判系统服务器（用于哨兵和雷达自主决策指令
+        REFEREE::SentryCmd_s sentryCmd; //哨兵指令
+    } robotInteractionData;             //向裁判系统发送的数据 0x0301
+
+    REFEREE::SentryInfo_s &sentryInfo_ = referee->receiver.getRefereeData().sentryInfo; //哨兵信息
+
     float chassisCurPower_;
     float chassisPowerBuffer_;
 

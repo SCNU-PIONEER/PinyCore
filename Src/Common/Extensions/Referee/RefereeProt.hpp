@@ -163,20 +163,20 @@ struct RadarMarkData_s {
     uint16_t markProgress;
 };
 
-/* 0x020D 哨兵兑远程换数据，1Hz 周期发送 */
+/* 0x020D 哨兵裁判系统发送的数据，1Hz 周期发送 */
 struct SentryInfo_s {
-    uint32_t exchangeAmmo : 11;
-    uint32_t remoteExchangeAmmoCount : 4;
-    uint32_t remoteExchangeHealthCount : 4;
-    uint32_t canFreeRevive : 1;
-    uint32_t canImmediateRevive : 1;
-    uint32_t immediateReviveCost : 10;
-    uint32_t reserved1 : 1;
-    uint16_t outOfCombat : 1;
-    uint16_t team17mmRemainingExchange : 11;
-    uint16_t posture : 2;
-    uint16_t energyMechanismCanActivate : 1;
-    uint16_t reserved2 : 1;
+    uint32_t exchangeAmmo : 11;              //bit 0-10: 除远程兑换外，哨兵机器人成功兑换的允许发弹量
+    uint32_t remoteExchangeAmmoCount : 4;    //bit 11-14: 哨兵机器人成功远程兑换允许发弹量的次数
+    uint32_t remoteExchangeHealthCount : 4;  //bit 15-18: 哨兵机器人成功远程兑换血量的次数
+    uint32_t canFreeRevive : 1;              //bit 19: 哨兵当前是否可以确认免费复活
+    uint32_t canImmediateRevive : 1;         //bit 20: 哨兵当前是否可以兑换立即复活
+    uint32_t immediateReviveCost : 10;       //bit 21-30: 哨兵当前若兑换立即复活需要花费的金币数
+    uint32_t reserved1 : 1;                  //bit 31: 保留
+    uint16_t outOfCombat : 1;                //bit 0: 哨兵当前是否处于脱战状态
+    uint16_t team17mmRemainingExchange : 11; //bit 1-11: 队伍17mm 允许发弹量的剩余可兑换数
+    uint16_t posture : 2;                    //bit 12-13: 哨兵当前姿态，1为进攻姿态，2为防御姿态，3为移动姿态
+    uint16_t energyMechanismCanActivate : 1; //bit 14: 已方能量机关是否能够进入正在激活状态
+    uint16_t reserved2 : 1;                  //bit 15: 保留
 };
 
 /* 0x020E 雷达易伤次数，1Hz 周期发送 */
