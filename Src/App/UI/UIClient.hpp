@@ -108,7 +108,7 @@ struct Config_s {
     uint32_t width;            // 线条宽度
     uint32_t startX;           // 起点 x 坐标  （0,0）为屏幕左下角（1920，1080）为屏幕右上角
     uint32_t startY;           // 起点 y 坐标
-    uint32_t endX;             // 终点 x 坐标
+    uint32_t endX;             // 终点 x 坐标 (直线，矩形，正圆，圆弧需要使用)
     uint32_t endY;             // 终点 y 坐标
     /*******特殊配置********/
     uint32_t radius;     // 圆：半径
