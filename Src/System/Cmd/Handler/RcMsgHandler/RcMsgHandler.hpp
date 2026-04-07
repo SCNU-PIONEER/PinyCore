@@ -27,6 +27,7 @@ public:
     void notify(Msg *_msg, QueueHandle_t _queue) final;
     void setArmState(ARM::FSMState_e _state) { armMsg.state = _state; }
     void setArmHandSwitch(ARM::ClampState_e _switch) { armMsg.switch1 = _switch; }
+    void setArmOreBinState(bool _isStucked) { armMsg.isStucked = _isStucked; }
 
 private:
     static constexpr float INPUT_VX_MAX = 3.f;
@@ -69,7 +70,9 @@ private:
     uint8_t lastKeyBoardCtrl = true;
     uint8_t ctrlEnable = false;
     uint8_t ctrlSwitch = false;
-    uint8_t isInNMode = false;
+    uint8_t isFirstInChassis = false;
+
+    RCDevType_e activeRC = RCDevType_e::ET08A;
 
     float gimbalVal = 0.f;
 };
