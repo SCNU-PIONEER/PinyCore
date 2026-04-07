@@ -9,10 +9,11 @@ struct Joint_s {
     Joint joints;
     float _delay;
     ARM::ClampState_e clampState;
+    bool _isBinStucked = false;
 
     constexpr Joint_s(const Joint &_joints = { 0.0f }, float _delay = 0.0f,
-                      ARM::ClampState_e _clampState = ARM::ClampState_e::NONE)
-            : joints(_joints), _delay(_delay), clampState(_clampState)
+                      ARM::ClampState_e _clampState = ARM::ClampState_e::NONE, bool _isBinStucked = false)
+            : joints(_joints), _delay(_delay), clampState(_clampState), _isBinStucked(_isBinStucked)
     {
     }
 };
@@ -32,8 +33,8 @@ inline Joint operator-(const Joint &_joints1, const Joint &_joints2)
 }
 
 inline Joint_s test[2] = {
-    { { -0.03f, -0.80f, 0.67f, 0.12f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE },
-    { { -0.90f, -0.81f, -0.20f, 0.92f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE },
+    { { -0.03f, -0.80f, 0.67f, 0.12f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE, false },
+    { { -0.90f, -0.81f, -0.20f, 0.92f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE, false },
 };
 inline JointRoute_s test1 = { .pose = test, .target_point = 2, .point_cnt = 0 };
 
