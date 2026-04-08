@@ -100,17 +100,16 @@ JointState_e Arm::moveOneGoal(const Joint_s &_goal)
 
     auto angMin = motors.safety.getAngleMin();
     auto angMax = motors.safety.getAngleMax();
-    {
-        for (int i = 0; i < 6; i++) {
-            if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
-                LOG::error("ARM", "Joint%d move goal error", i + 1);
-                return jointStateFlag;
-            }
+
+    for (int i = 0; i < 6; i++) {
+        if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
+            LOG::error("ARM", "Joint%d move goal error", i + 1);
+            return jointStateFlag;
         }
-        target_joints.joints = _goal.joints;
-        motors.safety.setAllAngleLimit(target_joints.joints);
-        jointStateFlag = JointState_e::MOVING_STATE;
     }
+    target_joints.joints = _goal.joints;
+    motors.safety.setAllAngleLimit(target_joints.joints);
+    jointStateFlag = JointState_e::MOVING_STATE;
 
     Joint initDeltaJoints = target_joints.joints - motors.currentJoints;
     float maxDeltaAngle = Kinematic::absMax(initDeltaJoints);
