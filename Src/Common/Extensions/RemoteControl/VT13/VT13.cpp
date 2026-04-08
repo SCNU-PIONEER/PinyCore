@@ -153,7 +153,7 @@ void *VT13::getData() { return &data_; }
 
 bool VT13::isCtrlOnline()
 {
-    if (ctrlLostCnt_ < RX_LOST_MAX) {
+    if (ctrlLostCnt_ < RX_LOST_MAX1) {
         ctrlLostCnt_.fetch_add(1, std::memory_order_relaxed);
         return true;
     } else

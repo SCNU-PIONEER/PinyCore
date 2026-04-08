@@ -233,11 +233,13 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
     if (activeRC == RCDevType_e::VT13) {
         VT13::RcData_s *rcData = static_cast<VT13::RcData_s *>(rc_->getData());
         if (((VT13 *)rc_.get())->isCtrlOnline()) {
-            armMsg.customCtrlisOnline = ARM::CustomCtrlStateState_e::ONLINE;
+            armMsg.customCtrlisOnline = ARM::CustomCtrlState_e::ONLINE;
         } else {
-            armMsg.customCtrlisOnline = ARM::CustomCtrlStateState_e::OFFLINE;
+            armMsg.customCtrlisOnline = ARM::CustomCtrlState_e::OFFLINE;
         }
-
+        if (rcData->gamepad.sw == VT13::Sw_e::C) {
+            isFirstInChassis = false;
+        }
 /*------------------------------------------------------图传键鼠-----------------------------------------------------------------*/
 //单独键盘WSAD,R,SHIFT已使用，注意判断能否参与和其他键盘的共同控制
 #if APP_USE_VT13_KEYBOARD
@@ -292,19 +294,15 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             }
             /*--------------------------------------------------底盘前后左右WSAD-------------------------------------------------------------*/
 
-            // if (IS_KEY_VT13(SHIFT)) {
-            //     // 云台图传, 底盘不动
-            //     armMsg.videoYaw = -static_cast<float>(rcData->KBM.mouseX);
-            //     armMsg.videoPitch = -static_cast<float>(rcData->KBM.mouseY);
-            // } else {
-            //     // 云台旋转，底盘自动跟随
-            //     gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) * GIMBAL_YAW_MAX;
-            // }
-
-            // 云台旋转，底盘自动跟随
-            // gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) * GIMBAL_YAW_MAX;
-
-
+            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(X)) {
+                // 云台图传, 底盘不动
+                armMsg.videoYaw = static_cast<float>(rcData->KBM.mouseX) / 50.f;
+                armMsg.videoPitch = -static_cast<float>(rcData->KBM.mouseY) / 100.f;
+            }
+            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q)) {
+                // 云台旋转，底盘自动跟随
+                gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) / 20 * GIMBAL_YAW_MAX;
+            }
             /*—————————————————————————————————————————————————Teach,Plan,Normal—————————————————————————————————————————————————————————*/
             if (IS_KEY_VT13(R)) {
                 armMsg.state = ARM::FSMState_e::TEACH;
@@ -339,17 +337,8 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             } else if (armMsg.state == ARM::FSMState_e::NORMAL) {
                 armMsg.target = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
             }
-            //一键: 取矿*3，从矿仓取矿，公路区跨越
-            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_PICK1;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_PICK2;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(F)) {
-                armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::HIGHWAY_CROSS;
-            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G)) {
+            //一键
+            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G)) {
                 armMsg.state = ARM::FSMState_e::PLAN;
                 armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
             }
@@ -364,16 +353,6 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             updateRocker(ly, rcData->gamepad.ch[2]);
             updateRocker(lx, rcData->gamepad.ch[3]);
             if (rcData->gamepad.sw == VT13::Sw_e::C) {
-                //arm
-                armMsg.switch1 = ARM::ClampState_e::NONE;
-                armMsg.state = ARM::FSMState_e::STOP;
-                // gimbal
-                gimbalMsg.state = GIMBAL::FSMState_e::STOP;
-                gimbalMsg.yaw = 0.f;
-                // chassis
-                chassisMsg.state = CHASSIS::FSMState_e::STOP;
-                chassisMsg.vx = chassisMsg.vy = 0.f;
-                isFirstInChassis = false;
             } else {
                 if (rcData->gamepad.trigger) {
                     armMsg.switch1 = ARM::ClampState_e::CLAMP;
@@ -411,7 +390,7 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
                 } else if (rcData->gamepad.sw == VT13::Sw_e::S) {
                     isFirstInChassis = false;
                     if (rcData->gamepad.fn2) {
-                        if (armMsg.customCtrlisOnline == ARM::CustomCtrlStateState_e::ONLINE) {
+                        if (armMsg.customCtrlisOnline == ARM::CustomCtrlState_e::ONLINE) {
                             armMsg.state = ARM::FSMState_e::TEACH;
                             auto customData = ((VT13 *)rc_.get())->getCtrlData();
                             for (uint8_t i = 0; i < 6; i++) {
