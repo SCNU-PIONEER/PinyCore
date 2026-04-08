@@ -2,9 +2,13 @@
 #include <cstring>
 #include "Referee.hpp"
 
-CAP::CAP(canHandle *_hcan) : hcan_(_hcan), rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
+CAP::CAP(canHandle *_hcan, uint16_t _cmdId, uint16_t _dataId)
+        : hcan_(_hcan)
+        , cmdId_(_cmdId)
+        , dataId_(_dataId)
+        , rxQueue_(xQueueCreate(2, sizeof(PINYMOTOR::RxBus_s::CANRxBuf_s<8>)))
 {
-    Can::instance().registerCallback(hcan_, CAP_DATA_ID, [this](const uint8_t *_rxBuf) {
+    Can::instance().registerCallback(hcan_, dataId_, [this](const uint8_t *_rxBuf) {
         BaseType_t higherPriorityTaskWoken = pdFALSE;
         xQueueSendFromISR(this->rxQueue_, _rxBuf, &higherPriorityTaskWoken);
     });
@@ -22,7 +26,7 @@ void CAP::praseCapData(const uint8_t *_rxbuf)
 }
 
 uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
-                         uint8_t _chargeRatioLimit)
+                         uint8_t _chargeRatioLimit, uint16_t _powerLimit)
 {
     uint8_t ret = 0;
     capCmd_.enableDCDC = _capEnable;
@@ -30,8 +34,9 @@ uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError,
     capCmd_.clearError = _clearError;
     capCmd_.enChargeLimit = _enChargeLimit;
     capCmd_.chargeRatioLimit = _chargeRatioLimit;
+    capCmd_.useFeedback = 1; // 默认使用反馈消息
 #if EXTENSION_REFEREE
-    capCmd_.powerLimit = referee->receiver.getRefereeData().gameRobotStatus.chassisPowerLimit;
+    capCmd_.powerLimit = _powerLimit;
     capCmd_.energyBuffer = referee->receiver.getRefereeData().powerHeatData.chassisPowerBuffer;
 #else
     capCmd_.powerLimit = 60;
@@ -44,21 +49,21 @@ uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError,
         uint8_t txbuf[8] = {};
         memcpy(txbuf, &capCmd_, 8);
 
-        ret = static_cast<uint8_t>(Can::instance().transmitData(hcan_, CAP_CMD_ID, txbuf, 8));
+        ret = static_cast<uint8_t>(Can::instance().transmitData(hcan_, cmdId_, txbuf, 8));
         lastSendTick_ = xTaskGetTickCount();
     }
     return ret;
 }
 
 void CAP::capTask(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
-                  uint8_t _chargeRatioLimit)
+                  uint8_t _chargeRatioLimit, uint16_t _powerLimit)
 {
     if (xQueueReceive(rxQueue_, &rxBuf_.data, 0) == pdTRUE) {
         rxCnt_++;
         praseCapData(rxBuf_.data);
     }
 
-    capDataSend(_capEnable, _systemRestart, _clearError, _enChargeLimit, _chargeRatioLimit);
+    capDataSend(_capEnable, _systemRestart, _clearError, _enChargeLimit, _chargeRatioLimit, _powerLimit);
     rxFreqCalc();
 }
 

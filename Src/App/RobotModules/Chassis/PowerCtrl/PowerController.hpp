@@ -48,6 +48,8 @@ enum class ErrorCode_e : uint8_t {
 };
 
 class PowerController {
+    static constexpr float REMAIN_POWER = 10.f;
+
 public:
     PowerController(ChassisType_e _chassisType, CAP *_cap);
 
@@ -71,7 +73,7 @@ protected:
     float chassisRawPower_ = 0.f;  // 未经过功率控制的原始底盘功率
     float chassisFitPower_ = 0.f;  // 根据模型算出的实际输出功率（与超电反馈功率比较反映模型拟合程度）
     float chassisRealPower_ = 0.f; // 实际输出功率
-    float chassisSetPOwer_ = 0.f;
+    float chassisSetPower_ = 0.f;
 
     std::vector<float> setTorq_;  // 最终设定输出力矩
     std::vector<float> setPower_; // 功率控制后所得的功率

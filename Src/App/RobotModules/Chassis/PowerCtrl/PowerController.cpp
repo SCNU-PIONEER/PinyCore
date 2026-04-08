@@ -19,6 +19,7 @@ void PowerController::update(const RefereeMsg_s &_msg)
         capRealRatio_ = capData.capEnergyRatio;
 
         float offsetPower = powerPid_.calc(capCmdRatio_, capRealRatio_);
+        offsetPower = std::clamp(offsetPower, offsetPower, REMAIN_POWER);
         maxPower_ = static_cast<float>(_msg.chassisPowerLimit) - offsetPower;
         capFreq = cap_->getRxFreq();
     }

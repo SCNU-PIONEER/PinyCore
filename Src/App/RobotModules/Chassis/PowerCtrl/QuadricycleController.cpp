@@ -83,10 +83,10 @@ std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed, IM
     else
         powerRatio_ = 1.f;
 
-    chassisSetPOwer_ = 0.f;
+    chassisSetPower_ = 0.f;
     for (uint8_t i = 0; i < motorNum_; i++) {
         setPower_[i] = cmdPower_[i] * powerRatio_;
-        chassisSetPOwer_ += setPower_[i];
+        chassisSetPower_ += setPower_[i];
     }
     torqueCalc(_motor, _cmd);
     relPowerCalc(_motor);
