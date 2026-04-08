@@ -7,5 +7,10 @@
 
     config POWERCTRL_USE_REFEREE
         bool "referee feedback"
-        default n    
+        default n   
+
+    config ENABLE_STEER_RLS
+        bool "enable steer rls"
+        default n
+
     endmenu
