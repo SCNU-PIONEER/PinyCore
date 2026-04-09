@@ -54,11 +54,11 @@ public:
     PowerController(ChassisType_e _chassisType, CAP *_cap);
 
     //五个发送给超电的数据
-    bool capEnable_ = false;       //超电使能
-    bool systemRestart_ = false;   //系统重启
-    bool clearError_ = false;      //清除错误
-    bool enableCharge_ = true;     //启用主动充电限制
-    uint8_t chargeRatioLimit_ = 0; //主动充电限制比例，0-255（无线充电时使用）
+    bool capEnable_ = true;          //超电使能
+    bool systemRestart_ = false;     //系统重启
+    bool clearError_ = false;        //清除错误
+    bool enableCharge_ = true;       //启用主动充电限制
+    uint8_t chargeRatioLimit_ = 255; //主动充电限制比例，0-255（无线充电时使用）
 
     float capCmdRatio_ = 0.f; //超电能量命令比例（0-1）
     float capRealRatio_ = 1.f;
