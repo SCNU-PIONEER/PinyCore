@@ -90,7 +90,7 @@ void dynamicConfig(UI::Info_s *_info)
         .layer = 1,
         .color = Color_e::YELLOW,
         .width = 3,
-        .startX = 225,
+        .startX = 250,
         .startY = 700,
         .size = 16,
         .text = "NONE",

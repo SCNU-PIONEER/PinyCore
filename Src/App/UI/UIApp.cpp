@@ -108,7 +108,7 @@ void APP::updateArm(const ArmUIMsg_s &_msg)
         dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAMP_STATE)].config.color = Color_e::GREEN;
         break;
     case ARM::ClampState_e::CLAMP:
-        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAMP_STATE)].config.color = Color_e::CYAN_BLUE;
+        dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAMP_STATE)].config.color = Color_e::ORANGE;
         break;
     }
 
@@ -119,6 +119,8 @@ void APP::updateArm(const ArmUIMsg_s &_msg)
     }
 
     client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_STATE)]);
+    client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CLAMP_STATE)]);
+    client_.ready(&dynamicInfo_[static_cast<uint8_t>(Name_e::ARM_CUSTOM_CTRL_STATE)]);
 }
 
 void ArmRxPacket::registerCallback()
