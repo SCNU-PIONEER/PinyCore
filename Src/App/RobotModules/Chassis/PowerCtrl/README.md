@@ -14,7 +14,7 @@ float powerRatio = 1.f;      // 功率分配比例
 float maxPower = 0.f;        // 允许最大输出功率
 std::vector<float> setPower_; // 功率控制后所得的功率
 std::vector<float> setTorq_;  // 最终设定输出力矩
-CAP cap_{&HCAN1};
+CAP *cap_;
 ```
 派生类里(如QuadricycleController):
 ```c++
@@ -24,8 +24,15 @@ PowerModel_s::ModelParam_s UniformMotion   //底盘模型参数
 RLS<PowerModel_s::FIT_RANK> *wheelRLS_    
 
 static constexpr float VEL_THESHOLD = 200.f;  //切换模型参数速度阈值
+
 //RLS拟合的为整个机构的模型参数，如底盘有不同结构
-//如哨兵有舵则需定义不同PowerModel_s和RLS
+//如哨兵有舵则需定义不同PowerModel_s和RLS,如swerveController
+
+    RLS<PowerModel_s::FIT_RANK> *wheelRLS_;
+#if ENABLE_STEER_RLS
+    RLS<PowerModel_s::FIT_RANK> *steerRLS_;
+#endif
+
 ```
 ## 控制逻辑
 1. 更新裁判系统缓冲能量，根据电容实际能量占比与期望能量占比计算允许最大输出功率
@@ -44,7 +51,6 @@ rlsUpdate()       //RLS动态拟合
 
 ## 使用
 前提：kconfig中开启PowerCtrl， superCap， referee以及PowerCtrl中的rls,
-     没裁判系统别开启powerCtrl setting中的refereeFeedback（比赛时一定要开启!!!!!!）
 
 1. create PowerController 并new
 ```c++
@@ -61,9 +67,8 @@ cpp中
 2. 在底盘的update()里调用
 ```c++
 #if APP_USE_POWERCTRL
-    cap_.capTask(
-            chargeCmdPower, powerCtrl_->capEnable_, powerCtrl_->capCharge,
-            static_cast<uint16_t>(powerCtrl_->chassisSetPower));
+    cap_.capTask(powerCtrl_->capEnable_, powerCtrl_->systemRestart_, powerCtrl_->clearError_, powerCtrl_->enableCharge_,
+                 powerCtrl_->chargeRatioLimit_, refereeMsg.chassisPowerLimit, refereeMsg.chassisPowerBuffer);
 #endif
     调用后确保超电数据接收正常，如不正常大多是因为超电的can设置错误,数据不正常需要重烧功率板代码
 ```
@@ -79,7 +84,7 @@ cpp中
         cmd[i] = velPid_[i].torq;
     }
     std::vector<float> torq;
-    torq = powerCtrl_->powerCtrl(refWSpeed._, motors_._, cmd, rmsg);
+    torq = powerCtrl_->powerCtrl(refWSpeed._, motors_._, cmd, refereeMsg);
 
     for (uint8_t i = 0; i < 4; i++) {
 #if APP_USE_POWERCTRL
@@ -90,12 +95,12 @@ cpp中
     }
 
     注意：
-    powerCtrl_->powerCtrl(refWSpeed._, &motors_._[0], cmd, rmsg)的四个参数
+    powerCtrl_->powerCtrl(refWSpeed._, &motors_._[0], cmd, refereeMsg)的四个参数
     1.refWSpeed的单位需为rads/s，如单位为rpm则传入需变单位
     2. motors_._为电机指针数组
     3.cmd为pid计算得到的力矩
-    4.rmsg 裁判系统msg，需手动        
-    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &rmsg, 0) ==
+    4.refereeMsg 裁判系统msg，需手动        
+    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg, 0) ==
             pdTRUE) {
         };   
 ```
@@ -115,7 +120,7 @@ cpp中
 ```
 2. 静态功耗参数
 
-首先先断控,看capFeedbackPower的值,填到PowerModel_s::ModelParam_s LaunchMotion 
+首先先断控,看chassisRealPower的值,填到PowerModel_s::ModelParam_s LaunchMotion 
 和UniformMotion的LeakagePower中(LeakagePower为静态功耗建议取中间值偏上，因为有噪声)
 
 LeakagePower的作用为在没有速度时保证拟合效果，此时需要拟合的参数数据此时趋近0
@@ -146,7 +151,7 @@ RLS的拟合需要时间，不可能在收敛出趋近匀速过程的参数后�
         motors_._[i]->cmdTorq(cmd[i]);
 #endif
 ```
-freemaster中观察起步过程capFeedbackPower, chassisRawPower, chassisRelPower拟合效果
+freemaster中观察起步过程chassisRealPower_, chassisRawPower_, chassisFitPower_拟合效果
 拟合效果好，则将得到的参数填入PowerModel_s::ModelParam_s LaunchMotion中
 #注： 一定要是起步加减速过程，不能匀速，最好先停止拟合再抄（如四轮车断控，或者写debug模式）
 

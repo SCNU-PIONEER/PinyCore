@@ -24,11 +24,11 @@ void QuadricycleController::cmdPowerCalc(const float *_motorSpeed, IMotor *_moto
 
 void QuadricycleController::relPowerCalc(IMotor *_motor[4])
 {
-    chassisRealPower_ = 0;
+    chassisFitPower_ = 0;
     for (uint8_t i = 0; i < motorNum_; i++) {
         const float relVel = _motor[i]->vel() * _motor[i]->rr();
-        relPower_[i] = Wheel.power(_motor[i]->torq(), relVel);
-        chassisRealPower_ += relPower_[i];
+        fitPower_[i] = Wheel.power(_motor[i]->torq(), relVel);
+        chassisFitPower_ += fitPower_[i];
     }
 }
 
@@ -59,9 +59,12 @@ void QuadricycleController::rlsUpdate(IMotor *_motor[4])
     }
     if (std::ranges::any_of(vel, [](float _vel) { return _vel > VEL_THESHOLD; })) {
         Matrix<PowerModel_s::FIT_RANK, 1> inputVector(vectorValue);
-        wheelRLS_->update(inputVector, capFeedbackPower_ - (Wheel.modelParams.LeakagePower * 4.f));
+        wheelRLS_->update(inputVector, chassisRealPower_ - (Wheel.modelParams.LeakagePower * 4.f));
         Matrix<PowerModel_s::FIT_RANK, 1> params = wheelRLS_->getEstVector();
-        Wheel.overrideParams({ .K0 = params(0, 0), .MLC = params(1, 0), .ESR = params(2, 0) });
+        Wheel.overrideParams({ .K0 = params(0, 0),
+                               .MLC = params(1, 0),
+                               .ESR = params(2, 0),
+                               .LeakagePower = Wheel.modelParams.LeakagePower });
     } else
         Wheel.overrideParams(LaunchMotion);
 }
@@ -80,21 +83,12 @@ std::vector<float> QuadricycleController::powerCtrl(const float *_motorSpeed, IM
     else
         powerRatio_ = 1.f;
 
-    chassisSetPower = 0;
-    static float lastSetPower = 0;
+    chassisSetPower_ = 0.f;
     for (uint8_t i = 0; i < motorNum_; i++) {
         setPower_[i] = cmdPower_[i] * powerRatio_;
-        chassisSetPower += setPower_[i];
+        chassisSetPower_ += setPower_[i];
     }
     torqueCalc(_motor, _cmd);
     relPowerCalc(_motor);
-
-    static uint32_t taskTick = 0;
-    float setPowerDot = (chassisSetPower - lastSetPower) / static_cast<float>(xTaskGetTickCount() - taskTick) * 1000.f;
-    lastSetPower = chassisSetPower;
-    taskTick = xTaskGetTickCount();
-    if (cap_ != nullptr)
-        cap_->chargeCmdPower = std::clamp(limitPower_ - (0.01f * setPowerDot), 30.f, 120.f);
-
     return setTorq_;
 }
