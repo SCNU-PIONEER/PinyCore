@@ -8,6 +8,8 @@
 
 void PinyCore::bspInit()
 {
+    // sysview init must be before segger RTT init (in log)
+    LOG::Logger::instance();
     SEGGER_SYSVIEW_Conf();
 
     Can::instance().init();
