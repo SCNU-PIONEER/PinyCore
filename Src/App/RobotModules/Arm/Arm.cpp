@@ -76,9 +76,12 @@ void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
 void Arm::moveRoute()
 {
     if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == JointState_e::FINISH_STATE) {
-        if (xTaskGetTickCount() - updateCnt >= static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay)) {
+        if (updateCnt == 0) {
             updateCnt = xTaskGetTickCount();
+        }
+        if (xTaskGetTickCount() - updateCnt >= static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay)) {
             RouteDta.point_cnt++;
+            updateCnt = 0;
         }
         if (RouteDta.point_cnt == RouteDta.target_point) {
             RouteDta.point_cnt = 0;
@@ -93,11 +96,6 @@ void Arm::moveRoute()
 
 JointState_e Arm::moveOneGoal(const Joint_s &_goal)
 {
-    auto &dt7 = cmd->getDT7();
-    auto &vt13 = cmd->getVT13();
-    dt7.setArmHandSwitch(_goal.clampState);
-    vt13.setArmHandSwitch(_goal.clampState);
-
     auto angMin = motors.safety.getAngleMin();
     auto angMax = motors.safety.getAngleMax();
 
@@ -114,6 +112,10 @@ JointState_e Arm::moveOneGoal(const Joint_s &_goal)
     Joint initDeltaJoints = target_joints.joints - motors.currentJoints;
     float maxDeltaAngle = Kinematic::absMax(initDeltaJoints);
     if (maxDeltaAngle < 0.04f) {
+        auto &dt7 = cmd->getDT7();
+        auto &vt13 = cmd->getVT13();
+        dt7.setArmHandSwitch(_goal.clampState);
+        vt13.setArmHandSwitch(_goal.clampState);
         jointStateFlag = JointState_e::FINISH_STATE;
         LOG::info("ARM", "Move point%d done", RouteDta.point_cnt);
     }

@@ -33,8 +33,8 @@ inline Joint operator-(const Joint &_joints1, const Joint &_joints2)
 }
 
 inline Joint_s test[2] = {
-    { { -0.03f, -0.80f, 0.67f, 0.12f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE, false },
-    { { -0.90f, -0.81f, -0.20f, 0.92f, -1.9f, 0.23f }, 0.f, ARM::ClampState_e::NONE, false },
+    { { -0.03f, -0.80f, 0.67f, 0.12f, -1.9f, 0.23f }, 5000.f, ARM::ClampState_e::CLAMP, false },
+    { { -0.90f, -0.81f, -0.20f, 0.92f, -1.9f, 0.23f }, 2.f, ARM::ClampState_e::RELEASE, false },
 };
 inline JointRoute_s test1 = { .pose = test, .target_point = 2, .point_cnt = 0 };
 
