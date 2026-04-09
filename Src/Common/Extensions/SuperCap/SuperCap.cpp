@@ -1,6 +1,5 @@
 #include "SuperCap.hpp"
 #include <cstring>
-#include "Referee.hpp"
 
 CAP::CAP(canHandle *_hcan, uint16_t _cmdId, uint16_t _dataId)
         : hcan_(_hcan)
@@ -26,7 +25,7 @@ void CAP::praseCapData(const uint8_t *_rxbuf)
 }
 
 uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
-                         uint8_t _chargeRatioLimit, uint16_t _powerLimit)
+                         uint8_t _chargeRatioLimit, uint16_t _powerLimit, uint16_t _energyBuffer)
 {
     uint8_t ret = 0;
     capCmd_.enableDCDC = _capEnable;
@@ -35,13 +34,9 @@ uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError,
     capCmd_.enChargeLimit = _enChargeLimit;
     capCmd_.chargeRatioLimit = _chargeRatioLimit;
     capCmd_.useFeedback = 1; // 默认使用反馈消息
-#if EXTENSION_REFEREE
     capCmd_.powerLimit = _powerLimit;
-    capCmd_.energyBuffer = referee->receiver.getRefereeData().powerHeatData.chassisPowerBuffer;
-#else
-    capCmd_.powerLimit = 60;
-    capCmd_.energyBuffer = 60;
-#endif
+    capCmd_.energyBuffer = _energyBuffer;
+
     capCmd_.reserved1 = 0;
     capCmd_.reserved2 = 0;
 
@@ -56,14 +51,14 @@ uint8_t CAP::capDataSend(bool _capEnable, bool _systemRestart, bool _clearError,
 }
 
 void CAP::capTask(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
-                  uint8_t _chargeRatioLimit, uint16_t _powerLimit)
+                  uint8_t _chargeRatioLimit, uint16_t _powerLimit, uint16_t _energyBuffer)
 {
     if (xQueueReceive(rxQueue_, &rxBuf_.data, 0) == pdTRUE) {
         rxCnt_++;
         praseCapData(rxBuf_.data);
     }
 
-    capDataSend(_capEnable, _systemRestart, _clearError, _enChargeLimit, _chargeRatioLimit, _powerLimit);
+    capDataSend(_capEnable, _systemRestart, _clearError, _enChargeLimit, _chargeRatioLimit, _powerLimit, _energyBuffer);
     rxFreqCalc();
 }
 

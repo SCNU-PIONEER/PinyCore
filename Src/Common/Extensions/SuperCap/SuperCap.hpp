@@ -54,11 +54,11 @@ public:
     void praseCapData(const uint8_t *_rxbuf);
     bool checkSend();
     void capTask(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit, uint8_t _chargeRatioLimit,
-                 uint16_t _powerLimit);
+                 uint16_t _powerLimit, uint16_t _energyBuffer);
     void rxFreqCalc();
 
     uint8_t capDataSend(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit,
-                        uint8_t _chargeRatioLimit, uint16_t _powerLimit);
+                        uint8_t _chargeRatioLimit, uint16_t _powerLimit, uint16_t _energyBuffer);
 
     CapData_s &getCapData() { return capData_; }
     float getRxFreq() { return rxFreq_; }
