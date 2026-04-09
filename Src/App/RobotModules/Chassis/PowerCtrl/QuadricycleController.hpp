@@ -3,7 +3,7 @@
 
 class QuadricycleController : public PowerController {
 public:
-    QuadricycleController(ChassisType_e _chassisType, CAP *_cap);
+    QuadricycleController(ChassisType_e _chassisType, SuperCap *_cap);
 
     std::vector<float> powerCtrl(const float *_motorSpeed, PINYMOTOR::IMotor *_motor[4], const float *_cmd,
                                  const RefereeMsg_s &_msg);

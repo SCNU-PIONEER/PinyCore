@@ -1,57 +1,48 @@
-# superCap v2.0.0
+# SuperCap v2.0.0
 
 ## 更新
+
 1. 新功率板协议更新
-
-## 主要成员变量
-```c++
-canHandle *hcan_;
-uint16_t cmdId_;
-uint16_t dataId_;
-
-CapData_s capData_;
-RawCapData_s rawCapData_;
-CapCmd_s capCmd_;
-
-```
-capData_ 为解析后数据
-rawCapData_ 为原始数据
-capCmd_ 为发送命令
-
-## 主要成员函数
-```c++
-void capTask(bool _capEnable, bool _systemRestart, bool _clearError, bool _enChargeLimit, uint8_t _chargeRatioLimit,
-                 uint16_t _powerLimit, uint16_t _energyBuffer);
-```
-需要持续运行，不能在上控情况下调用
-```c++
-CapData_s &getCapData() { return capData_; }
-```
-功率板数据接口
+2. 重构电容模组部分代码，更新变量及函数签名
 
 ## 使用
-```c++
-struct CapCmd_s {
-    uint8_t enableDCDC : 1;    // 允许启动DCDC
-    uint8_t systemRestart : 1; // 系统重启
-    uint8_t reserved1 : 3;
-    uint8_t clearError : 1;    // 手动清除可清除的错误
-    uint8_t enChargeLimit : 1; // 是否启用主动充电限制
-    uint8_t useFeedback : 1;   // 是否使用反馈消息
 
-    uint16_t powerLimit;      // 裁判限制功率，单位W
-    uint16_t energyBuffer;    // 裁判能量缓冲，单位J
-    uint8_t chargeRatioLimit; // 主动充电限制比例（能量），0-255
-    int16_t reserved2;
-};//变量说明
+包体内容可见同目录下SuperCapMsg.hpp
 
-enableDCDC为电容以及无线充电 充放电开关，阵亡应为0
-systemRestart，默认为0，功率板代码数据错误时，可设置为1，重新启动
-clearError，默认为0，可设置为1，清除超电错误
-enChargeLimit，默认为1，启用主动充电限制
-chargeRatioLimit, 量程为0-255，对应于0-28.8v，即能量比例为0-100%
-powerLimit，单位为W，功率限制
-*说明*：功率板充电上限功率（电容充电功率），电容放电逻辑：功率板检测功率超过发送的powerLimit后，以检测功率减去powerLimit后的功率放电
-energyBuffer，单位为J，缓冲能量
+SuperCap类中有设置各命令值的函数。
 
-```
+快速使用说明：
+
+1. 包含头文件
+   
+    #include "SuperCap.hpp"
+
+2. 构造
+   
+    SuperCap cap(hcanPtr, /*cmdId*/0x222, /*dataId*/0x223, /*txFreq*/200.f);
+   
+   - `hcanPtr`：指向 `canHandle` 的句柄（平台/项目中 CAN 句柄类型）。
+   - `txFreq`：命令发送频率（Hz），默认 200Hz。
+
+3. 在 RTOS 任务循环中调用 task()
+
+4. 设置命令 / 控制行为（示例）
+   
+   常用命令，控制电容放电
+    cap.enableDischarge();
+    cap.disableDischarge();
+   
+   电容组默认设置充电功率上限为所设置的chargePowerLimit，即使调用unlimitCharge()
+    cap.limitCharge();
+    cap.unlimitCharge();
+    cap.setChargelimitRatio(0.8f); // 0..1
+    cap.setChargePowerLimit(120);
+    cap.setChargeEnergySlack(60);
+   
+    cap.setClearErrorFlag(true);
+    cap.setSystemRestartFlag(true);
+
+5. 读取状态
+   
+    auto &data = cap.getCapData();
+    float rxHz = cap.getRxFreq();

@@ -4,7 +4,7 @@
 
 using namespace PINYMOTOR;
 
-QuadricycleController::QuadricycleController(ChassisType_e _chassisType, CAP *_cap)
+QuadricycleController::QuadricycleController(ChassisType_e _chassisType, SuperCap *_cap)
         : PowerController(_chassisType, _cap)
 {
     float estVector[PowerModel_s::FIT_RANK] = { UniformMotion.K0, UniformMotion.MLC, UniformMotion.ESR };

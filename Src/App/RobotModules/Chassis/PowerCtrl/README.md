@@ -14,7 +14,7 @@ float powerRatio = 1.f;      // 功率分配比例
 float maxPower = 0.f;        // 允许最大输出功率
 std::vector<float> setPower_; // 功率控制后所得的功率
 std::vector<float> setTorq_;  // 最终设定输出力矩
-CAP *cap_;
+SuperCap *cap_;
 ```
 派生类里(如QuadricycleController):
 ```c++
@@ -56,7 +56,7 @@ rlsUpdate()       //RLS动态拟合
 ```c++
 hpp中
 SwerveController *powerCtrl_;(使用对应控制器)
-CAP cap_{&HCAN1};(使用对应can)
+SuperCap cap_{&HCAN1};(使用对应can)
 
 cpp中
 #if APP_USE_POWERCTRL
@@ -68,7 +68,7 @@ cpp中
 ```c++
 #if APP_USE_POWERCTRL
     cap_.capTask(powerCtrl_->capEnable_, powerCtrl_->systemRestart_, powerCtrl_->clearError_, powerCtrl_->enableCharge_,
-                 powerCtrl_->chargeRatioLimit_, refereeMsg.chassisPowerLimit, refereeMsg.chassisPowerBuffer);
+                 powerCtrl_->chargeRatioLimit_, refereeMsg.outputPowerMax, refereeMsg.outputPowerBuffer);
 #endif
     调用后确保超电数据接收正常，如不正常大多是因为超电的can设置错误,数据不正常需要重烧功率板代码
 ```

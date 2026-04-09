@@ -4,7 +4,7 @@
 
 using namespace PINYMOTOR;
 
-SwerveController::SwerveController(ChassisType_e _chassisType, CAP *_cap) : PowerController(_chassisType, _cap)
+SwerveController::SwerveController(ChassisType_e _chassisType, SuperCap *_cap) : PowerController(_chassisType, _cap)
 {
     Wheel.overrideParams(WheelLaunchMotion);
     float wheelEstVector[PowerModel_s::FIT_RANK] = { WheelUniformMotion.K0, WheelUniformMotion.MLC,

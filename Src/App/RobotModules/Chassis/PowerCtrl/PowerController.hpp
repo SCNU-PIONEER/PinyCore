@@ -40,18 +40,11 @@ enum class ChassisType_e : uint8_t {
     SWERVE = 8u,
 };
 
-enum class ErrorCode_e : uint8_t {
-    NO_ERROR = 0u,
-    CAP_DISCONNECT = 1u,
-    REFREEE_DISCONNECT = 2u,
-    ALL_DISCONNECT = 3u,
-};
-
 class PowerController {
     static constexpr float REMAIN_POWER = 10.f;
 
 public:
-    PowerController(ChassisType_e _chassisType, CAP *_cap);
+    PowerController(ChassisType_e _chassisType, SuperCap *_cap);
 
     //五个发送给超电的数据
     bool capEnable_ = true;          //超电使能
@@ -79,14 +72,11 @@ protected:
     std::vector<float> setPower_; // 功率控制后所得的功率
     float powerRatio_ = 1.f;
 
-    CAP *cap_;
+    SuperCap *cap_;
     void update(const RefereeMsg_s &_msg);
 
 private:
     ChassisType_e chassisType_;
     PositionalPid powerPid_{ 250.f, 0, 0, 0.001f, 0, 200.f, 0 };
-
-    ErrorCode_e errorState_ = ErrorCode_e::NO_ERROR;
-    void errorCheck(float _refereeRxFreq, float _capFreq);
     FILTER::LPFIIR3 realPowerFilter{ 1000.f, 12.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
 };

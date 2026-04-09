@@ -4,7 +4,7 @@
 
 class SwerveController : public PowerController {
 public:
-    SwerveController(ChassisType_e _chassisType, CAP *_cap);
+    SwerveController(ChassisType_e _chassisType, SuperCap *_cap);
 
     std::vector<float> powerCtrl(const float *_motorSpeed, PINYMOTOR::IMotor *_motor[8], const float *_cmd,
                                  RefereeMsg_s _msg, const float _sVel[4]);
