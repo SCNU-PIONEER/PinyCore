@@ -353,6 +353,17 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             updateRocker(ly, rcData->gamepad.ch[2]);
             updateRocker(lx, rcData->gamepad.ch[3]);
             if (rcData->gamepad.sw == VT13::Sw_e::C) {
+                //arm
+                armMsg.switch1 = ARM::ClampState_e::NONE;
+                armMsg.state = ARM::FSMState_e::STOP;
+                armMsg.switch1 = ARM::ClampState_e::NONE;
+                // gimbal
+                gimbalMsg.state = GIMBAL::FSMState_e::STOP;
+                gimbalMsg.yaw = 0.f;
+                // chassis
+                chassisMsg.state = CHASSIS::FSMState_e::STOP;
+                chassisMsg.vx = chassisMsg.vy = 0.f;
+                isFirstInChassis = false;
             } else {
                 if (rcData->gamepad.trigger) {
                     armMsg.switch1 = ARM::ClampState_e::CLAMP;
