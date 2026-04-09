@@ -1,14 +1,21 @@
 #pragma once
 #include <cstdint>
 #include "ArmKinematic.hpp"
+#include "MsgImpl.hpp"
 
 namespace ARM {
 
 struct Joint_s {
     Joint joints;
     float _delay;
+    ARM::ClampState_e clampState;
+    bool _isBinStucked = false;
 
-    constexpr Joint_s(const Joint &_joints = { 0.0f }, float _delay = 0.0f) : joints(_joints), _delay(_delay) {}
+    constexpr Joint_s(const Joint &_joints = { 0.0f }, float _delay = 0.0f,
+                      ARM::ClampState_e _clampState = ARM::ClampState_e::NONE, bool _isBinStucked = false)
+            : joints(_joints), _delay(_delay), clampState(_clampState), _isBinStucked(_isBinStucked)
+    {
+    }
 };
 
 struct JointRoute_s {
@@ -24,5 +31,11 @@ inline Joint operator-(const Joint &_joints1, const Joint &_joints2)
         tmp[i] = _joints1[i] - _joints2[i];
     return tmp;
 }
+
+inline Joint_s test[2] = {
+    { { -0.03f, -0.80f, 0.67f, 0.12f, -1.9f, 0.23f }, 5000.f, ARM::ClampState_e::CLAMP, false },
+    { { -0.90f, -0.81f, -0.20f, 0.92f, -1.9f, 0.23f }, 2.f, ARM::ClampState_e::RELEASE, false },
+};
+inline JointRoute_s test1 = { .pose = test, .target_point = 2, .point_cnt = 0 };
 
 } // namespace ARM

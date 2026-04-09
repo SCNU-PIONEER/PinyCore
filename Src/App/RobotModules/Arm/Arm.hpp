@@ -72,5 +72,6 @@ public:
     ARM::VideoCtrl videoCtrl;
 
 private:
+    uint32_t updateCnt = 0;
     // ARM::Kinematic kinematic;
 };

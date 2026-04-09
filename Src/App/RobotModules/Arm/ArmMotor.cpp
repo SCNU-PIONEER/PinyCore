@@ -111,8 +111,10 @@ void Motors::update()
     memcpy(regPmValue5.dat, regPm5.dat, 4);
     memcpy(regPmValue6.dat, regPm6.dat, 4);
 
-    currentJoints[4] = (regPmValue5.value - regPmValue6.value) / 2;
-    currentJoints[5] = (regPmValue5.value + regPmValue6.value) / 2;
+    currentJoints[4] = regPmValue5.value;
+    currentJoints[5] = regPmValue6.value;
+    pitchRoll[0] = (regPmValue5.value - regPmValue6.value) / 2;
+    pitchRoll[1] = (regPmValue5.value + regPmValue6.value) / 2;
 }
 
 // TODO: 电机复位
@@ -167,6 +169,8 @@ void Motors::enable()
 bool Motors::isMoving(const Joint &_target)
 {
     static uint16_t cnt = 0;
+    currentJoints[4] = pitchRoll[0];
+    currentJoints[5] = pitchRoll[1];
     Joint deltaJoints = _target - currentJoints;
     float maxDeltaAngle = Kinematic::absMax(deltaJoints);
     cnt++;

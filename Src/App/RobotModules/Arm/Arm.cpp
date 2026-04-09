@@ -10,9 +10,11 @@
 #include "ArmNormalState.hpp"
 #include "ArmStopState.hpp"
 #include "ArmTeachState.hpp"
+#include "ArmPlanState.hpp"
+#include "Cmd.hpp"
 
 using namespace ARM;
-
+extern Lazy<Cmd> cmd;
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ config ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // static std::array<float, 6> theta = { 0.0f, M_PI_2, -M_PI_2, 0.0f, -M_PI_2, 0.0f };
@@ -24,7 +26,7 @@ using namespace ARM;
 // static MDH mdh(theta, a, alpha, d, offset);
 
 // TODO: 根据实际机械臂的关节限制设置angleMin和angleMax
-static Joint angleMin{ -0.62f, -1.36f, -1.41f, -1.15f, -3.14f, -3.14f };
+static Joint angleMin{ -1.f, -1.36f, -1.41f, -1.15f, -3.14f, -3.14f };
 static Joint angleMax{ 0.62f, 0.58f, 3.0f, 1.15f, 3.14f, 3.14f };
 
 static InitConfig_s rightHandConfig = {
@@ -47,6 +49,8 @@ Arm::Arm() : motors(angleMin, angleMax), hand("RightHand", rightHandConfig)
     stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(*this));
     stateFactory_.addState(FSMState_e::NORMAL, std::make_unique<NormalState>(*this));
     stateFactory_.addState(FSMState_e::TEACH, std::make_unique<TeachState>(*this));
+    stateFactory_.addState(FSMState_e::PLAN, std::make_unique<PlanState>(*this));
+
     stateFactory_.init(stateFactory_.getNextState(FSMState_e::STOP));
 
     LOG::info("ARM", "register");
@@ -71,17 +75,21 @@ void Arm::setTargetPose(const JointRoute_s _route) { RouteDta = _route; }
 
 void Arm::moveRoute()
 {
-    if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == jointStateFlag) {
-        if (RouteDta.pose[RouteDta.point_cnt]._delay != 0) {
-            LOG::info("ARM", "Start move delay");
-            Dwt::instance().delayMs(static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay));
-            LOG::info("ARM", "End move delay");
+    if (moveOneGoal(RouteDta.pose[RouteDta.point_cnt]) == JointState_e::FINISH_STATE) {
+        if (updateCnt == 0) {
+            updateCnt = xTaskGetTickCount();
         }
-        RouteDta.point_cnt++;
+        if (xTaskGetTickCount() - updateCnt >= static_cast<uint32_t>(RouteDta.pose[RouteDta.point_cnt]._delay)) {
+            RouteDta.point_cnt++;
+            updateCnt = 0;
+        }
         if (RouteDta.point_cnt == RouteDta.target_point) {
             RouteDta.point_cnt = 0;
             LOG::info("ARM", "Move all point done");
-            msg.state = FSMState_e::NORMAL;
+            auto &dt7 = cmd->getDT7();
+            auto &vt13 = cmd->getVT13();
+            dt7.setArmState(ARM::FSMState_e::NORMAL);
+            vt13.setArmState(ARM::FSMState_e::NORMAL);
         }
     }
 }
@@ -90,22 +98,24 @@ JointState_e Arm::moveOneGoal(const Joint_s &_goal)
 {
     auto angMin = motors.safety.getAngleMin();
     auto angMax = motors.safety.getAngleMax();
-    {
-        for (int i = 0; i < 6; i++) {
-            if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
-                LOG::error("ARM", "Joint%d move goal error", i + 1);
-                return jointStateFlag;
-            }
-        }
-        target_joints.joints = _goal.joints;
-        motors.safety.setJointSpeedLimit(motors.currentJoints, target_joints.joints);
-        motors.safety.setAllAngleLimit(target_joints.joints);
-        jointStateFlag = JointState_e::MOVING_STATE;
-    }
 
-    Joint initDeltaJoints = _goal.joints - motors.currentJoints;
+    for (int i = 0; i < 6; i++) {
+        if (!isWithinRange(_goal.joints[i], angMin[i], angMax[i])) {
+            LOG::error("ARM", "Joint%d move goal error", i + 1);
+            return jointStateFlag;
+        }
+    }
+    target_joints.joints = _goal.joints;
+    motors.safety.setAllAngleLimit(target_joints.joints);
+    jointStateFlag = JointState_e::MOVING_STATE;
+
+    Joint initDeltaJoints = target_joints.joints - motors.currentJoints;
     float maxDeltaAngle = Kinematic::absMax(initDeltaJoints);
-    if (maxDeltaAngle < 0.02f) {
+    if (maxDeltaAngle < 0.04f) {
+        auto &dt7 = cmd->getDT7();
+        auto &vt13 = cmd->getVT13();
+        dt7.setArmHandSwitch(_goal.clampState);
+        vt13.setArmHandSwitch(_goal.clampState);
         jointStateFlag = JointState_e::FINISH_STATE;
         LOG::info("ARM", "Move point%d done", RouteDta.point_cnt);
     }

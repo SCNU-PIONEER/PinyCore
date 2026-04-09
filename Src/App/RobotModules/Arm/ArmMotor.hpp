@@ -60,6 +60,7 @@ public:
 
     Joint currentJoints = {};
     ArmSpeed_u ref_speed = {};
+    float pitchRoll[2] = {};
     Reg_s regPm5;
     Reg_s regPm6;
     RegValue_u regPmValue5;

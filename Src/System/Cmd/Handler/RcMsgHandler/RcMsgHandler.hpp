@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include "RemoteControl.hpp"
+#include "LPF.hpp"
 
 #define IS_KEY_PRESS(CODE, KEY) (((CODE) & (KEY)) == (KEY))
 #define IS_KEY_DT7(KEY)         IS_KEY_PRESS(rcData->keyboard.keyCode, DT7::KEY)
@@ -17,13 +18,16 @@ enum class RCDevType_e : uint8_t {
     ET08A = 1,
     VT13 = 2,
 };
-
+using Joint = std::array<float, 6>;
 template <RCDevType_e DEV_TYPE> class RcMsgHandler final : public Handler {
 public:
     RcMsgHandler(UART_HandleTypeDef *_huart, EventGroupHandle_t &_event);
     void init(MsgBus_s *_bus, EventGroupHandle_t _event) final;
     void handle() final;
     void notify(Msg *_msg, QueueHandle_t _queue) final;
+    void setArmState(ARM::FSMState_e _state) { armMsg.state = _state; }
+    void setArmHandSwitch(ARM::ClampState_e _switch) { armMsg.switch1 = _switch; }
+    void setArmOreBinState(bool _isStucked) { armMsg.isStucked = _isStucked; }
 
 private:
     static constexpr float INPUT_VX_MAX = 3.f;
@@ -34,6 +38,10 @@ private:
     static constexpr float GIMBAL_YAW_MAX = 0.002f;
     static constexpr float GAIN_MOUSE_X = 0.0001f;
     static constexpr float GAIN_MOUSE_Y = 0.0001f;
+
+    Joint lpfJoint;
+    FILTER::LPF lpf[6]{ FILTER::LPF(100.f, 0.5f), FILTER::LPF(100.f, 0.5f), FILTER::LPF(100.f, 0.5f),
+                        FILTER::LPF(100.f, 0.5f), FILTER::LPF(100.f, 0.5f), FILTER::LPF(100.f, 0.5f) };
 
     float channelMax_;
 
@@ -58,9 +66,13 @@ private:
     float lx = 0.f;
     float ly = 0.f;
 
-    uint8_t keyBoardCtrl = false;
+    uint8_t keyBoardCtrl = true;
+    uint8_t lastKeyBoardCtrl = true;
     uint8_t ctrlEnable = false;
     uint8_t ctrlSwitch = false;
+    uint8_t isFirstInChassis = false;
+
+    RCDevType_e activeRC = RCDevType_e::ET08A;
 
     float gimbalVal = 0.f;
 };

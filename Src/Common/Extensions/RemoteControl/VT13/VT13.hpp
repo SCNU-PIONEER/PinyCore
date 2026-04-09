@@ -138,7 +138,8 @@ private:
     RcData_s data_;
 
 #if EXTENSION_CUSTOM_CTRL
+    static constexpr uint8_t RX_LOST_MAX1 = 200;
     CtrlData_s ctrlData_;
-    std::atomic<uint8_t> ctrlLostCnt_ = RX_LOST_MAX;
+    std::atomic<uint8_t> ctrlLostCnt_ = RX_LOST_MAX1;
 #endif
 };

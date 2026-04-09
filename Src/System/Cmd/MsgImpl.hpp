@@ -32,18 +32,18 @@ struct MsgBus_s {
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ctrl msg ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 struct ChassisMsg_s : public Msg {
-    CHASSIS::FSMState_e state;
+    CHASSIS::FSMState_e state = CHASSIS::FSMState_e::STOP;
     float vx, vy, yaw;
 };
 
 struct GimbalMsg_s : public Msg {
-    GIMBAL::FSMState_e state;
+    GIMBAL::FSMState_e state = GIMBAL::FSMState_e::STOP;
     float pitch, yaw;
 };
 
 struct ArmMsg_s : public Msg {
     ARM::OneClick_e oneClick;
-    ARM::FSMState_e state;
+    ARM::FSMState_e state = ARM::FSMState_e::STOP;
     ARM::Joint target;
     ARM::ClampState_e switch1 = ARM::ClampState_e::NONE;
     bool isStucked = false;
