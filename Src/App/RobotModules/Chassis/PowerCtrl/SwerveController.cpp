@@ -77,9 +77,7 @@ void SwerveController::torqueCalc(IMotor *_motor[8], const float *_cmd, const fl
                                              _cmd[i + 4], 0.f);
     }
 }
-float kn = 0;
-float mlc = 0;
-float esr = 0;
+
 void SwerveController::rlsUpdate(IMotor *_motor[8], const float _sVel[4])
 {
     std::array<float, 4> vel = {};
