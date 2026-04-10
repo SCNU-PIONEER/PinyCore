@@ -1,6 +1,8 @@
 #pragma once
 
 #include "./utils.hpp"
+#include "RefereeProt.hpp"
+#include <cstdint>
 #include <cstring>
 #include <cmath>
 
@@ -61,7 +63,7 @@ public:
         float vy;
         float wz;
         float deltaYaw;
-        uint8_t sentryPosture; //哨兵姿态系统
+        bool useSuperCap;
     };
 #pragma pack(push, 1)
     union Data_u {
@@ -72,7 +74,8 @@ public:
             int16_t wz : 14;
             int16_t deltaYaw : 16;
             uint8_t state : 3;
-            uint8_t sentryPosture : 2; //哨兵姿态系统
+            bool useSuperCap : 1;
+            uint8_t reserved : 1;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -86,7 +89,8 @@ public:
         d.wz = static_cast<int16_t>(std::fmax(-8192, std::fmin(8192, _protoData.wz * 1000.f)));
         d.state = _protoData.state;
         d.deltaYaw = convertToInt16(_protoData.deltaYaw);
-        d.sentryPosture = _protoData.sentryPosture;
+        d.useSuperCap = _protoData.useSuperCap;
+        d.reserved = 0;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
@@ -96,7 +100,7 @@ public:
         _protoData.wz = static_cast<float>(_data.content.wz) / 1000.f;
         _protoData.state = _data.content.state;
         _protoData.deltaYaw = convertToFloat(_data.content.deltaYaw);
-        _protoData.sentryPosture = _data.content.sentryPosture;
+        _protoData.useSuperCap = _data.content.useSuperCap;
     }
 };
 
@@ -204,55 +208,96 @@ public:
     }
 };
 
-//UL专用,英雄1,步兵2,哨兵7
-// class RobotHPPacketType {
-// public:
-//     static constexpr uint8_t LEN = 8;
-//     static constexpr uint16_t ID = 0x25;
-//     struct ProtoData_s {
-//         uint16_t ally1RobotHP;
-//         uint16_t ally3RobotHP;
-//         uint16_t ally7RobotHP;
-//         uint16_t enemy1RobotHP;
-//         uint16_t enemy3RobotHP;
-//         uint16_t enemy7RobotHP;
-//         uint16_t reserved;
-//     };
-// #pragma pack(push, 1)
-//     union Data_u {
-//         struct Data_s {
-//             uint16_t ally1RobotHP : 10;
-//             uint16_t ally3RobotHP : 10;
-//             uint16_t ally7RobotHP : 10;
-//             uint16_t enemy1RobotHP : 10;
-//             uint16_t enemy3RobotHP : 10;
-//             uint16_t enemy7RobotHP : 10;
-//             uint16_t reserved : 4;
-//         } content;
-//         uint8_t bytes[LEN];
-//     } data;
+// UL专用,英雄1,步兵2,哨兵7
+class DecesionPacket1 {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x25;
+    struct ProtoData_s {
+        uint32_t currentChassisEnergy; // 当前底盘能量
+        uint16_t allyOutpostHP;        // 己方前哨站血量
+        uint16_t allyBaseHP;           // 己方基地血量
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            uint32_t currentChassisEnergy; // 当前底盘能量
+            uint16_t allyOutpostHP;        // 己方前哨站血量
+            uint16_t allyBaseHP;           // 己方基地血量
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        Data_u::Data_s &d = _data.content;
+        d.currentChassisEnergy = _protoData.currentChassisEnergy;
+        d.allyOutpostHP = _protoData.allyOutpostHP;
+        d.allyBaseHP = _protoData.allyBaseHP;
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.currentChassisEnergy = _data.content.currentChassisEnergy;
+        _protoData.allyOutpostHP = _data.content.allyOutpostHP;
+        _protoData.allyBaseHP = _data.content.allyBaseHP;
+    }
+};
 
-//     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
-//     {
-//         Data_u::Data_s &d = _data.content;
-//         d.ally1RobotHP = _protoData.ally1RobotHP;
-//         d.ally3RobotHP = _protoData.ally3RobotHP;
-//         d.ally7RobotHP = _protoData.ally7RobotHP;
-//         d.enemy1RobotHP = _protoData.enemy1RobotHP;
-//         d.enemy3RobotHP = _protoData.enemy3RobotHP;
-//         d.enemy7RobotHP = _protoData.enemy7RobotHP;
-//         d.reserved = 0;
-//     }
-//     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
-//     {
-//         _protoData.ally1RobotHP = _data.content.ally1RobotHP;
-//         _protoData.ally3RobotHP = _data.content.ally3RobotHP;
-//         _protoData.ally7RobotHP = _data.content.ally7RobotHP;
-//         _protoData.enemy1RobotHP = _data.content.enemy1RobotHP;
-//         _protoData.enemy3RobotHP = _data.content.enemy3RobotHP;
-//         _protoData.enemy7RobotHP = _data.content.enemy7RobotHP;
-//     }
-// #pragma pack(pop)
-// };
+class SentryInfoPacket {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x29;
+    struct ProtoData_s {
+        REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
+        uint16_t reserved;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
+            uint16_t reserved;
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        Data_u::Data_s &d = _data.content;
+        d.midSentryInfo = _protoData.midSentryInfo;
+        d.reserved = _protoData.reserved;
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.midSentryInfo = _data.content.midSentryInfo;
+        _protoData.reserved = _data.content.reserved;
+    }
+};
+
+class SentryCmdPacket {
+public:
+    static constexpr uint8_t LEN = 8;
+    static constexpr uint16_t ID = 0x30;
+    struct ProtoData_s {
+        REFEREE::SentryCmd_s midSentryCmd;
+        bool useSuperCap;
+    };
+#pragma pack(push, 1)
+    union Data_u {
+        struct Data_s {
+            REFEREE::SentryCmd_s midSentryCmd;
+        } content;
+        uint8_t bytes[LEN];
+    } data;
+#pragma pack(pop)
+    static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+    {
+        Data_u::Data_s &d = _data.content;
+        d.midSentryCmd = _protoData.midSentryCmd;
+    }
+    static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+    {
+        _protoData.midSentryCmd = _data.content.midSentryCmd;
+    }
+};
 
 } // namespace COMM

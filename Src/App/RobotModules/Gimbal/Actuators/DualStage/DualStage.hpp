@@ -10,9 +10,7 @@
 #include "LPF.hpp"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
-#include "PacketImpl.hpp"
-#include "TxPacket.hpp"
-#include "RxPacket.hpp"
+#include "GimbalPacket.hpp"
 
 namespace GIMBAL {
 
@@ -50,41 +48,6 @@ inline bool isColor(float _robotId)
     }
 }
 
-class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
-    friend class DualStage;
-    // ChassisCtrlTxPacket() : TxPacket(200.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
-};
-
-class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
-    friend class DualStage;
-    ShooterCtrlTxPacket() : TxPacket(500.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
-};
-
-class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
-    friend class DualStage;
-    RefereeRxPacket() { registerCallback(); }
-    void registerCallback() final
-    {
-        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
-            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
-        });
-        LOG::info("RefereeRxPacket", " Receive cb registered, uId:0x%hx", uid());
-    };
-};
-
-class BulletSpdRxPacket : public COMM::RxPacket<COMM::SpeedMsgPacket, 1> {
-    friend class DualStage;
-    BulletSpdRxPacket() { registerCallback(); }
-    void registerCallback() final
-    {
-        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
-            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
-        });
-        LOG::info("BulletSpdRxPacket", " Receive cb registered, uId:0x%hx", uid());
-    };
-};
 
 // #define _no_init __attribute__((section(".noinit_ram")))
 
@@ -153,6 +116,7 @@ public:
 protected:
     void loadChassisMsg(void *_param);
     void loadShooterMsg(void *_param);
+    void loadSentryCmd();
     void sendVisionData();
     void sendNavData();
     void sendDecesionData();
@@ -162,10 +126,13 @@ protected:
 private:
     ChassisMsg_s cmsg{};
 
-    ChassisCtrlTxPacket chassisCtrlTxPacket_;
-    ShooterCtrlTxPacket shooterCtrlTxPacket_;
-    RefereeRxPacket refereeRxPacket_;     //裁判系统
-    BulletSpdRxPacket bulletSpdRxPacket_; //弹速
+    ChassisCtrlTxPacket chassisCtrlTxPacket_{ 500.f };
+    ShooterCtrlTxPacket shooterCtrlTxPacket_{ 500.f };
+    RefereeRxPacket refereeRxPacket_;              //裁判系统
+    BulletSpdRxPacket bulletSpdRxPacket_;          //弹速
+    DecesionRxPacket1 decesionRxPacket1_;          //决策数据
+    SentryInfoRxPacket sentryInfoRxPacket_;        //哨兵信息
+    SentryCmdTxPacket sentryCmdTxPacket_{ 500.f }; //哨兵命令
 
     DualStage_u<FILTER::LPF *> gimbalFilterOutput_; //输出滤波
     DualStage_u<PINYMOTOR::IMotor *> motors_;       //电机

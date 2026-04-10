@@ -55,7 +55,7 @@ DualStage::DualStage()
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
     InitConfig_s firstYawDM4310Config = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
         .offsetId = 2,
@@ -160,7 +160,7 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + n2eData.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
-            msg.wYaw = 0.5f;
+            msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航数据
         }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -170,7 +170,7 @@ void DualStage::loadChassisMsg(void *_param)
     }
 
     chassisCtrlTxPacket_.setData().deltaYaw = curMotorAng_.FirstYaw;
-    chassisCtrlTxPacket_.setData().sentryPosture = static_cast<uint8_t>(miniPC_.data().d2eData.posture);
+    chassisCtrlTxPacket_.setData().useSuperCap = d2eData.useSuperCap;
 }
 
 void DualStage::loadShooterMsg(void *_param)
@@ -186,6 +186,8 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().fire &= v2eData.fire;
     }
 }
+
+void DualStage::loadSentryCmd() { sentryCmdTxPacket_.setData().midSentryCmd = d2eData.upSentryCmd; }
 
 void DualStage::sendVisionData()
 { // vision send
@@ -211,11 +213,10 @@ void DualStage::sendDecesionData()
     e2dData.gameTime = refereeRxPacket_.data().gameTime;
     e2dData.gameProgress = refereeRxPacket_.data().gameProgress;
 
-    e2dData.currentChassisEnergy = -1;
-    e2dData.outpostStatus = -1;
-    e2dData.enemyBaseStatus = -1;
-    e2dData.enemyOutpostStatus = -1;
-    e2dData.eventData = -1;
+    e2dData.upSentryInfo = sentryInfoRxPacket_.data().midSentryInfo.info2;
+    e2dData.currentChassisEnergy = decesionRxPacket1_.data().currentChassisEnergy;
+    e2dData.allyOutpostHP = decesionRxPacket1_.data().allyOutpostHP;
+    e2dData.allyBaseHP = decesionRxPacket1_.data().allyBaseHP;
 }
 
 /**
@@ -280,10 +281,12 @@ void DualStage::ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPi
     for (uint8_t i = 0; i < 3; i++) {
         del[i] = getMinorArc(_motorAng._[i], curMotorAng_._[i]);
         vel[i] = _angPID._[i]->calc(del[i], 0);
-        outMaxRunVel[i] = vel[i];
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
-        outMaxRunTorq[i] = torq[i];
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
+    }
+    for (uint8_t i = 0; i < 3; i++) {
+        outMaxRunVel[i] = vel[i];
+        outMaxRunTorq[i] = torq[i];
     }
     // motors_.FirstYaw->cmdTorq(0.f);
     // motors_.SecondYaw->cmdTorq(0.f);

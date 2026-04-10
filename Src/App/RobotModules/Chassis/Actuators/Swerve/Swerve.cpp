@@ -136,7 +136,6 @@ void Swerve::enter()
 
 void Swerve::update(void *_param)
 {
-    TickType_t cnt = xTaskGetTickCount();
 #if !APP_USE_COMM
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
@@ -147,20 +146,13 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
-
-    // robotInteractionData.sentryCmd.posture = static_cast<uint32_t>(chassisCtrlRxPacket_.data().sentryPosture);
-    if (cnt % 10000 == 0) {
-        robotInteractionData.sentryCmd.posture++;
-    }
+    useSuperCap = chassisCtrlRxPacket_.data().useSuperCap;
 #endif
-    robotInteractionData.senderId = refereeMsg_.robotId;
 
-    if (cnt % 100 == 0) { //10Hz向裁判系统发送一次数据
-        referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&robotInteractionData),
-                                      sizeof(robotInteractionData));
-    }
     loadDeltaYaw();
     loadRefereeData(_param);
+    sendDataToReferee();
+    sendDecesionData();
 
     for (uint8_t i = 0; i < 4; i++) {
         wSpeed_._[i] = motors_._[i]->data().spdRadps;
@@ -191,7 +183,7 @@ void Swerve::loadRefereeData(void *_param)
     };
 
     refereeTxPacket_.setData().gameTime = refereeMsg_.gameTime;
-    refereeTxPacket_.setData().gameProgress = referee->receiver.getRefereeData().gameStatus.gameProgress;
+    refereeTxPacket_.setData().gameProgress = refereeData.gameStatus.gameProgress;
     refereeTxPacket_.setData().HP = refereeMsg_.currentHP;
     refereeTxPacket_.setData().isPlay = refereeMsg_.isPlay;
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
@@ -200,6 +192,37 @@ void Swerve::loadRefereeData(void *_param)
 
     chassisCurPower_ = refereeMsg_.chassisPowerLimit;
     chassisPowerBuffer_ = refereeMsg_.chassisPowerBuffer;
+}
+
+/*
+    uint16_t dataCmdId = 0x0120;    //需为开放的子内容 ID
+    uint16_t senderId;              //需与自身 ID 匹配,机器人ID
+    uint16_t receiverId = 0x8080;   //裁判系统服务器(用于哨兵和雷达自主决策指令)
+*/
+void Swerve::sendDataToReferee()
+{
+    TickType_t cnt = xTaskGetTickCount();
+    sentryCmdData_.dataCmdId = 0x0120;
+    sentryCmdData_.senderId = refereeMsg_.robotId;
+    sentryCmdData_.receiverId = 0x8080;
+
+    sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
+
+    // if (cnt % 1000 == 0) { //1Hz向裁判系统发送一次数据
+    //     sentryCmdData_.userdata.posture++;
+    // }
+
+    if (cnt % 100 == 0) { //10Hz向裁判系统发送一次数据
+        referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
+    }
+}
+
+void Swerve::sendDecesionData()
+{
+    decesionPacket1_.setData().currentChassisEnergy = refereeMsg_.chassisPowerBuffer;
+    decesionPacket1_.setData().allyBaseHP = refereeData.gameRobotHP.allyBaseHP;
+    decesionPacket1_.setData().allyOutpostHP = refereeData.gameRobotHP.allyOutpostHP;
+    sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
 }
 
 /**

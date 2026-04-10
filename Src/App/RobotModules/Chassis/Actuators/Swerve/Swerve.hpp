@@ -10,18 +10,15 @@
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
 #include "Bsp_can.hpp"
+#include "Swerve.hpp"
 #include "dsp/fast_math_functions.h"
 #include "TopicRouter.hpp"
-
 #include "LPF.hpp"
 #include "IIR.hpp"
-
-#include "TxPacket.hpp"
-#include "RxPacket.hpp"
-#include "PacketImpl.hpp"
 #include "main.h"
-
 #include "SwerveController.hpp"
+#include "ChassisPacket.hpp"
+#include <vector>
 
 namespace CHASSIS {
 
@@ -69,31 +66,12 @@ union Motors_u {
     PINYMOTOR::IMotor *_[8];
 };
 
-
-class ChassisCtrlRxPacket : public COMM::RxPacket<COMM::ChassisCtrlPacketType, 1> {
-    friend class Swerve;
-    // TODO: slightly cumbersome like this or CRTP
-    ChassisCtrlRxPacket() { registerCallback(); }
-    void registerCallback() final
-    {
-        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
-            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
-        });
-        LOG::info("ChassisCtrlRxPacket", " Receive cb registered, uId:0x%hx", uid());
-    };
-};
-
-class RefereeCtrlTxPacket : public COMM::TxPacket<COMM::RefereePacketType> {
-public:
-    RefereeCtrlTxPacket(float _txFreq) : COMM::TxPacket<COMM::RefereePacketType>(_txFreq) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
-};
-
-class BulletSpdTxPacket : public COMM::TxPacket<COMM::SpeedMsgPacket> {
-public:
-    BulletSpdTxPacket(float _txFreq) : COMM::TxPacket<COMM::SpeedMsgPacket>(_txFreq) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
-};
+template <typename T> struct RobotInteractionData_s {
+    uint16_t dataCmdId;  //需为开放的子内容 ID
+    uint16_t senderId;   //需与自身 ID 匹配,机器人ID
+    uint16_t receiverId; //裁判系统服务器（
+    T userdata;          //用户数据
+}; //向裁判系统发送的数据 0x0301
 
 //喵板
 class Swerve : public Chassis {
@@ -118,6 +96,7 @@ public:
 
     void loadDeltaYaw();
     bool isGimbalReset;
+    bool useSuperCap;
 
     const Speed_u &getSpeed() const { return curSpeed_; }
 
@@ -125,18 +104,21 @@ public:
 
 protected:
     RefereeMsg_s refereeMsg_;
+    REFEREE::RefereeProt_s refereeData = referee->receiver.getRefereeData();
+    REFEREE::SentryInfo_s sentryInfo_ = refereeData.sentryInfo; //哨兵信息
+
+    RobotInteractionData_s<REFEREE::SentryCmd_s> sentryCmdData_; //向裁判系统发送的数据 0x0301
+
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
     BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
+    DecesionTxPacket1 decesionPacket1_{ 100.f };
+    SentryInfoTxPacket sentryInfoTxPacket_{ 100.f };
+    SentryCmdRxPacket sentryCmdRxPacket_; //接收哨兵指令
 
-    struct {
-        uint16_t dataCmdId = 0x0120;    //需为开放的子内容 ID
-        uint16_t senderId;              //需与自身 ID 匹配,机器人ID
-        uint16_t receiverId = 0x8080;   //裁判系统服务器（用于哨兵和雷达自主决策指令
-        REFEREE::SentryCmd_s sentryCmd; //哨兵指令
-    } robotInteractionData;             //向裁判系统发送的数据 0x0301
-
-    REFEREE::SentryInfo_s &sentryInfo_ = referee->receiver.getRefereeData().sentryInfo; //哨兵信息
+    void loadRefereeData(void *_param);
+    void sendDataToReferee();
+    void sendDecesionData();
 
     float chassisCurPower_;
     float chassisPowerBuffer_;
@@ -147,7 +129,6 @@ protected:
 
     Speed_u forward(const WheelsSpeed_u &_wSpeed);
     WheelsSpeed_u reverse(const Speed_u &_speed);
-    void loadRefereeData(void *_param);
 
 private:
     Motors_u motors_;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RefereeProt.hpp"
 #include <cstdint>
 
 #include "Crc.hpp"
@@ -14,7 +15,7 @@ enum class SentryPosture_e : uint8_t {
     MOVE,    // 移动，3
 }; //默认姿态为移动
 
-//发来的原始数据 byte:27
+// byte:27
 typedef struct {
     uint8_t visionHeader;
     uint8_t control;
@@ -42,12 +43,13 @@ typedef struct {
     float bulletSpeed;
 } EcToVision_s;
 
-//byte:13
+//byte:17
 typedef struct {
     uint8_t navHeader;
     float vx;
     float vy;
     float wz;
+    float wYaw;
 } NavToEc_s;
 
 //byte:5
@@ -56,25 +58,25 @@ typedef struct {
     float yaw;
 } EcToNav_s;
 
-//byte:3
+//byte:3 + 4
 typedef struct {
     uint8_t decesionHeader;
     SentryPosture_e posture;
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
+    REFEREE::SentryCmd_s upSentryCmd;
 } DecesionToEc_s;
 
-//byte:26
+//byte:16
 typedef struct {
-    uint8_t decesionHeader;
-    uint16_t gameTime;
-    uint8_t gameProgress;          // 比赛进程
-    uint32_t currentChassisEnergy; //
-    uint16_t myHP;                 // 导航的血量标志位
-    uint32_t outpostStatus;        //前哨站
-    uint32_t enemyBaseStatus;
-    uint32_t enemyOutpostStatus;
-    uint32_t eventData; //比赛增益
+    uint8_t decesionHeader;            // 0x8A           byte:1
+    uint16_t gameTime;                 // 比赛时间        byte:2
+    uint8_t gameProgress;              // 比赛进程        byte:1
+    uint16_t myHP;                     // 机器人血量      byte:2
+    uint32_t currentChassisEnergy;     // 底盘缓冲能量    byte:4
+    REFEREE::sentryInfo2 upSentryInfo; // 哨兵裁判系统数据 byte:2
+    uint16_t allyOutpostHP;            // 己方前哨站血量   byte:2
+    uint16_t allyBaseHP;               // 己方基地血量     byte:2
 } EcToDecesion_s;
 #pragma pack(pop)
 
@@ -89,8 +91,8 @@ public:
     struct ProtoData_s {
         EcToVision_s e2vData;   //18
         EcToNav_s e2nData;      //5
-        EcToDecesion_s e2dData; //26
-        uint8_t reserved[12];   //64-52
+        EcToDecesion_s e2dData; //16
+        uint8_t reserved[22];   //64-42
     };
 
 #pragma pack(push, 1)
@@ -99,8 +101,8 @@ public:
             uint8_t header;         //1
             EcToVision_s e2vData;   //18
             EcToNav_s e2nData;      //5
-            EcToDecesion_s e2dData; //26
-            uint8_t reserved[12];   //64-52
+            EcToDecesion_s e2dData; //16
+            uint8_t reserved[22];   //64-42
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];
@@ -142,9 +144,9 @@ public:
 
     struct ProtoData_s {
         VisionToEc_s v2eData;   //27
-        NavToEc_s n2eData;      //13
-        DecesionToEc_s d2eData; //3
-        uint8_t reserved[18];   //64-46
+        NavToEc_s n2eData;      //17
+        DecesionToEc_s d2eData; //3+4
+        uint8_t reserved[10];   //64-54
     };
 
 #pragma pack(push, 1)
@@ -152,9 +154,9 @@ public:
         struct Data_s {
             uint8_t header;         //1
             VisionToEc_s v2eData;   //27
-            NavToEc_s n2eData;      //13
-            DecesionToEc_s d2eData; //3
-            uint8_t reserved[18];   //64-46
+            NavToEc_s n2eData;      //17
+            DecesionToEc_s d2eData; //3 + 4
+            uint8_t reserved[10];   //64-54
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];
