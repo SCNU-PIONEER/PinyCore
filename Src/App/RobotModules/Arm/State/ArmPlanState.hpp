@@ -12,26 +12,27 @@ public:
 
     void enter() override
     {
-        if (arm_.msg.oneClick == OneClick_e::ORE_BIN_EXTRACT) {
-            LOG::info("Plan", "ORE_BIN_EXTRACT");
-            arm_.setTargetPose(test1);
-        } else if (arm_.msg.oneClick == OneClick_e::HIGHWAY_CROSS) {
-            LOG::info("Plan", "HIGHWAY_CROSS");
-            // arm_.setTargetPose(test1);
-        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK1) {
-            LOG::info("Plan", "ORE_PICK1");
-            // arm_.setTargetPose(test1);
-        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK2) {
-            LOG::info("Plan", "ORE_PICK2");
-            // arm_.setTargetPose(test1);
-        } else if (arm_.msg.oneClick == OneClick_e::ORE_PICK3) {
-            LOG::info("Plan", "ORE_PICK3");
-            // arm_.setTargetPose(test1);
+        if (arm_.msg.oneClick == OneClick_e::STORE) {
+            LOG::info("Plan", "SORE");
+            arm_.setTargetPose(storageRoute);
+        } else if (arm_.msg.oneClick == OneClick_e::TAKEOUT) {
+            LOG::info("Plan", "TAKEOUT");
+            arm_.setTargetPose(takeOutRoute);
         }
         LOG::info("Plan", "enter");
     }
 
-    void run() override { arm_.moveRoute(); }
+    void run() override
+    {
+        arm_.orebin.loop(arm_.msg);
+        if (arm_.msg.switch1 == ClampState_e::CLAMP) {
+            arm_.hand.clamp();
+        } else if (arm_.msg.switch1 == ClampState_e::RELEASE) {
+            arm_.hand.release();
+        }
+        arm_.motors.safety.setSpeed(0.8f);
+        arm_.moveRoute();
+    }
 
     void exit() override { LOG::info("Plan", "exit"); }
 

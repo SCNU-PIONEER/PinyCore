@@ -38,7 +38,7 @@ public:
 
     void run() override
     {
-        // arm_.orebin.loop(arm_.msg);
+        arm_.orebin.loop(arm_.msg);
 
         // arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw); //  TODO:
         arm_.videoCtrl.loop(arm_.msg.videoPitch, arm_.msg.videoYaw);
