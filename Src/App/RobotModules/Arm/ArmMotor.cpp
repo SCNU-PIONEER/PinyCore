@@ -129,7 +129,7 @@ bool Motors::init()
         motors.dmMotor5->clearError();
     }
     if (motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::OVER_CURRENT ||
-        motors.dmMotor5->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
+        motors.dmMotor6->errorCode_ == PINYMOTOR::DMMOTOR::ErrorCode_e::ROTOR_OVER_HEAT) {
         motors.dmMotor6->clearError();
     }
     // motors.dmMotor5->setPosZero();
