@@ -242,7 +242,7 @@ void DMMotor::convertEmit(TxBus &_txBuf)
 
     // EMIT unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
-} 
+}
 
 void DMMotor::convertDefault(TxBus &_txBuf)
 {
