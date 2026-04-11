@@ -22,7 +22,7 @@ DM10010L::DM10010L(const char _name[16], InitConfig_s _config) : DMMotor(_name, 
                              V_MAX,             // VMax
                              T_MAX,             // TMax
                              MIT_KP_MAX,        // MITKpMax
-                             MIT_KP_MAX,        // MITKdMax
+                             MIT_KD_MAX,        // MITKdMax
                              CURR_TX_CODE_SPAN, // currTxCodeSpan
                              CURR_MAX,          // currMax
                              TORQ_MAX,          // torqMax

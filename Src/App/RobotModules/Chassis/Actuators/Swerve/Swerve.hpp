@@ -96,7 +96,6 @@ public:
 
     void loadDeltaYaw();
     bool isGimbalReset;
-    bool useSuperCap;
 
     const Speed_u &getSpeed() const { return curSpeed_; }
 

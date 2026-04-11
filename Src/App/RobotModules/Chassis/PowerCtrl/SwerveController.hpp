@@ -13,8 +13,8 @@ private:
     static constexpr float VEL_THESHOLD = 10.f;
     float steerPowerRatio_ = 0.0f;
     float wheelPowerRatio_ = 0.0f;
-    float wheelRelPower_ = 0.0f;
-    float steerRelPower_ = 0.0f;
+    float wheelFitPower_ = 0.0f;
+    float steerFitPower_ = 0.0f;
     float wheelCmdPower_ = 0.0f;
     float steerCmdPower_ = 0.0f;
 

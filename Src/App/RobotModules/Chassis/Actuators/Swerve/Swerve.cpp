@@ -146,7 +146,7 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
-    useSuperCap = chassisCtrlRxPacket_.data().useSuperCap;
+    powerCtrl_->capEnable_ = chassisCtrlRxPacket_.data().useSuperCap;
 #endif
 
     loadDeltaYaw();
@@ -169,10 +169,9 @@ void Swerve::update(void *_param)
     curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
     curSpeed_.wz = v.wz;
 
-    if constexpr (APP_USE_POWERCTRL) {
-        cap_.capTask(powerCtrl_->chargeCmdPower, powerCtrl_->capEnable_, powerCtrl_->capCharge,
-                     static_cast<uint16_t>(powerCtrl_->chassisSetPower));
-    }
+#if APP_USE_POWERCTRL
+    cap_.capTask(powerCtrl_->capEnable_, 0, 0, 0, 0, refereeMsg_.chassisPowerLimit, refereeMsg_.chassisPowerBuffer);
+#endif
 
     this->stateFactory_.update();
 }
