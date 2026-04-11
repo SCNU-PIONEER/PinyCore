@@ -55,7 +55,7 @@ DualStage::DualStage()
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
     InitConfig_s firstYawDM4310Config = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
         .offsetId = 2,
@@ -217,6 +217,7 @@ void DualStage::sendDecesionData()
     e2dData.currentChassisEnergy = decesionRxPacket1_.data().currentChassisEnergy;
     e2dData.allyOutpostHP = decesionRxPacket1_.data().allyOutpostHP;
     e2dData.allyBaseHP = decesionRxPacket1_.data().allyBaseHP;
+    e2dData.hurtHpDeductionReason = sentryInfoRxPacket_.data().hurtHpDeductionReason;
 }
 
 /**

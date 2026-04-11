@@ -249,13 +249,15 @@ public:
     static constexpr uint16_t ID = 0x29;
     struct ProtoData_s {
         REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
-        uint16_t reserved;
+        uint8_t hurtHpDeductionReason : 4;   // 受伤血量扣除原因  byte:1
+        uint16_t reserved : 12;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
             REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
-            uint16_t reserved;
+            uint8_t hurtHpDeductionReason : 4;   // 受伤血量扣除原因  byte:1
+            uint16_t reserved : 12;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -264,11 +266,13 @@ public:
     {
         Data_u::Data_s &d = _data.content;
         d.midSentryInfo = _protoData.midSentryInfo;
+        d.hurtHpDeductionReason = _protoData.hurtHpDeductionReason;
         d.reserved = _protoData.reserved;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         _protoData.midSentryInfo = _data.content.midSentryInfo;
+        _protoData.hurtHpDeductionReason = _data.content.hurtHpDeductionReason;
         _protoData.reserved = _data.content.reserved;
     }
 };

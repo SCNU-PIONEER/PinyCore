@@ -8,13 +8,6 @@
 
 
 #pragma pack(push, 1)
-enum class SentryPosture_e : uint8_t {
-    IDLE = 0,
-    ATTACK,  // 攻击，1
-    DEFENSE, // 防御，2
-    MOVE,    // 移动，3
-}; //默认姿态为移动
-
 // byte:27
 typedef struct {
     uint8_t visionHeader;
@@ -58,16 +51,15 @@ typedef struct {
     float yaw;
 } EcToNav_s;
 
-//byte:3 + 4
+//byte:2 + 4
 typedef struct {
     uint8_t decesionHeader;
-    SentryPosture_e posture;
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
     REFEREE::SentryCmd_s upSentryCmd;
 } DecesionToEc_s;
 
-//byte:16
+//byte:17
 typedef struct {
     uint8_t decesionHeader;            // 0x8A           byte:1
     uint16_t gameTime;                 // 比赛时间        byte:2
@@ -77,6 +69,7 @@ typedef struct {
     REFEREE::sentryInfo2 upSentryInfo; // 哨兵裁判系统数据 byte:2
     uint16_t allyOutpostHP;            // 己方前哨站血量   byte:2
     uint16_t allyBaseHP;               // 己方基地血量     byte:2
+    uint8_t hurtHpDeductionReason;     // 受伤血量扣除原因  byte:1
 } EcToDecesion_s;
 #pragma pack(pop)
 
@@ -91,8 +84,8 @@ public:
     struct ProtoData_s {
         EcToVision_s e2vData;   //18
         EcToNav_s e2nData;      //5
-        EcToDecesion_s e2dData; //16
-        uint8_t reserved[22];   //64-42
+        EcToDecesion_s e2dData; //17
+        uint8_t reserved[21];   //64-43
     };
 
 #pragma pack(push, 1)
@@ -101,8 +94,8 @@ public:
             uint8_t header;         //1
             EcToVision_s e2vData;   //18
             EcToNav_s e2nData;      //5
-            EcToDecesion_s e2dData; //16
-            uint8_t reserved[22];   //64-42
+            EcToDecesion_s e2dData; //17
+            uint8_t reserved[21];   //64-43
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];
@@ -145,8 +138,8 @@ public:
     struct ProtoData_s {
         VisionToEc_s v2eData;   //27
         NavToEc_s n2eData;      //17
-        DecesionToEc_s d2eData; //3+4
-        uint8_t reserved[10];   //64-54
+        DecesionToEc_s d2eData; //2+4
+        uint8_t reserved[11];   //64-53
     };
 
 #pragma pack(push, 1)
@@ -155,8 +148,8 @@ public:
             uint8_t header;         //1
             VisionToEc_s v2eData;   //27
             NavToEc_s n2eData;      //17
-            DecesionToEc_s d2eData; //3 + 4
-            uint8_t reserved[10];   //64-54
+            DecesionToEc_s d2eData; //2 + 4
+            uint8_t reserved[11];   //64-53
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];

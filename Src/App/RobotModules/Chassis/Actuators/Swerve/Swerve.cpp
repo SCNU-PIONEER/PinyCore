@@ -223,6 +223,7 @@ void Swerve::sendDecesionData()
     decesionPacket1_.setData().allyBaseHP = refereeData.gameRobotHP.allyBaseHP;
     decesionPacket1_.setData().allyOutpostHP = refereeData.gameRobotHP.allyOutpostHP;
     sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
+    sentryInfoTxPacket_.setData().hurtHpDeductionReason = refereeData.robotHurt.reason;
 }
 
 /**
