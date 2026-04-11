@@ -75,7 +75,7 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::handle()
     if (DEV_TYPE == RCDevType_e::DT7) {
         lastCnt = now;
     }
-    isOnline = (now - lastCnt < 15);
+    isOnline = (now - lastCnt < 30);
     if (isOnline) {
         activeRC = RCDevType_e::DT7;
     } else if (!isOnline) {
@@ -112,16 +112,10 @@ template <> void RcMsgHandler<RCDevType_e::DT7>::masterHandle()
         // ly = ((float)rcData->rc.ch3 * 100 / 660);
 
         gimbalVal = -((float)rcData->rc.ch2 * GIMBAL_YAW_MAX / 660);
-        //拨轮控夹爪
-        // if (rcData->wheel == 1684)
-        //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
-        // else if (rcData->wheel > 7000)
-        // armMsg.switch1 = ARM::ClampState_e::RELEASE;
         if (rcData->rc.switchRight == SW::DOWN) {
             //arm
             armMsg.switch1 = ARM::ClampState_e::NONE;
             armMsg.state = ARM::FSMState_e::STOP;
-            armMsg.switch1 = ARM::ClampState_e::NONE;
             // gimbal
             gimbalMsg.state = GIMBAL::FSMState_e::STOP;
             gimbalMsg.yaw = 0.f;
@@ -162,17 +156,26 @@ template <> void RcMsgHandler<RCDevType_e::DT7>::masterHandle()
                 armMsg.target[5] = -ly / 314; //3507pitch
 
                 //夹爪
-                // if (rcData->rc.ch1 == 660) //ry up
-                //     armMsg.switch1 = ARM::ClampState_e::RELEASE;
-                // else if (rcData->rc.ch1 == -660) //ry down
-                //     armMsg.switch1 = ARM::ClampState_e::CLAMP;
+                if (rcData->rc.ch1 == 660) //ry up
+                    armMsg.switch1 = ARM::ClampState_e::RELEASE;
+                else if (rcData->rc.ch1 == -660) //ry down
+                    armMsg.switch1 = ARM::ClampState_e::CLAMP;
             }
         } else if (rcData->rc.switchRight == SW::UP) {
             // armMsg.videoYaw = (float)rcData->rc.ch0 / 660;
             // armMsg.videoPitch = (float)rcData->rc.ch1 / 660;
             if (rcData->rc.ch1 == 660) {
                 armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+                armMsg.oneClick = ARM::OneClick_e::STORE;
+            }
+            if (rcData->rc.ch1 == -660) {
+                armMsg.state = ARM::FSMState_e::PLAN;
+                armMsg.oneClick = ARM::OneClick_e::TAKEOUT;
+            }
+            if (rcData->rc.ch0 == 660) {
+                armMsg.isStucked = true;
+            } else if (rcData->rc.ch0 == -660) {
+                armMsg.isStucked = false;
             }
             if (rcData->rc.switchLeft == SW::UP) {
                 if (rcData->rc.ch0 == 660 && rcData->rc.ch1 == 660) { // 右上
@@ -340,7 +343,10 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
             //一键
             if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(G)) {
                 armMsg.state = ARM::FSMState_e::PLAN;
-                armMsg.oneClick = ARM::OneClick_e::ORE_BIN_EXTRACT;
+                armMsg.oneClick = ARM::OneClick_e::STORE;
+            } else if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(V)) {
+                armMsg.state = ARM::FSMState_e::PLAN;
+                armMsg.oneClick = ARM::OneClick_e::TAKEOUT;
             }
             /*—————————————————————————————————————————————————Teach,Plan,Normal—————————————————————————————————————————————————————————*/
         }
