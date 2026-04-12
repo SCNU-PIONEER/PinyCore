@@ -22,7 +22,7 @@
 1. create PowerController
 ```c++
 hpp中
-SwerveController powerCtrl_;(使用对应控制器)
+SwervePowerController powerCtrl_;(使用对应控制器)
 SuperCap cap_{&HCAN1};(使用对应can)
 
 ```

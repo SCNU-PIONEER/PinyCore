@@ -1,10 +1,10 @@
-#include "SwerveController.hpp"
+#include "SwervePowerController.hpp"
 
 #include <numeric>
 
 using namespace PINYMOTOR;
 
-void SwerveController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSteerTorq)[4], const PowerCtrlMsg_s &_msg)
+void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSteerTorq)[4], const PowerCtrlMsg_s &_msg)
 {
     for (uint8_t i = 0; i < 4; ++i) {
         wheelVel_[i] = _msg.wheelMotor[i]->vel();
@@ -64,7 +64,7 @@ void SwerveController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSteerTor
     this->updateChassisSetPower(setWheelSumPower + setSteerSumPower);
 }
 
-void SwerveController::updateRLS()
+void SwervePowerController::updateRLS()
 {
     if (std::ranges::any_of(wheelVel_, [](float _vel) { return _vel > VEL_THESHOLD; })) {
         this->fitting(wheelVel_, wheelTorq_, &wheelRLS_, wheelModel_.modelParams);

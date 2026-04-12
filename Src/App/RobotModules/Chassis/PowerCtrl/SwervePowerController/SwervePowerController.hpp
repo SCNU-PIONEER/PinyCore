@@ -3,9 +3,9 @@
 #include "PowerController.hpp"
 #include "IMotor.hpp"
 
-class SwerveController : public PowerController {
+class SwervePowerController : public PowerController {
 public:
-    SwerveController() = default;
+    SwervePowerController() = default;
     struct PowerCtrlMsg_s {
         float powerLimit;
         const PINYMOTOR::IMotor *const (&wheelMotor)[4];

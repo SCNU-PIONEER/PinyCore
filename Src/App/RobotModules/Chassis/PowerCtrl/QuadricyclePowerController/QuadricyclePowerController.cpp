@@ -1,10 +1,10 @@
-#include "QuadricycleController.hpp"
+#include "QuadricyclePowerController.hpp"
 
 #include <numeric>
 
 using namespace PINYMOTOR;
 
-void QuadricycleController::powerCtrl(float (&_setTorq)[4], const PowerCtrlMsg_s &_msg)
+void QuadricyclePowerController::powerCtrl(float (&_setTorq)[4], const PowerCtrlMsg_s &_msg)
 {
     for (uint8_t i = 0; i < 4; ++i) {
         motorVel_[i] = _msg.motor[i]->vel();
@@ -46,7 +46,7 @@ void QuadricycleController::powerCtrl(float (&_setTorq)[4], const PowerCtrlMsg_s
     this->updateChassisSetPower(std::accumulate(setPower, setPower + 4, 0.f));
 }
 
-void QuadricycleController::updateRLS()
+void QuadricyclePowerController::updateRLS()
 {
     if (std::ranges::any_of(motorVel_, [](float _vel) { return _vel > VEL_THESHOLD; })) {
         this->fitting(motorVel_, motorTorq_, &wheelRLS_, wheelModel_.modelParams);

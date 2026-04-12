@@ -2,9 +2,9 @@
 #include "PowerController.hpp"
 #include "IMotor.hpp"
 
-class QuadricycleController final : public PowerController {
+class QuadricyclePowerController final : public PowerController {
 public:
-    QuadricycleController() = default;
+    QuadricyclePowerController() = default;
     struct PowerCtrlMsg_s {
         float powerLimit;
         const PINYMOTOR::IMotor *const (&motor)[4];
