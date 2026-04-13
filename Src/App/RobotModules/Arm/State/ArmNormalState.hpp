@@ -41,7 +41,7 @@ public:
         arm_.orebin.loop(arm_.msg);
 
         // arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw); //  TODO:
-        arm_.videoCtrl.loop(arm_.msg.videoPitch, arm_.msg.videoYaw);
+        arm_.videoCtrl.loop(arm_.msg);
 
 
         for (uint8_t i = 0; i < 4; i++) {

@@ -38,7 +38,7 @@ public:
     void run() override
     {
         arm_.orebin.loop(arm_.msg);
-        arm_.videoCtrl.loop(arm_.motors.currentJoints[1], arm_.msg.videoYaw);
+        arm_.videoCtrl.loop(arm_.msg);
 
         for (uint8_t i = 0; i < 6; i++) {
             arm_.target_joints.joints[i] = arm_.msg.target[i];

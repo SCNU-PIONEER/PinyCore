@@ -299,12 +299,22 @@ template <> void RcMsgHandler<RCDevType_e::VT13>::masterHandle()
 
             if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(X)) {
                 // 云台图传, 底盘不动
+                armMsg.vt13Mode = ARM::VT13Mode_e::CTRL;
                 armMsg.videoYaw = static_cast<float>(rcData->KBM.mouseX) / 50.f;
-                armMsg.videoPitch = -static_cast<float>(rcData->KBM.mouseY) / 100.f;
+                armMsg.videoPitch = static_cast<float>(rcData->KBM.mouseY) / 100.f;
+            } else {
+                armMsg.videoYaw = 0.f;
+                armMsg.videoPitch = 0.f;
+            }
+
+            if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(E)) {
+                armMsg.vt13Mode = ARM::VT13Mode_e::RESET;
             }
             if (IS_KEY_VT13(CTRL) && IS_KEY_VT13(Q)) {
                 // 云台旋转，底盘自动跟随
                 gimbalMsg.yaw = -(float)(rcData->KBM.mouseX) / 20 * GIMBAL_YAW_MAX;
+            } else {
+                gimbalMsg.yaw = 0.f;
             }
             /*—————————————————————————————————————————————————Teach,Plan,Normal—————————————————————————————————————————————————————————*/
             if (IS_KEY_VT13(R)) {

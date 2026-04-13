@@ -1,5 +1,6 @@
 #pragma once
 #include "Bsp_pwm.hpp"
+#include "MsgImpl.hpp"
 
 namespace ARM {
 
@@ -7,8 +8,9 @@ class VideoCtrl {
 public:
     VideoCtrl();
     void init();
-    void loop(const float _pitch, const float _yaw);
+    void loop(const ArmMsg_s &_msg);
     void stop();
+    void reset();
 
     static constexpr uint32_t PITCH_RESET_ANG = 1600;
     static constexpr uint32_t YAW_RESET_ANG = 1460;

@@ -23,13 +23,12 @@ void VideoCtrl::init()
     pitch.start();
     yaw.start();
 
-    pitch.setDutyCycle(PITCH_RESET_ANG);
-    yaw.setDutyCycle(YAW_RESET_ANG);
+    reset();
 
     LOG::info(TAG, "init");
 }
 
-void VideoCtrl::loop(const float _pitch, const float _yaw)
+void VideoCtrl::loop(const ArmMsg_s &_msg)
 {
     // -1.33 - 0
     // 1600 - 2400
@@ -37,14 +36,19 @@ void VideoCtrl::loop(const float _pitch, const float _yaw)
     // pitchAng = static_cast<uint32_t>(PITCH_ANG_MIN + scale1 * (PITCH_ANG_MAX - PITCH_ANG_MIN));
     // pitchAng = std::clamp(pitchAng, PITCH_ANG_MIN, PITCH_ANG_MAX);
 
-    pitchAng = (uint32_t)((float)pitchAng + _pitch * 5);
-    pitchAng = std::clamp(pitchAng, PITCH_ANG_MIN, PITCH_ANG_MAX);
+    if (_msg.vt13Mode == ARM::VT13Mode_e::RESET) {
+        reset();
+        return;
+    } else if (_msg.vt13Mode == ARM::VT13Mode_e::CTRL) {
+        pitchAng = (uint32_t)((float)pitchAng + (_msg.videoPitch * 5));
+        pitchAng = std::clamp(pitchAng, PITCH_ANG_MIN, PITCH_ANG_MAX);
 
-    yawAng = (uint32_t)((float)yawAng + _yaw * 5);
-    yawAng = std::clamp(yawAng, YAW_ANG_MIN, YAW_ANG_MAX);
+        yawAng = (uint32_t)((float)yawAng + (_msg.videoYaw * 5));
+        yawAng = std::clamp(yawAng, YAW_ANG_MIN, YAW_ANG_MAX);
 
-    pitch.setDutyCycle(pitchAng);
-    yaw.setDutyCycle(yawAng);
+        pitch.setDutyCycle(pitchAng);
+        yaw.setDutyCycle(yawAng);
+    }
 }
 
 void VideoCtrl::stop()
@@ -53,4 +57,14 @@ void VideoCtrl::stop()
     yaw.stop();
 
     LOG::info(TAG, "stop");
+}
+
+void VideoCtrl::reset()
+{
+    pitchAng = PITCH_RESET_ANG;
+    yawAng = YAW_RESET_ANG;
+    pitch.setDutyCycle(pitchAng);
+    yaw.setDutyCycle(yawAng);
+
+    LOG::info(TAG, "reset");
 }

@@ -15,6 +15,7 @@ enum class FSMState_e : uint8_t { STOP = 1, LAUNCH, RUN };
 
 
 namespace ARM {
+enum class VT13Mode_e : uint8_t { RESET = 0, CTRL };
 enum class OneClick_e : uint8_t { STORE = 0, TAKEOUT };
 enum class FSMState_e : uint8_t { STOP = 0, NORMAL, PLAN, TEACH };
 enum class ClampState_e : int8_t { NONE = 0, CLAMP = 1, RELEASE = 2 };
@@ -41,6 +42,7 @@ struct GimbalMsg_s : public Msg {
 };
 
 struct ArmMsg_s : public Msg {
+    ARM::VT13Mode_e vt13Mode = ARM::VT13Mode_e::RESET;
     ARM::OneClick_e oneClick;
     ARM::FSMState_e state = ARM::FSMState_e::STOP;
     ARM::Joint target;
