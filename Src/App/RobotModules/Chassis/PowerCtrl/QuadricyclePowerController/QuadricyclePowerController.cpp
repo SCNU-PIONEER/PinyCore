@@ -11,23 +11,26 @@ void QuadricyclePowerController::powerCtrl(float (&_setTorq)[4], const PowerCtrl
         motorTorq_[i] = _msg.motor[i]->torq();
     }
 
+    // 拟合模型参数并估计功率
+    float fitPower[4]{};
+    this->estimatePower(motorTorq_, motorVel_, fitPower, wheelModel_);
+    float fitTotalPower = std::accumulate(fitPower, fitPower + 4, 0.f);
+    updateChassisFitPower(fitTotalPower);
+
     // 更新底盘功率信息
 #if EXTENSION_SUPERCAP
     if (this->cap_ != nullptr)
         updateChassisRealPower(this->cap_->getCapData().outputPower);
+#else
+    updateChassisRealPower(fitTotalPower);
 #endif
-
-    // 拟合模型参数并估计功率
-    float fitPower[4]{};
-    this->estimatePower(motorTorq_, motorVel_, fitPower, wheelModel_);
-    updateChassisFitPower(std::accumulate(fitPower, fitPower + 4, 0.f));
 
 #if POWERCTRL_USE_RLS
     updateRLS();
 #endif
 
     // 计算功率上限
-    float powerMax = this->updateAllowablePower(_msg.powerLimit);
+    float powerMax = this->updateAllowablePower(_msg.powerLimit, _msg.cmdCapRatio);
 
     // 计算原始输出
     float rawSetPower[4]{};
@@ -41,14 +44,14 @@ void QuadricyclePowerController::powerCtrl(float (&_setTorq)[4], const PowerCtrl
     // 计算最终输出
     float setPower[4]{};
     this->limitRawSetPower(rawSetPower, setPower, powerLimitRatio_);
-    this->solveEffectiveCmdTorq(_setTorq, setPower, _msg.cmdTorq, _msg.cmdVel, wheelModel_);
+    this->solveEffectiveCmdTorq(_setTorq, setPower, _msg.cmdTorq, motorVel_, wheelModel_);
 
     this->updateChassisSetPower(std::accumulate(setPower, setPower + 4, 0.f));
 }
 
 void QuadricyclePowerController::updateRLS()
 {
-    if (std::ranges::any_of(motorVel_, [](float _vel) { return _vel > VEL_THESHOLD; })) {
+    if (std::ranges::any_of(motorVel_, [](float _vel) { return std::fabs(_vel) > VEL_THESHOLD; })) {
         this->fitting(motorVel_, motorTorq_, &wheelRLS_, wheelModel_.modelParams);
     } else
         wheelModel_.overrideParams(LaunchMotion);

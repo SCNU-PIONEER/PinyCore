@@ -13,12 +13,6 @@ void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSte
         steerTorq_[i] = _msg.steerMotor[i]->torq();
     }
 
-    // 更新底盘功率信息
-#if EXTENSION_SUPERCAP
-    if (this->cap_ != nullptr)
-        updateChassisRealPower(this->cap_->getCapData().outputPower);
-#endif
-
     // 拟合模型参数并估计功率
     float fitWheelPower[4]{};
     this->estimatePower(wheelTorq_, wheelVel_, fitWheelPower, wheelModel_);
@@ -26,16 +20,25 @@ void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSte
     float fitSteerPower[4]{};
     this->estimatePower(steerTorq_, steerVel_, fitSteerPower, steerModel_);
     float fitSteerSumPower = std::accumulate(fitSteerPower, fitSteerPower + 4, 0.f);
-    updateChassisFitPower(fitWheelSumPower + fitSteerSumPower);
+    float fitTotalPower = fitWheelSumPower + fitSteerSumPower;
+    updateChassisFitPower(fitTotalPower);
+
+    // 更新底盘功率信息
+#if EXTENSION_SUPERCAP
+    if (this->cap_ != nullptr)
+        updateChassisRealPower(this->cap_->getCapData().outputPower);
+#else
+    updateChassisRealPower(fitTotalPower);
+#endif
 
 #if POWERCTRL_USE_RLS
     updateRLS();
 #endif
 
     // 计算功率上限
-    float powerMax = this->updateAllowablePower(_msg.powerLimit);
+    float powerMax = this->updateAllowablePower(_msg.powerLimit, _msg.cmdCapRatio);
     float steerPowerMax = powerMax * 0.8f;
-    float wheelPowerMax = std::max(powerMax * 0.2f, powerMax - steerPowerMax);
+    float wheelPowerMax = std::max(powerMax * 0.2f, powerMax - fitSteerSumPower);
 
     // 计算原始输出
     float rawSetWheelPower[4]{};
@@ -54,10 +57,10 @@ void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSte
     // 计算最终输出
     float setWheelPower[4]{};
     this->limitRawSetPower(rawSetWheelPower, setWheelPower, wheelPowerLimitRatio_);
-    this->solveEffectiveCmdTorq(_setWheelTorq, setWheelPower, _msg.cmdWheelTorq, _msg.cmdWheelVel, wheelModel_);
+    this->solveEffectiveCmdTorq(_setWheelTorq, setWheelPower, _msg.cmdWheelTorq, wheelVel_, wheelModel_);
     float setSteerPower[4]{};
     this->limitRawSetPower(rawSetSteerPower, setSteerPower, steerPowerLimitRatio_);
-    this->solveEffectiveCmdTorq(_setSteerTorq, setSteerPower, _msg.cmdSteerTorq, _msg.cmdSteerVel, steerModel_);
+    this->solveEffectiveCmdTorq(_setSteerTorq, setSteerPower, _msg.cmdSteerTorq, steerVel_, steerModel_);
 
     float setWheelSumPower = std::accumulate(setWheelPower, setWheelPower + 4, 0.f);
     float setSteerSumPower = std::accumulate(setSteerPower, setSteerPower + 4, 0.f);
@@ -66,15 +69,12 @@ void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSte
 
 void SwervePowerController::updateRLS()
 {
-    if (std::ranges::any_of(wheelVel_, [](float _vel) { return _vel > VEL_THESHOLD; })) {
+    if (std::ranges::any_of(wheelVel_, [](float _vel) { return std::fabs(_vel) > VEL_THESHOLD; })) {
         this->fitting(wheelVel_, wheelTorq_, &wheelRLS_, wheelModel_.modelParams);
     } else
         wheelModel_.overrideParams(wheelLaunchMotion);
 
 #if POWERCTRL_ENABLE_STEER_RLS
-    if (std::ranges::any_of(steerVel_, [](float _vel) { return _vel > VEL_THESHOLD; })) {
-        this->fitting(steerVel_, steerTorq_, &steerRLS_, steerModel_.modelParams);
-    } else
-        steerModel_.overrideParams(steerLaunchMotion);
+    this->fitting(steerVel_, steerTorq_, &steerRLS_, steerModel_.modelParams);
 #endif
 }

@@ -39,10 +39,10 @@ struct MotorPowerModel_s {
 };
 
 class PowerController {
-    static constexpr float REMAIN_POWER = 10.f;
+    static constexpr float REMAIN_POWER = 10.f; // 钳位的最小电容充电功率，该值大于0可以保证电容一直能够充电
 
 public:
-    static constexpr uint8_t FIT_RANK = 3; //拟合参数个数
+    static constexpr uint8_t FIT_RANK = 3; // 拟合参数个数
 
     PowerController() = default;
 
@@ -69,7 +69,7 @@ protected:
             vectorValue[2] += _torq[i] * _torq[i];
         }
         Matrix<FIT_RANK, 1> inputVector(vectorValue);
-        _rls->update(inputVector, chassisFitPower_ - _params.LeakagePower);
+        _rls->update(inputVector, chassisRealPower_ - _params.LeakagePower);
         Matrix<FIT_RANK, 1> params = _rls->getEstVector();
         _params.K0 = params(0, 0);
         _params.MLC = params(1, 0);
@@ -140,18 +140,18 @@ protected:
      */
     template <uint8_t N>
     void solveEffectiveCmdTorq(float (&_result)[N], const float (&_cmdPower)[N], const float (&_cmdTorq)[N],
-                               const float (&_cmdVel)[N], const MotorPowerModel_s &_model)
+                               const float (&_curVel)[N], const MotorPowerModel_s &_model)
     {
         for (uint8_t i = 0; i < N; ++i) {
-            float discriminant = std::max(_model.delta(_cmdVel[i], _cmdPower[i]), 0.f);
+            float discriminant = std::max(_model.delta(_curVel[i], _cmdPower[i]), 0.f);
             float sqrtDiscriminant;
             arm_sqrt_f32(discriminant, &sqrtDiscriminant);
             bool signBit = std::signbit(_cmdTorq[i]); // x < 0, return true
             float sign = std::copysignf(1.f, _cmdTorq[i]);
-            _result[i] = signBit ? std::clamp((-(_model.modelParams.K0 * _cmdVel[i]) + sign * sqrtDiscriminant) /
+            _result[i] = signBit ? std::clamp((-(_model.modelParams.K0 * _curVel[i]) + sign * sqrtDiscriminant) /
                                                       (2 * _model.modelParams.ESR),
                                               _cmdTorq[i], 0.f) :
-                                   std::clamp((-(_model.modelParams.K0 * _cmdVel[i]) + sign * sqrtDiscriminant) /
+                                   std::clamp((-(_model.modelParams.K0 * _curVel[i]) + sign * sqrtDiscriminant) /
                                                       (2 * _model.modelParams.ESR),
                                               0.f, _cmdTorq[i]);
         }
@@ -167,13 +167,13 @@ protected:
      * @param _chassisPowerLimit 
      * @param _capCmdRatio 
      */
-    float updateAllowablePower(float _chassisPowerLimit, float _capCmdRatio = 0.f)
+    float updateAllowablePower(float _chassisPowerLimit, float _capCmdRatio = 0.2f)
     {
         if (cap_ != nullptr) {
             CapData_s capData = cap_->getCapData();
             _capCmdRatio = std::clamp(_capCmdRatio, 0.f, 1.f);
             float offsetPower = powerPid_.calc(_capCmdRatio, capData.capEnergyRatio);
-            offsetPower = std::max(offsetPower, REMAIN_POWER);
+            offsetPower = std::min(offsetPower, REMAIN_POWER);
             allowablePower_ = _chassisPowerLimit - offsetPower;
         }
         return allowablePower_;
