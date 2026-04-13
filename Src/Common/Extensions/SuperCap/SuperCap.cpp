@@ -87,12 +87,11 @@ void SuperCap::task()
 
 void SuperCap::rxFreqCalc()
 {
-    static uint32_t lastTick = 0;
-    uint32_t dt = (xTaskGetTickCount() - lastTick);
+    uint32_t dt = (xTaskGetTickCount() - aux_.lastRecvTick);
     if (dt >= pdMS_TO_TICKS(1000)) {
         aux_.rxFreq = static_cast<float>(aux_.rxCnt) / (static_cast<float>(dt) / 1000.f);
         aux_.rxCnt = 0;
-        lastTick = xTaskGetTickCount();
+        aux_.lastRecvTick = xTaskGetTickCount();
     }
     state_ = isOnline() ? State_e::ONLINE : State_e::OFFLINE;
 }
