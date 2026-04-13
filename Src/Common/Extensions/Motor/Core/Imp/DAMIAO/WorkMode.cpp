@@ -237,11 +237,8 @@ void DMMotor::convertEmit(TxBus &_txBuf)
                                                status_.Kn / status_.currMax * status_.currTxCodeSpan);
 
     _txBuf.len = 8;
-    memcpy(_txBuf.data, &msgEMIT.exptScale, 4);
-    _txBuf.data[4] = static_cast<uint8_t>((msgEMIT.exptVelX100) >> 8);
-    _txBuf.data[5] = static_cast<uint8_t>(msgEMIT.exptVelX100);
-    _txBuf.data[6] = static_cast<uint8_t>((msgEMIT.imaxX10000) >> 8);
-    _txBuf.data[7] = static_cast<uint8_t>(msgEMIT.imaxX10000);
+
+    memcpy(_txBuf.data, &msgEMIT, 8);
 
     // EMIT unsupport return expected current
     this->cmd_.elec = this->data_.torq / status_.Kn;
