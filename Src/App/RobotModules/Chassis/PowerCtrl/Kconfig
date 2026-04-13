@@ -5,8 +5,9 @@
         bool "rls"
         default y
 
-    config ENABLE_STEER_RLS
+    config POWERCTRL_ENABLE_STEER_RLS
         bool "enable steer rls"
+        depends on POWERCTRL_USE_RLS
         default n
 
     endmenu
