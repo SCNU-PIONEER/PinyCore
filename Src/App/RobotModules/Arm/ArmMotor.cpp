@@ -24,7 +24,7 @@ Motors::Motors(Joint _angleMin, Joint _angleMax) : safety(*this, _angleMin, _ang
         .velPID = nullptr,
     };
     InitConfig_s dm10010Config2 = {
-        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
+        .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::PDESVDES,
         .offsetId = 2,
