@@ -59,7 +59,7 @@ inline bool isColor(float _robotId)
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.19734526f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 5.80608845f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 1.09417856f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 4.63702297f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
@@ -110,7 +110,7 @@ public:
                     DualStage_u<PositionalPid *> _velPID);
     void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
 
-    DualStage_u<PINYMOTOR::IMotor *> *motors() { return &motors_; }
+    // DualStage_u<PINYMOTOR::IMotor *> *motors() { return &motors_; }
     DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
 
 protected:

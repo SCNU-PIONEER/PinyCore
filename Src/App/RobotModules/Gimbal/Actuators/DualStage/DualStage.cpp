@@ -8,6 +8,7 @@
 #include "PidBasic.hpp"
 #include "GM6020.hpp"
 #include "DM4310.hpp"
+#include "DM4340.hpp"
 
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
@@ -64,7 +65,7 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
+    motors_.FirstYaw = new DMMOTOR::DM4340("BigYaw", firstYawDM4310Config);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
@@ -160,7 +161,8 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + n2eData.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
-            msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航数据
+            // msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航数据
+            msg.wYaw = 0.3f;
         }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -260,7 +262,7 @@ void DualStage::ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _a
     }
     expMotorAng_.SecondYaw = PINYMOTOR::clampArc(expMotorAng_.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
 
-    if (msg.state == FSMState_e::RUN) {
+    if (msg.state == FSMState_e::RUN && debug.gimbalState != FSMState_e::AUTO) {
         expMotorAng_.SecondYaw = 0.f; //run模式下小yaw不改变方向
     }
     ctrlMotor(expMotorAng_, _angPID, _velPID);

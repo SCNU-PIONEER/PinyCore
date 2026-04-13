@@ -150,11 +150,11 @@ public:
     union Data_u {
         struct Data_s {
             uint16_t HP : 10;
-            uint16_t gameTime : 10;
+            uint16_t gameTime;
             uint8_t gameProgress : 4;
             uint8_t robotId : 8;
             uint8_t isPlay : 1;
-            uint32_t reserved : 31;
+            uint32_t reserved : 25;
         } content;
         uint8_t bytes[LEN];
     } data;
