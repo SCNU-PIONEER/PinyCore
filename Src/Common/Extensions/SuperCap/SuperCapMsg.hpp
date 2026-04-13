@@ -64,6 +64,7 @@ struct CapAUX_s {
     uint16_t cmdId;
 
     uint32_t lastSendTick;
+    uint32_t lastRecvTick;
     uint32_t txPeriodTicks;
     uint16_t rxCnt;
     float rxFreq;
