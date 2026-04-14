@@ -1,33 +1,40 @@
 INCLUDE(../../Config/sdkconfig.cmake option)
 
-add_library(Soc INTERFACE)
+add_library(Soc)
 
 if(DEFINED TARGET_STM32H723)
     set(soc_target "stm32h723")
-    set(cortex "cortex-m7" PARENT_SCOPE)
-    set(fpu "fpv5-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m7" )
+    set(fpu "fpv5-d16" )
+    set(float-abi "hard" )
 elseif(DEFINED TARGET_STM32F407)
     set(soc_target "stm32f407")
-    set(cortex "cortex-m4" PARENT_SCOPE)
-    set(fpu "fpv4-sp-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m4" )
+    set(fpu "fpv4-sp-d16" )
+    set(float-abi "hard" )
 else()
     message(WARNING "Using defaust Soc board: stm32f407" )
     set(soc_target "stm32f407")
-    set(cortex "cortex-m4" PARENT_SCOPE)
-    set(fpu "fpv4-sp-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m4" )
+    set(fpu "fpv4-sp-d16" )
+    set(float-abi "hard" )
 endif()
 
 message(STATUS "soc board: ${soc_target}")
 
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
-
 set(target_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}")
-target_include_directories(Soc INTERFACE ${target_folder})
 
-target_link_libraries(Soc INTERFACE stm32cubemx)
+set(TARGET_FLAGS "-mcpu=${cortex} -mfpu=${fpu} -mfloat-abi=${float-abi}")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_EXE_LINKER_FLAGS "-T ${target_folder}/link.ld" PARENT_SCOPE)
+
+target_include_directories(Soc PUBLIC ${target_folder})
+target_sources(Soc PRIVATE ${target_folder}/Soc.cpp)
+
+target_link_libraries(Soc PUBLIC stm32cubemx)
 
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)

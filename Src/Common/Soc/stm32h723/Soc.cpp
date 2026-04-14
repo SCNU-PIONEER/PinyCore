@@ -1,0 +1,40 @@
+#include "Soc.hpp"
+#include HAL_INCLUDE
+
+#define RS485_DIR1_Pin       GPIO_PIN_4
+#define RS485_DIR1_GPIO_Port GPIOD
+
+void SET_485_1_DE_UP(){
+    HAL_GPIO_WritePin(RS485_DIR1_GPIO_Port, RS485_DIR1_Pin, GPIO_PIN_SET);
+}
+
+void SET_485_1_DE_DOWN(){
+    HAL_GPIO_WritePin(RS485_DIR1_GPIO_Port, RS485_DIR1_Pin, GPIO_PIN_RESET);
+}
+
+void Power_OUT1_ON(){
+ HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+}
+
+void Power_OUT1_OFF(){
+ HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+}
+
+void Power_OUT2_ON(){
+ HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+}
+
+void Power_OUT2_OFF(){
+HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+
+}
+
+void Power_5V_ON(){
+HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+
+}
+void Power_5V_OFF(){
+HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
+}
