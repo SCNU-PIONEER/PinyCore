@@ -11,6 +11,7 @@ include("tools/cmake/FindInclude.cmake")
 include("tools/cmake/ShowMessage.cmake")
 include("Src/Config/sdkconfig.cmake" OPTIONAL)
 include("tools/cmake/Version.cmake")
+include("tools/cmake/ccache.cmake")
 
 project(${CMAKE_PROJECT_NAME} VERSION ${PROJECT_VERSION})
 

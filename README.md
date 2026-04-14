@@ -29,6 +29,7 @@ we also suggest to install following software:
 1. [clangd](https://clangd.llvm.org/) >= 20.0
 1. clang-format >= 20.0
 2. [commitizen](https://github.com/commitizen/cz-cli)
+3. ccache
 
 # 🌟Getting started
 ## 🏗️Build
