@@ -60,6 +60,12 @@ void DMMotor::updateCtrlMode()
     }
 }
 
+void DMMotor::switchCtrlMode(WorkMode_e _workMode)
+{
+    regInfo_.workMode = _workMode;
+    updateCtrlMode();
+}
+
 void DMMotor::convertMitTt(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
