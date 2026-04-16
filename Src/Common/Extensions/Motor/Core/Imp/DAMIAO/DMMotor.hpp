@@ -306,5 +306,19 @@ public:
      */
 
     MotorTypeDef_e updateRegDat();
+
+    /**
+     * @brief Change the control mode dynamically
+     * 
+     * @param WorkMode_e
+     */
+    void switchCtrlMode(WorkMode_e _workMode);
+
+    /**
+     * @brief Get dmmotor errorcode
+     * 
+     * @return ErrorCode_e
+     */
+    ErrorCode_e getErrorcode() { return errorCode_; }
 };
 } // namespace PINYMOTOR::DMMOTOR

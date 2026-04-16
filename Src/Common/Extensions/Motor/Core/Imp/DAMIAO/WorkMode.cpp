@@ -60,6 +60,12 @@ void DMMotor::updateCtrlMode()
     }
 }
 
+void DMMotor::switchCtrlMode(WorkMode_e _workMode)
+{
+    regInfo_.workMode = _workMode;
+    updateCtrlMode();
+}
+
 void DMMotor::convertMitTt(TxBus &_txBuf)
 {
     MITMsg_s msgMIT = {};
@@ -68,20 +74,6 @@ void DMMotor::convertMitTt(TxBus &_txBuf)
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_TORQ:
         break;
-    case MotorCmdType_e::SET_VEL: {
-        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        break;
-    }
-    case MotorCmdType_e::SET_POS: {
-        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        break;
-    }
-    case MotorCmdType_e::SET_POSVEL: {
-        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps) +
-                          this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        break;
-    }
     default:
         if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
             LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
@@ -106,12 +98,6 @@ void DMMotor::convertMitVdes(TxBus &_txBuf)
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_VEL:
         break;
-    case MotorCmdType_e::SET_POS:
-    case MotorCmdType_e::SET_POSVEL:
-    case MotorCmdType_e::SET_MIT: {
-        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        break;
-    }
     default:
         if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
             LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
@@ -194,11 +180,6 @@ void DMMotor::convertVdes(TxBus &_txBuf)
     switch (this->cmd_.curCmdType) {
     case MotorCmdType_e::SET_VEL:
         break;
-    case MotorCmdType_e::SET_POS:
-    case MotorCmdType_e::SET_POSVEL: {
-        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0);
-        break;
-    }
     default:
         if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
             LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
