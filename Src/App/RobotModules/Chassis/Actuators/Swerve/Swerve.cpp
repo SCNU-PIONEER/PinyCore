@@ -50,18 +50,32 @@ FILTER::LPF swerveFilterInput[4]{
     FILTER::LPF(1000.f, 4.f),
 };
 
-PositionalPid swervePosPid[4] = {
+PositionalPid sPowerPosPid[4] = {
     PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
     PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
     PositionalPid(30.f, 10.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
     PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
 };
-PositionalPid swerveVelPid[4] = {
+PositionalPid sPowerVelPid[4] = {
     PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
     PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
     PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
     PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
 };
+
+PositionalPid swervePosPid[4] = {
+    PositionalPid(15.f, 0.f, 0.2f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(15.f, 0.f, 0.1f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(30.f, 10.f, 0.25f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(15.f, 0.f, 0.02f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+};
+PositionalPid swerveVelPid[4] = {
+    PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+};
+
 
 PositionalPid wheelVelPid[4] = {
     PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
@@ -75,8 +89,14 @@ Swerve::Swerve()
     insSub_ = new Subscriber<INS_SYS::INSData_s>(4, &TopicRouter::instance().insTopic, &insData_);
 
     for (uint8_t i = 1; i <= 4; i++) {
+#if APP_USE_POWERCTRL
+        swervePosPid_._[i - 1] = &sPowerPosPid[i - 1];
+        swerveVelPid_._[i - 1] = &sPowerVelPid[i - 1];
+#else
         swervePosPid_._[i - 1] = &swervePosPid[i - 1];
         swerveVelPid_._[i - 1] = &swerveVelPid[i - 1];
+#endif
+
         swerveFilterInput_._[i - 1] = &swerveFilterInput[i - 1];
         swerveFilterOutput_._[i - 1] = &swerveFilterOutput[i - 1];
         wheelVelPid_._[i - 1] = &wheelVelPid[i - 1];
@@ -146,7 +166,7 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
-    powerCtrl_->capEnable_ = chassisCtrlRxPacket_.data().useSuperCap;
+    chassisCtrlRxPacket_.data().useSuperCap ? powerCtrl_->capCmdRatio_ = 0.2f : powerCtrl_->capCmdRatio_ = 0.9f;
 #endif
 
     loadDeltaYaw();
@@ -169,8 +189,14 @@ void Swerve::update(void *_param)
     curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
     curSpeed_.wz = v.wz;
 
+    powerCtrl_->capEnable_ = refereeMsg_.currentHP != 0;
+    if (refereeMsg_.chassisPowerLimit < 0 || refereeMsg_.chassisPowerLimit > 200) {
+        refereeMsg_.chassisPowerLimit = 201;
+    }
+
 #if APP_USE_POWERCTRL
-    cap_.capTask(powerCtrl_->capEnable_, 0, 0, 0, 0, refereeMsg_.chassisPowerLimit, refereeMsg_.chassisPowerBuffer);
+    cap_.capTask(powerCtrl_->capEnable_, powerCtrl_->systemRestart_, powerCtrl_->clearError_, powerCtrl_->enableCharge_,
+                 powerCtrl_->chargeRatioLimit_, refereeMsg_.chassisPowerLimit, refereeMsg_.chassisPowerBuffer);
 #endif
 
     this->stateFactory_.update();
@@ -218,7 +244,7 @@ void Swerve::sendDataToReferee()
 
 void Swerve::sendDecesionData()
 {
-    decesionPacket1_.setData().currentChassisEnergy = refereeMsg_.chassisPowerBuffer;
+    decesionPacket1_.setData().currentChassisEnergy = refereeData.buff.remainingEnergy;
     decesionPacket1_.setData().allyBaseHP = refereeData.gameRobotHP.allyBaseHP;
     decesionPacket1_.setData().allyOutpostHP = refereeData.gameRobotHP.allyOutpostHP;
     sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
@@ -387,10 +413,13 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     }
 
     std::vector<float> torq;
-    torq = powerCtrl_->powerCtrl(expRads, motors_._, powerCmd, refereeMsg_, sDebugVel);
+    if (refereeMsg_.chassisPowerLimit < 0 || refereeMsg_.chassisPowerLimit > 200) {
+        refereeMsg_.chassisPowerLimit = 201;
+    }
     for (uint8_t i = 0; i < 8; i++) {
         iq[i] = torq[i];
 #if APP_USE_POWERCTRL
+        torq = powerCtrl_->powerCtrl(expRads, motors_._, powerCmd, refereeMsg_, sDebugVel);
         motors_._[i]->cmdTorq(torq[i]); //功率控制
                                         // motors_._[i]->cmdTorq(powerCmd[i]);
 #else
