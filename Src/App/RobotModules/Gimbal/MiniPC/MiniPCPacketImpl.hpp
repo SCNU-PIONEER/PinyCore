@@ -57,7 +57,8 @@ typedef struct {
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
     REFEREE::SentryCmd_s upSentryCmd;
-} DecesionToEc_s;
+} 
+DecesionToEc_s;
 
 //byte:14
 typedef struct {

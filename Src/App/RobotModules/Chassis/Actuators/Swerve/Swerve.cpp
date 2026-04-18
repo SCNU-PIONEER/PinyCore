@@ -214,6 +214,7 @@ void Swerve::loadRefereeData(void *_param)
     refereeTxPacket_.setData().robotId = refereeMsg_.robotId;
 
     BulletSpdTxPacket_.setData().shootSpeed = refereeMsg_.bulletSpeed;
+    BulletSpdTxPacket_.setData().bulletFreq = refereeData.shootData.bulletFreq;
 
     chassisCurPower_ = refereeMsg_.chassisPowerLimit;
     chassisPowerBuffer_ = refereeMsg_.chassisPowerBuffer;

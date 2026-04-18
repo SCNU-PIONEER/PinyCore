@@ -109,10 +109,10 @@ protected:
     RobotInteractionData_s<REFEREE::SentryCmd_s> sentryCmdData_; //向裁判系统发送的数据 0x0301
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
-    RefereeCtrlTxPacket refereeTxPacket_{ 100.f }; //100Hz发送一次
-    BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
-    DecesionTxPacket1 decesionPacket1_{ 100.f };
-    SentryInfoTxPacket sentryInfoTxPacket_{ 100.f };
+    RefereeCtrlTxPacket refereeTxPacket_{ 50.f };
+    BulletSpdTxPacket BulletSpdTxPacket_{ 50.f };
+    DecesionTxPacket1 decesionPacket1_{ 30.f };
+    SentryInfoTxPacket sentryInfoTxPacket_{ 30.f };
     SentryCmdRxPacket sentryCmdRxPacket_; //接收哨兵指令
 
     void loadRefereeData(void *_param);

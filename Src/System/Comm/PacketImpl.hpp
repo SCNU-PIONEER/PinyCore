@@ -181,17 +181,21 @@ public:
 
 class SpeedMsgPacket {
 public:
-    static constexpr uint8_t LEN = 4;
+    static constexpr uint8_t LEN = 8;
     static constexpr uint16_t ID = 0x24;
     struct ProtoData_s {
         float shootSpeed;
-        uint32_t reserved;
+        uint8_t bulletFreq;
+        uint8_t reserved;
+        uint16_t reserved1;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
-            uint16_t shootSpeed : 16;
-            uint32_t reserved : 16;
+            float shootSpeed;
+            uint8_t bulletFreq;
+            uint8_t reserved;
+            uint16_t reserved1;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -199,12 +203,17 @@ public:
     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
     {
         Data_u::Data_s &d = _data.content;
-        d.shootSpeed = static_cast<uint16_t>((_protoData.shootSpeed - 10.f) * 585.f);
+        d.shootSpeed = _protoData.shootSpeed;
+        d.bulletFreq = _protoData.bulletFreq;
         d.reserved = 0;
+        d.reserved1 = 0;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
-        _protoData.shootSpeed = (static_cast<float>(_data.content.shootSpeed) / 585.f) + 10.f;
+        _protoData.shootSpeed = _data.content.shootSpeed;
+        _protoData.bulletFreq = _data.content.bulletFreq;
+        _protoData.reserved = _data.content.reserved;
+        _protoData.reserved1 = _data.content.reserved1;
     }
 };
 
