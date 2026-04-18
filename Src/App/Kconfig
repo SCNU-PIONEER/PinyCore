@@ -16,6 +16,8 @@ menu "app config"
     bool "test modules"
     default n
 
+    source "Src/App/Test/Kconfig"
+
     config APP_USE_INS
     bool "ins"
     default n
