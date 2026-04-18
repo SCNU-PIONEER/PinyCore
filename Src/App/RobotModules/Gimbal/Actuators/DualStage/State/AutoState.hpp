@@ -118,9 +118,9 @@ public:
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
 
-        if (gimbal_->msg.state == FSMState_e::NAV)
+        if (gimbal_->msg.state == FSMState_e::NAV && !gimbal_->v2eData.control)
             return FSMState_e::NAV;
-        else if (gimbal_->msg.state == FSMState_e::RUN)
+        else if (gimbal_->msg.state == FSMState_e::RUN && !gimbal_->v2eData.control)
             return FSMState_e::RUN;
         else
             return FSMState_e::AUTO;

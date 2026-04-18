@@ -94,8 +94,10 @@ public:
 
         if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
-        else if (gimbal_->msg.state == FSMState_e::AUTO)
+        else if (gimbal_->msg.state == FSMState_e::NAV && gimbal_->v2eData.control)
             return FSMState_e::AUTO;
+        else if (gimbal_->msg.state == FSMState_e::RUN && gimbal_->v2eData.control)
+            return FSMState_e::AUTO; //平时调试用
         else
             return FSMState_e::NAV;
     };

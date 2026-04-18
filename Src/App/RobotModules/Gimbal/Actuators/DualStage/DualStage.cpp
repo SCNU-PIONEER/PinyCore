@@ -137,10 +137,6 @@ void DualStage::update(void *_param)
     sendNavData();
     sendDecesionData();
 
-    if (v2eData.control) {
-        this->msg.state = FSMState_e::AUTO;
-    }
-
     //与云台控制无关，debug使用
     debug.visionControl = v2eData.control;
     debug.visionFire = v2eData.fire;
