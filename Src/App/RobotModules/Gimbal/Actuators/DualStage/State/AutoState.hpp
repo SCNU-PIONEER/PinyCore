@@ -11,19 +11,19 @@
 
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(15.f, 10.f, 0.5f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(25.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
     PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(2.5f, 0.f, 0.005f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.55f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 //    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
 static PositionalPid wBYFollowPid = {
-    PositionalPid(10.f, 0.3f, 0.001f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.01f),
+    PositionalPid(25.f, 0.1f, 0.004f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
 };
 float debugWBYaw;
 
@@ -64,29 +64,41 @@ public:
     //auto下视觉进行控制,此时只控小yaw,转动范围不应该超出小yaw范围，
     void run() final
     {
-        DualStage_u<float> delArc = {};
+        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+        eIA.SecondYaw = rangeConversion(eIA.SecondYaw);
 
         eIA.Pitch = gimbal_->v2eData.pitch;
         eIA.SecondYaw = gimbal_->v2eData.yaw;
 
-        delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
-        eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
+        // delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
+        // eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
 
-        deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA.SecondYaw, cMA.SecondYaw);
-        //超量程为正
-        gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
+        // deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA.SecondYaw, cMA.SecondYaw);
+        // //超量程为正
+        // gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
 
-        if (gimbal_->isVisionAngOver_) {
-            float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA.FirstYaw);
-            wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
-            // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
+        // if (gimbal_->isVisionAngOver_) {
+        //     float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA.FirstYaw);
+        //     wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
+        //     // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
+        //     eIA.FirstYaw += wBYaw_ * 0.001f;
+        //     visionExpBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
+
+        //     debugWBYaw = wBYaw_;
+        // } else {
+        //     eIA.FirstYaw = visionExpBigYaw_;
+        // }
+
+        if (fabsf(rangeConversion(cMA.SecondYaw)) < 0.1f) {
+            wBYaw_ = 0.f;
+            eIA.FirstYaw = visionExpBigYaw_;
+        } else {
+            wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
+            wBYaw_ = PINYMOTOR::clamp(wBYaw_, -3.f, 3.f);
             eIA.FirstYaw += wBYaw_ * 0.001f;
             visionExpBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
-
-            debugWBYaw = wBYaw_;
-        } else {
-            eIA.FirstYaw = visionExpBigYaw_;
         }
+        debugWBYaw = wBYaw_;
 
         gimbal_->ctrl(eIA, autoPosPid_, autoVelPid_);
     }
@@ -106,9 +118,9 @@ public:
         if (gimbal_->msg.state == FSMState_e::STOP)
             return FSMState_e::STOP;
 
-        if (gimbal_->msg.state == FSMState_e::NAV && !gimbal_->v2eData.control)
+        if (gimbal_->msg.state == FSMState_e::NAV)
             return FSMState_e::NAV;
-        else if (gimbal_->msg.state == FSMState_e::RUN && !gimbal_->v2eData.control)
+        else if (gimbal_->msg.state == FSMState_e::RUN)
             return FSMState_e::RUN;
         else
             return FSMState_e::AUTO;

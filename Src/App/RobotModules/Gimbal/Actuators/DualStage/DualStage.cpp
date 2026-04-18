@@ -137,6 +137,10 @@ void DualStage::update(void *_param)
     sendNavData();
     sendDecesionData();
 
+    if (v2eData.control) {
+        this->msg.state = FSMState_e::AUTO;
+    }
+
     //与云台控制无关，debug使用
     debug.visionControl = v2eData.control;
     debug.visionFire = v2eData.fire;
@@ -161,8 +165,10 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vy = cmsg.vy + n2eData.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
-            // msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航数据
-            msg.wYaw = 0.3f;
+            msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航
+            // msg.wYaw = 0.3f;
+        } else {
+            msg.wYaw = 0.0f;
         }
     } else if (msg.state == FSMState_e::RUN) {
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
@@ -260,7 +266,10 @@ void DualStage::ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _a
         delArc._[i] = getMinorArc(_insPos._[i], curImuAng_._[i]);
         expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
     }
-    expMotorAng_.SecondYaw = PINYMOTOR::clampArc(expMotorAng_.SecondYaw, SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG);
+    expMotorAng_.SecondYaw = rangeMap(
+            PINYMOTOR::clampArc(rangeConversion(expMotorAng_.SecondYaw), SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG));
+    expMotorAng_.Pitch =
+            rangeMap(PINYMOTOR::clampArc(rangeConversion(expMotorAng_.Pitch), PITCH_MIN_ANG, PITCH_MAX_ANG));
 
     if (msg.state == FSMState_e::RUN && debug.gimbalState != FSMState_e::AUTO) {
         expMotorAng_.SecondYaw = 0.f; //run模式下小yaw不改变方向

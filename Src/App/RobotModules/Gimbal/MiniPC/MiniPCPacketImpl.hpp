@@ -59,13 +59,13 @@ typedef struct {
     REFEREE::SentryCmd_s upSentryCmd;
 } DecesionToEc_s;
 
-//byte:17
+//byte:14
 typedef struct {
     uint8_t decesionHeader;            // 0x8A           byte:1
     uint16_t gameTime;                 // 比赛时间        byte:2
     uint8_t gameProgress;              // 比赛进程        byte:1
     uint16_t myHP;                     // 机器人血量      byte:2
-    uint32_t currentChassisEnergy;     // 底盘缓冲能量    byte:4
+    uint8_t currentChassisEnergy;      // 底盘能量         byte:1
     REFEREE::sentryInfo2 upSentryInfo; // 哨兵裁判系统数据 byte:2
     uint16_t allyOutpostHP;            // 己方前哨站血量   byte:2
     uint16_t allyBaseHP;               // 己方基地血量     byte:2
@@ -84,8 +84,8 @@ public:
     struct ProtoData_s {
         EcToVision_s e2vData;   //18
         EcToNav_s e2nData;      //5
-        EcToDecesion_s e2dData; //17
-        uint8_t reserved[21];   //64-43
+        EcToDecesion_s e2dData; //14
+        uint8_t reserved[24];   //64-40
     };
 
 #pragma pack(push, 1)
@@ -94,8 +94,8 @@ public:
             uint8_t header;         //1
             EcToVision_s e2vData;   //18
             EcToNav_s e2nData;      //5
-            EcToDecesion_s e2dData; //17
-            uint8_t reserved[21];   //64-43
+            EcToDecesion_s e2dData; //14
+            uint8_t reserved[24];   //64-40
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];

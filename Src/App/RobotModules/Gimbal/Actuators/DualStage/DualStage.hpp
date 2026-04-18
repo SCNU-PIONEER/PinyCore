@@ -35,7 +35,8 @@ struct DualStageDebug_s {
 //转换为-pi~pi
 static inline float rangeConversion(float _ang)
 {
-    return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
+    // return _ang > PI ? _ang - (2 * PI) : (_ang < -PI ? _ang + (2 * PI) : _ang);
+    return PINYMOTOR::rangeMap(_ang, -M_PI, M_PI);
 };
 
 //红1机器人ID为1，蓝1机器人ID为101,true红
@@ -58,7 +59,7 @@ inline bool isColor(float _robotId)
  */
 class DualStage : public Gimbal {
 public:
-    static constexpr float PITCH_LAUNCH_ANG = 1.19734526f;
+    static constexpr float PITCH_LAUNCH_ANG = 1.24988747f;
     static constexpr float FIRST_YAW_LAUNCH_ANG = 1.09417856f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 4.63702297f;
 
@@ -73,7 +74,9 @@ public:
 
     static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
 
-    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13度,电机系
+    static constexpr float PITCH_MAX_ANG = 0.4131106f; // 24°
+    static constexpr float PITCH_MIN_ANG = -0.6012f;   // -35°
+    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
     static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
 
     static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
@@ -110,7 +113,6 @@ public:
                     DualStage_u<PositionalPid *> _velPID);
     void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
 
-    // DualStage_u<PINYMOTOR::IMotor *> *motors() { return &motors_; }
     DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
 
 protected:
