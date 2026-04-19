@@ -198,18 +198,31 @@ struct MapCommand_s {
 
 /* 0x0305 小地图数据，1Hz 周期发送 */
 struct MapRobotData_s {
-    uint16_t heroPositionX;
-    uint16_t heroPositionY;
-    uint16_t engineerPositionX;
-    uint16_t engineerPositionY;
-    uint16_t infantry_3PositionX;
-    uint16_t infantry_3PositionY;
-    uint16_t infantry_4PositionX;
-    uint16_t infantry_4PositionY;
-    uint16_t reserved1;
-    uint16_t reserved2;
-    uint16_t sentryPositionX;
-    uint16_t sentryPositionY;
+    uint16_t enemyHeroPositionX;
+    uint16_t enemyHeroPositionY;
+    uint16_t enemyEngineerPositionX;
+    uint16_t enemyEngineerPositionY;
+    uint16_t enemyInfantry3PositionX;
+    uint16_t enemyInfantry3PositionY;
+    uint16_t enemyInfantry4PositionX;
+    uint16_t enemyInfantry4PositionY;
+    uint16_t enemyDronePositionX;
+    uint16_t enemyDronePositionY;
+    uint16_t enemySentryPositionX;
+    uint16_t enemySentryPositionY;
+
+    uint16_t allyHeroPositionX;
+    uint16_t allyHeroPositionY;
+    uint16_t allyEngineerPositionX;
+    uint16_t allyEngineerPositionY;
+    uint16_t allyInfantry3PositionX;
+    uint16_t allyInfantry3PositionY;
+    uint16_t allyInfantry4PositionX;
+    uint16_t allyInfantry4PositionY;
+    uint16_t allyDronePositionX;
+    uint16_t allyDronePositionY;
+    uint16_t allySentryPositionX;
+    uint16_t allySentryPositionY;
 };
 
 
