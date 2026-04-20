@@ -1,5 +1,6 @@
 #include "DMMotor.hpp"
 
+#include "Projdefs.hpp"
 #include "StmLog.hpp"
 
 using namespace PINYMOTOR;
@@ -52,7 +53,7 @@ MotorTypeDef_e DMMotor::writeOneReg(RegId_e _regId, uint8_t _dat[4])
                   _dat[1],
                   _dat[2],
                   _dat[3] };
-        this->send(0x7FF, writeTxBuffer, 8);
+        rslt = this->send(0x7FF, writeTxBuffer, 8,Txtype_e::MID_SEND_PRIORITY);
     }
     return rslt;
 }
@@ -74,7 +75,7 @@ MotorTypeDef_e DMMotor::readOneReg(RegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        this->send(0x7FF, readTxBuffer, 8);
+        this->send(0x7FF, readTxBuffer, 8,Txtype_e::MID_SEND_PRIORITY);
     }
     return rslt;
 }
@@ -96,7 +97,7 @@ MotorTypeDef_e DMMotor::storageOneReg(RegId_e _regId)
                                     0x00,
                                     0x00,
                                     0x00 };
-        this->send(0x7FF, storageTxBuf, 8);
+        this->send(0x7FF, storageTxBuf, 8,Txtype_e::MID_SEND_PRIORITY);
     }
     return rslt;
 }

@@ -2,6 +2,7 @@
 
 #include "IMotor.hpp"
 
+#include "Projdefs.hpp"
 #include <cstdint>
 #include <cstring>
 
@@ -68,6 +69,12 @@ enum class ErrorCode_e : uint8_t {
     OVERLOAD = 0xEu,
 };
 
+enum class Txtype_e : uint8_t{
+    HIGH_SEND_PRIORITY,     // for critical command such as enable/disable/clear error
+    MID_SEND_PRIORITY,      // for just send once command such as WriteReg/ReadReg
+    LOW_SEND_PRIORITY,      // for periodic command such as control command
+};
+
 #pragma pack(push, 1)
 union RegValue_u {
     float value;
@@ -130,6 +137,12 @@ struct Status_s {
     Status_s &operator=(const Status_s &_other);
 };
 
+struct TxPack_s {
+    uint16_t sendid = 0;
+    uint8_t txdata[8] = {};
+    uint8_t len = 0;
+};
+
 class DMMotor : public IMotor {
     using Base = IMotor;
     using RegMap = std::unordered_map<RegId_e, Reg_s *>;
@@ -141,11 +154,17 @@ class DMMotor : public IMotor {
 private:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {}; // buffer for received data
 
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
 
     ConvertFunc convert = &DMMotor::convertDefault;
+
+    MotorTypeDef_e txData();
+    MotorTypeDef_e transmitData(const TxPack_s &_txPack);
+    MotorTypeDef_e storageInqueue(const TxPack_s &_txPack);
+    void overWritePrevTxPack(TxPack_s &_txPack);
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len,Txtype_e _type);
+
 
     void convertMitTt(TxBus &);
     void convertMitVdes(TxBus &);
@@ -188,6 +207,10 @@ protected:
     ErrorCode_e errorCode_;
 
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
+
+    xQueueHandle TxTempQueue = nullptr;//queue to cache the tx data that must be sent
+    TxPack_s LastTxPack_ = {};
+    bool isOverWriting_ = false; // flag to indicate whether the next tx data will overwrite the previous one when TxTempQueue is full
 
 public:
     DMMotor(const char _name[16], InitConfig_s _config);

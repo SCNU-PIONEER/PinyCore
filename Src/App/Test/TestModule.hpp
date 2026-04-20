@@ -20,7 +20,9 @@ public:
 
     StateFactory<TEST::FSMState_e> stateFactory_;
 
-    template <typename F> requires std::invocable<F> void schedule(F _callback) { tasks.push_back(_callback); }
+    template <typename F> 
+    requires std::invocable<F> 
+    void schedule(F _callback) { tasks.push_back(_callback); }
 
     enum class DmMotorModel_e : uint8_t { DM4310, DM3507, DM3519, DM4340, DM6006, DM8009, DM10010L };
     /*MOTOR*/

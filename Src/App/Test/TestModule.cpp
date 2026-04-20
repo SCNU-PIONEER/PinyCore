@@ -6,6 +6,11 @@
 #include "task.h"
 #include <cmath>
 
+#ifdef CONFIG_DMMOTOR_TEST
+    #include "DMMotorTest/DMMotorTest.hpp"
+#endif
+
+
 using namespace TEST;
 using namespace PINYMOTOR;
 
@@ -17,7 +22,7 @@ void TestModule::init()
 {
 #if TEST_DM
     schedule([]() { testDM.test(); });
-    testDM.rebuildMotor(DmMotorModel_e::DM4310, 2, WorkMode_e::VDES);
+    testDM.rebuildMotor(DmMotorModel_e::DM8009, 7, WorkMode_e::VDES);
 #endif
 }
 
@@ -25,6 +30,7 @@ void TestModule::update()
 {
     for (auto &task : this->tasks) {
         task();
+        vTaskSuspend(getTaskHandler());
     }
 }
 

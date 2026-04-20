@@ -1,12 +1,16 @@
 #include "DMMotor.hpp"
 
+#include "IMotor.hpp"
 #include "MotorCommonMacros.hpp"
 
+#include "Projdefs.hpp"
 #include "StmLog.hpp"
 
 #include "Bsp_can.hpp"
 
 #include "Soc.hpp"
+#include "projdefs.h"
+#include <cstring>
 
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
@@ -27,8 +31,8 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DMMotor::DMMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
-
+DMMotor::DMMotor(const char _name[16], InitConfig_s _config)
+        : Base(_name, _config), TxTempQueue(xQueueCreate(4, sizeof(TxPack_s)))
 {
     AUX_.rxQueue = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
@@ -37,6 +41,7 @@ DMMotor::~DMMotor()
 {
     this->cancelRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->cancelMotor();
+    vQueueDelete(TxTempQueue);
     LOG::info("DMMotor", " %s: An instance of DMMotor created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
               regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
@@ -83,28 +88,31 @@ void DMMotor::setMITKd(float _kd)
     MITKd_ = _kd;
 }
 
-MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
+MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len,Txtype_e _type)
 {
-    if (this->checkSend()) {
-        // Check this Buffer
-        // LOG::warn("DMMotor", " %s: send data to CAN %hx", regInfo_.name, _sendId);
-        // LOG::warn("DMMotor",
-        //           " %s: txBuf: %02X %02X %02X %02X %02X %02X %02X %02X",
-        //           regInfo_.name, _txBuf[0], _txBuf[1], _txBuf[2], _txBuf[3],
-        //           _txBuf[4], _txBuf[5], _txBuf[6], _txBuf[7]);
-
-#ifdef SOC_FDCAN
-        if (regInfo_.comType == ComType_e::FDCAN) {
-            return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf, _len));
-        }
-#endif
-        if (regInfo_.comType == ComType_e::CAN) {
-            return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf, _len));
-        }
+    if (_txBuf == nullptr || _len == 0 || _len > sizeof(TxPack_s::txdata)) {
+        LOG::error("DMMotor", " %s: Invalid tx data or length", regInfo_.name);
+        return 1;
     }
-    return 0;
+
+    TxPack_s txPack;
+    txPack.sendid = _sendId;
+    memcpy(txPack.txdata, _txBuf, _len);
+    txPack.len = _len;
+
+    switch(_type){
+        case PINYMOTOR::DMMOTOR::Txtype_e::HIGH_SEND_PRIORITY:
+            transmitData(txPack);
+            break;
+        case PINYMOTOR::DMMOTOR::Txtype_e::MID_SEND_PRIORITY:
+            storageInqueue(txPack);
+            break;
+        case PINYMOTOR::DMMOTOR::Txtype_e::LOW_SEND_PRIORITY:
+            overWritePrevTxPack(txPack);
+            break;
+    }
+
+    return txData();
 }
 
 MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
@@ -176,10 +184,12 @@ MotorTypeDef_e DMMotor::ctrl()
 {
     MotorTypeDef_e rslt = 0;
     TxBus txBuf;
+    Txtype_e txType = Txtype_e::LOW_SEND_PRIORITY;
     if ((this->cmd_.SW && !this->cmd_.prevSW) || (this->cmd_.SW && errorCode_ == ErrorCode_e::MOTOR_DISABLE)) {
         constexpr uint8_t ENABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC };
         memcpy(txBuf.data, ENABLE_CMD_MSG, 8);
         txBuf.len = 8;
+        txType = Txtype_e::HIGH_SEND_PRIORITY;
     } else if (!this->cmd_.SW) {
         if (this->posPID_ != nullptr)
             this->posPID_->reset();
@@ -188,10 +198,11 @@ MotorTypeDef_e DMMotor::ctrl()
         constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
         memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
         txBuf.len = 8;
+        txType = Txtype_e::HIGH_SEND_PRIORITY;
     } else {
         (this->*convert)(txBuf);
     }
-    rslt |= this->send(this->ctrlId_, txBuf.data, txBuf.len);
+    rslt |= this->send(this->ctrlId_, txBuf.data, txBuf.len, txType);
     return rslt;
 }
 
@@ -215,7 +226,7 @@ MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t disableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
-    rslt |= this->send(this->ctrlId_, disableCmdPack, 8);
+    rslt |= this->send(this->ctrlId_, disableCmdPack, 8,Txtype_e::HIGH_SEND_PRIORITY);
     this->cmd_.updateSW(false); // force disable
     return rslt;
 }
@@ -224,7 +235,7 @@ MotorTypeDef_e DMMotor::clearError()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t enableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB };
-    rslt |= this->send(this->ctrlId_, enableCmdPack, 8);
+    rslt |= this->send(this->ctrlId_, enableCmdPack, 8,Txtype_e::HIGH_SEND_PRIORITY);
     return rslt;
 }
 
@@ -234,4 +245,80 @@ void DMMotor::overrideReductionRatio(float _newReductionRatio)
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
     LOG::info("DMMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
+}
+
+MotorTypeDef_e DMMotor::storageInqueue(const TxPack_s &_txPack)
+{
+    if (TxTempQueue == nullptr) {
+        LOG::error("DMMotor", " %s: TxTempQueue is not initialized", regInfo_.name);
+        return 1;
+    }
+    if(xQueueSend(TxTempQueue, &_txPack, 0) == pdTRUE){
+        return 0;
+    }
+
+    //队列重载，抛弃最早的数据
+    TxPack_s tempPack;
+    static_cast<void>(xQueueReceive(TxTempQueue, &tempPack, 0)); // remove the oldest one
+    if (xQueueSend(TxTempQueue, &_txPack, 0) == pdTRUE) {
+        return 0;
+    }
+
+    LOG::warn("DMMotor", " %s: Failed to store data in TxTempQueue even after removing the oldest one", regInfo_.name);
+    return 1;
+}
+
+MotorTypeDef_e DMMotor::transmitData(const TxPack_s &_txPack)
+{
+#ifdef SOC_FDCAN
+        if (regInfo_.comType == ComType_e::FDCAN) {
+            return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
+                    const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
+        }
+#endif
+        if (regInfo_.comType == ComType_e::CAN) {
+            return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
+                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
+                    const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
+        }
+return 0;
+}
+
+MotorTypeDef_e DMMotor::txData()
+{
+    if (!this->checkSend()) {
+        return 0;
+    }
+
+    TxPack_s txPack;
+    bool hasTxData = false;
+
+    if(TxTempQueue != nullptr && xQueueReceive(TxTempQueue, &txPack, 0)== pdTRUE){
+        hasTxData = true;
+    }
+
+    if(!hasTxData){
+        taskENTER_CRITICAL();
+        if(isOverWriting_){
+            txPack = LastTxPack_;
+            isOverWriting_ = false;
+            hasTxData = true;
+        }
+        taskEXIT_CRITICAL();
+    }   
+    
+    if(hasTxData){
+        return transmitData(txPack);
+    }
+
+    return 0;
+}
+
+void DMMotor::overWritePrevTxPack(TxPack_s &_txPack)
+{
+    taskENTER_CRITICAL();
+    LastTxPack_ = _txPack;
+    isOverWriting_ = true;
+    taskEXIT_CRITICAL();
 }

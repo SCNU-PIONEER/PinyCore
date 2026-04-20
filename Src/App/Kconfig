@@ -11,9 +11,9 @@ menu "app config"
     default n
 
     source "Src/App/RobotModules/Gimbal/Kconfig"
-
+    
     config APP_USE_TEST
-    bool "test modules"
+    bool "test module"
     default n
 
     source "Src/App/Test/Kconfig"

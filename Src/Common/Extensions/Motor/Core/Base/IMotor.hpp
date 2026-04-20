@@ -28,7 +28,7 @@ protected:
 
     struct {
         QueueHandle_t rxQueue;
-        CmdBus_s cmdBuf;
+        QueueHandle_t txQueue;
         float txFreq;
         float rxFreq;
         uint16_t recvCnt;
