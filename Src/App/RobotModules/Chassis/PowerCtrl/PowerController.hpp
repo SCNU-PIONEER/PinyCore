@@ -1,12 +1,12 @@
 #pragma once
 #include <algorithm>
 #include "RLS.hpp"
+#include "IIR.hpp"
 #include "dsp/fast_math_functions.h"
 #include "sdkconfig.h"
 
 #if EXTENSION_SUPERCAP
 #include "PidBasic.hpp"
-#include "IIR.hpp"
 #include "SuperCap.hpp"
 #endif
 
@@ -159,7 +159,6 @@ protected:
 
 #if EXTENSION_SUPERCAP
     SuperCap *cap_;
-    FILTER::LPFIIR3 realPowerFilter_{ 1000.f, 12.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
     PositionalPid powerPid_{ 250.f, 0, 0, 0.001f, 0, 200.f, 0 };
     /**
      * @brief 更新允许的最大输出功率
@@ -188,4 +187,6 @@ private:
     float chassisFitPower_ = 0.f;    // 估计实际输出功率
     float chassisRawSetPower_ = 0.f; // 原始期望输出功率
     float chassisSetPower_ = 0.f;    // 最终期望输出功率
+
+    FILTER::LPFIIR3 realPowerFilter_{ 1000.f, 12.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
 };

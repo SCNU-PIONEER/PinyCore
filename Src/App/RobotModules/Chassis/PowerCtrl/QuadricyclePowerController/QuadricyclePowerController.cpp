@@ -30,7 +30,11 @@ void QuadricyclePowerController::powerCtrl(float (&_setTorq)[4], const PowerCtrl
 #endif
 
     // 计算功率上限
+#if EXTENSION_SUPERCAP
     float powerMax = this->updateAllowablePower(_msg.powerLimit, _msg.cmdCapRatio);
+#else
+    float powerMax = this->updateAllowablePower(_msg.powerLimit);
+#endif
 
     // 计算原始输出
     float rawSetPower[4]{};
