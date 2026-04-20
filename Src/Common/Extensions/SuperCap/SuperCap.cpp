@@ -17,7 +17,9 @@ SuperCap::SuperCap(canHandle *_hcan, uint16_t _cmdId, uint16_t _dataId, float _t
     capCmd_.capEnable = false;
     capCmd_.systemRestart = false;
     capCmd_.clearError = false;
-    capCmd_.enChargeLimit = false;
+
+    capCmd_.enChargeLimit = true;
+    capCmd_.chargeRatioLimit = 0.95f; // default limit to 95% to prolong cap life
 }
 
 void SuperCap::praseCapData(const uint8_t *_rxbuf)
