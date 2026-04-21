@@ -88,7 +88,7 @@ void DMMotor::setMITKd(float _kd)
     MITKd_ = _kd;
 }
 
-MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len,Txtype_e _type)
+MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len, Txtype_e _type)
 {
     if (_txBuf == nullptr || _len == 0 || _len > sizeof(TxPack_s::txdata)) {
         LOG::error("DMMotor", " %s: Invalid tx data or length", regInfo_.name);
@@ -100,16 +100,16 @@ MotorTypeDef_e DMMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len,Txt
     memcpy(txPack.txdata, _txBuf, _len);
     txPack.len = _len;
 
-    switch(_type){
-        case PINYMOTOR::DMMOTOR::Txtype_e::HIGH_SEND_PRIORITY:
-            transmitData(txPack);
-            break;
-        case PINYMOTOR::DMMOTOR::Txtype_e::MID_SEND_PRIORITY:
-            storageInqueue(txPack);
-            break;
-        case PINYMOTOR::DMMOTOR::Txtype_e::LOW_SEND_PRIORITY:
-            overWritePrevTxPack(txPack);
-            break;
+    switch (_type) {
+    case PINYMOTOR::DMMOTOR::Txtype_e::HIGH_SEND_PRIORITY:
+        transmitData(txPack);
+        break;
+    case PINYMOTOR::DMMOTOR::Txtype_e::MID_SEND_PRIORITY:
+        storageInqueue(txPack);
+        break;
+    case PINYMOTOR::DMMOTOR::Txtype_e::LOW_SEND_PRIORITY:
+        overWritePrevTxPack(txPack);
+        break;
     }
 
     return txData();
@@ -226,7 +226,7 @@ MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t disableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
-    rslt |= this->send(this->ctrlId_, disableCmdPack, 8,Txtype_e::HIGH_SEND_PRIORITY);
+    rslt |= this->send(this->ctrlId_, disableCmdPack, 8, Txtype_e::HIGH_SEND_PRIORITY);
     this->cmd_.updateSW(false); // force disable
     return rslt;
 }
@@ -235,7 +235,7 @@ MotorTypeDef_e DMMotor::clearError()
 {
     MotorTypeDef_e rslt = 0;
     uint8_t enableCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB };
-    rslt |= this->send(this->ctrlId_, enableCmdPack, 8,Txtype_e::HIGH_SEND_PRIORITY);
+    rslt |= this->send(this->ctrlId_, enableCmdPack, 8, Txtype_e::HIGH_SEND_PRIORITY);
     return rslt;
 }
 
@@ -253,7 +253,7 @@ MotorTypeDef_e DMMotor::storageInqueue(const TxPack_s &_txPack)
         LOG::error("DMMotor", " %s: TxTempQueue is not initialized", regInfo_.name);
         return 1;
     }
-    if(xQueueSend(TxTempQueue, &_txPack, 0) == pdTRUE){
+    if (xQueueSend(TxTempQueue, &_txPack, 0) == pdTRUE) {
         return 0;
     }
 
@@ -271,18 +271,18 @@ MotorTypeDef_e DMMotor::storageInqueue(const TxPack_s &_txPack)
 MotorTypeDef_e DMMotor::transmitData(const TxPack_s &_txPack)
 {
 #ifdef SOC_FDCAN
-        if (regInfo_.comType == ComType_e::FDCAN) {
-            return static_cast<MotorTypeDef_e>(Can::instance().transmitBrsData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
-                    const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
-        }
+    if (regInfo_.comType == ComType_e::FDCAN) {
+        return static_cast<MotorTypeDef_e>(
+                Can::instance().transmitBrsData(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
+                                                const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
+    }
 #endif
-        if (regInfo_.comType == ComType_e::CAN) {
-            return static_cast<MotorTypeDef_e>(Can::instance().transmitData(
-                    reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
-                    const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
-        }
-return 0;
+    if (regInfo_.comType == ComType_e::CAN) {
+        return static_cast<MotorTypeDef_e>(
+                Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _txPack.sendid,
+                                             const_cast<uint8_t *>(_txPack.txdata), _txPack.len));
+    }
+    return 0;
 }
 
 MotorTypeDef_e DMMotor::txData()
@@ -294,21 +294,21 @@ MotorTypeDef_e DMMotor::txData()
     TxPack_s txPack;
     bool hasTxData = false;
 
-    if(TxTempQueue != nullptr && xQueueReceive(TxTempQueue, &txPack, 0)== pdTRUE){
+    if (TxTempQueue != nullptr && xQueueReceive(TxTempQueue, &txPack, 0) == pdTRUE) {
         hasTxData = true;
     }
 
-    if(!hasTxData){
+    if (!hasTxData) {
         taskENTER_CRITICAL();
-        if(isOverWriting_){
+        if (isOverWriting_) {
             txPack = LastTxPack_;
             isOverWriting_ = false;
             hasTxData = true;
         }
         taskEXIT_CRITICAL();
-    }   
-    
-    if(hasTxData){
+    }
+
+    if (hasTxData) {
         return transmitData(txPack);
     }
 

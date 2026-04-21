@@ -7,7 +7,7 @@
 #include <cmath>
 
 #ifdef CONFIG_DMMOTOR_TEST
-    #include "DMMotorTest/DMMotorTest.hpp"
+#include "DMMotorTest/DMMotorTest.hpp"
 #endif
 
 

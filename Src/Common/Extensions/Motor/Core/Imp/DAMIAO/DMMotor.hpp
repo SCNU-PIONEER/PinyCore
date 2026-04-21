@@ -69,10 +69,10 @@ enum class ErrorCode_e : uint8_t {
     OVERLOAD = 0xEu,
 };
 
-enum class Txtype_e : uint8_t{
-    HIGH_SEND_PRIORITY,     // for critical command such as enable/disable/clear error
-    MID_SEND_PRIORITY,      // for just send once command such as WriteReg/ReadReg
-    LOW_SEND_PRIORITY,      // for periodic command such as control command
+enum class Txtype_e : uint8_t {
+    HIGH_SEND_PRIORITY, // for critical command such as enable/disable/clear error
+    MID_SEND_PRIORITY,  // for just send once command such as WriteReg/ReadReg
+    LOW_SEND_PRIORITY,  // for periodic command such as control command
 };
 
 #pragma pack(push, 1)
@@ -163,7 +163,7 @@ private:
     MotorTypeDef_e transmitData(const TxPack_s &_txPack);
     MotorTypeDef_e storageInqueue(const TxPack_s &_txPack);
     void overWritePrevTxPack(TxPack_s &_txPack);
-    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len,Txtype_e _type);
+    MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len, Txtype_e _type);
 
 
     void convertMitTt(TxBus &);
@@ -208,9 +208,10 @@ protected:
 
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
 
-    xQueueHandle TxTempQueue = nullptr;//queue to cache the tx data that must be sent
+    xQueueHandle TxTempQueue = nullptr; //queue to cache the tx data that must be sent
     TxPack_s LastTxPack_ = {};
-    bool isOverWriting_ = false; // flag to indicate whether the next tx data will overwrite the previous one when TxTempQueue is full
+    bool isOverWriting_ =
+            false; // flag to indicate whether the next tx data will overwrite the previous one when TxTempQueue is full
 
 public:
     DMMotor(const char _name[16], InitConfig_s _config);

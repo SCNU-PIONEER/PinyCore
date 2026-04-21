@@ -25,7 +25,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config)
 
     registerMotor();
     this->cmd_.clear();
-    AUX_.txQueue = xQueueCreate(1,sizeof(CmdBus_s));
+    AUX_.txQueue = xQueueCreate(1, sizeof(CmdBus_s));
     memset(&data_, 0, sizeof(Data_s));
 }
 
@@ -83,7 +83,6 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
     if (_type == MotorCmdType_e::ON || _type == MotorCmdType_e::OFF) {
         CmdBus_s cmd = {};
         cmd.cmdType = _type;
-        // memcpy(&AUX_.cmdBuf, &cmd, sizeof(CmdBus_s));
         xQueueOverwrite(AUX_.txQueue, &cmd);
         return 0;
     } else {
@@ -94,7 +93,6 @@ MotorTypeDef_e IMotor::cmd(MotorCmdType_e _type)
 
 MotorTypeDef_e IMotor::cmdProto(CmdBus_s &_cmd)
 {
-    // memcpy(&AUX_.cmdBuf, &_cmd, sizeof(CmdBus_s));
     xQueueOverwrite(AUX_.txQueue, &_cmd);
     return 0;
 }
@@ -166,8 +164,7 @@ void IMotor::parseCmd()
 {
     cmd_.prevSW = cmd_.SW;
     CmdBus_s cmdBuf = {};
-    if(xQueueReceive(AUX_.txQueue, &cmdBuf, 0) != pdTRUE)
-    {
+    if (xQueueReceive(AUX_.txQueue, &cmdBuf, 0) != pdTRUE) {
         return;
     }
 
@@ -183,7 +180,7 @@ void IMotor::parseCmd()
         break;
     }
     case MotorCmdType_e::SET_ELEC: {
-            this->cmd_.elec = cmdBuf.elecCmd;
+        this->cmd_.elec = cmdBuf.elecCmd;
         break;
     }
     case MotorCmdType_e::SET_TORQ: {
@@ -214,7 +211,6 @@ void IMotor::parseCmd()
     }
     }
 
-    // clampPos(AUX_.cmdBuf.posMin, AUX_.cmdBuf.posMax);
     clampPos(cmdBuf.posMin, cmdBuf.posMax);
 
     if (this->cmd_.posMax != this->cmd_.posMin) {
