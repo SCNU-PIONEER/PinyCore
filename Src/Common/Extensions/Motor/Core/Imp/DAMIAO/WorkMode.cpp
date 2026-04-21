@@ -80,7 +80,7 @@ void DMMotor::convertMitTt(TxBus &_txBuf)
         break;
     }
 
-    this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+    this->cmd_.torq = std::clamp(regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq, -status_.TMax, status_.TMax);
     msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_TT support return expected current
@@ -104,10 +104,10 @@ void DMMotor::convertMitVdes(TxBus &_txBuf)
         break;
     }
 
-    this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
+    this->cmd_.vel = std::clamp(regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel, -status_.VMax, status_.VMax);
     msgMIT.exptVel = float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
 
-    this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+    this->cmd_.torq = std::clamp(regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq, -status_.TMax, status_.TMax);
     msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_VDES unsupport return expected current
@@ -133,11 +133,11 @@ void DMMotor::convertMitVdesPdes(TxBus &_txBuf)
             LOG::warn("DMMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
         break;
     }
-    this->cmd_.pos = regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos;
+    this->cmd_.pos = std::clamp(regInfo_.isReverse ? -this->cmd_.pos : this->cmd_.pos, -status_.PMax, status_.PMax);
     msgMIT.exptScale = float2uint(this->cmd_.pos, -status_.PMax, status_.PMax, 16);
-    this->cmd_.vel = regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel;
+    this->cmd_.vel = std::clamp(regInfo_.isReverse ? -this->cmd_.vel : this->cmd_.vel, -status_.VMax, status_.VMax);
     msgMIT.exptVel = float2uint(this->cmd_.vel, -status_.VMax, status_.VMax, 12);
-    this->cmd_.torq = regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq;
+    this->cmd_.torq = std::clamp(regInfo_.isReverse ? -this->cmd_.torq : this->cmd_.torq, -status_.TMax, status_.TMax);
     msgMIT.torqueForward = float2uint(this->cmd_.torq, -status_.TMax, status_.TMax, 12);
 
     // MIT_VDES_PDES unsupport return expected current
