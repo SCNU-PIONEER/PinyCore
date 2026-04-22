@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "DJIOldMotor.hpp"
 
 #include "MotorCommonMacros.hpp"

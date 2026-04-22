@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "DMMotor.hpp"
 
 #include "MotorCommonMacros.hpp"
