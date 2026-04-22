@@ -64,7 +64,8 @@ void DJIOldMotor::convertTripVolt()
         break;
     }
 
-    this->cmd_.elec = regInfo_.isReverse ? -this->cmd_.elec : this->cmd_.elec;
+    this->cmd_.elec = std::clamp(regInfo_.isReverse ? -this->cmd_.elec : this->cmd_.elec, -this->status_.voltMax,
+                                 this->status_.voltMax);
     serializeMsg(static_cast<int16_t>(this->cmd_.elec / this->status_.voltMax * this->status_.voltTxCodeSpan));
 }
 
