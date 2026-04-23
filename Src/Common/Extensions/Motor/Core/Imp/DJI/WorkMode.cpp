@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "DJIMotor.hpp"
 
 #include "MotorCommonMacros.hpp"
