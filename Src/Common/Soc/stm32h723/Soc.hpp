@@ -15,9 +15,11 @@
 
 /*uart*/
 #define SOC_UART_DMA_DR      huart_->Instance->RDR
+#define RS485_DIR1_Pin       GPIO_PIN_4
+#define RS485_DIR1_GPIO_Port GPIOD
 
-void SET_485_1_DE_UP();
-void SET_485_1_DE_DOWN();
+#define SET_485_1_DE_UP() HAL_GPIO_WritePin(RS485_DIR1_GPIO_Port, RS485_DIR1_Pin, GPIO_PIN_SET);
+#define SET_485_1_DE_DOWN() HAL_GPIO_WritePin(RS485_DIR1_GPIO_Port, RS485_DIR1_Pin, GPIO_PIN_RESET);
 
 /*dma*/
 #define SOC_DMA_SRAM        0x24000000
@@ -30,11 +32,12 @@ enum DmaRam_e { SRAM, SRAM_D2 };
 #define SOC_USB_HS
 
 /*gpio*/
-void Power_OUT1_ON();
-void Power_OUT1_OFF();
+#define Power_OUT1_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+#define Power_OUT1_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-void Power_OUT2_ON();
-void Power_OUT2_OFF();
+#define Power_OUT2_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+#define Power_OUT2_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
 
-void Power_5V_ON();
-void Power_5V_OFF();
+#define Power_5V_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET)
+#define Power_5V_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
