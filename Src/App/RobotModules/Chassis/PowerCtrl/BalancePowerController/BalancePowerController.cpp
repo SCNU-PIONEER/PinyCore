@@ -28,7 +28,11 @@ void BalancePowerController::powerWBRCtrl(Matrix<4, 1> &_u, const PowerWBRCtrlMs
 #endif
 
     // 计算功率上限
+#if EXTENSION_SUPERCAP
     float powerMax = this->updateAllowablePower(_msg.powerLimit, _msg.cmdCapRatio);
+#else
+    float powerMax = this->updateAllowablePower(_msg.powerLimit);
+#endif
 
     // 计算原始输出
     Matrix<4, 1> uSpeed = Matrix<4, 1>::zeros();

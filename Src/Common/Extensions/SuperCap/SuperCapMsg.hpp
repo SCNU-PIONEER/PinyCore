@@ -31,23 +31,21 @@ struct CapState_s {
 
 struct RawCapData_s {
     uint8_t statusCode;
-    uint16_t outputPower;
-    uint16_t inputPower;
-    uint16_t outputPowerMax;
+    float outputPower;
     uint8_t capEnergy;
+    uint16_t vBat;
 
     RawCapData_s(const uint8_t *_buf) { memcpy(this, _buf, sizeof(RawCapData_s)); }
 };
 
+#pragma pack(pop)
+
 struct CapData_s {
     CapState_s capState;  // 状态信息
     float outputPower;    // 电容控制板输出功率，原始值*64+16384 (-256W~+768W, 精度0.015625)
-    float inputPower;     // 电容控制板输入功率，原始值*64+16384 (-256W~+768W, 精度0.015625)
-    float outputPowerMax; // 估计的最大输出功率
     float capEnergyRatio; // 电容现有能量，[0,1]
+    float vBat;           // 电容控制板输入电压，单位V
 };
-
-#pragma pack(pop)
 
 struct CapCmd_s {
     bool capEnable;             // 允许启动DCDC

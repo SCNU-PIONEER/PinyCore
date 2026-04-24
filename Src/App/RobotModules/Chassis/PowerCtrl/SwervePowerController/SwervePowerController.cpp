@@ -36,7 +36,11 @@ void SwervePowerController::powerCtrl(float (&_setWheelTorq)[4], float (&_setSte
 #endif
 
     // 计算功率上限
+#if EXTENSION_SUPERCAP
     float powerMax = this->updateAllowablePower(_msg.powerLimit, _msg.cmdCapRatio);
+#else
+    float powerMax = this->updateAllowablePower(_msg.powerLimit);
+#endif
     float steerPowerMax = powerMax * 0.8f;
     float wheelPowerMax = std::max(powerMax * 0.2f, powerMax - fitSteerSumPower);
 

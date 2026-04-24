@@ -17,7 +17,9 @@ SuperCap::SuperCap(canHandle *_hcan, uint16_t _cmdId, uint16_t _dataId, float _t
     capCmd_.capEnable = false;
     capCmd_.systemRestart = false;
     capCmd_.clearError = false;
-    capCmd_.enChargeLimit = false;
+
+    capCmd_.enChargeLimit = true;
+    capCmd_.chargeRatioLimit = 0.95f; // default limit to 95% to prolong cap life
 }
 
 void SuperCap::praseCapData(const uint8_t *_rxbuf)
@@ -25,10 +27,9 @@ void SuperCap::praseCapData(const uint8_t *_rxbuf)
     RawCapData_s rawCapData{ _rxbuf };
 
     memcpy(&capData_.capState, &rawCapData.statusCode, sizeof(CapState_s));
-    capData_.outputPower = (static_cast<float>(rawCapData.outputPower) - 16384.f) / 64.f;
-    capData_.inputPower = (static_cast<float>(rawCapData.inputPower) - 16384.f) / 64.f;
-    capData_.outputPowerMax = static_cast<float>(rawCapData.outputPowerMax);
+    capData_.outputPower = rawCapData.outputPower;
     capData_.capEnergyRatio = static_cast<float>(rawCapData.capEnergy) / CAP_ENERGY_MAX;
+    capData_.vBat = static_cast<float>(rawCapData.vBat) / 65535.f * VOTAGE_MAX;
 }
 
 void SuperCap::computeRawCapCmd(RawCapCmd_s &_rawCmd) const
