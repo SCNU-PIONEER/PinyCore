@@ -1,6 +1,6 @@
 INCLUDE(../../Config/sdkconfig.cmake option)
 
-add_library(Soc)
+add_library(Soc INTERFACE)
 
 if(DEFINED TARGET_STM32H723)
     set(soc_target "stm32h723")
@@ -31,10 +31,9 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
 set(CMAKE_EXE_LINKER_FLAGS "-T ${target_folder}/link.ld" PARENT_SCOPE)
 
-target_include_directories(Soc PUBLIC ${target_folder})
-target_sources(Soc PRIVATE ${target_folder}/Soc.cpp)
+target_include_directories(Soc INTERFACE ${target_folder})
 
-target_link_libraries(Soc PUBLIC stm32cubemx)
+target_link_libraries(Soc INTERFACE stm32cubemx)
 
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
