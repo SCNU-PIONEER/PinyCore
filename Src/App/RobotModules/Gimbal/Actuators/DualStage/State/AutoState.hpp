@@ -10,13 +10,13 @@
 #include <cmath>
 
 static PositionalPid gAutoPosPid[3] = {
-    PositionalPid(15.f, 10.f, 0.5f, 0.001f, 0.5f, 5.f, 0.f),
+    PositionalPid(60.f, 10.f, 2.f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(25.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
     PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gAutoVelPid[3] = {
-    PositionalPid(2.5f, 0.f, 0.005f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
@@ -64,30 +64,8 @@ public:
     //auto下视觉进行控制,此时只控小yaw,转动范围不应该超出小yaw范围，
     void run() final
     {
-        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
-        eIA.SecondYaw = rangeConversion(eIA.SecondYaw);
-
         eIA.Pitch = gimbal_->v2eData.pitch;
         eIA.SecondYaw = gimbal_->v2eData.yaw;
-
-        // delArc.SecondYaw = PINYMOTOR::getMinorArc(eIA.SecondYaw, cIA.SecondYaw);
-        // eMA.SecondYaw = PINYMOTOR::rangeMap(cMA.SecondYaw + delArc.SecondYaw);
-
-        // deltaVisionAng_ = PINYMOTOR::getMinorArc(eMA.SecondYaw, cMA.SecondYaw);
-        // //超量程为正
-        // gimbal_->isVisionAngOver_ = (deltaVisionAng_ > SECOND_YAW_MAX_ANG) || (deltaVisionAng_ < SECOND_YAW_MIN_ANG);
-
-        // if (gimbal_->isVisionAngOver_) {
-        //     float deltaYawAng = PINYMOTOR::getMinorArc(gimbal_->v2eData.yaw, cIA.FirstYaw);
-        //     wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, deltaYawAng));
-        //     // wBYaw_ = 0.18 * 2.f; //0.18rad/s,10°
-        //     eIA.FirstYaw += wBYaw_ * 0.001f;
-        //     visionExpBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
-
-        //     debugWBYaw = wBYaw_;
-        // } else {
-        //     eIA.FirstYaw = visionExpBigYaw_;
-        // }
 
         if (fabsf(rangeConversion(cMA.SecondYaw)) < 0.1f) {
             wBYaw_ = 0.f;
@@ -130,7 +108,6 @@ private:
     DualStage *gimbal_;
     float visionExpBigYaw_; //视觉进行自瞄，钉住大yaw角度
     float wBYaw_;
-    float deltaVisionAng_;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;

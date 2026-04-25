@@ -6,7 +6,7 @@
 
 namespace GIMBAL {
 
-class MiniPC : public COMM::TxPacket<EcToMiniPCPacket>, public COMM::RxPacket<MiniPCToEcPacket, 3> {
+class MiniPC : public COMM::TxPacket<EcToMiniPCPacket>, public COMM::RxPacket<MiniPCToEcPacket, 1> {
 public:
     enum class PCState_e : uint8_t {
         OFFLINE = 0u,

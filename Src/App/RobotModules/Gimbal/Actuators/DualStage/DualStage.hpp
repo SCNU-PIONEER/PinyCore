@@ -128,13 +128,13 @@ protected:
 private:
     ChassisMsg_s cmsg{};
 
-    ChassisCtrlTxPacket chassisCtrlTxPacket_{ 1000.f };
-    ShooterCtrlTxPacket shooterCtrlTxPacket_{ 1000.f };
-    RefereeRxPacket refereeRxPacket_;             //裁判系统
-    BulletSpdRxPacket bulletSpdRxPacket_;         //弹速
-    DecesionRxPacket1 decesionRxPacket1_;         //决策数据
-    SentryInfoRxPacket sentryInfoRxPacket_;       //哨兵信息
-    SentryCmdTxPacket sentryCmdTxPacket_{ 50.f }; //哨兵命令
+    ChassisCtrlTxPacket chassisCtrlTxPacket_{ 300.f };
+    ShooterCtrlTxPacket shooterCtrlTxPacket_{ 500.f };
+    RefereeRxPacket refereeRxPacket_;              //裁判系统
+    BulletSpdRxPacket bulletSpdRxPacket_;          //弹速
+    DecesionRxPacket1 decesionRxPacket1_;          //决策数据
+    SentryInfoRxPacket sentryInfoRxPacket_;        //哨兵信息
+    SentryCmdTxPacket sentryCmdTxPacket_{ 100.f }; //哨兵命令
 
     DualStage_u<FILTER::LPF *> gimbalFilterOutput_; //输出滤波
     DualStage_u<PINYMOTOR::IMotor *> motors_;       //电机
