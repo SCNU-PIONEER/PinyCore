@@ -49,7 +49,7 @@ FILTER::LPF swerveFilterInput[4]{
     FILTER::LPF(1000.f, 4.f),
     FILTER::LPF(1000.f, 4.f),
 };
-
+#if APP_USE_POWERCTRL
 PositionalPid sPowerPosPid[4] = {
     PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
     PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
@@ -62,7 +62,21 @@ PositionalPid sPowerVelPid[4] = {
     PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
     PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
 };
-
+#endif
+#if !APP_USE_COMM //无头骑士
+PositionalPid swervePosPid[4] = {
+    PositionalPid(20.f, 15.f, 0.4f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(25.f, 20.f, 0.4f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(25.f, 15.f, 0.4f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(25.f, 15.f, 0.4f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+};
+PositionalPid swerveVelPid[4] = {
+    PositionalPid(0.2f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.2f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.2f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.2f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+};
+#else
 PositionalPid swervePosPid[4] = {
     PositionalPid(15.f, 0.f, 0.2f, 1.f / 1000.f, 10.f, 35.f, 0.f),
     PositionalPid(15.f, 0.f, 0.1f, 1.f / 1000.f, 10.f, 35.f, 0.f),
@@ -75,13 +89,13 @@ PositionalPid swerveVelPid[4] = {
     PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
     PositionalPid(0.1f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
 };
-
+#endif
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 4.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
 };
 
 Swerve::Swerve()
@@ -106,7 +120,7 @@ Swerve::Swerve()
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
-            .txFreq = 100.0f,
+            .txFreq = SWERVE_MOTOR_FREQ,
             .posPID = nullptr,
             .velPID = nullptr,
             .isReverse = true,
@@ -119,7 +133,7 @@ Swerve::Swerve()
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
-            .txFreq = 100.0f,
+            .txFreq = WHEEL_MOTOR_FREQ,
             .posPID = nullptr,
             .velPID = nullptr,
             .isReverse = true,
@@ -159,7 +173,9 @@ void Swerve::update(void *_param)
 #if !APP_USE_COMM
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &msg, 0) == pdTRUE) {
     };
-    sentryCmd.posture = static_cast<uint32_t>(SentryPosture_e::MOVE);
+    // sentryCmd.posture = static_cast<uint32_t>(SentryPosture_e::MOVE);
+    isGimbalReset = true;
+    // deltaYaw += msg.wz * 0.001f;
 #else
     msg.state = static_cast<FSMState_e>(chassisCtrlRxPacket_.data().state);
     msg.vx = chassisCtrlRxPacket_.data().vx;
@@ -245,9 +261,9 @@ void Swerve::sendDataToReferee()
 
 void Swerve::sendDecesionData()
 {
-    decesionPacket1_.setData().currentChassisEnergy = refereeData.buff.remainingEnergy;
-    decesionPacket1_.setData().allyBaseHP = refereeData.gameRobotHP.allyBaseHP;
-    decesionPacket1_.setData().allyOutpostHP = refereeData.gameRobotHP.allyOutpostHP;
+    decesionTxPacket1_.setData().currentChassisEnergy = refereeData.buff.remainingEnergy;
+    decesionTxPacket1_.setData().allyBaseHP = refereeData.gameRobotHP.allyBaseHP;
+    decesionTxPacket1_.setData().allyOutpostHP = refereeData.gameRobotHP.allyOutpostHP;
     sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
     sentryInfoTxPacket_.setData().hurtHpDeductionReason = refereeData.robotHurt.reason;
 }
@@ -274,17 +290,17 @@ Speed_u Swerve::forward(const WheelsSpeed_u &_wSpeed)
     wheelComVel[2] = _wSpeed.M_RB * W_RADIUS;  //m/s
     wheelComVel[3] = _wSpeed.M_RF * W_RADIUS;  //m/s
 
-    sinAng[0] = sin(curDir.LF);
-    cosAng[0] = cos(curDir.LF);
+    sinAng[0] = arm_sin_f32(curDir.LF);
+    cosAng[0] = arm_cos_f32(curDir.LF);
 
-    sinAng[1] = sin(curDir.LB);
-    cosAng[1] = cos(curDir.LB);
+    sinAng[1] = arm_sin_f32(curDir.LB);
+    cosAng[1] = arm_cos_f32(curDir.LB);
 
-    sinAng[2] = sin(curDir.RB);
-    cosAng[2] = cos(curDir.RB);
+    sinAng[2] = arm_sin_f32(curDir.RB);
+    cosAng[2] = arm_cos_f32(curDir.RB);
 
-    sinAng[3] = sin(curDir.RF);
-    cosAng[3] = cos(curDir.RF);
+    sinAng[3] = arm_sin_f32(curDir.RF);
+    cosAng[3] = arm_cos_f32(curDir.RF);
 
     speed.vx = (wheelComVel[0] * cosAng[0] + wheelComVel[1] * cosAng[1] + wheelComVel[2] * cosAng[2] +
                 wheelComVel[3] * cosAng[3]) /

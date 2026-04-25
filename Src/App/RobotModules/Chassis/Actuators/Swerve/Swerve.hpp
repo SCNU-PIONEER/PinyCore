@@ -87,6 +87,9 @@ public:
     static constexpr float MAX_VY_SPEED = 2.f;
     static constexpr float MAX_WZ_SPEED = 10.f;
 
+    static constexpr float SWERVE_MOTOR_FREQ = 1000.f;
+    static constexpr float WHEEL_MOTOR_FREQ = 1000.f;
+
     Swerve();
 
     void stop();
@@ -109,10 +112,10 @@ protected:
     RobotInteractionData_s<REFEREE::SentryCmd_s> sentryCmdData_; //向裁判系统发送的数据 0x0301
 
     ChassisCtrlRxPacket chassisCtrlRxPacket_;
-    RefereeCtrlTxPacket refereeTxPacket_{ 50.f };
-    BulletSpdTxPacket BulletSpdTxPacket_{ 50.f };
-    DecesionTxPacket1 decesionPacket1_{ 30.f };
-    SentryInfoTxPacket sentryInfoTxPacket_{ 30.f };
+    RefereeCtrlTxPacket refereeTxPacket_{ 100.f };
+    BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
+    DecesionTxPacket1 decesionTxPacket1_{ 100.f };
+    SentryInfoTxPacket sentryInfoTxPacket_{ 100.f };
     SentryCmdRxPacket sentryCmdRxPacket_; //接收哨兵指令
 
     void loadRefereeData(void *_param);
@@ -136,6 +139,7 @@ private:
     INS_SYS::INSData_s insData_ = {};
 
     SwerveController *powerCtrl_;
+
     CAP cap_{ &HCAN2 };
 
     WheelsSpeed_u wSpeed_;

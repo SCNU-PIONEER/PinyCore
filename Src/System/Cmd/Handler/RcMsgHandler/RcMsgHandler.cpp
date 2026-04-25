@@ -168,6 +168,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             gMsg_.wYaw = -static_cast<float>(rcData->ch2) / CH_RANGE * INPUT_YAW_MAX;
             alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - ET08A::CH_VALUE_OFFSET) / CH_RANGE) >
                           WHEEL_THESHORLD;
+#if !APP_USE_COMM
+            cMsg_.wz = gMsg_.wYaw;
+#endif
             if (sl == SW::DOWN) {
                 gMsg_.state = GIMBAL::FSMState_e::RUN;
                 cMsg_.state = CHASSIS::FSMState_e::RUN;
@@ -193,6 +196,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
             gMsg_.wYaw = -static_cast<float>(rcData->ch2) / CH_RANGE * INPUT_YAW_MAX;
             alMsg_.fire = std::fabs(static_cast<float>(rcData->wheel - ET08A::CH_VALUE_OFFSET) / CH_RANGE) >
                           WHEEL_THESHORLD;
+#if !APP_USE_COMM
+            cMsg_.wz = gMsg_.wYaw;
+#endif
             if (sl == SW::DOWN) {
                 gMsg_.state = GIMBAL::FSMState_e::NAV;
                 cMsg_.state = CHASSIS::FSMState_e::TANK;

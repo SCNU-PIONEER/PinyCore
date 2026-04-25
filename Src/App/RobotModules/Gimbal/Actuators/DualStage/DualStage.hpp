@@ -60,8 +60,8 @@ inline bool isColor(float _robotId)
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.24988747f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 1.09417856f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 4.63702297f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.291474134f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.46952128f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;

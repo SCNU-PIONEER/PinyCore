@@ -29,10 +29,13 @@ public:
         ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
 
         ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
+#if !APP_USE_COMM //无头骑士
+        ref.wz = chassis_->msg.wz;
+#else
         float targetYaw = (fabs(chassis_->deltaYaw) > PI / 2.f) ? PI : 0.f;
         ref.wz = wzAngPid_->calc(0, PINYMOTOR::getMinorArc(targetYaw, chassis_->deltaYaw));
-
         spinWz = ref.wz;
+#endif
         chassis_->ctrl(ref);
     }
 
