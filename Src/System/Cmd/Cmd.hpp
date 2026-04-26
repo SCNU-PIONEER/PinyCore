@@ -6,7 +6,10 @@
 #include "event_groups.h"
 
 #include "RttMsgHandler.hpp"
+
+#if EXTENSION_RC
 #include "RcMsgHandler.hpp"
+#endif
 
 #if EXTENSION_REFEREE
 #include "RefereeHandler.hpp"
@@ -28,7 +31,8 @@ private:
 
 #if EXTENSION_DT7
     RcMsgHandler<RCDevType_e::DT7> rcDT7Handler_{ &SBUS_UART, eventGroup_ };
-#elif EXTENSION_ET08A
+#endif
+#if EXTENSION_ET08A
     RcMsgHandler<RCDevType_e::ET08A> rcET08AHandler_{ &SBUS_UART, eventGroup_ };
 #endif
 #if EXTENSION_VT13
