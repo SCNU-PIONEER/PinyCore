@@ -68,7 +68,7 @@ else(DEFINED TARGET_STM32H723)
     FetchContent_Declare(
       cmsis_device_h7
       GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-h7.git
-      GIT_TAG v1.10.6
+      GIT_TAG v1.10.7
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       SOURCE_DIR "${target_folder}/CMSIS_Device")
@@ -79,7 +79,7 @@ else(DEFINED TARGET_STM32H723)
     FetchContent_Declare(
       hal_h7
       GIT_REPOSITORY https://github.com/STMicroelectronics/stm32h7xx-hal-driver.git
-      GIT_TAG v1.11.5
+      GIT_TAG v1.11.6
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       SOURCE_DIR "${target_folder}/HAL_Driver")
