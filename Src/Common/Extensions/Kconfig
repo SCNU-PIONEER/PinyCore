@@ -1,18 +1,10 @@
 menu "extension config"
-    choice
-        prompt "remote controller"
-        default EXTENSION_DT7
-        
-        config EXTENSION_DT7
-        bool "remote control dt7"
+    config EXTENSION_RC
+    bool "remote control"
+    default n
 
-        config EXTENSION_ET08A
-        bool "remote control et08a"
-    endchoice
-    config EXTENSION_VT13
-    bool "remote control vt13"
-    default y
-
+     source "Src/Common/Extensions/RemoteControl/Kconfig"
+    
     config EXTENSION_BUZZER
     bool "buzzer"
     default y
@@ -25,11 +17,11 @@ menu "extension config"
 
     config EXTENSION_MOTOR
     bool "motor driver"
-    default y
+    default n
 
     config EXTENSION_REFEREE
     bool "referee"
-    default y
+    default n
 
     config EXTENSION_SENSOR
     bool "sensor"
