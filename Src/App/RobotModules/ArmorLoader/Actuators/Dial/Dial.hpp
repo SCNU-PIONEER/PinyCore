@@ -70,7 +70,7 @@ public:
      * @param _velPID 
      * @param _ang single circle ang in rad
      */
-    void ctrlSingl(PID *_posPID, PID *_velPID, float _ang);
+    void ctrlSingle(PID *_velPID, float _ang);
 
     /**
      * @brief ctrl dial rotate to _ang

@@ -98,7 +98,7 @@ public:
     void ctrl(const Speed_u &_refSpeed);
 
     void loadDeltaYaw();
-    bool isGimbalReset;
+    bool isGimbalReset = false;
 
     const Speed_u &getSpeed() const { return curSpeed_; }
 

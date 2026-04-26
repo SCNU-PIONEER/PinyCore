@@ -8,6 +8,7 @@
 
 #include "./State/AutoState.hpp"
 #include "./State/BlockState.hpp"
+#include "./State/SlowState.hpp"
 #include "./State/SingleState.hpp"
 #include "./State/StopState.hpp"
 
@@ -38,6 +39,7 @@ Dial::Dial()
     motors_.dial->overrideReductionRatio(DJIMOTOR::M2006::ORIGINAL_GEARBOX_RR * OUTER_RR);
 
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
+    this->stateFactory_.addState(FSMState_e::SLOW, std::make_unique<SlowState>(this));
     this->stateFactory_.addState(FSMState_e::BLOCK, std::make_unique<BlockState>(this));
     // this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
@@ -60,10 +62,15 @@ void Dial::enter()
 
 void Dial::update(void *_param)
 {
+#if !APP_USE_COMM
+    if (xQueueReceive((((MsgBus_s *)_param)->armorLoadQueue), &msg, 0) == pdTRUE) {
+    };
+#else
     msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
     if (motors_.dial->globalState != GlobalState_e::ONLINE) {
         msg.state = FSMState_e::STOP;
     }
+#endif
 
 #if EXTENSION_REFEREE
     const auto &refereeData = referee->receiver.getRefereeData();
@@ -102,7 +109,7 @@ void Dial::ctrl(float _torq) { dial()->cmdTorq(_torq); }
 
 void Dial::ctrl(PID *_velPID, float _vel) { dial()->cmdTorq(_velPID->calc(_vel, vel_)); }
 
-void Dial::ctrlSingl(PID *_posPID, PID *_velPID, float _ang)
+void Dial::ctrlSingle(PID *_velPID, float _ang)
 {
     float v = _velPID->calc(_ang, dial()->pos());
     dial()->cmdTorq(_velPID->calc(v, vel_));

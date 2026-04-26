@@ -4,7 +4,7 @@
 #include "MsgImpl.hpp"
 
 namespace ARMORLOADER {
-enum class FSMState_e : uint8_t { STOP = 1, SINGLE, AUTO, BLOCK };
+enum class FSMState_e : uint8_t { STOP = 1, SINGLE, AUTO, BLOCK, SLOW };
 }
 
 class ArmorLoader {

@@ -7,10 +7,7 @@ namespace ARMORLOADER {
 
 class StopState : public FSMState<FSMState_e> {
 public:
-    StopState(Dial *_armorLoader)
-            : FSMState<FSMState_e>(FSMState_e::STOP), loader_(_armorLoader)
-    {
-    }
+    StopState(Dial *_armorLoader) : FSMState<FSMState_e>(FSMState_e::STOP), loader_(_armorLoader) {}
 
     void enter() final { LOG::info("ArmorLoaderStop", " enter"); }
 
@@ -29,8 +26,11 @@ public:
             return FSMState_e::STOP;
         else if (loader_->msg.state == FSMState_e::AUTO)
             return FSMState_e::AUTO;
+        else if (loader_->msg.state == FSMState_e::SLOW)
+            return FSMState_e::SLOW;
         else if (loader_->msg.state == FSMState_e::SINGLE)
             return FSMState_e::SINGLE;
+
         else
             return FSMState_e::STOP;
     }
