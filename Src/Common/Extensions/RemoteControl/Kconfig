@@ -1,0 +1,16 @@
+menu "Remote Control config"
+    depends on EXTENSION_RC
+
+    config EXTENSION_DT7
+        bool "remote control dt7"
+    default n  
+
+    config EXTENSION_ET08A
+        bool "remote control et08a"
+    default n 
+
+    config EXTENSION_VT13
+        bool "remote control vt13"
+    default n 
+
+endmenu
