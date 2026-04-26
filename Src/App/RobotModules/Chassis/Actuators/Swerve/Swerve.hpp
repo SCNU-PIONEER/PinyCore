@@ -10,13 +10,14 @@
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
 #include "Bsp_can.hpp"
+#include "SuperCap.hpp"
 #include "Swerve.hpp"
 #include "dsp/fast_math_functions.h"
 #include "TopicRouter.hpp"
 #include "LPF.hpp"
 #include "IIR.hpp"
 #include "main.h"
-#include "SwerveController.hpp"
+#include "SwervePowerController.hpp"
 #include "ChassisPacket.hpp"
 #include <vector>
 
@@ -134,14 +135,21 @@ protected:
 
 private:
     Motors_u motors_;
+    Swerve_u<PINYMOTOR::IMotor *> steerMotor = {
+        { .RF = motors_.S_RF, .LF = motors_.S_LF, .LB = motors_.S_LB, .RB = motors_.S_RB }
+    };
+    Swerve_u<PINYMOTOR::IMotor *> wheelMotor = {
+        { .RF = motors_.M_RF, .LF = motors_.M_LF, .LB = motors_.M_LB, .RB = motors_.M_RB }
+    };
 
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};
 
-    SwerveController *powerCtrl_;
-
-    CAP cap_{ &HCAN2 };
-
+#if APP_USE_POWERCTRL
+    SwervePowerController *powerCtrl_;
+    SuperCap cap_{ &HCAN2 };
+    float capCmdRatio_;
+#endif
     WheelsSpeed_u wSpeed_;
     Speed_u curSpeed_;
     WheelsSpeed_u refWSpeed_; //期望轮速rad/s

@@ -7,9 +7,10 @@ private:
     MotorTypeDef_e checkBaseConfig();
 
 public:
-    static constexpr float P_MAX = 12.5f;
-    static constexpr float V_MAX = 30.f;
-    static constexpr float T_MAX = 10.f;
+    static constexpr float P_MAX = 12.57f;
+    static constexpr float V_MAX = 794.33f; // default V_MAX is set to motor no gearbox, adapt to different reduction
+    static constexpr float T_MAX =
+            7.8f; // default T_MAX is set to motor in original gearbox, adapt to different reduction
     static constexpr float MIT_KP_MAX = 500.f;
     static constexpr float MIT_KD_MAX = 5.f;
     static constexpr float CURR_TX_CODE_SPAN = 10000.f;

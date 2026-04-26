@@ -14,7 +14,7 @@
 #include "M3508.hpp"
 
 
-#include "QuadricycleController.hpp"
+#include "SwervePowerController.hpp"
 #include "./State/TestState.hpp"
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
@@ -147,9 +147,13 @@ Swerve::Swerve()
     this->stateFactory_.addState(FSMState_e::TANK, std::make_unique<TANKState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
-    if constexpr (APP_USE_POWERCTRL) {
-        powerCtrl_ = new SwerveController(ChassisType_e::SWERVE, &cap_);
-    }
+#if APP_USE_POWERCTRL
+    powerCtrl_ = new SwervePowerController();
+    powerCtrl_->loadCap(&cap_);
+#endif
+#if EXTENSION_SUPERCAP
+    cap_.limitCharge();
+#endif
 }
 
 void Swerve::stop()
@@ -180,7 +184,6 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
-    chassisCtrlRxPacket_.data().useSuperCap ? powerCtrl_->capCmdRatio_ = 0.2f : powerCtrl_->capCmdRatio_ = 0.9f;
 #endif
 
     loadDeltaYaw();
@@ -203,14 +206,22 @@ void Swerve::update(void *_param)
     curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
     curSpeed_.wz = v.wz;
 
-    powerCtrl_->capEnable_ = refereeMsg_.currentHP != 0;
     if (refereeMsg_.chassisPowerLimit < 0 || refereeMsg_.chassisPowerLimit > 200) {
         refereeMsg_.chassisPowerLimit = 201;
     }
 
+    float capRealRatio = cap_.getCapData().capEnergyRatio;
+#if EXTENSION_SUPERCAP
+    cap_.setChargelimitRatio(0.95f); //TODO:
+    (refereeMsg_.currentHP != 0) ? cap_.enable() : cap_.disable();
+#if EXTENSION_REFEREE
+    cap_.setChargePowerLimit(refereeMsg_.chassisPowerLimit);
+    cap_.setChargeEnergySlack(refereeMsg_.chassisPowerBuffer);
 #if APP_USE_POWERCTRL
-    cap_.capTask(powerCtrl_->capEnable_, powerCtrl_->systemRestart_, powerCtrl_->clearError_, powerCtrl_->enableCharge_,
-                 powerCtrl_->chargeRatioLimit_, refereeMsg_.chassisPowerLimit, refereeMsg_.chassisPowerBuffer);
+    capCmdRatio_ = (chassisCtrlRxPacket_.data().useSuperCap && refereeMsg_.currentHP != 0) ? 0.2f : 0.95f;
+#endif
+#endif
+    cap_.task();
 #endif
 
     this->stateFactory_.update();
@@ -364,15 +375,10 @@ WheelsSpeed_u Swerve::reverse(const Speed_u &_speed)
  * @note 模型中逆时针角度增大，实际6020id端在上,顺时针编码值增大。
  * @param _refSpeed 
  */
-float iq[8] = {};
-float rawiq[8] = {};
-float powerCmd[8] = {}; //功率控制
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir;
     WheelsSpeed_u refWSpeed = {};
-    float expRads[8] = {}; //功率控制
-    float sDebugVel[4] = {};
 
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
@@ -400,7 +406,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         sExpVel[i] = swervePosPid_._[i]->calc(sDel[i], 0);
         sTorq[i] = swerveVelPid_._[i]->calc(sExpVel[i], sCurVel._[i]);
 
-        powerCmd[i + 4] = sTorq[i];
+
         // motors_.S_RF->cmdTorq(0);
         // motors_.S_LF->cmdTorq(0);
         // motors_.S_LB->cmdTorq(0);
@@ -408,33 +414,30 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //3508
         wTorq[i] = wheelVelPid_._[i]->calc(refWSpeed._[i], wSpeed_._[i]);
-        powerCmd[i] = wTorq[i];
-        // powerCmd[i] = 0;
 
-        // motors_._[i]->cmdTorq(0); //不动
         // motors_.M_RF->cmdTorq(0);
         // motors_.M_LF->cmdTorq(0);
         // motors_.M_LB->cmdTorq(0);
         // motors_.M_RB->cmdTorq(0);
-        expRads[i] = refWSpeed._[i];
-        expRads[i + 4] = sExpVel[i];
-        rawiq[i] = powerCmd[i];
-        rawiq[i + 4] = powerCmd[i + 4];
-        sDebugVel[i] = motors_._[i + 4]->vel();
     }
 
-    std::vector<float> torq;
     if (refereeMsg_.chassisPowerLimit < 0 || refereeMsg_.chassisPowerLimit > 200) {
         refereeMsg_.chassisPowerLimit = 201;
     }
-    for (uint8_t i = 0; i < 8; i++) {
-        iq[i] = torq[i];
 #if APP_USE_POWERCTRL
-        torq = powerCtrl_->powerCtrl(expRads, motors_._, powerCmd, refereeMsg_, sDebugVel);
-        motors_._[i]->cmdTorq(torq[i]); //功率控制
-                                        // motors_._[i]->cmdTorq(powerCmd[i]);
+    float sPowerTorq[4];
+    float wPowerTorq[4];
+    SwervePowerController::PowerCtrlMsg_s powerCtrlMsg(refereeMsg_.chassisPowerLimit, capCmdRatio_, wheelMotor._,
+                                                       wPowerTorq, refWSpeed_._, steerMotor._, sPowerTorq, sExpVel);
+    powerCtrl_->powerCtrl(sPowerTorq, wPowerTorq, powerCtrlMsg);
+#endif
+    for (uint8_t i = 0; i < 4; i++) {
+#if APP_USE_POWERCTRL
+        motors_._[i]->cmdTorq(wPowerTorq[i]);
+        motors_._[i + 4]->cmdTorq(sPowerTorq[i]);
 #else
-        motors_._[i]->cmdTorq(powerCmd[i]);
+        motors_._[i]->cmdTorq(wTorq[i]);
+        motors_._[i + 4]->cmdTorq(sTorq[i]);
 #endif
     }
 }

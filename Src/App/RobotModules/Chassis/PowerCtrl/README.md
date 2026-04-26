@@ -1,111 +1,46 @@
-# PowerCtrl v3.1.0
+# PowerCtrl v4.0.0
 
 ## 更新
 1. 功率控制输出由电流变为力矩
 2. 增加模型参数切换
 3. 更新日志
+4. 重构整个功率控制模块，加入平衡底盘功率控制器，减小代码复杂度和增强可读性 (v4.0.0)
 
-## 主要成员变量
-```c++
-PowerController抽象类里：
 
-std::vector<float> cmdPower_; // 原闭环控制器所设定的功率
-float powerRatio = 1.f;      // 功率分配比例
-float maxPower = 0.f;        // 允许最大输出功率
-std::vector<float> setPower_; // 功率控制后所得的功率
-std::vector<float> setTorq_;  // 最终设定输出力矩
-CAP *cap_;
-```
-派生类里(如QuadricycleController):
-```c++
-PowerModel_s Wheel            //底盘模型结构体
-PowerModel_s::ModelParam_s LaunchMotion 
-PowerModel_s::ModelParam_s UniformMotion   //底盘模型参数
-RLS<PowerModel_s::FIT_RANK> *wheelRLS_    
 
-static constexpr float VEL_THESHOLD = 200.f;  //切换模型参数速度阈值
-
-//RLS拟合的为整个机构的模型参数，如底盘有不同结构
-//如哨兵有舵则需定义不同PowerModel_s和RLS,如swerveController
-
-    RLS<PowerModel_s::FIT_RANK> *wheelRLS_;
-#if ENABLE_STEER_RLS
-    RLS<PowerModel_s::FIT_RANK> *steerRLS_;
-#endif
-
-```
 ## 控制逻辑
-1. 更新裁判系统缓冲能量，根据电容实际能量占比与期望能量占比计算允许最大输出功率
-2. 各型号电机计算各自原始功率，判断是否超功率，若超功率则按比例分配功率
-3. 依照比例分配完功率后，根据各型号电机的模型参数，计算最终设定输出力矩
-4. RLS动态拟合，更新模型参数
+1. 从功率板获得实际底盘功率，并拟合功率模型参数
+2. 更新裁判系统缓冲能量，根据电容实际能量占比与期望能量占比计算允许最大输出功率
+3. 各型号电机计算各自原始功率，判断是否超功率，若超功率则按比例分配功率
+4. 依照比例分配完功率后，根据各型号电机的模型参数，计算最终设定输出力矩
 
-## 函数
-```c++
-update()          //更新最大输出功率和裁判系统数据
-cmdPowerCalc()    //计算模型原始功率
-relPowerCalc()    //计算模型实际功率(与反馈功率比较观察模型是否拟合)
-torqueCalc()      //计算最终设定输出力矩
-rlsUpdate()       //RLS动态拟合
-```
+
 
 ## 使用
 前提：kconfig中开启PowerCtrl， superCap， referee以及PowerCtrl中的rls,
 
-1. create PowerController 并new
+1. create PowerController
 ```c++
 hpp中
-SwerveController *powerCtrl_;(使用对应控制器)
-CAP cap_{&HCAN1};(使用对应can)
+SwervePowerController powerCtrl_;(使用对应控制器)
+SuperCap cap_{&HCAN1};(使用对应can)
 
-cpp中
-#if APP_USE_POWERCTRL
-    powerCtrl_ = new SwerveController(ChassisType_e::SWERVE, &cap_);
-#endif
 ```
 
-2. 在底盘的update()里调用
+2. 若使用超电，需要事先调用超电模块的task()函数保持电容控制板数据更新
 ```c++
 #if APP_USE_POWERCTRL
-    cap_.capTask(powerCtrl_->capEnable_, powerCtrl_->systemRestart_, powerCtrl_->clearError_, powerCtrl_->enableCharge_,
-                 powerCtrl_->chargeRatioLimit_, refereeMsg.chassisPowerLimit, refereeMsg.chassisPowerBuffer);
+    cap_.task();
 #endif
     调用后确保超电数据接收正常，如不正常大多是因为超电的can设置错误,数据不正常需要重烧功率板代码
 ```
 
-3. ctrl
-功率控制需自己计算pid，不能使用电机库封装的pid计算
-```c++
+3. 调用功率控制类里的powerCtrl(...)
 
-    float cmd[4];
-    for (uint8_t i = 0; i < 4; i++) {
-        velPid_[i].torq =
-                velPid_[i].pid->calc(refWSpeed._[i], wSpeed_._[i]);
-        cmd[i] = velPid_[i].torq;
-    }
-    std::vector<float> torq;
-    torq = powerCtrl_->powerCtrl(refWSpeed._, motors_._, cmd, refereeMsg);
 
-    for (uint8_t i = 0; i < 4; i++) {
-#if APP_USE_POWERCTRL
-        motors_._[i]->cmdTorq(torq[i]);
-#else
-        motors_._[i]->cmdTorq(cmd[i]);
-#endif
-    }
-
-    注意：
-    powerCtrl_->powerCtrl(refWSpeed._, &motors_._[0], cmd, refereeMsg)的四个参数
-    1.refWSpeed的单位需为rads/s，如单位为rpm则传入需变单位
-    2. motors_._为电机指针数组
-    3.cmd为pid计算得到的力矩
-    4.refereeMsg 裁判系统msg，需手动        
-    if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg, 0) ==
-            pdTRUE) {
-        };   
-```
 
 ## 调试(建议使用本手册调试方法，确保功率控制效果)
+
 调试需在freemaster等软件中观察
 
 1. 调底盘pid参数，实际跟随效果要好，但不能太硬
@@ -181,7 +116,9 @@ UniformMotion的参数只需在匀速过程中记下参数填入即可（减少�
 ![起步拟合](<Pitures/Success.png>)
 
 
+
 ## 后续优化方向
+
 1. 功率分配算法优化
 不只使用比例分配，不同情况使用不同方法使功率分配更合理
 2. 错误状态处理

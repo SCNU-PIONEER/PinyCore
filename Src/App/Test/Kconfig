@@ -1,0 +1,11 @@
+menu "test motor"
+depends on APP_USE_TEST
+
+config TEST_DM
+    bool "damiao"
+    default y
+
+config TEST_DJI
+    bool "dji"
+    default n
+endmenu

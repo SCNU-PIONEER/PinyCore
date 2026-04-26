@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include "Matrix.hpp"
 
 template <int rank> class RLS {

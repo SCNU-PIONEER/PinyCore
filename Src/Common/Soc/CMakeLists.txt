@@ -4,27 +4,33 @@ add_library(Soc INTERFACE)
 
 if(DEFINED TARGET_STM32H723)
     set(soc_target "stm32h723")
-    set(cortex "cortex-m7" PARENT_SCOPE)
-    set(fpu "fpv5-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m7" )
+    set(fpu "fpv5-d16" )
+    set(float-abi "hard" )
 elseif(DEFINED TARGET_STM32F407)
     set(soc_target "stm32f407")
-    set(cortex "cortex-m4" PARENT_SCOPE)
-    set(fpu "fpv4-sp-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m4" )
+    set(fpu "fpv4-sp-d16" )
+    set(float-abi "hard" )
 else()
     message(WARNING "Using defaust Soc board: stm32f407" )
     set(soc_target "stm32f407")
-    set(cortex "cortex-m4" PARENT_SCOPE)
-    set(fpu "fpv4-sp-d16" PARENT_SCOPE)
-    set(float-abi "hard" PARENT_SCOPE)
+    set(cortex "cortex-m4" )
+    set(fpu "fpv4-sp-d16" )
+    set(float-abi "hard" )
 endif()
 
 message(STATUS "soc board: ${soc_target}")
 
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
-
 set(target_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}")
+
+set(TARGET_FLAGS "-mcpu=${cortex} -mfpu=${fpu} -mfloat-abi=${float-abi}")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
+set(CMAKE_EXE_LINKER_FLAGS "-T ${target_folder}/link.ld" PARENT_SCOPE)
+
 target_include_directories(Soc INTERFACE ${target_folder})
 
 target_link_libraries(Soc INTERFACE stm32cubemx)
@@ -62,7 +68,7 @@ else(DEFINED TARGET_STM32H723)
     FetchContent_Declare(
       cmsis_device_h7
       GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-h7.git
-      GIT_TAG v1.10.6
+      GIT_TAG v1.10.7
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       SOURCE_DIR "${target_folder}/CMSIS_Device")
@@ -73,7 +79,7 @@ else(DEFINED TARGET_STM32H723)
     FetchContent_Declare(
       hal_h7
       GIT_REPOSITORY https://github.com/STMicroelectronics/stm32h7xx-hal-driver.git
-      GIT_TAG v1.11.5
+      GIT_TAG v1.11.6
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       SOURCE_DIR "${target_folder}/HAL_Driver")
