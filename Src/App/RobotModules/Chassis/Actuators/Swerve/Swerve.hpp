@@ -155,8 +155,8 @@ private:
         { .RF = 5.0083f, .LF = 4.95766449f, .LB = 3.41889358f, .RB = 1.35620451f }
     }; //舵轮零位角度，用于回正方向,rad
 
-    canHandle *wheelCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
-    canHandle *swerveCan[4] = { &HCAN2, &HCAN1, &HCAN1, &HCAN2 };
+    Swerve_u<canHandle *> wheelCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
+    Swerve_u<canHandle *> swerveCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
 
     Swerve_u<PositionalPid *> swervePosPid_ = {};         //舵轮位置环
     Swerve_u<PositionalPid *> swerveVelPid_ = {};         //舵轮速度环

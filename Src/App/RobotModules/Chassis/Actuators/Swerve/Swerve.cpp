@@ -1,12 +1,10 @@
 #include "Swerve.hpp"
 #include "Chassis.hpp"
-#include "MiniPCPacketImpl.hpp"
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
 #include "dsp/fast_math_functions.h"
 #include "sdkconfig.h"
-#include "Bsp_can.hpp"
 #include "PidBasic.hpp"
 #include <algorithm>
 #include <cmath>
@@ -116,7 +114,7 @@ Swerve::Swerve()
         wheelVelPid_._[i - 1] = &wheelVelPid[i - 1];
 
         InitConfig_s gm6020Config = {
-            .pComHandle = reinterpret_cast<uint32_t *>(swerveCan[i - 1]),
+            .pComHandle = reinterpret_cast<uint32_t *>(swerveCan._[i - 1]),
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
@@ -129,7 +127,7 @@ Swerve::Swerve()
         motors_._[i + 3]->setZeroAng(SwerveZero._[i - 1]);
 
         InitConfig_s m3508Config = {
-            .pComHandle = reinterpret_cast<uint32_t *>(wheelCan[i - 1]),
+            .pComHandle = reinterpret_cast<uint32_t *>(wheelCan._[i - 1]),
             .comType = ComType_e::CAN,
             .workMode = WorkMode_e::QUAD_CURR,
             .offsetId = i,
@@ -249,10 +247,6 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.receiverId = 0x8080;
 
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
-
-    // if (cnt % 1000 == 0) { //1Hz向裁判系统发送一次数据
-    //     sentryCmdData_.userdata.posture++;
-    // }
 
     if (cnt % 100 == 0) { //10Hz向裁判系统发送一次数据
         referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
