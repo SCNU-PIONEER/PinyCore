@@ -16,15 +16,12 @@
 
 // Explicit template instantiation
 #if EXTENSION_DT7
-#include "DT7.hpp"
 template class RcMsgHandler<RCDevType_e::DT7>;
 #endif
 #if EXTENSION_ET08A
-#include "ET08A.hpp"
 template class RcMsgHandler<RCDevType_e::ET08A>;
 #endif
 #if EXTENSION_VT13
-#include "VT13.hpp"
 template class RcMsgHandler<RCDevType_e::VT13>;
 #endif
 
