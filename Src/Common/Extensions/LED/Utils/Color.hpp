@@ -9,17 +9,19 @@ namespace LED {
 
 struct RGB_s {
     union RGB_u {
-        union {
-            uint8_t r;   ///< Red channel value
-            uint8_t red; ///< @copydoc rgb.r
-        };
-        union {
-            uint8_t g;     ///< Green channel value
-            uint8_t green; ///< @copydoc rgb.g
-        };
-        union {
-            uint8_t b;    ///< Blue channel value
-            uint8_t blue; ///< @copydoc rgb.b
+        struct {
+            union {
+                uint8_t r;   ///< Red channel value
+                uint8_t red; ///< @copydoc rgb.r
+            };
+            union {
+                uint8_t g;     ///< Green channel value
+                uint8_t green; ///< @copydoc rgb.g
+            };
+            union {
+                uint8_t b;    ///< Blue channel value
+                uint8_t blue; ///< @copydoc rgb.b
+            };
         };
         /// Access the red, green, and blue data as an array.
         /// Where:
