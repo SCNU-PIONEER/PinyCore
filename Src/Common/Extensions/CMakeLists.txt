@@ -6,7 +6,7 @@ if(EXTENSION_BUZZER)
 endif()
 
 if(EXTENSION_LED)
-    list(APPEND SOURCES "LED/LEDManager.cpp")
+    list(APPEND SOURCES "LED/LEDManager.cpp" "LED/CtrlHandler.cpp")
     if(LED_WS2812_SPI)
         list(APPEND SOURCES "LED/Driver/WS2812/WS2812SPIDriver.cpp")
     endif()

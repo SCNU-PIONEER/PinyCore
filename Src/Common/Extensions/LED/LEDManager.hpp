@@ -125,7 +125,7 @@ public:
     static void off();
 
 private:
-    LEDs() : Task("LEDTask", TaskPriority_e::MID5), queue_(xQueueCreate(3, sizeof(Cmd_s))) {};
+    LEDs() : Task("LEDTask", TaskPriority_e::MID5), queue_(xQueueCreate(8, sizeof(Cmd_s))) {};
     friend class Singleton<LEDs>;
 
     QueueHandle_t queue_ = nullptr;
@@ -139,9 +139,18 @@ private:
 
     void handleOff(uint8_t _index, uint8_t _ctrlNum);
     void handleOnInNormal(uint8_t _index, uint8_t _ctrlNum);
+    void handleOnInWarn(uint8_t _index, uint8_t _ctrlNum);
+    void handleOnInError(uint8_t _index, uint8_t _ctrlNum);
     void handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum);
+    void handleBlinkRed(uint8_t _index, uint8_t _ctrlNum);
+    void handleBlinkGreen(uint8_t _index, uint8_t _ctrlNum);
+    void handleBlinkBlue(uint8_t _index, uint8_t _ctrlNum);
+    void handleBlinkColor(uint8_t _index, uint8_t _ctrlNum, RGB_s::Color_e _color);
 
     void handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum);
+    void handleRainbowFlowReverse(uint8_t _index, uint8_t _ctrlNum);
+    void handleRainbowFlowSnake(uint8_t _index, uint8_t _ctrlNum);
+    void handleRainbowBreath(uint8_t _index, uint8_t _ctrlNum);
 };
 
 } // namespace LED

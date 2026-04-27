@@ -16,6 +16,9 @@ enum class CmdType_e : uint8_t {
     BLINK_BLUE,
 
     RAINBOW_FLOW,
+    RAINBOW_FLOW_REVERSE,
+    RAINBOW_FLOW_SNAKE,
+    RAINBOW_BREATH,
 };
 
 struct Cmd_s {

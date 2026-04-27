@@ -17,11 +17,35 @@ void LEDs::task()
             case CmdType_e::ON_IN_NORMAL:
                 handleOnInNormal(cmd.index, cmd.ctrlNum);
                 break;
+            case CmdType_e::ON_IN_WARN:
+                handleOnInWarn(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::ON_IN_ERROR:
+                handleOnInError(cmd.index, cmd.ctrlNum);
+                break;
             case CmdType_e::BLINK_RGB:
                 handleBlinkRGB(cmd.index, cmd.ctrlNum);
                 break;
+            case CmdType_e::BLINK_RED:
+                handleBlinkRed(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::BLINK_GREEN:
+                handleBlinkGreen(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::BLINK_BLUE:
+                handleBlinkBlue(cmd.index, cmd.ctrlNum);
+                break;
             case CmdType_e::RAINBOW_FLOW:
                 handleRainbowFlow(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::RAINBOW_FLOW_REVERSE:
+                handleRainbowFlowReverse(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::RAINBOW_FLOW_SNAKE:
+                handleRainbowFlowSnake(cmd.index, cmd.ctrlNum);
+                break;
+            case CmdType_e::RAINBOW_BREATH:
+                handleRainbowBreath(cmd.index, cmd.ctrlNum);
                 break;
             default:
                 // TODO: other effects
@@ -51,75 +75,9 @@ void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
 
 void LEDs::off() { ctrl(CmdType_e::OFF, 0, instance().totalLEDs_); }
 
-
 void LEDs::show()
 {
     for (LEDDriver *drv = LEDDriver::head(); drv != nullptr; drv = drv->next()) {
         drv->show(ledColors_);
-    }
-}
-
-void LEDs::handleOff(uint8_t _index, uint8_t _ctrlNum)
-{
-    for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < static_cast<int>(ledColors_.size()))
-            ledColors_[_index + i] = { 0, 0, 0 };
-    }
-    this->show();
-}
-
-void LEDs::handleOnInNormal(uint8_t _index, uint8_t _ctrlNum)
-{
-    for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < static_cast<int>(ledColors_.size()))
-            ledColors_[_index + i] = { 0, 255, 0 };
-    }
-    this->show();
-}
-
-void LEDs::handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum)
-{
-    static constexpr LEDDriver::Color RGB[3] = { LEDDriver::Color::Red, LEDDriver::Color::Green,
-                                                 LEDDriver::Color::Blue };
-    uint8_t cnt = 0;
-    uint8_t flowingFlag = 0;
-    while (cnt++ < 3) {
-        vTaskDelay(500 / portTICK_PERIOD_MS); // interval 500ms
-        for (int i = 0; i < _ctrlNum; ++i) {
-            if (_index + i < static_cast<int>(ledColors_.size()))
-                ledColors_[_index + i].setColorCode(RGB[flowingFlag]);
-        }
-        this->show();
-        flowingFlag = (flowingFlag + 1) % 3; // 0, 1, 2
-    }
-}
-
-void LEDs::handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum)
-{
-    uint8_t r{}, g{}, b{};
-    for (uint8_t i = 0; i < 255; ++i) {
-        for (int j = 0; j < _ctrlNum; ++j) {
-            if (_index + j < static_cast<int>(ledColors_.size())) {
-                uint8_t p = 255 - ((i + j) & 255);
-                if (p < 85) {
-                    r = 255 - p * 3;
-                    g = 0;
-                    b = p * 3;
-                } else if (p < 170) {
-                    p -= 85;
-                    r = 0;
-                    g = p * 3;
-                    b = 255 - p * 3;
-                } else {
-                    p -= 170;
-                    r = p * 3;
-                    g = 255 - p * 3;
-                    b = 0;
-                }
-                ledColors_[_index + j] = { r, g, b };
-            }
-        }
-        this->show();
-        vTaskDelay(100 / portTICK_PERIOD_MS); // interval 10ms
     }
 }
