@@ -4548,10 +4548,10 @@
 			<member name="modif_last_addr" type="uint32">0x0</member>
 		</object>
 		<object name="ObjId0547" type="CVariable">
-			<member name="name" type="string">chassis.obj.sTorq[0]</member>
+			<member name="name" type="string">chassis.obj.sExpTorq[0]</member>
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
-			<member name="address" type="string">chassis.obj.sTorq[0]</member>
+			<member name="address" type="string">chassis.obj.sExpTorq[0]</member>
 			<member name="last_addr" type="uint32">0x20001D48</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>

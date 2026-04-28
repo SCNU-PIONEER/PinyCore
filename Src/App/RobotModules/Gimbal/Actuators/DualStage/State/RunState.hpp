@@ -11,14 +11,14 @@
 #include <cmath>
 
 static PositionalPid gRunPosPid[3] = {
-    PositionalPid(15.f, 10.f, 0.5f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(25.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+    PositionalPid(15.f, 0.f, 1.f, 0.001f, 0.5f, 5.f, 0.f),
+    PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
     PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gRunVelPid[3] = {
-    PositionalPid(2.5f, 0.f, 0.005f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.55f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(2.f, 0.f, 0.02f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(1.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 //PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310

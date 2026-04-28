@@ -55,7 +55,7 @@ DualStage::DualStage()
     motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
-    InitConfig_s firstYawDM4310Config = {
+    InitConfig_s firstYawDM4340Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
@@ -65,7 +65,7 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4340("BigYaw", firstYawDM4310Config);
+    motors_.FirstYaw = new DMMOTOR::DM4340("BigYaw", firstYawDM4340Config);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 

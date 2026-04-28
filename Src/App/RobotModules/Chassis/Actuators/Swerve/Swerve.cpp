@@ -395,7 +395,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     float wPowerTorq[4];
     SwervePowerController::PowerCtrlMsg_s powerCtrlMsg(refereeMsg_.chassisPowerLimit, capCmdRatio_, wheelMotor_._,
                                                        wPowerTorq, expWSpeed_._, steerMotor_._, sPowerTorq, sExpVel);
-    powerCtrl_->powerCtrl(sPowerTorq, wPowerTorq, powerCtrlMsg);
+    powerCtrl_->powerCtrl(wPowerTorq, sPowerTorq, powerCtrlMsg);
 #endif
 
     for (uint8_t i = 0; i < 4; i++) {
