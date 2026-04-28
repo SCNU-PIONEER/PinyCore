@@ -1,4 +1,4 @@
-# LED v1.0.1
+# LED v1.1.0
 
 
 
@@ -6,6 +6,7 @@
 
 1. 创建本README v1.0.0 
 2. WS2812B的PWM DMA驱动中，DMA缓冲区使用ram_alloc创建 v1.0.1
+3. 架构更新为：命令设置状态，LEDTask 固定帧率单帧渲染 v1.1.0
 
 
 ## 如何使用
@@ -29,7 +30,7 @@ void addLEDs(LEDDriver *_driver);
 3. 常规高低电平控制光电二极管
 
 ```cpp
-template <PWMChipsets_e Chip> LEDDriver *create(Pwm *_handle, int _num)
+template <PWMChipsets_e Chip> LEDDriver *create(TIM_HandleTypeDef *_timer, uint32_t _channel, int _num)
 template <SPIChipsets_e Chip> LEDDriver *create(SPI_HandleTypeDef *_handle, int _num)
 template <IOChipsets_e Chip>
     static LEDDriver *create(RGBLEDDriver::lightTuner _setR(uint8_t),
@@ -42,14 +43,14 @@ template <IOChipsets_e Chip>
 ```cpp
 LED::LEDs::instance().addLEDs(
                 LED::LEDs::instance().create<LED::PWM_WS2812B>(
-                        std::make_unique<Pwm>(&htim8, TIM_CHANNEL_1).get(), 10));
+                        &htim8, TIM_CHANNEL_1, 10));
 ```
 
 
 
 ### 2. 控制灯组
 
-系统通过创建阻塞任务来实现对灯的控制，存储控制灯组命令的队列为空时，任务阻塞
+系统通过 LED 任务维护灯效状态，并以固定帧率渲染当前帧。命令只设置目标灯效，不会在命令处理阶段阻塞执行完整动画。
 
 使用以下API来发送命令到队列中
 

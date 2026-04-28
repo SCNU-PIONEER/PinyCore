@@ -35,9 +35,9 @@ inline void writeEncodedByte(uint32_t *_dst, const std::array<uint32_t, 8> &_enc
 
 } // namespace
 
-WS2812PWMDriver::WS2812PWMDriver(Pwm *_pwmHandle, int _num)
+WS2812PWMDriver::WS2812PWMDriver(TIM_HandleTypeDef *_timer, uint32_t _channel, int _num)
         : LEDDriver(_num)
-        , pwm_(*_pwmHandle)
+        , pwm_(_timer, _channel)
         , txbuf(static_cast<uint32_t *>(Dma::instance().ram_alloc((numLEDs_ + 1) * 24 * sizeof(uint32_t))))
 {
     std::memset(txbuf, 0, (numLEDs_ + 1) * 24 * sizeof(uint32_t));

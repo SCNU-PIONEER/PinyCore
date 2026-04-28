@@ -7,50 +7,27 @@ LEDDriver *LEDDriver::tailDriver_ = nullptr;
 
 void LEDs::task()
 {
+    constexpr TickType_t FRAME_PERIOD = pdMS_TO_TICKS(20);
+    TickType_t lastWake = xTaskGetTickCount();
+
     for (;;) {
         Cmd_s cmd;
-        if (xQueueReceive(queue_, &cmd, portMAX_DELAY) == pdTRUE) {
-            switch (cmd.type) {
-            case CmdType_e::OFF:
-                handleOff(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::ON_IN_NORMAL:
-                handleOnInNormal(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::ON_IN_WARN:
-                handleOnInWarn(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::ON_IN_ERROR:
-                handleOnInError(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::BLINK_RGB:
-                handleBlinkRGB(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::BLINK_RED:
-                handleBlinkRed(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::BLINK_GREEN:
-                handleBlinkGreen(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::BLINK_BLUE:
-                handleBlinkBlue(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::RAINBOW_FLOW:
-                handleRainbowFlow(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::RAINBOW_FLOW_REVERSE:
-                handleRainbowFlowReverse(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::RAINBOW_FLOW_SNAKE:
-                handleRainbowFlowSnake(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::RAINBOW_BREATH:
-                handleRainbowBreath(cmd.index, cmd.ctrlNum);
-                break;
-            default:
-                // TODO: other effects
-                break;
-            }
+        if (!effectEngine_.needsRefresh() && xQueueReceive(queue_, &cmd, portMAX_DELAY) == pdTRUE) {
+            const TickType_t now = xTaskGetTickCount();
+            lastWake = now;
+            applyCommand(cmd, static_cast<uint32_t>(now) * portTICK_PERIOD_MS);
+        }
+
+        const TickType_t now = xTaskGetTickCount();
+        const uint32_t nowMs = static_cast<uint32_t>(now) * portTICK_PERIOD_MS;
+        drainCommands(nowMs);
+
+        if (effectEngine_.render(nowMs, ledColors_.data(), ledColors_.size())) {
+            this->show();
+        }
+
+        if (effectEngine_.needsRefresh()) {
+            vTaskDelayUntil(&lastWake, FRAME_PERIOD);
         }
     }
 }
@@ -70,7 +47,12 @@ void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
     cmd.type = _type;
     cmd.index = _index;
     cmd.ctrlNum = _ctrlNum;
-    xQueueSend(instance().queue_, &cmd, 0);
+    QueueHandle_t queue = instance().queue_;
+    if (xQueueSend(queue, &cmd, 0) != pdTRUE) {
+        Cmd_s dropped;
+        static_cast<void>(xQueueReceive(queue, &dropped, 0));
+        static_cast<void>(xQueueSend(queue, &cmd, 0));
+    }
 }
 
 void LEDs::off() { ctrl(CmdType_e::OFF, 0, instance().totalLEDs_); }
@@ -79,5 +61,21 @@ void LEDs::show()
 {
     for (LEDDriver *drv = LEDDriver::head(); drv != nullptr; drv = drv->next()) {
         drv->show(ledColors_);
+    }
+}
+
+void LEDs::applyCommand(const Cmd_s &_cmd, uint32_t _nowMs)
+{
+    if (_cmd.ctrlNum == 0 || _cmd.index >= ledColors_.size()) {
+        return;
+    }
+    static_cast<void>(effectEngine_.setEffect(_cmd, _nowMs));
+}
+
+void LEDs::drainCommands(uint32_t _nowMs)
+{
+    Cmd_s cmd;
+    while (xQueueReceive(queue_, &cmd, 0) == pdTRUE) {
+        applyCommand(cmd, _nowMs);
     }
 }

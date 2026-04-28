@@ -47,6 +47,10 @@ uint8_t txbuf[24 * 1] __attribute__((section(".ram_BDMA"))); // TODO: wait for d
 
 void WS2812SPIDriver::show(std::vector<RGB_s> &_data)
 {
+    if (spiHandle_->State != HAL_SPI_STATE_READY) {
+        return;
+    }
+
     RGB_s *ledData = &_data[vectorIndex_];
 
     for (uint16_t id = 0; id < static_cast<uint16_t>(numLEDs_); ++id) {
@@ -57,7 +61,5 @@ void WS2812SPIDriver::show(std::vector<RGB_s> &_data)
         writeEncodedByte(dst + 8, encodedByteLut(px.rgb.r));
         writeEncodedByte(dst + 16, encodedByteLut(px.rgb.b));
     }
-    while (spiHandle_->State != HAL_SPI_STATE_READY)
-        ;
     Spi::instance().transmitDMA(*spiHandle_, txbuf, 24 * numLEDs_);
 }

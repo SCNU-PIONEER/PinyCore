@@ -15,7 +15,7 @@ class WS2812PWMDriver : public LEDDriver {
     uint32_t periodTicks_ = 0;
 
 public:
-    WS2812PWMDriver(Pwm *_pwmHandle, int _num);
+    WS2812PWMDriver(TIM_HandleTypeDef *_timer, uint32_t _channel, int _num);
 
 private:
     uint32_t *txbuf;
