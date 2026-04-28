@@ -176,7 +176,7 @@ void LEDs::handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum)
             ++hue;
         }
         this->show();
-        vTaskDelay(100 / portTICK_PERIOD_MS); // interval 10ms
+        vTaskDelay(40 / portTICK_PERIOD_MS);
     }
 }
 
@@ -195,7 +195,7 @@ void LEDs::handleRainbowFlowReverse(uint8_t _index, uint8_t _ctrlNum)
             ++hue;
         }
         this->show();
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(40 / portTICK_PERIOD_MS);
     }
 }
 
@@ -261,6 +261,6 @@ void LEDs::handleRainbowBreath(uint8_t _index, uint8_t _ctrlNum)
             ++hue;
         }
         this->show();
-        vTaskDelay(80 / portTICK_PERIOD_MS);
+        vTaskDelay(40 / portTICK_PERIOD_MS);
     }
 }

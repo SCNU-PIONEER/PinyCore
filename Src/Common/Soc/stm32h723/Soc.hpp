@@ -1,6 +1,7 @@
 #pragma once
 
 #define HAL_INCLUDE <stm32h7xx_hal.h>
+#include HAL_INCLUDE
 
 /*can*/
 #define SOC_FDCAN
@@ -38,6 +39,12 @@ enum DmaRam_e { SRAM, SRAM_D2 };
 #define Power_OUT2_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
 #define Power_OUT2_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
 
-#define Power_5V_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET)
+#define Power_5V_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 #define Power_5V_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
+void socCustomInit();
+
+extern SPI_HandleTypeDef hspi3;
+
+#define SOC_CUSTOM_INIT() socCustomInit()
 
