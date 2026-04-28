@@ -1,34 +1,27 @@
 #include "WS2812PWMDriver.hpp"
 #include "Bsp_dma.hpp"
 
-#include <array>
 #include <cstring>
 
 using namespace LED;
 
 namespace {
 
-using EncodedByte = std::array<uint8_t, 8>;
-constexpr uint8_t CODE1 = 0x86U;
-constexpr uint8_t CODE0 = 0x43U;
+constexpr uint32_t REFERENCE_PERIOD_TICKS = 210U;
+constexpr uint32_t REFERENCE_CODE1 = 0x86U;
+constexpr uint32_t REFERENCE_CODE0 = 0x43U;
 
-const EncodedByte &encodedByteLut(uint8_t _value)
+uint32_t scaledCode(uint32_t _periodTicks, uint32_t _referenceCode)
 {
-    static const auto LUT = [] {
-        std::array<EncodedByte, 256> table{};
-        for (uint16_t v = 0; v < 256; ++v) {
-            const uint8_t b = static_cast<uint8_t>(v);
-            for (uint8_t i = 0; i < 8; ++i) {
-                table[static_cast<size_t>(v)][static_cast<size_t>(i)] = ((b & (1U << (7 - i))) != 0U) ? CODE1 : CODE0;
-            }
-        }
-        return table;
-    }();
+    if (_periodTicks == 0U) {
+        return 0U;
+    }
 
-    return LUT[_value];
+    const uint32_t code = (_periodTicks * _referenceCode + REFERENCE_PERIOD_TICKS / 2U) / REFERENCE_PERIOD_TICKS;
+    return code < _periodTicks ? code : _periodTicks - 1U;
 }
 
-inline void writeEncodedByte(uint32_t *_dst, const EncodedByte &_encoded)
+inline void writeEncodedByte(uint32_t *_dst, const std::array<uint32_t, 8> &_encoded)
 {
     _dst[0] = _encoded[0];
     _dst[1] = _encoded[1];
@@ -48,19 +41,50 @@ WS2812PWMDriver::WS2812PWMDriver(Pwm *_pwmHandle, int _num)
         , txbuf(static_cast<uint32_t *>(Dma::instance().ram_alloc((numLEDs_ + 1) * 24 * sizeof(uint32_t))))
 {
     std::memset(txbuf, 0, (numLEDs_ + 1) * 24 * sizeof(uint32_t));
+    updateEncodedByteLut();
+}
+
+void WS2812PWMDriver::updateEncodedByteLut()
+{
+    const uint32_t periodTicks = pwm_.autoLoader() + 1U;
+    if (periodTicks == periodTicks_) {
+        return;
+    }
+
+    periodTicks_ = periodTicks;
+    const uint32_t code0 = scaledCode(periodTicks_, REFERENCE_CODE0);
+    const uint32_t code1 = scaledCode(periodTicks_, REFERENCE_CODE1);
+
+    for (uint16_t v = 0; v < 256; ++v) {
+        const uint8_t b = static_cast<uint8_t>(v);
+        EncodedByte &encoded = encodedByteLut_[static_cast<size_t>(v)];
+        encoded[0] = ((b & 0x80U) != 0U) ? code1 : code0;
+        encoded[1] = ((b & 0x40U) != 0U) ? code1 : code0;
+        encoded[2] = ((b & 0x20U) != 0U) ? code1 : code0;
+        encoded[3] = ((b & 0x10U) != 0U) ? code1 : code0;
+        encoded[4] = ((b & 0x08U) != 0U) ? code1 : code0;
+        encoded[5] = ((b & 0x04U) != 0U) ? code1 : code0;
+        encoded[6] = ((b & 0x02U) != 0U) ? code1 : code0;
+        encoded[7] = ((b & 0x01U) != 0U) ? code1 : code0;
+    }
 }
 
 void WS2812PWMDriver::show(std::vector<RGB_s> &_data)
 {
+    if (!pwm_.isReady()) {
+        return;
+    }
+
     RGB_s *ledData = &_data[vectorIndex_];
+    updateEncodedByteLut();
 
     for (uint16_t id = 0; id < static_cast<uint16_t>(numLEDs_); ++id) {
         uint32_t *dst = txbuf + (id * 24);
         const RGB_s &px = ledData[id];
 
-        writeEncodedByte(dst, encodedByteLut(px.rgb.g));
-        writeEncodedByte(dst + 8, encodedByteLut(px.rgb.r));
-        writeEncodedByte(dst + 16, encodedByteLut(px.rgb.b));
+        writeEncodedByte(dst, encodedByteLut_[px.rgb.g]);
+        writeEncodedByte(dst + 8, encodedByteLut_[px.rgb.r]);
+        writeEncodedByte(dst + 16, encodedByteLut_[px.rgb.b]);
     }
 
     pwm_.startDMA(txbuf, (numLEDs_ + 1) * 24);
