@@ -6,7 +6,7 @@
 namespace LED {
 
 class WS2812PWMDriver : public LEDDriver {
-    Pwm *pwm_ = nullptr;
+    Pwm pwm_;
 
 public:
     WS2812PWMDriver(Pwm *_pwmHandle, int _num);

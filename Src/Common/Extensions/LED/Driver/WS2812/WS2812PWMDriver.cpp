@@ -44,7 +44,7 @@ inline void writeEncodedByte(uint32_t *_dst, const EncodedByte &_encoded)
 
 WS2812PWMDriver::WS2812PWMDriver(Pwm *_pwmHandle, int _num)
         : LEDDriver(_num)
-        , pwm_(_pwmHandle)
+        , pwm_(*_pwmHandle)
         , txbuf(static_cast<uint32_t *>(Dma::instance().ram_alloc((numLEDs_ + 1) * 24 * sizeof(uint32_t))))
 {
     std::memset(txbuf, 0, (numLEDs_ + 1) * 24 * sizeof(uint32_t));
@@ -63,5 +63,5 @@ void WS2812PWMDriver::show(std::vector<RGB_s> &_data)
         writeEncodedByte(dst + 16, encodedByteLut(px.rgb.b));
     }
 
-    pwm_->startDMA(txbuf, (numLEDs_ + 1) * 24);
+    pwm_.startDMA(txbuf, (numLEDs_ + 1) * 24);
 }
