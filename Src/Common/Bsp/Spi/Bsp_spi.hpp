@@ -6,24 +6,24 @@
 
 class Spi : public Singleton<Spi> {
 public:
-    void transmit(SPI_HandleTypeDef _spi, uint8_t *_txData, uint16_t _dataLength, uint16_t _timeout);
+    void transmit(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint16_t _dataLength, uint16_t _timeout);
 
-    void transmitIT(SPI_HandleTypeDef _spi, uint8_t *_txData, uint16_t _dataLength);
+    void transmitIT(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint16_t _dataLength);
 
-    void transmitDMA(SPI_HandleTypeDef _spi, uint8_t *_txData, uint16_t _dataLength);
+    void transmitDMA(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint16_t _dataLength);
 
-    void receive(SPI_HandleTypeDef _spi, uint8_t *_rxData, uint16_t _dataLength, uint16_t _timeout);
+    void receive(SPI_HandleTypeDef *_spi, uint8_t *_rxData, uint16_t _dataLength, uint16_t _timeout);
 
-    void receiveIT(SPI_HandleTypeDef _spi, uint8_t *_rxData, uint16_t _dataLength);
+    void receiveIT(SPI_HandleTypeDef *_spi, uint8_t *_rxData, uint16_t _dataLength);
 
-    void receiveDMA(SPI_HandleTypeDef _spi, uint8_t *_rxData, uint16_t _dataLength);
+    void receiveDMA(SPI_HandleTypeDef *_spi, uint8_t *_rxData, uint16_t _dataLength);
 
-    void transmitReceive(SPI_HandleTypeDef _spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength,
+    void transmitReceive(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength,
                          uint16_t _timeout);
 
-    void transmitReceiveIT(SPI_HandleTypeDef _spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength);
+    void transmitReceiveIT(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength);
 
-    void transmitReceiveDMA(SPI_HandleTypeDef _spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength);
+    void transmitReceiveDMA(SPI_HandleTypeDef *_spi, uint8_t *_txData, uint8_t *_rxData, uint16_t _dataLength);
 
 private:
     Spi() = default;
