@@ -25,6 +25,10 @@ message(STATUS "soc board: ${soc_target}")
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
 set(target_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}")
 
+if(DEFINED TARGET_STM32H723)
+  target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${target_folder}/SocCustom.cpp)
+endif()
+
 set(TARGET_FLAGS "-mcpu=${cortex} -mfpu=${fpu} -mfloat-abi=${float-abi}")
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)

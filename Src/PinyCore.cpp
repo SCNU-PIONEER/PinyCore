@@ -5,9 +5,12 @@
 #include "SEGGER_SYSVIEW.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Soc.hpp"
 
 void PinyCore::bspInit()
 {
+    SOC_CUSTOM_INIT();
+
     // sysview init must be before segger RTT init (in log)
     LOG::Logger::instance();
     SEGGER_SYSVIEW_Conf();

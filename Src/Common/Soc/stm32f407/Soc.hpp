@@ -22,3 +22,5 @@ enum DmaRam_e { RAM };
 
 /*usb*/
 #define SOC_USB_FS
+
+#define SOC_CUSTOM_INIT() do { } while (0)

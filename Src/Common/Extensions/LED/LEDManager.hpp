@@ -9,6 +9,7 @@
 #include "Task.hpp"
 
 #include "CmdType.h"
+#include "EffectEngine.hpp"
 #include <vector>
 
 namespace LED {
@@ -52,11 +53,11 @@ public:
      * 
      * @return LEDDriver* Pointer to the created driver instance
      */
-    template <PWMChipsets_e Chip> LEDDriver *create(Pwm *_handle, int _num)
+    template <PWMChipsets_e Chip> LEDDriver *create(TIM_HandleTypeDef *_timer, uint32_t _channel, int _num)
     {
         switch (Chip) {
         case PWM_WS2812B:
-            return new WS2812PWMDriver(_handle, _num);
+            return new WS2812PWMDriver(_timer, _channel, _num);
         default:
             return nullptr;
         }
@@ -125,23 +126,18 @@ public:
     static void off();
 
 private:
-    LEDs() : Task("LEDTask", TaskPriority_e::MID5), queue_(xQueueCreate(3, sizeof(Cmd_s))) {};
+    LEDs() : Task("LEDTask", TaskPriority_e::MID5), queue_(xQueueCreate(8, sizeof(Cmd_s))) {};
     friend class Singleton<LEDs>;
 
     QueueHandle_t queue_ = nullptr;
 
     std::vector<RGB_s> ledColors_;
+    EffectEngine<8> effectEngine_;
 
     int totalLEDs_ = 0; // total number of LEDs across all drivers
 
-    // heart beat
-    uint32_t lastTime_ = 0;
-
-    void handleOff(uint8_t _index, uint8_t _ctrlNum);
-    void handleOnInNormal(uint8_t _index, uint8_t _ctrlNum);
-    void handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum);
-
-    void handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum);
+    void applyCommand(const Cmd_s &_cmd, uint32_t _nowMs);
+    void drainCommands(uint32_t _nowMs);
 };
 
 } // namespace LED

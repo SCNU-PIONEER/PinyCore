@@ -14,14 +14,15 @@ void *Dma::ram_alloc(size_t _size)
 #ifdef SOC_DMA_SRAM
     uint8_t *_ramDmaStart = (uint8_t *)SOC_DMA_SRAM;
     uint8_t *_ramDmaEnd = (uint8_t *)SOC_DMA_SRAM_END;
-    static uint8_t *dma_heap_ptr = (uint8_t *)_ramDmaStart;
+    static uint8_t *dmaHeapPtr = (uint8_t *)_ramDmaStart;
     uint8_t *ptr = NULL;
-    if ((_ramDmaStart + _size) <= (uint8_t *)_ramDmaEnd) {
-        ptr = dma_heap_ptr;
-        dma_heap_ptr += _size;
+    if ((dmaHeapPtr + _size) <= (uint8_t *)_ramDmaEnd) {
+        ptr = dmaHeapPtr;
+        dmaHeapPtr += _size;
     }
     return ptr;
 #endif
+    return nullptr;
 }
 
 void *Dma::ram_alloc(size_t _size, DmaRam_e _ram)
@@ -41,11 +42,11 @@ void *Dma::ram_alloc(size_t _size, DmaRam_e _ram)
     case DmaRam_e::SRAM: {
         uint8_t *_ramDmaStart = (uint8_t *)SOC_DMA_SRAM;
         uint8_t *_ramDmaEnd = (uint8_t *)SOC_DMA_SRAM_END;
-        static uint8_t *dma_heap_ptr = (uint8_t *)_ramDmaStart;
+        static uint8_t *dmaHeapPtr = (uint8_t *)_ramDmaStart;
         uint8_t *ptr = NULL;
-        if ((_ramDmaStart + _size) <= (uint8_t *)_ramDmaEnd) {
-            ptr = dma_heap_ptr;
-            dma_heap_ptr += _size;
+        if ((dmaHeapPtr + _size) <= (uint8_t *)_ramDmaEnd) {
+            ptr = dmaHeapPtr;
+            dmaHeapPtr += _size;
         }
         return ptr;
     }
@@ -57,11 +58,25 @@ void *Dma::ram_alloc(size_t _size, DmaRam_e _ram)
         uint8_t *_ramD2DmaEnd = (uint8_t *)SOC_DMA_SRAM_D2_END;
         static uint8_t *_dmaD2HeapPtr = (uint8_t *)_ramD2DmaStart;
         uint8_t *D2ptr = NULL;
-        if ((_ramD2DmaStart + _size) <= (uint8_t *)_ramD2DmaEnd) {
+        if ((_dmaD2HeapPtr + _size) <= (uint8_t *)_ramD2DmaEnd) {
             D2ptr = _dmaD2HeapPtr;
             _dmaD2HeapPtr += _size;
         }
         return D2ptr;
+    }
+#endif
+    break;
+#ifdef SOC_DMA_SRAM_BDMA
+    case DmaRam_e::SRAM_BDMA: {
+        uint8_t *_ramBdmaStart = (uint8_t *)SOC_DMA_SRAM_BDMA;
+        uint8_t *_ramBdmaEnd = (uint8_t *)SOC_DMA_SRAM_BDMA_END;
+        static uint8_t *_dmaBdmaHeapPtr = (uint8_t *)_ramBdmaStart;
+        uint8_t *bdmaPtr = NULL;
+        if ((_dmaBdmaHeapPtr + _size) <= (uint8_t *)_ramBdmaEnd) {
+            bdmaPtr = _dmaBdmaHeapPtr;
+            _dmaBdmaHeapPtr += _size;
+        }
+        return bdmaPtr;
     }
 #endif
     break;

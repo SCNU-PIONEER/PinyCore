@@ -7,26 +7,27 @@ LEDDriver *LEDDriver::tailDriver_ = nullptr;
 
 void LEDs::task()
 {
+    constexpr TickType_t FRAME_PERIOD = pdMS_TO_TICKS(20);
+    TickType_t lastWake = xTaskGetTickCount();
+
     for (;;) {
         Cmd_s cmd;
-        if (xQueueReceive(queue_, &cmd, portMAX_DELAY) == pdTRUE) {
-            switch (cmd.type) {
-            case CmdType_e::OFF:
-                handleOff(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::ON_IN_NORMAL:
-                handleOnInNormal(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::BLINK_RGB:
-                handleBlinkRGB(cmd.index, cmd.ctrlNum);
-                break;
-            case CmdType_e::RAINBOW_FLOW:
-                handleRainbowFlow(cmd.index, cmd.ctrlNum);
-                break;
-            default:
-                // TODO: other effects
-                break;
-            }
+        if (!effectEngine_.needsRefresh() && xQueueReceive(queue_, &cmd, portMAX_DELAY) == pdTRUE) {
+            const TickType_t now = xTaskGetTickCount();
+            lastWake = now;
+            applyCommand(cmd, static_cast<uint32_t>(now) * portTICK_PERIOD_MS);
+        }
+
+        const TickType_t now = xTaskGetTickCount();
+        const uint32_t nowMs = static_cast<uint32_t>(now) * portTICK_PERIOD_MS;
+        drainCommands(nowMs);
+
+        if (effectEngine_.render(nowMs, ledColors_.data(), ledColors_.size())) {
+            this->show();
+        }
+
+        if (effectEngine_.needsRefresh()) {
+            vTaskDelayUntil(&lastWake, FRAME_PERIOD);
         }
     }
 }
@@ -46,11 +47,15 @@ void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
     cmd.type = _type;
     cmd.index = _index;
     cmd.ctrlNum = _ctrlNum;
-    xQueueSend(instance().queue_, &cmd, 0);
+    QueueHandle_t queue = instance().queue_;
+    if (xQueueSend(queue, &cmd, 0) != pdTRUE) {
+        Cmd_s dropped;
+        static_cast<void>(xQueueReceive(queue, &dropped, 0));
+        static_cast<void>(xQueueSend(queue, &cmd, 0));
+    }
 }
 
 void LEDs::off() { ctrl(CmdType_e::OFF, 0, instance().totalLEDs_); }
-
 
 void LEDs::show()
 {
@@ -59,67 +64,18 @@ void LEDs::show()
     }
 }
 
-void LEDs::handleOff(uint8_t _index, uint8_t _ctrlNum)
+void LEDs::applyCommand(const Cmd_s &_cmd, uint32_t _nowMs)
 {
-    for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < static_cast<int>(ledColors_.size()))
-            ledColors_[_index + i] = { 0, 0, 0 };
+    if (_cmd.ctrlNum == 0 || _cmd.index >= ledColors_.size()) {
+        return;
     }
-    this->show();
+    static_cast<void>(effectEngine_.setEffect(_cmd, _nowMs));
 }
 
-void LEDs::handleOnInNormal(uint8_t _index, uint8_t _ctrlNum)
+void LEDs::drainCommands(uint32_t _nowMs)
 {
-    for (int i = 0; i < _ctrlNum; ++i) {
-        if (_index + i < static_cast<int>(ledColors_.size()))
-            ledColors_[_index + i] = { 0, 255, 0 };
-    }
-    this->show();
-}
-
-void LEDs::handleBlinkRGB(uint8_t _index, uint8_t _ctrlNum)
-{
-    static constexpr LEDDriver::Color RGB[3] = { LEDDriver::Color::Red, LEDDriver::Color::Green,
-                                                 LEDDriver::Color::Blue };
-    uint8_t cnt = 0;
-    uint8_t flowingFlag = 0;
-    while (cnt++ < 3) {
-        vTaskDelay(500 / portTICK_PERIOD_MS); // interval 500ms
-        for (int i = 0; i < _ctrlNum; ++i) {
-            if (_index + i < static_cast<int>(ledColors_.size()))
-                ledColors_[_index + i].setColorCode(RGB[flowingFlag]);
-        }
-        this->show();
-        flowingFlag = (flowingFlag + 1) % 3; // 0, 1, 2
-    }
-}
-
-void LEDs::handleRainbowFlow(uint8_t _index, uint8_t _ctrlNum)
-{
-    uint8_t r{}, g{}, b{};
-    for (uint8_t i = 0; i < 255; ++i) {
-        for (int j = 0; j < _ctrlNum; ++j) {
-            if (_index + j < static_cast<int>(ledColors_.size())) {
-                uint8_t p = 255 - ((i + j) & 255);
-                if (p < 85) {
-                    r = 255 - p * 3;
-                    g = 0;
-                    b = p * 3;
-                } else if (p < 170) {
-                    p -= 85;
-                    r = 0;
-                    g = p * 3;
-                    b = 255 - p * 3;
-                } else {
-                    p -= 170;
-                    r = p * 3;
-                    g = 255 - p * 3;
-                    b = 0;
-                }
-                ledColors_[_index + j] = { r, g, b };
-            }
-        }
-        this->show();
-        vTaskDelay(100 / portTICK_PERIOD_MS); // interval 10ms
+    Cmd_s cmd;
+    while (xQueueReceive(queue_, &cmd, 0) == pdTRUE) {
+        applyCommand(cmd, _nowMs);
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #define HAL_INCLUDE <stm32h7xx_hal.h>
+#include HAL_INCLUDE
 
 /*can*/
 #define SOC_FDCAN
@@ -25,8 +26,10 @@
 #define SOC_DMA_SRAM        0x24000000
 #define SOC_DMA_SRAM_END    0x24020000
 #define SOC_DMA_SRAM_D2     0x30000000
-#define SOC_DMA_SRAM_D2_END 0x30007FFF
-enum DmaRam_e { SRAM, SRAM_D2 };
+#define SOC_DMA_SRAM_D2_END 0x30008000
+#define SOC_DMA_SRAM_BDMA     0x38000000
+#define SOC_DMA_SRAM_BDMA_END 0x38004000
+enum DmaRam_e { SRAM, SRAM_D2, SRAM_BDMA };
 
 /*usb*/
 #define SOC_USB_HS
@@ -38,6 +41,12 @@ enum DmaRam_e { SRAM, SRAM_D2 };
 #define Power_OUT2_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
 #define Power_OUT2_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
 
-#define Power_5V_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET)
+#define Power_5V_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 #define Power_5V_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
+void socCustomInit();
+
+extern SPI_HandleTypeDef hspi3;
+
+#define SOC_CUSTOM_INIT() socCustomInit()
 
