@@ -211,6 +211,13 @@ MotorTypeDef_e DMMotor::update()
     return rslt;
 }
 
+MotorTypeDef_e DMMotor::setPosZero()
+{
+    uint8_t setPosZeroCmdPack[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE };
+    return static_cast<MotorTypeDef_e>(Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle),
+                                                                    ctrlId_, setPosZeroCmdPack, 8));
+}
+
 MotorTypeDef_e DMMotor::disable()
 {
     MotorTypeDef_e rslt = 0;

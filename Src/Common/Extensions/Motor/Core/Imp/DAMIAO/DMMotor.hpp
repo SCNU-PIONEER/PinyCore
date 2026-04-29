@@ -244,6 +244,13 @@ public:
     MotorTypeDef_e enable();
 
     /**
+     * @brief Set motor current angle zero
+     * 
+     * @return MotorTypeDef_e 
+     */
+    MotorTypeDef_e setPosZero();
+
+    /**
      * @brief Disable the motor
      * 
      * @return MotorTypeDef_e 
