@@ -4,6 +4,7 @@
 #include <functional>
 #include <unordered_map>
 
+#include "sdkconfig.h"
 #include "StmLog.hpp"
 #include "Singleton.hpp"
 
@@ -46,7 +47,7 @@ public:
     }
 
 private:
-    CommManager() = default;
+    CommManager() { static_assert(APP_USE_COMM == 1, "CommManager requires APP_USE_COMM == 1"); }
     friend class Singleton<CommManager>;
 
     std::unordered_map<uint16_t, std::function<void()> > transmitter_;
