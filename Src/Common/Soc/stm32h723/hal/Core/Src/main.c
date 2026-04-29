@@ -71,6 +71,7 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart10;
 DMA_HandleTypeDef hdma_uart5_rx;
 DMA_HandleTypeDef hdma_uart7_rx;
+DMA_HandleTypeDef hdma_uart7_tx;
 DMA_HandleTypeDef hdma_uart9_rx;
 DMA_HandleTypeDef hdma_uart9_tx;
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -1009,7 +1010,7 @@ void MX_UART7_Init(void)
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
-  huart7.Init.Mode = UART_MODE_RX;
+  huart7.Init.Mode = UART_MODE_TX_RX;
   huart7.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart7.Init.OverSampling = UART_OVERSAMPLING_16;
   huart7.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
@@ -1303,6 +1304,9 @@ void MX_DMA_Init(void)
   /* DMA2_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
+  /* DMA2_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 
