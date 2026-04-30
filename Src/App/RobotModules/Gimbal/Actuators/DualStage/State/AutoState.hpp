@@ -11,19 +11,22 @@
 
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(60.f, 10.f, 2.f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(25.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+    PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
     PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(2.f, 0.f, 0.05f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.55f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(0.45f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 //    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
-static PositionalPid wBYFollowPid = {
-    PositionalPid(25.f, 0.1f, 0.004f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
+static PositionalPid wSlowBYawFollowPid = {
+    PositionalPid(3.f, 0.f, 0.004f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
+};
+static PositionalPid wFastBYawFollowPid = {
+    PositionalPid(25.f, 0.1f, 0.01f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
 };
 float debugWBYaw;
 
@@ -45,7 +48,8 @@ public:
             autoPosPid_._[i] = &gAutoPosPid[i];
             autoVelPid_._[i] = &gAutoVelPid[i];
         }
-        wBYawFollowPid_ = &wBYFollowPid;
+        wSlowBYawFollowPid_ = &wSlowBYawFollowPid;
+        wFastBYawFollowPid_ = &wFastBYawFollowPid;
     }
 
     void enter() final
@@ -71,7 +75,12 @@ public:
             wBYaw_ = 0.f;
             eIA.FirstYaw = visionExpBigYaw_;
         } else {
-            wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
+            if (isSmallAng_) {
+                wBYaw_ = wFastBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
+            } else {
+                wBYaw_ = wSlowBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
+            }
+
             wBYaw_ = PINYMOTOR::clamp(wBYaw_, -3.f, 3.f);
             eIA.FirstYaw += wBYaw_ * 0.001f;
             visionExpBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
@@ -109,6 +118,7 @@ private:
     float visionExpBigYaw_; //视觉进行自瞄，钉住大yaw角度
     float wBYaw_;
 
+    bool &isSmallAng_ = gimbal_->d2eData.isSmallAng; //是否是副相机角度
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
@@ -116,6 +126,7 @@ private:
 
     DualStage_u<PositionalPid *> autoPosPid_;
     DualStage_u<PositionalPid *> autoVelPid_;
-    PositionalPid *wBYawFollowPid_;
+    PositionalPid *wSlowBYawFollowPid_;
+    PositionalPid *wFastBYawFollowPid_;
 };
 } // namespace GIMBAL

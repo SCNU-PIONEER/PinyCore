@@ -51,14 +51,14 @@ typedef struct {
     float yaw;
 } EcToNav_s;
 
-//byte:2 + 4
+//byte:3 + 4
 typedef struct {
     uint8_t decesionHeader;
+    bool isSmallAng; // 是否副相机角度   byte:1
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
     REFEREE::SentryCmd_s upSentryCmd;
-} 
-DecesionToEc_s;
+} DecesionToEc_s;
 
 //byte:14
 typedef struct {
@@ -139,8 +139,8 @@ public:
     struct ProtoData_s {
         VisionToEc_s v2eData;   //27
         NavToEc_s n2eData;      //17
-        DecesionToEc_s d2eData; //2+4
-        uint8_t reserved[11];   //64-53
+        DecesionToEc_s d2eData; //3+4
+        uint8_t reserved[10];   //64-54
     };
 
 #pragma pack(push, 1)
@@ -149,8 +149,8 @@ public:
             uint8_t header;         //1
             VisionToEc_s v2eData;   //27
             NavToEc_s n2eData;      //17
-            DecesionToEc_s d2eData; //2 + 4
-            uint8_t reserved[11];   //64-53
+            DecesionToEc_s d2eData; //3 + 4
+            uint8_t reserved[10];   //64-54
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];

@@ -72,6 +72,7 @@ public:
     static constexpr bool FIRST_YAW_REVERSE = false;
     static constexpr bool SECOND_YAW_REVERSE = true;
 
+    static constexpr float MAX_BYAW_SPEED = 5.f; //4340额定转速36rpm,实测5rad/s还行
     static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
 
     static constexpr float PITCH_MAX_ANG = 0.4131106f; // 24°

@@ -15,6 +15,7 @@
 #include "./State/RunState.hpp"
 #include "./State/AutoState.hpp"
 #include "./State/NavState.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -137,6 +138,8 @@ void DualStage::update(void *_param)
     sendNavData();
     sendDecesionData();
 
+    msg.wYaw = std::clamp(msg.wYaw, -DualStage::MAX_BYAW_SPEED, DualStage::MAX_BYAW_SPEED);
+
     //与云台控制无关，debug使用
     debug.visionControl = v2eData.control;
     debug.visionFire = v2eData.fire;
@@ -162,7 +165,6 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
             msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航
-            // msg.wYaw = 0.3f;
         } else {
             msg.wYaw = 0.0f;
         }
@@ -170,7 +172,7 @@ void DualStage::loadChassisMsg(void *_param)
         chassisCtrlTxPacket_.setData().vx = cmsg.vx;
         chassisCtrlTxPacket_.setData().vy = cmsg.vy;
         chassisCtrlTxPacket_.setData().wz = cmsg.wz;
-        n2eData = {};
+        // n2eData = {};
     }
 
     chassisCtrlTxPacket_.setData().deltaYaw = curMotorAng_.FirstYaw;
