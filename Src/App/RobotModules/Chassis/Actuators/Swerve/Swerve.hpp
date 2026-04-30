@@ -1,4 +1,5 @@
 #pragma once
+#include "PowerController.hpp"
 #include "main.h"
 #include "Soc.hpp"
 #include "MsgImpl.hpp"
@@ -11,9 +12,27 @@
 #include "SuperCap.hpp"
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
-#include "SwervePowerController.hpp"
+
+#if APP_USE_POWERCTRL
+class SwerveController;
+#endif
 
 namespace CHASSIS {
+
+template <typename T> union SwervePower_u {
+    struct {
+        T W_RF;
+        T W_LF;
+        T W_LB;
+        T W_RB;
+
+        T S_RF;
+        T S_LF;
+        T S_LB;
+        T S_RB;
+    };
+    T _[8];
+};
 
 template <typename T> union Swerve_u {
     struct {
@@ -109,7 +128,8 @@ private:
     Swerve_u<PINYMOTOR::IMotor *> wheelMotor_;
 
 #if APP_USE_POWERCTRL
-    SwervePowerController *powerCtrl_;
+    SwerveController *powerCtrl_;
+
 #endif
 #if EXTENSION_SUPERCAP
     SuperCap cap_{ &HCAN2 };
@@ -139,7 +159,8 @@ private:
     Swerve_u<FILTER::LPF *> steerFilterInput_ = {}; //舵轮输入滤波器
     Swerve_u<PositionalPid *> steerPosPid_ = {};    //舵轮位置环
     Swerve_u<PositionalPid *> steerVelPid_ = {};    //舵轮速度环
-    Swerve_u<PositionalPid *> wheelVelPid_ = {};    //轮速
+    Swerve_u<PositionalPid *> wheelVelPid_ = {};    //轮速pid
+    Swerve_u<PositionalPid *> wBumpVelPid_ = {};    //减速带专用轮速pid
 };
 
 } // namespace CHASSIS

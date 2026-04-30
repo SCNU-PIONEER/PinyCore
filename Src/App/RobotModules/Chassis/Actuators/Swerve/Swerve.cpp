@@ -1,5 +1,6 @@
 #include "Swerve.hpp"
 #include "Chassis.hpp"
+#include "IMotor.hpp"
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
@@ -13,7 +14,6 @@
 #include "GM6020.hpp"
 #include "M3508.hpp"
 #include "TopicRouter.hpp"
-#include "SwervePowerController.hpp"
 #include "./State/TestState.hpp"
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
@@ -53,17 +53,18 @@ PositionalPid steerVelPid[4] = {
     PositionalPid(0.2f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
 };
 #elif APP_USE_POWERCTRL
+#include "SwerveController.hpp"
 PositionalPid steerPosPid[4] = {
-    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
-    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
-    PositionalPid(30.f, 10.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
-    PositionalPid(30.f, 0.f, 1.f, 1.f / 1000.f, 60.f, 120.f, 0.f),
+    PositionalPid(45.f, 0.f, 0.45f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(45.f, 0.f, 0.5f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(45.f, 0.f, 0.3f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(30.f, 0.f, 0.2f, 1.f / 1000.f, 10.f, 35.f, 0.f),
 };
 PositionalPid steerVelPid[4] = {
-    PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
-    PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
-    PositionalPid(0.06f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
-    PositionalPid(0.1f, 0.f, 0.f, 1.f / 1000.f, 0.6f, 1.f, 0.f),
+    PositionalPid(0.05f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.f, 0.f),
+    PositionalPid(0.05f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.f, 0.f),
+    PositionalPid(0.04f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.f, 0.f),
+    PositionalPid(0.05f, 0.0f, 0.0f, 1.f / 1000.f, 0.3f, 1.f, 0.f),
 };
 #else
 PositionalPid steerPosPid[4] = {
@@ -87,6 +88,13 @@ PositionalPid wheelVelPid[4] = {
     PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
 };
 
+PositionalPid wBumpVelPid[4] = {
+    PositionalPid(0.5f, 0.05, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+};
+
 Swerve::Swerve()
 {
     insSub_ = new Subscriber<INS_SYS::INSData_s>(4, &TopicRouter::instance().insTopic, &insData_);
@@ -96,6 +104,7 @@ Swerve::Swerve()
         steerPosPid_._[i - 1] = &steerPosPid[i - 1];
         steerVelPid_._[i - 1] = &steerVelPid[i - 1];
         wheelVelPid_._[i - 1] = &wheelVelPid[i - 1];
+        wBumpVelPid_._[i - 1] = &wBumpVelPid[i - 1];
 
         InitConfig_s gm6020Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(steerCan._[i - 1]),
@@ -132,8 +141,7 @@ Swerve::Swerve()
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
 #if APP_USE_POWERCTRL
-    powerCtrl_ = new SwervePowerController();
-    powerCtrl_->loadCap(&cap_);
+    powerCtrl_ = new SwerveController(ChassisType_e::SWERVE, &cap_);
 #endif
 #if EXTENSION_SUPERCAP
     cap_.limitCharge();
@@ -205,6 +213,7 @@ void Swerve::update(void *_param)
     cap_.setChargeEnergySlack(refereeMsg_.chassisPowerBuffer);
 #if APP_USE_POWERCTRL
     capCmdRatio_ = (chassisCtrlRxPacket_.data().useSuperCap && refereeMsg_.currentHP != 0) ? 0.2f : 0.9f;
+    powerCtrl_->capCmdRatio_ = capCmdRatio_;
 #endif
 #endif
     cap_.task();
@@ -359,10 +368,16 @@ Swerve_u<float> Swerve::reverse(const Speed_u &_speed)
  * @note 模型中逆时针角度增大，实际6020id端在上,顺时针编码值增大。
  * @param _refSpeed 
  */
+#if APP_USE_POWERCTRL
+float sPowerTorq[4] = {};
+float wPowerTorq[4] = {};
+float iq[8] = {};
+float rawiq[8] = {};
+#endif
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
-    Swerve_u<float> tempDir;
-    float sDel[4], sExpVel[4], sExpTorq[4], wExpTorq[4];
+    Swerve_u<float> tempDir, refWSpeed = {};
+    Swerve_u<float> sDel, sExpVel, sExpTorq, wExpTorq;
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
     float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.wz, MAX_WZ_SPEED));
@@ -372,46 +387,90 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
                          .wz = wz };
 
     if (vx != 0 || vy != 0 || wz != 0)
-        expWSpeed_ = reverse(refSpeed);
+        refWSpeed = reverse(refSpeed);
 
     for (uint8_t i = 0; i < 4; i++) {
         //6020
         tempDir._[i] = expDir._[i];
         //先决定正反转,要6020转角最小，对角线上的3508速度直接反向。
         if (fabs(getMinorArc(expDir._[i], curDir._[i])) >= F_PI / 2) {
-            expWSpeed_._[i] = -expWSpeed_._[i];
+            refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
-        sDel[i] = getMinorArc(tempDir._[i], curDir._[i]);
-        sExpVel[i] = steerPosPid_._[i]->calc(sDel[i], 0);
-        sExpTorq[i] = steerVelPid_._[i]->calc(sExpVel[i], sCurVel._[i]);
+        sDel._[i] = getMinorArc(tempDir._[i], curDir._[i]);
+        sExpVel._[i] = steerPosPid_._[i]->calc(sDel._[i], 0);
+        sExpTorq._[i] = steerVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);
 
         //3508
-        wExpTorq[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
+        expWSpeed_._[i] = refWSpeed._[i];
+        bool isBumpArea = sentryCmdRxPacket_.data().isBumpArea;
+        isBumpArea = false; //
+        if (isBumpArea) {
+            wExpTorq._[i] = wBumpVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
+        } else {
+            wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
+        }
     }
-
-#if APP_USE_POWERCTRL
-    float sPowerTorq[4];
-    float wPowerTorq[4];
-    SwervePowerController::PowerCtrlMsg_s powerCtrlMsg(refereeMsg_.chassisPowerLimit, capCmdRatio_, wheelMotor_._,
-                                                       wPowerTorq, expWSpeed_._, steerMotor_._, sPowerTorq, sExpVel);
-    powerCtrl_->powerCtrl(wPowerTorq, sPowerTorq, powerCtrlMsg);
-#endif
 
     for (uint8_t i = 0; i < 4; i++) {
-#if APP_USE_POWERCTRL
-        wheelMotor_._[i]->cmdTorq(wPowerTorq[i]);
-        steerMotor_._[i]->cmdTorq(sPowerTorq[i]);
-#else
-        wheelMotor_._[i]->cmdTorq(wExpTorq[i]);
-        steerMotor_._[i]->cmdTorq(sExpTorq[i]);
-#endif
-
-        debug_.sExpVel._[i] = sExpVel[i];
-        debug_.sExpTorq._[i] = sExpTorq[i];
-        debug_.wExpTorq._[i] = wExpTorq[i];
+        debug_.sExpVel._[i] = sExpVel._[i];
+        debug_.sExpTorq._[i] = sExpTorq._[i];
+        debug_.wExpTorq._[i] = wExpTorq._[i];
     }
 
+#if APP_USE_POWERCTRL
+    SwervePower_u<float> expRads = {
+        .W_RF = expWSpeed_.RF,
+        .W_LF = expWSpeed_.LF,
+        .W_LB = expWSpeed_.LB,
+        .W_RB = expWSpeed_.RB,
+        .S_RF = sExpVel.RF,
+        .S_LF = sExpVel.LF,
+        .S_LB = sExpVel.LB,
+        .S_RB = sExpVel.RB,
+    };
+    SwervePower_u<float> expTorq = {
+        .W_RF = wExpTorq.RF,
+        .W_LF = wExpTorq.LF,
+        .W_LB = wExpTorq.LB,
+        .W_RB = wExpTorq.RB,
+        .S_RF = sExpTorq.RF,
+        .S_LF = sExpTorq.LF,
+        .S_LB = sExpTorq.LB,
+        .S_RB = sExpTorq.RB,
+    };
+    SwervePower_u<PINYMOTOR::IMotor *> motors = {
+        .W_RF = wheelMotor_.RF,
+        .W_LF = wheelMotor_.LF,
+        .W_LB = wheelMotor_.LB,
+        .W_RB = wheelMotor_.RB,
+        .S_RF = steerMotor_.RF,
+        .S_LF = steerMotor_.LF,
+        .S_LB = steerMotor_.LB,
+        .S_RB = steerMotor_.RB,
+    };
+
+    std::vector<float> torq;
+    torq = powerCtrl_->powerCtrl(expRads._, motors._, expTorq._, refereeMsg_, sCurVel._);
+    for (uint8_t i = 0; i < 4; i++) {
+        wPowerTorq[i] = torq[i];
+        sPowerTorq[i] = torq[i + 4];
+        wheelMotor_._[i]->cmdTorq(wPowerTorq[i]);
+        steerMotor_._[i]->cmdTorq(sPowerTorq[i]);
+        // wheelMotor_._[i]->cmdTorq(wExpTorq[i]);
+        // steerMotor_._[i]->cmdTorq(sExpTorq[i]);
+
+        rawiq[i] = wExpTorq._[i];
+        rawiq[i + 4] = sExpTorq._[i];
+        iq[i] = torq[i];
+        iq[i + 4] = torq[i + 4];
+    }
+#else
+    for (uint8_t i = 0; i < 4; i++) {
+        wheelMotor_._[i]->cmdTorq(wExpTorq[i]);
+        steerMotor_._[i]->cmdTorq(sExpTorq[i]);
+    }
+#endif
     // steerMotor_.RF->cmdTorq(0);
     // steerMotor_.LF->cmdTorq(0);
     // steerMotor_.LB->cmdTorq(0);

@@ -300,12 +300,14 @@ public:
     static constexpr uint16_t ID = 0x30;
     struct ProtoData_s {
         REFEREE::SentryCmd_s midSentryCmd;
-        bool useSuperCap;
+        bool isBumpArea;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
             REFEREE::SentryCmd_s midSentryCmd;
+            bool isBumpArea;
+            uint8_t reserved[3];
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -314,10 +316,12 @@ public:
     {
         Data_u::Data_s &d = _data.content;
         d.midSentryCmd = _protoData.midSentryCmd;
+        d.isBumpArea = _protoData.isBumpArea;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         _protoData.midSentryCmd = _data.content.midSentryCmd;
+        _protoData.isBumpArea = _data.content.isBumpArea;
     }
 };
 

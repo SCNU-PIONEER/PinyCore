@@ -4,6 +4,7 @@
 class SuperCap {
 public:
     static constexpr float DEFAULT_CAP_TX_FREQ = 200.f;
+    static constexpr float DATA_RX_FREQ = 1000.f; //功率板中设置
     static constexpr float CAP_ENERGY_MAX = 255.f;
     static constexpr float VOTAGE_MAX = 25.5f;
     static constexpr float OFFLINE_FREQ_THRESHOLD = 10.f;
