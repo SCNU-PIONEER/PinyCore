@@ -41,12 +41,13 @@ void LEDs::addLEDs(LEDDriver *_driver)
     }
 }
 
-void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum)
+void LEDs::ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum, uint8_t _maxBrightness)
 {
     Cmd_s cmd;
     cmd.type = _type;
     cmd.index = _index;
     cmd.ctrlNum = _ctrlNum;
+    cmd.maxBrightness = _maxBrightness;
     QueueHandle_t queue = instance().queue_;
     if (xQueueSend(queue, &cmd, 0) != pdTRUE) {
         Cmd_s dropped;
