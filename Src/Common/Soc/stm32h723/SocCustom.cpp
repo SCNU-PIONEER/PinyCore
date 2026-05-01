@@ -1,6 +1,10 @@
 #include "Soc.hpp"
 #include "main.h"
 
+#include "sdkconfig.h"
+
+#if SOC_CUSTOM_USE_SPI3
+
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
@@ -37,7 +41,7 @@ void spi3MspInit(SPI_HandleTypeDef *hspi)
     GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    hdma_spi3_tx.Instance = DMA2_Stream6;
+    hdma_spi3_tx.Instance = DMA2_Stream7; // Select DMA Channel
     hdma_spi3_tx.Init.Request = DMA_REQUEST_SPI3_TX;
     hdma_spi3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_spi3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -53,8 +57,8 @@ void spi3MspInit(SPI_HandleTypeDef *hspi)
 
     HAL_NVIC_SetPriority(SPI3_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(SPI3_IRQn);
-    HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+    HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 6, 0); // Select DMA Channel
+    HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn); // Select DMA Channel
 }
 
 void spi3MspDeInit(SPI_HandleTypeDef *hspi)
@@ -67,7 +71,7 @@ void spi3MspDeInit(SPI_HandleTypeDef *hspi)
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_10 | GPIO_PIN_12);
     HAL_DMA_DeInit(hspi->hdmatx);
     HAL_NVIC_DisableIRQ(SPI3_IRQn);
-    HAL_NVIC_DisableIRQ(DMA2_Stream6_IRQn);
+    HAL_NVIC_DisableIRQ(DMA2_Stream7_IRQn); // Select DMA Channel
 }
 
 void initSpi3()
@@ -102,17 +106,22 @@ void initSpi3()
 
 } // namespace
 
-void socCustomInit()
-{
-    initSpi3();
-}
-
 extern "C" void SPI3_IRQHandler(void)
 {
     HAL_SPI_IRQHandler(&hspi3);
 }
 
-extern "C" void DMA2_Stream6_IRQHandler(void)
+ // Select DMA Channel
+extern "C" void DMA2_Stream7_IRQHandler(void) 
 {
     HAL_DMA_IRQHandler(&hdma_spi3_tx);
+}
+
+#endif
+
+void socCustomInit()
+{
+#if SOC_CUSTOM_USE_SPI3
+    initSpi3();
+#endif
 }
