@@ -23,8 +23,9 @@ enum class CmdType_e : uint8_t {
 
 struct Cmd_s {
     CmdType_e type = CmdType_e::OFF;
-    uint8_t index = 0;   // index of leds to operate on
-    uint8_t ctrlNum = 1; // number of leds to operate on starting from index
+    uint8_t index = 0;           // index of leds to operate on
+    uint8_t ctrlNum = 1;         // number of leds to operate on starting from index
+    uint8_t maxBrightness = 255; // maximum brightness, 0-255
 };
 
 } // namespace LED

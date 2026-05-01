@@ -13,6 +13,10 @@
 #include "Buzzer.hpp"
 #endif
 
+#if EXTENSION_LED
+#include "LEDManager.hpp"
+#endif
+
 #if APP_USE_DAEMONS
 #include "Daemons.hpp"
 #endif
@@ -69,6 +73,10 @@ void AppManager::initApp()
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
+#endif
+
+#if EXTENSION_LED
+    // add custom's leds
 #endif
 
     // Generate threads at the end

@@ -118,7 +118,7 @@ public:
      * @warning Ensure _index is within bounds of totalLEDs_ array
      * @warning Ensure _ctrlNum does not exceed array bounds starting from _index
      */
-    static void ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum);
+    static void ctrl(CmdType_e _type, uint8_t _index, uint8_t _ctrlNum, uint8_t _maxBrightness = 255);
 
     /**
      * @brief Turn off all LEDs
