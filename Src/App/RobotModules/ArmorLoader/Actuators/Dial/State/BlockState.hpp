@@ -6,7 +6,7 @@
 namespace ARMORLOADER {
 
 class BlockState : public FSMState<FSMState_e> {
-    static constexpr float BLOCK_TORQ = 1.f;
+    static constexpr float BLOCK_TORQ = 2.f;
 
     static constexpr uint16_t REVERSE_CNT = 100;
 
