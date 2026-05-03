@@ -130,7 +130,7 @@ private:
     ChassisMsg_s cmsg{};
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_{ 300.f };
-    ShooterCtrlTxPacket shooterCtrlTxPacket_{ 500.f };
+    ShooterCtrlTxPacket shooterCtrlTxPacket_{ 300.f };
     RefereeRxPacket refereeRxPacket_;              //裁判系统
     BulletSpdRxPacket bulletSpdRxPacket_;          //弹速
     DecesionRxPacket1 decesionRxPacket1_;          //决策数据

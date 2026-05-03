@@ -12,13 +12,13 @@
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(60.f, 10.f, 2.f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
-    PositionalPid(100.f, 10.f, 2.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(50.f, 8.f, 1.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
 };
 //    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(2.f, 0.f, 0.05f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.45f, 0.f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(10.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(8.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
 };
 //    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
@@ -26,7 +26,7 @@ static PositionalPid wSlowBYawFollowPid = {
     PositionalPid(3.f, 0.f, 0.004f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
 };
 static PositionalPid wFastBYawFollowPid = {
-    PositionalPid(25.f, 0.1f, 0.01f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
+    PositionalPid(45.f, 0.1f, 0.01f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
 };
 float debugWBYaw;
 

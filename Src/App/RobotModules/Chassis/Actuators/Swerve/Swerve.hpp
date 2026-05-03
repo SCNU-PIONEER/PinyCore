@@ -98,8 +98,8 @@ public:
 
 protected:
     RefereeMsg_s refereeMsg_;
-    REFEREE::RefereeProt_s refereeData_ = referee->receiver.getRefereeData();
-    REFEREE::SentryInfo_s sentryInfo_ = refereeData_.sentryInfo; //哨兵信息
+    REFEREE::RefereeProt_s refereeData_;
+    REFEREE::SentryInfo_s sentryInfo_; //哨兵信息
 
     RobotInteractionData_s<REFEREE::SentryCmd_s> sentryCmdData_; //向裁判系统发送的数据 0x0301
 
@@ -150,7 +150,7 @@ private:
             .RF = 5.0083f,
             .LF = 4.95766449f,
             .LB = 3.41889358f,
-            .RB = 1.35620451f,
+            .RB = 5.52453974f,
     } }; //舵轮零位角度，用于回正方向,rad
 
     Swerve_u<canHandle *> wheelCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };

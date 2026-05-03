@@ -89,10 +89,10 @@ PositionalPid wheelVelPid[4] = {
 };
 
 PositionalPid wBumpVelPid[4] = {
-    PositionalPid(0.5f, 0.05, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.5f, 0.05f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.6f, 0.5f, 0.001f, 1.f / 1000.f, 3.8f, 7.f, 0.1f),
+    PositionalPid(0.6f, 0.5f, 0.001f, 1.f / 1000.f, 3.8f, 7.f, 0.1f),
+    PositionalPid(0.6f, 0.5f, 0.001f, 1.f / 1000.f, 3.8f, 7.f, 0.1f),
+    PositionalPid(0.6f, 0.5f, 0.001f, 1.f / 1000.f, 3.8f, 7.f, 0.1f),
 };
 
 Swerve::Swerve()
@@ -179,6 +179,9 @@ void Swerve::update(void *_param)
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
 #endif
+
+    refereeData_ = referee->receiver.getRefereeData();
+    sentryInfo_ = refereeData_.sentryInfo;
 
     loadDeltaYaw();
     loadRefereeData(_param);
@@ -403,16 +406,12 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //3508
         expWSpeed_._[i] = refWSpeed._[i];
-        bool isBumpArea = sentryCmdRxPacket_.data().isBumpArea;
-        isBumpArea = false; //
-        if (isBumpArea) {
+        if (sentryCmdRxPacket_.data().isBumpArea) {
             wExpTorq._[i] = wBumpVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
         } else {
             wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
         }
-    }
 
-    for (uint8_t i = 0; i < 4; i++) {
         debug_.sExpVel._[i] = sExpVel._[i];
         debug_.sExpTorq._[i] = sExpTorq._[i];
         debug_.wExpTorq._[i] = wExpTorq._[i];
@@ -467,8 +466,8 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     }
 #else
     for (uint8_t i = 0; i < 4; i++) {
-        wheelMotor_._[i]->cmdTorq(wExpTorq[i]);
-        steerMotor_._[i]->cmdTorq(sExpTorq[i]);
+        wheelMotor_._[i]->cmdTorq(wExpTorq._[i]);
+        steerMotor_._[i]->cmdTorq(sExpTorq._[i]);
     }
 #endif
     // steerMotor_.RF->cmdTorq(0);

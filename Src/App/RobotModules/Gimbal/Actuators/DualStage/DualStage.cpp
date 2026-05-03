@@ -137,6 +137,7 @@ void DualStage::update(void *_param)
     sendVisionData();
     sendNavData();
     sendDecesionData();
+    loadSentryCmd();
 
     msg.wYaw = std::clamp(msg.wYaw, -DualStage::MAX_BYAW_SPEED, DualStage::MAX_BYAW_SPEED);
 
@@ -193,7 +194,11 @@ void DualStage::loadShooterMsg(void *_param)
     }
 }
 
-void DualStage::loadSentryCmd() { sentryCmdTxPacket_.setData().midSentryCmd = d2eData.upSentryCmd; }
+void DualStage::loadSentryCmd()
+{
+    sentryCmdTxPacket_.setData().midSentryCmd = d2eData.upSentryCmd;
+    sentryCmdTxPacket_.setData().isBumpArea = d2eData.isBumpArea;
+}
 
 void DualStage::sendVisionData()
 { // vision send
