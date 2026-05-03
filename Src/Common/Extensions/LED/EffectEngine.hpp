@@ -270,7 +270,9 @@ private:
         std::array<Range_s, MaxEffects * 2> ranges{};
         uint8_t rangeCount = 0;
 
-        for (uint8_t i = 0; i < pendingClearCount_ && rangeCount < ranges.size(); ++i) {
+        const uint8_t pendingCount =
+                static_cast<uint8_t>(std::min<size_t>(pendingClearCount_, pendingClearRanges_.size()));
+        for (uint8_t i = 0; i < pendingCount && rangeCount < ranges.size(); ++i) {
             ranges[rangeCount++] = pendingClearRanges_[i];
         }
 
