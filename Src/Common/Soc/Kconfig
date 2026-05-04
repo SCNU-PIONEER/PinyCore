@@ -6,10 +6,18 @@ menu "Soc config"
         config TARGET_STM32F407
         bool "STM32F407"
 
+        source "Src/Common/Soc/stm32f407/Kconfig"
+
         config TARGET_STM32H723
         bool "STM32H723"
 
+        source "Src/Common/Soc/stm32h723/Kconfig"
+
     endchoice
+
+    config SOC_USE_CUSTOM
+    bool "custom soc"
+    default n
 
 endmenu
 
