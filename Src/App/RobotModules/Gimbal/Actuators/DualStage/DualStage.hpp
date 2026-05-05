@@ -26,7 +26,6 @@ template <typename T> union DualStage_u {
 struct DualStageDebug_s {
     bool visionControl;
     bool visionFire;
-    bool visionAngOver;
     float visionYaw;
     float visionPitch;
     FSMState_e gimbalState;
@@ -49,7 +48,6 @@ inline bool isColor(float _robotId)
     }
 }
 
-
 // #define _no_init __attribute__((section(".noinit_ram")))
 
 /**
@@ -59,8 +57,8 @@ inline bool isColor(float _robotId)
  */
 class DualStage : public Gimbal {
 public:
-    static constexpr float PITCH_LAUNCH_ANG = 1.24988747f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.341715097f;
+    static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.616697907f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 3.46952128f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
@@ -96,7 +94,6 @@ public:
 
     DualStageDebug_s debug = {};
     bool isLaunched_ = false;
-    bool isVisionAngOver_ = false; //视觉角度是否超出小yaw控制范围
     DualStage_u<bool> isGimbalResverse;
     DualStage_u<float> curImuAng_ = {};   //-pi~pi
     DualStage_u<float> expImuAng_ = {};   //-pi~pi

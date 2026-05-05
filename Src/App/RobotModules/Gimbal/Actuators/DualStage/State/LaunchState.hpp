@@ -24,10 +24,10 @@ static PositionalPid gLauVelPid[3] = {
 namespace GIMBAL {
 
 class LaunchState : public FSMState<FSMState_e> {
-    static constexpr uint16_t MAX_LAUNCH_TIME = 1000; // 1s
+    static constexpr uint16_t MAX_LAUNCH_TIME = 300; // 0.3s
 
-    static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.1f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG_DEADBAND = 0.1f;
+    static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.04f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG_DEADBAND = 0.05f;
     static constexpr float SECOND_YAW_LAUNCH_ANG_DEADBAND = 0.02f;
 
     static constexpr float PITCH_LAUNCH_STEP = 0.6f;

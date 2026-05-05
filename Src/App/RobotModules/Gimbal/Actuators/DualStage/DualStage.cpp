@@ -146,7 +146,6 @@ void DualStage::update(void *_param)
     debug.visionFire = v2eData.fire;
     debug.visionYaw = v2eData.yaw;
     debug.visionPitch = v2eData.pitch;
-    debug.visionAngOver = isVisionAngOver_;
 
     this->stateFactory_.update();
 }
