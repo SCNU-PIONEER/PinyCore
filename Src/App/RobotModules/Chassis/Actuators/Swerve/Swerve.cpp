@@ -81,6 +81,13 @@ PositionalPid steerVelPid[4] = {
 };
 #endif
 
+PositionalPid sBumpVelPid[4] = {
+    PositionalPid(0.05f, 0.001f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.05f, 0.001f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.04f, 0.001f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+    PositionalPid(0.05f, 0.001f, 0.0f, 1.f / 1000.f, 0.3f, 1.2f, 0.f),
+};
+
 PositionalPid wheelVelPid[4] = {
     PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
     PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
@@ -103,6 +110,8 @@ Swerve::Swerve()
         steerFilterInput_._[i - 1] = &steerFilterInput[i - 1];
         steerPosPid_._[i - 1] = &steerPosPid[i - 1];
         steerVelPid_._[i - 1] = &steerVelPid[i - 1];
+        sBumpVelPid_._[i - 1] = &sBumpVelPid[i - 1];
+
         wheelVelPid_._[i - 1] = &wheelVelPid[i - 1];
         wBumpVelPid_._[i - 1] = &wBumpVelPid[i - 1];
 
@@ -406,10 +415,11 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
 
         //3508
         expWSpeed_._[i] = refWSpeed._[i];
+        wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
+
         if (sentryCmdRxPacket_.data().isBumpArea) {
+            sExpTorq._[i] = sBumpVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);
             wExpTorq._[i] = wBumpVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
-        } else {
-            wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
         }
 
         debug_.sExpVel._[i] = sExpVel._[i];

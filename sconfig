@@ -27,8 +27,8 @@ CONFIG_APP_USE_POWERCTRL=y
 #
 # power control settings
 #
-CONFIG_POWERCTRL_USE_RLS=y
-# CONFIG_POWERCTRL_ENABLE_STEER_RLS is not set
+# CONFIG_POWERCTRL_USE_RLS is not set
+# CONFIG_ENABLE_STEER_RLS is not set
 # end of power control settings
 
 # CONFIG_APP_USE_ODOMETER is not set

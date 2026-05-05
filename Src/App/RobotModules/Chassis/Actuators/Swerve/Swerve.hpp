@@ -160,6 +160,7 @@ private:
     Swerve_u<PositionalPid *> steerPosPid_ = {};    //舵轮位置环
     Swerve_u<PositionalPid *> steerVelPid_ = {};    //舵轮速度环
     Swerve_u<PositionalPid *> wheelVelPid_ = {};    //轮速pid
+    Swerve_u<PositionalPid *> sBumpVelPid_ = {};    //舵轮减速带速度环
     Swerve_u<PositionalPid *> wBumpVelPid_ = {};    //减速带专用轮速pid
 };
 
