@@ -37,9 +37,9 @@ public:
 
     static constexpr bool DIAL_REVERSE = false;
 
-    static constexpr float BLOCK_CURRENT = 2.f;   // A
-    static constexpr float BLOCK_SPEED_MIN = 1.f; // rad/s
-    static constexpr uint16_t BLOCK_CNT_MAX = 200.f;
+    static constexpr float BLOCK_CURRENT = 2.f;    // A
+    static constexpr float BLOCK_SPEED_MIN = 0.3f; // rad/s
+    static constexpr uint16_t BLOCK_CNT_MAX = 500.f;
     static constexpr float BARREL_HEAT_THRESHOLD_OFFSET = 40.f;
 
     FSMState_e lastState = FSMState_e::STOP;
@@ -53,7 +53,7 @@ public:
      * 
      * @param _torq 
      */
-    void ctrl(float _torq);
+    void ctrlMotor(float _torq);
 
     /**
      * @brief ctrl dial rotate in _vel
@@ -68,18 +68,9 @@ public:
      * 
      * @param _posPID 
      * @param _velPID 
-     * @param _ang single circle ang in rad
-     */
-    void ctrlSingle(PID *_velPID, float _ang);
-
-    /**
-     * @brief ctrl dial rotate to _ang
-     * 
-     * @param _posPID 
-     * @param _velPID 
      * @param _ang multiple circle ang in rad
      */
-    void ctrlMulti(PID *_posPID, PID *_velPID, float _ang);
+    void ctrlSingle(PID *_posPID, PID *_velPID, float _ang);
 
     void stop();
     void enter();

@@ -66,6 +66,7 @@ void Dial::update(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoadQueue), &msg, 0) == pdTRUE) {
     };
 #else
+    UNUSED(_param);
     msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
     if (motors_.dial->globalState != GlobalState_e::ONLINE) {
         msg.state = FSMState_e::STOP;
@@ -105,19 +106,13 @@ void Dial::update(void *_param)
 
 IMotor *Dial::dial() const { return motors_.dial; }
 
-void Dial::ctrl(float _torq) { dial()->cmdTorq(_torq); }
+void Dial::ctrlMotor(float _torq) { dial()->cmdTorq(_torq); }
 
 void Dial::ctrl(PID *_velPID, float _vel) { dial()->cmdTorq(_velPID->calc(_vel, vel_)); }
 
-void Dial::ctrlSingle(PID *_velPID, float _ang)
+void Dial::ctrlSingle(PID *_posPID, PID *_velPID, float _ang)
 {
-    float v = _velPID->calc(_ang, dial()->pos());
-    dial()->cmdTorq(_velPID->calc(v, vel_));
-}
-
-void Dial::ctrlMulti(PID *_posPID, PID *_velPID, float _ang)
-{
-    float v = _velPID->calc(_ang, dial()->posNorm());
+    float v = _posPID->calc(_ang, dial()->pos());
     dial()->cmdTorq(_velPID->calc(v, vel_));
 }
 
