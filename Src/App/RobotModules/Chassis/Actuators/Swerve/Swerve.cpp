@@ -7,6 +7,8 @@
 #include "dsp/fast_math_functions.h"
 #include "sdkconfig.h"
 #include "PidBasic.hpp"
+#include "stm32h723xx.h"
+#include "usbd_def.h"
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -264,8 +266,16 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.senderId = refereeMsg_.robotId;
     sentryCmdData_.receiverId = 0x8080;
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
+    
+    if (fabs(refereeMsg_.currentHP) != 0) {
+        sentryCmdData_.userdata.reviveConfirm = 0;
+        sentryCmdData_.userdata.instantReviveConfirm = 0;
+    } else {
+        sentryCmdData_.userdata.reviveConfirm = 1;
+        // sentryCmdData_.userdata.instantReviveConfirm = 1;
+    }
 
-    if (cnt % 100 == 0) { //10Hz向裁判系统发送一次数据
+    if (cnt % 100 == 0) { //10HZ裁判系统发送数据
         referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
     }
 }

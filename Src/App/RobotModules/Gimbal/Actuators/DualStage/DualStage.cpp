@@ -81,6 +81,18 @@ DualStage::DualStage()
         .isReverse = SECOND_YAW_REVERSE,
     };
     motors_.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
+    // InitConfig_s secondYawDM4310Config = {
+    //     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
+    //     .comType = ComType_e::CAN,
+    //     .workMode = WorkMode_e::QUAD_CURR,
+    //     .offsetId = 3,
+    //     .txFreq = SECOND_YAW_MOTOR_FREQ,
+    //     .posPID = nullptr,
+    //     .velPID = nullptr,
+    //     .isReverse = SECOND_YAW_REVERSE,
+    // };
+    // motors_.SecondYaw = new DMMOTOR::DM4310("SmallYaw", secondYawDM4310Config);
+
     motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);
 

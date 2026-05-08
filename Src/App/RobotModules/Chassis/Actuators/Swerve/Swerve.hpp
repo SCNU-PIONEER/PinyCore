@@ -62,7 +62,7 @@ typedef struct {
 template <typename T> struct RobotInteractionData_s {
     uint16_t dataCmdId;  //需为开放的子内容 ID
     uint16_t senderId;   //需与自身 ID 匹配,机器人ID
-    uint16_t receiverId; //裁判系统服务器（
+    uint16_t receiverId; //裁判系统服务器
     T userdata;          //用户数据
 }; //向裁判系统发送的数据 0x0301
 

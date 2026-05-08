@@ -266,15 +266,15 @@ public:
     static constexpr uint16_t ID = 0x29;
     struct ProtoData_s {
         REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
-        uint8_t hurtHpDeductionReason : 4;   // 受伤血量扣除原因  byte:1
-        uint16_t reserved : 12;
+        uint8_t hurtHpDeductionReason;       // 受伤血量扣除原因  byte:1
+        uint8_t reserved;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
             REFEREE::SentryInfo_s midSentryInfo; // 哨兵裁判系统数据 byte:6
-            uint8_t hurtHpDeductionReason : 4;   // 受伤血量扣除原因  byte:1
-            uint16_t reserved : 12;
+            uint8_t hurtHpDeductionReason;       // 受伤血量扣除原因  byte:1
+            uint8_t reserved;
         } content;
         uint8_t bytes[LEN];
     } data;

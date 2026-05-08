@@ -6,7 +6,7 @@
 #include "PidBasic.hpp"
 #include "MotorCommonMacros.hpp"
 
-PositionalPid autoDialVelPID(0.5f, 0.01f, 0.001f, 0.001f, 0, 4.5f, 0);
+PositionalPid autoDialVelPID(0.35f, 0.0057f, 0.001f, 0.001f, 0, 4.5f, 0);
 
 namespace ARMORLOADER {
 

@@ -60,7 +60,7 @@ public:
 private:
     Uart uart_;
 
-    uint8_t txBuffer_[REFEREE_TX_BUFFER_LEN];
+    uint8_t *txBuffer_;
 };
 
 class Referee {

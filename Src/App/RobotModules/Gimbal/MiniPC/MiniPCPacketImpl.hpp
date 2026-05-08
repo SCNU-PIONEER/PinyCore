@@ -54,9 +54,9 @@ typedef struct {
 //byte:4 + 4
 typedef struct {
     uint8_t decesionHeader;
-    bool isSmallAng; // 是否副相机角度   byte:1
-    REFEREE::SentryCmd_s upSentryCmd;
-    bool isBumpArea; // 是否碰撞区域     byte:1
+    bool isSmallAng;                  // 是否副相机角度   byte:1
+    REFEREE::SentryCmd_s upSentryCmd; //
+    bool isBumpArea;                  // 是否碰撞区域     byte:1
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
 } DecesionToEc_s;

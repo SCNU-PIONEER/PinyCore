@@ -80,7 +80,10 @@ void Receiver::rxFreqCalc()
     }
 }
 
-Transmitter::Transmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
+Transmitter::Transmitter(UART_HandleTypeDef *_huart)
+        : uart_(_huart), txBuffer_((uint8_t *)Dma::instance().ram_alloc(REFEREE_TX_BUFFER_LEN))
+{
+}
 
 uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLen)
 {
@@ -94,7 +97,7 @@ uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLe
     txHeader.sof = SOF;
     txHeader.dataLen = _dataLen;
     txHeader.seq = 0;
-    memcpy(&txBuffer_, &txHeader, sizeof(FrameHeader_s));
+    memcpy(txBuffer_, &txHeader, sizeof(FrameHeader_s));
     Append_CRC8_Check_Sum(txBuffer_, sizeof(FrameHeader_s));
 
     *(uint16_t *)&txBuffer_[sizeof(FrameHeader_s)] = _cmdId;
@@ -104,9 +107,9 @@ uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLe
     totalSize = sizeof(FrameHeader_s) + LEN_CMDID + _dataLen + LEN_TAIL;
     Append_CRC16_Check_Sum(txBuffer_, totalSize);
 
-    REFEREE_UART.gState = HAL_UART_STATE_READY; // 确保UART处于就绪状态
-    HAL_UART_Transmit(&REFEREE_UART, txBuffer_, totalSize, 0x08);
-    // uart_.transmitDma(txBuffer_, totalSize);
+    // REFEREE_UART.gState = HAL_UART_STATE_READY; // 确保UART处于就绪状态
+    // HAL_UART_Transmit(&REFEREE_UART, txBuffer_, totalSize, 0x08);
+    uart_.transmitDma(txBuffer_, totalSize);
     return totalSize;
 }
 
