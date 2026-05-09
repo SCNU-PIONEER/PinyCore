@@ -10,7 +10,7 @@ private:
 public:
     static constexpr float P_MAX = 12.57f;
     static constexpr float V_MAX = 12.57f; // 120rpm
-    static constexpr float T_MAX = 10.0f;
+    static constexpr float T_MAX = 7.0f;
     static constexpr float MIT_KP_MAX = 500.f;
     static constexpr float MIT_KD_MAX = 5.f;
     static constexpr float CURR_TX_CODE_SPAN = 10000.f;

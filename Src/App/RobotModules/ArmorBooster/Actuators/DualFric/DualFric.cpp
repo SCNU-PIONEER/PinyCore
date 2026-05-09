@@ -66,17 +66,17 @@ void DualFric::update(void *_param)
 
     // update state
     this->stateFactory_.update();
-
-    fricLvel_ = velFltr_[0].process(motors_.fricL->vel());
-    fricRvel_ = velFltr_[1].process(motors_.fricR->vel());
 }
 
 void DualFric::ctrl(float _vel)
 {
     for (uint8_t i = 0; i < 2; ++i) {
-        float pidOut = fricPid_[i].calc(_vel, velFltr_[i].process(motors_._[i]->vel()));
+        float velErr = _vel - velFltr_[i].process(motors_._[i]->vel());
+        float pidOut = fricPid_[i].calc(velErr, 0);
         motors_._[i]->cmdTorq(pidOut);
     }
+    lErr_ = _vel - velFltr_[0].process(motors_.fricL->vel());
+    rErr_ = _vel - velFltr_[1].process(motors_.fricR->vel());
 }
 
 void DualFric::on()

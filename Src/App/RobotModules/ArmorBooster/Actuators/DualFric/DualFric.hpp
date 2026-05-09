@@ -62,8 +62,8 @@ private:
         { 500.f, 20.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE },
     };
 
-    PositionalPid fricPid_[2]{ { 0.0015f, 0.f, 2e-6f, 0.001f, 0.003f, 0.157f, 0.f },
-                               { 0.0015f, 0.f, 2e-6f, 0.001f, 0.003f, 0.157f, 0.f } };
+    PositionalPid fricPid_[2]{ { 0.0012f, 0.0001f, 1e-6f, 0.001f, 0.03f, 0.157f, 0.f },
+                               { 0.0015f, 0.0001f, 3e-6f, 0.001f, 0.03f, 0.157f, 0.f } };
 
 
     // FILTER::LPF velFltr_[2] = {
@@ -76,8 +76,8 @@ private:
 
     SpeedRxPacket speedRxPacket_;
 
-    float fricLvel_ = 0.f;
-    float fricRvel_ = 0.f;
+    float lErr_ = 0.f;
+    float rErr_ = 0.f;
 
     float targetVel_ = SLOW_FRIC_RATE;
 };
