@@ -1,7 +1,6 @@
 #include "DualFric.hpp"
 
 #include "Bsp_can.hpp"
-
 #include "DM3519.hpp"
 #include "M3508.hpp"
 
@@ -68,17 +67,14 @@ void DualFric::update(void *_param)
     // update state
     this->stateFactory_.update();
 
-    fricLvel_ = motors_.fricL->vel();
-    fricRvel_ = motors_.fricR->vel();
-    fricLrpm_ = motors_.fricL->data().spdRpm;
-    fricRrpm_ = motors_.fricR->data().spdRpm;
+    fricLvel_ = velFltr_[0].process(motors_.fricL->vel());
+    fricRvel_ = velFltr_[1].process(motors_.fricR->vel());
 }
 
 void DualFric::ctrl(float _vel)
 {
     for (uint8_t i = 0; i < 2; ++i) {
-        float velErr = _vel - velFltr_[i].process(motors_._[i]->vel());
-        float pidOut = fricPid_[i].calc(velErr, 0);
+        float pidOut = fricPid_[i].calc(_vel, velFltr_[i].process(motors_._[i]->vel()));
         motors_._[i]->cmdTorq(pidOut);
     }
 }
@@ -97,7 +93,7 @@ void DualFric::off()
         stop();
     } else {
         float constZero = 0;
-        SMOOTH::slopeFollowing(&constZero, &targetVel_, 5.f);
+        SMOOTH::slopeFollowing(&constZero, &targetVel_, 2.f);
         ctrl(targetVel_);
     }
 }
