@@ -12,13 +12,13 @@
 static PositionalPid gLauPosPid[3] = {
     PositionalPid(20.f, 20.f, 1.f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(8.f, 0.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
-    PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 1.2f, 120.f, 0.f),
+    PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 1.2f, 5.f, 0.f),
 };
 // PositionalPid(8.f, 4.f, 1.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gLauVelPid[3] = {
-    PositionalPid(0.8f, 0.4f, 0.f, 0.001f, 0.f, 7.f, 0.f),
-    PositionalPid(0.55f, 0.f, 0.f, 0.001f, 0.f, 8.5f, 0.f),
-    PositionalPid(0.4f, 0.0f, 0.03f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(0.8f, 0.4f, 0.f, 0.001f, 1.f, 7.f, 0.f),
+    PositionalPid(0.55f, 0.4f, 0.f, 0.001f, 2.f, 8.5f, 0.f),
+    PositionalPid(1.5f, 0.05f, 0.03f, 1.f / 1000.f, 1.5f, 7.f, 0.f),
 };
 //    PositionalPid(0.4f, 0.2f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 namespace GIMBAL {
@@ -27,12 +27,12 @@ class LaunchState : public FSMState<FSMState_e> {
     static constexpr uint16_t MAX_LAUNCH_TIME = 300; // 0.3s
 
     static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.05f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG_DEADBAND = 0.05f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG_DEADBAND = 0.02f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG_DEADBAND = 0.08f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG_DEADBAND = 0.01f;
 
     static constexpr float PITCH_LAUNCH_STEP = 0.4f;
     static constexpr float FIRST_YAW_LAUNCH_STEP = 0.5f;
-    static constexpr float SECOND_YAW_LAUNCH_STEP = 0.06f;
+    static constexpr float SECOND_YAW_LAUNCH_STEP = 0.2f;
 
 public:
     LaunchState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
@@ -80,11 +80,11 @@ public:
             gimbal_->isLaunched_ = true;
         }
 
-        if (totalLaunchTime_ < MAX_LAUNCH_TIME * 3) {
-            totalLaunchTime_++;
-        } else {
-            gimbal_->isLaunched_ = true;
-        }
+        // if (totalLaunchTime_ < MAX_LAUNCH_TIME * 5) {
+        //     totalLaunchTime_++;
+        // } else {
+        //     gimbal_->isLaunched_ = true;
+        // }
     }
 
     void exit() final

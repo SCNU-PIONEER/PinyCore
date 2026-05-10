@@ -59,7 +59,7 @@ class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
     static constexpr float FIRST_YAW_LAUNCH_ANG = 0.616697907f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.88696122f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 2.25278807f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;

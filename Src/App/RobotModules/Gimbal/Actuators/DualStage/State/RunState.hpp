@@ -19,7 +19,7 @@ static PositionalPid gRunPosPid[3] = {
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(2.f, 0.f, 0.02f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(1.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 1.85f, 0.f),
+    PositionalPid(1.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 7.f, 0.f),
 };
 //PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 

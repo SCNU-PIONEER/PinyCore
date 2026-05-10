@@ -18,7 +18,7 @@ static PositionalPid gNavPosPid[3] = {
 static PositionalPid gNavVelPid[3] = {
     PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(0.3f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 1.2f, 0.f),
+    PositionalPid(0.3f, 0.0f, 0.001f, 1.f / 1000.f, 0.f, 7.f, 0.f),
 };
 //    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
