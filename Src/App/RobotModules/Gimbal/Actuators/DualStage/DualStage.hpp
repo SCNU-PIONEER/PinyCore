@@ -59,7 +59,7 @@ class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
     static constexpr float FIRST_YAW_LAUNCH_ANG = 0.616697907f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.46952128f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.88696122f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -105,7 +105,7 @@ public:
     void update(void *_param);
 
     void ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
-    void ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPid *> _angPID,
+    void ctrlMotor(DualStage_u<float> _expMotorAng, DualStage_u<PositionalPid *> _angPID,
                    DualStage_u<PositionalPid *> _velPID);
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
                     DualStage_u<PositionalPid *> _velPID);

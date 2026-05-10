@@ -26,13 +26,13 @@ namespace GIMBAL {
 class LaunchState : public FSMState<FSMState_e> {
     static constexpr uint16_t MAX_LAUNCH_TIME = 300; // 0.3s
 
-    static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.04f;
+    static constexpr float PITCH_LAUNCH_ANG_DEADBAND = 0.05f;
     static constexpr float FIRST_YAW_LAUNCH_ANG_DEADBAND = 0.05f;
     static constexpr float SECOND_YAW_LAUNCH_ANG_DEADBAND = 0.02f;
 
-    static constexpr float PITCH_LAUNCH_STEP = 0.6f;
+    static constexpr float PITCH_LAUNCH_STEP = 0.4f;
     static constexpr float FIRST_YAW_LAUNCH_STEP = 0.5f;
-    static constexpr float SECOND_YAW_LAUNCH_STEP = 0.05f;
+    static constexpr float SECOND_YAW_LAUNCH_STEP = 0.06f;
 
 public:
     LaunchState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::LAUNCH), gimbal_(_gimbal)
@@ -49,17 +49,17 @@ public:
     void enter() final
     {
         launchTime_ = 0;
+        totalLaunchTime_ = 0;
         gimbal_->isLaunched_ = false;
+        for (float &i : eMA._) {
+            i = 0;
+        }
         gimbal_->enter();
         LOG::info("GimbalLaunch", "enter");
     }
 
     void run() final
     {
-        for (float &i : eMA._) {
-            i = 0;
-        }
-
         float targetAng = 0; //缓启动大yaw目标角度为0或pi,根据当前角度选择较近的一个
         //导航要求必须一个缓启动方向，因此暂不实现双方向缓启动
         // if (cMA.FirstYaw > PI / 2.f && cMA.FirstYaw < 3.f * PI / 2.f) {
@@ -76,6 +76,12 @@ public:
             }
 
             gimbal_->ctrlSmooth(eMA, launchStep, lauPosPid_, lauVelPid_);
+        } else {
+            gimbal_->isLaunched_ = true;
+        }
+
+        if (totalLaunchTime_ < MAX_LAUNCH_TIME * 3) {
+            totalLaunchTime_++;
         } else {
             gimbal_->isLaunched_ = true;
         }
@@ -112,6 +118,7 @@ private:
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
 
     uint16_t launchTime_ = 0;
+    uint16_t totalLaunchTime_ = 0;
 };
 
 } // namespace GIMBAL

@@ -70,28 +70,17 @@ DualStage::DualStage()
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
-    InitConfig_s secondYawGM6020Config = {
+    InitConfig_s secondYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
+        .workMode = WorkMode_e::MIT_TT,
         .offsetId = 3,
         .txFreq = SECOND_YAW_MOTOR_FREQ,
         .posPID = nullptr,
         .velPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
-    motors_.SecondYaw = new DJIMOTOR::GM6020("SmallYaw", secondYawGM6020Config);
-    // InitConfig_s secondYawDM4310Config = {
-    //     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
-    //     .comType = ComType_e::CAN,
-    //     .workMode = WorkMode_e::QUAD_CURR,
-    //     .offsetId = 3,
-    //     .txFreq = SECOND_YAW_MOTOR_FREQ,
-    //     .posPID = nullptr,
-    //     .velPID = nullptr,
-    //     .isReverse = SECOND_YAW_REVERSE,
-    // };
-    // motors_.SecondYaw = new DMMOTOR::DM4310("SmallYaw", secondYawDM4310Config);
+    motors_.SecondYaw = new DMMOTOR::DM4310("SmallYaw", secondYawDM4310Config);
 
     motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);
@@ -296,16 +285,16 @@ float outMaxRunTorq[3];
 /**
  * @brief 云台的电机控制接口，输入电机系角度，输出电机转矩
  * 
- * @param _motorAng 电机系角度
+ * @param _expMotorAng 电机系角度
  * @param _angPID 
  * @param _velPID 
  */
-void DualStage::ctrlMotor(DualStage_u<float> _motorAng, DualStage_u<PositionalPid *> _angPID,
+void DualStage::ctrlMotor(DualStage_u<float> _expMotorAng, DualStage_u<PositionalPid *> _angPID,
                           DualStage_u<PositionalPid *> _velPID)
 {
     float del[3], vel[3], torq[3];
     for (uint8_t i = 0; i < 3; i++) {
-        del[i] = getMinorArc(_motorAng._[i], curMotorAng_._[i]);
+        del[i] = getMinorArc(_expMotorAng._[i], curMotorAng_._[i]);
         vel[i] = _angPID._[i]->calc(del[i], 0);
         torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
         motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
