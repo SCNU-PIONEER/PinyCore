@@ -1,14 +1,13 @@
 #include "Swerve.hpp"
 #include "Chassis.hpp"
 #include "IMotor.hpp"
+#include "MotorCommonMacros.hpp"
 #include "Referee.hpp"
 #include "RefereeProt.hpp"
 #include "Soc.hpp"
 #include "dsp/fast_math_functions.h"
 #include "sdkconfig.h"
 #include "PidBasic.hpp"
-#include "stm32h723xx.h"
-#include "usbd_def.h"
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -16,11 +15,11 @@
 #include "GM6020.hpp"
 #include "M3508.hpp"
 #include "TopicRouter.hpp"
-#include "./State/TestState.hpp"
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
 #include "./State/TANKState.hpp"
+#include "./State/FakeState.hpp"
 
 
 extern canHandle HCAN1;
@@ -146,9 +145,9 @@ Swerve::Swerve()
 
     this->stateFactory_.addState(FSMState_e::RUN, std::make_unique<RunState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
-    this->stateFactory_.addState(FSMState_e::TEST, std::make_unique<TestState>(this));
     this->stateFactory_.addState(FSMState_e::SPIN, std::make_unique<SpinState>(this));
     this->stateFactory_.addState(FSMState_e::TANK, std::make_unique<TANKState>(this));
+    this->stateFactory_.addState(FSMState_e::FAKE, std::make_unique<FakeState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
 #if APP_USE_POWERCTRL
@@ -189,6 +188,9 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
+    if (msg.state == FSMState_e::FAKE) {
+        isGimbalReset = true;
+    }
 #endif
 
     refereeData_ = referee->receiver.getRefereeData();
@@ -266,7 +268,7 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.senderId = refereeMsg_.robotId;
     sentryCmdData_.receiverId = 0x8080;
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
-    
+
     if (fabs(refereeMsg_.currentHP) != 0) {
         sentryCmdData_.userdata.reviveConfirm = 0;
         sentryCmdData_.userdata.instantReviveConfirm = 0;
@@ -390,12 +392,6 @@ Swerve_u<float> Swerve::reverse(const Speed_u &_speed)
  * @note 模型中逆时针角度增大，实际6020id端在上,顺时针编码值增大。
  * @param _refSpeed 
  */
-#if APP_USE_POWERCTRL
-float sPowerTorq[4] = {};
-float wPowerTorq[4] = {};
-float iq[8] = {};
-float rawiq[8] = {};
-#endif
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
     Swerve_u<float> tempDir, refWSpeed = {};
@@ -422,7 +418,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         sDel._[i] = getMinorArc(tempDir._[i], curDir._[i]);
         sExpVel._[i] = steerPosPid_._[i]->calc(sDel._[i], 0);
         sExpTorq._[i] = steerVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);
-
         //3508
         expWSpeed_._[i] = refWSpeed._[i];
         wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
@@ -431,32 +426,45 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             sExpTorq._[i] = sBumpVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);
             wExpTorq._[i] = wBumpVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
         }
-
-        debug_.sExpVel._[i] = sExpVel._[i];
-        debug_.sExpTorq._[i] = sExpTorq._[i];
-        debug_.wExpTorq._[i] = wExpTorq._[i];
     }
 
 #if APP_USE_POWERCTRL
+    powerCtrl(sExpVel, sExpTorq, expWSpeed_, wExpTorq);
+#else
+    motorCtrl(sExpTorq, wExpTorq);
+#endif
+
+    debug_.sExpVel = sExpVel;
+    debug_.sExpTorq = sExpTorq;
+    debug_.wExpTorq = wExpTorq;
+}
+
+
+#if APP_USE_POWERCTRL
+Swerve_u<float> sPowerTorq = {};
+Swerve_u<float> wPowerTorq = {};
+void Swerve::powerCtrl(Swerve_u<float> _sExpSpd, Swerve_u<float> _sExpTorq, Swerve_u<float> _wExpSpd,
+                       Swerve_u<float> _wExpTorq)
+{
     SwervePower_u<float> expRads = {
-        .W_RF = expWSpeed_.RF,
-        .W_LF = expWSpeed_.LF,
-        .W_LB = expWSpeed_.LB,
-        .W_RB = expWSpeed_.RB,
-        .S_RF = sExpVel.RF,
-        .S_LF = sExpVel.LF,
-        .S_LB = sExpVel.LB,
-        .S_RB = sExpVel.RB,
+        .W_RF = _wExpSpd.RF,
+        .W_LF = _wExpSpd.LF,
+        .W_LB = _wExpSpd.LB,
+        .W_RB = _wExpSpd.RB,
+        .S_RF = _sExpSpd.RF,
+        .S_LF = _sExpSpd.LF,
+        .S_LB = _sExpSpd.LB,
+        .S_RB = _sExpSpd.RB,
     };
     SwervePower_u<float> expTorq = {
-        .W_RF = wExpTorq.RF,
-        .W_LF = wExpTorq.LF,
-        .W_LB = wExpTorq.LB,
-        .W_RB = wExpTorq.RB,
-        .S_RF = sExpTorq.RF,
-        .S_LF = sExpTorq.LF,
-        .S_LB = sExpTorq.LB,
-        .S_RB = sExpTorq.RB,
+        .W_RF = _wExpTorq.RF,
+        .W_LF = _wExpTorq.LF,
+        .W_LB = _wExpTorq.LB,
+        .W_RB = _wExpTorq.RB,
+        .S_RF = _sExpTorq.RF,
+        .S_LF = _sExpTorq.LF,
+        .S_LB = _sExpTorq.LB,
+        .S_RB = _sExpTorq.RB,
     };
     SwervePower_u<PINYMOTOR::IMotor *> motors = {
         .W_RF = wheelMotor_.RF,
@@ -472,24 +480,38 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     std::vector<float> torq;
     torq = powerCtrl_->powerCtrl(expRads._, motors._, expTorq._, refereeMsg_, sCurVel._);
     for (uint8_t i = 0; i < 4; i++) {
-        wPowerTorq[i] = torq[i];
-        sPowerTorq[i] = torq[i + 4];
-        wheelMotor_._[i]->cmdTorq(wPowerTorq[i]);
-        steerMotor_._[i]->cmdTorq(sPowerTorq[i]);
-        // wheelMotor_._[i]->cmdTorq(wExpTorq[i]);
-        // steerMotor_._[i]->cmdTorq(sExpTorq[i]);
-
-        rawiq[i] = wExpTorq._[i];
-        rawiq[i + 4] = sExpTorq._[i];
-        iq[i] = torq[i];
-        iq[i + 4] = torq[i + 4];
+        wPowerTorq._[i] = torq[i];
+        sPowerTorq._[i] = torq[i + 4];
     }
-#else
-    for (uint8_t i = 0; i < 4; i++) {
-        wheelMotor_._[i]->cmdTorq(wExpTorq._[i]);
-        steerMotor_._[i]->cmdTorq(sExpTorq._[i]);
-    }
+    // motorCtrl(sPowerTorq, wPowerTorq);
+    motorCtrl(_sExpTorq, _wExpTorq);
+}
 #endif
+
+//让你的舵轮像云台一样旋转
+void Swerve::fakeGimbalCtrl(float _wz)
+{
+    Swerve_u<float> sTorq;
+    _wz = clamp(_wz, -2.f, 2.f);
+    for (float &i : sTorq._) {
+        i = _wz / 2.f * 1.f;
+    }
+
+#if APP_USE_POWERCTRL
+    powerCtrl({}, sTorq, {}, {});
+    // motorCtrl(sTorq, Swerve_u<float>{});
+#else
+    motorCtrl(sTorq, Swerve_u<float>{});
+#endif
+    debug_.wExpTorq = {};
+}
+
+void Swerve::motorCtrl(Swerve_u<float> _sTorq, Swerve_u<float> _wTorq)
+{
+    for (uint8_t i = 0; i < 4; i++) {
+        steerMotor_._[i]->cmdTorq(_sTorq._[i]);
+        wheelMotor_._[i]->cmdTorq(_wTorq._[i]);
+    }
     // steerMotor_.RF->cmdTorq(0);
     // steerMotor_.LF->cmdTorq(0);
     // steerMotor_.LB->cmdTorq(0);

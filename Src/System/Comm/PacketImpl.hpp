@@ -218,6 +218,15 @@ public:
 };
 
 // UL专用,英雄1,步兵2,哨兵7
+/*
+struct MapCommand_s {
+    float targetPositionX;
+    float targetPositionY;
+    uint8_t cmdKeyboard;
+    uint8_t targetRobotId;
+    uint16_t cmdSource;
+};
+*/
 class DecesionPacket1 {
 public:
     static constexpr uint8_t LEN = 8;
@@ -259,6 +268,33 @@ public:
         _protoData.reserved[2] = _data.content.reserved[2];
     }
 };
+
+// class DecesionPacket2 {
+// public:
+//     static constexpr uint8_t LEN = 8;
+//     static constexpr uint16_t ID = 0x26;
+//     struct ProtoData_s {
+//         REFEREE::MapCommand_s mapCommand;
+//     };
+// #pragma pack(push, 1)
+//     union Data_u {
+//         struct Data_s {
+//             REFEREE::MapCommand_s mapCommand;
+//         } content;
+//         uint8_t bytes[LEN];
+//     } data;
+// #pragma pack(pop)
+//     static constexpr void compress(const ProtoData_s &_protoData, Data_u &_data)
+//     {
+//         Data_u::Data_s &d = _data.content;
+//         d.mapCommand = _protoData.mapCommand;
+//     }
+//     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
+//     {
+//         _protoData.mapCommand = _data.content.mapCommand;
+//     }
+// };
+
 
 class SentryInfoPacket {
 public:

@@ -89,6 +89,10 @@ public:
     void enter();
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
+    void motorCtrl(Swerve_u<float> _sTorq, Swerve_u<float> _wTorq);
+
+    void fakeGimbalCtrl(float _wz);
+
 
     float deltaYaw = 0.f;
     void loadDeltaYaw();
@@ -129,7 +133,8 @@ private:
 
 #if APP_USE_POWERCTRL
     SwerveController *powerCtrl_;
-
+    void powerCtrl(Swerve_u<float> _sExpSpd, Swerve_u<float> _sExpTorq, Swerve_u<float> _wExpSpd,
+                   Swerve_u<float> _wExpTorq);
 #endif
 #if EXTENSION_SUPERCAP
     SuperCap cap_{ &HCAN2 };
@@ -146,12 +151,9 @@ private:
 
     SwerveDebug_s debug_ = {};
 
-    Swerve_u<float> steerZero = { {
-            .RF = 5.0083f,
-            .LF = 4.95766449f,
-            .LB = 3.41889358f,
-            .RB = 5.52453974f,
-    } }; //舵轮零位角度，用于回正方向,rad
+    Swerve_u<float> steerZero = {
+        { .RF = 5.0083f, .LF = 4.95766449f, .LB = 3.41889358f, .RB = 5.52453974f }
+    }; //舵轮零位角度，用于回正方向,rad
 
     Swerve_u<canHandle *> wheelCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
     Swerve_u<canHandle *> steerCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
