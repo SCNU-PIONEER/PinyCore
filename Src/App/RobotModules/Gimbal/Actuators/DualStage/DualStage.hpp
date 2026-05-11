@@ -95,10 +95,8 @@ public:
     DualStageDebug_s debug = {};
     bool isLaunched_ = false;
     DualStage_u<bool> isGimbalResverse;
-    DualStage_u<float> curImuAng_ = {};   //-pi~pi
-    DualStage_u<float> expImuAng_ = {};   //-pi~pi
-    DualStage_u<float> curMotorAng_ = {}; //0~2pi
-    DualStage_u<float> expMotorAng_ = {}; //0~2pi
+    DualStage_u<float> curImuAng_ = {}, expImuAng_ = {};     //-pi~pi
+    DualStage_u<float> curMotorAng_ = {}, expMotorAng_ = {}; //0~2pi
 
     void stop();
     void enter();
@@ -110,8 +108,6 @@ public:
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
                     DualStage_u<PositionalPid *> _velPID);
     void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
-
-    DualStage_u<FILTER::LPF *> *gimbalFilter() { return &gimbalFilterOutput_; }
 
 protected:
     void loadChassisMsg(void *_param);

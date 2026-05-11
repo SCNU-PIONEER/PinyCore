@@ -13,9 +13,6 @@ public:
 
     void enter() final
     {
-        for (auto &i : gimbal_->gimbalFilter()->_) {
-            i->reset();
-        }
         gimbal_->isLaunched_ = false;
         gimbal_->stop();
         LOG::info("GimbalStop", "enter");

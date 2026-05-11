@@ -98,6 +98,9 @@ void DualStage::stop()
     for (auto &i : motors_._) {
         i->cmd(PINYMOTOR::MotorCmdType_e::OFF);
     }
+    for (auto &i : gimbalFilterOutput_._) {
+        i->reset();
+    }
 }
 
 void DualStage::enter()
