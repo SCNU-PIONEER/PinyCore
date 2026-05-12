@@ -148,7 +148,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">rawPower</member>
-			<member name="last_addr" type="uint32">0x200032A0</member>
+			<member name="last_addr" type="uint32">0x2000327C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -197,7 +197,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">realPower</member>
-			<member name="last_addr" type="uint32">0x200032A8</member>
+			<member name="last_addr" type="uint32">0x20003284</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -246,7 +246,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">k0</member>
-			<member name="last_addr" type="uint32">0x200031F0</member>
+			<member name="last_addr" type="uint32">0x2000328C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -295,7 +295,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">mlc</member>
-			<member name="last_addr" type="uint32">0x200031F4</member>
+			<member name="last_addr" type="uint32">0x20003290</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -344,7 +344,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">esr</member>
-			<member name="last_addr" type="uint32">0x200031F8</member>
+			<member name="last_addr" type="uint32">0x20003294</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4460,7 +4460,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">fitPower</member>
-			<member name="last_addr" type="uint32">0x200032A4</member>
+			<member name="last_addr" type="uint32">0x20003280</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4509,7 +4509,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">realPower</member>
-			<member name="last_addr" type="uint32">0x200032A8</member>
+			<member name="last_addr" type="uint32">0x20003284</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4607,7 +4607,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.debug_.sExpTorq.RF</member>
-			<member name="last_addr" type="uint32">0x20002A88</member>
+			<member name="last_addr" type="uint32">0x20002418</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4754,7 +4754,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">rawPower</member>
-			<member name="last_addr" type="uint32">0x200032A0</member>
+			<member name="last_addr" type="uint32">0x2000327C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4803,7 +4803,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">setPower</member>
-			<member name="last_addr" type="uint32">0x200032AC</member>
+			<member name="last_addr" type="uint32">0x20003288</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4852,7 +4852,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.sCurTorq.RF</member>
-			<member name="last_addr" type="uint32">0x20002A60</member>
+			<member name="last_addr" type="uint32">0x20002A08</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4901,7 +4901,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.sCurVel.RF</member>
-			<member name="last_addr" type="uint32">0x20002A50</member>
+			<member name="last_addr" type="uint32">0x200029F8</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4950,7 +4950,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
 			<member name="address" type="string">chassis.obj.debug_.sExpVel.RF</member>
-			<member name="last_addr" type="uint32">0x20002A78</member>
+			<member name="last_addr" type="uint32">0x20002408</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -4995,11 +4995,11 @@
 			<member name="modif_last_addr" type="uint32">0x0</member>
 		</object>
 		<object name="ObjId0654" type="CVariable">
-			<member name="name" type="string">sPowerTorq[0]</member>
+			<member name="name" type="string">sPowerTorq.RF</member>
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">0</member>
-			<member name="address" type="string">sPowerTorq[0]</member>
-			<member name="last_addr" type="uint32">0x20003238</member>
+			<member name="address" type="string">sPowerTorq.RF</member>
+			<member name="last_addr" type="uint32">0x20003254</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
