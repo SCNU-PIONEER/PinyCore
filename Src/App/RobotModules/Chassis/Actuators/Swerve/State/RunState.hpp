@@ -7,7 +7,7 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid gWzAP{ 8.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.12f };
+static PositionalPid gWzAP{ 15.f, 0.3f, 0.001f, 0.001f, 0.2f, CHASSIS::Swerve::MAX_WZ_SPEED, 0.12f };
 static float spinWz;
 
 namespace CHASSIS {
@@ -37,6 +37,12 @@ public:
         spinWz = ref.wz;
 #endif
         chassis_->ctrl(ref);
+
+        // Speed_u ref;
+        // ref.vx = chassis_->msg.vx;
+        // ref.vy = chassis_->msg.vy;
+        // ref.wz = chassis_->msg.wz;
+        // chassis_->fakeGimbalCtrl(ref.vy);
     }
 
     void exit() final
@@ -55,8 +61,6 @@ public:
             return FSMState_e::SPIN;
         else if (chassis_->msg.state == FSMState_e::TANK)
             return FSMState_e::TANK;
-        else if (chassis_->msg.state == FSMState_e::FAKE)
-            return FSMState_e::FAKE;
         else
             return FSMState_e::RUN;
     }

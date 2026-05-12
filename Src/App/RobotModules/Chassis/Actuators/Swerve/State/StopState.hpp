@@ -30,8 +30,6 @@ public:
             return FSMState_e::SPIN;
         else if (chassis_->msg.state == FSMState_e::TANK)
             return FSMState_e::TANK;
-        else if (chassis_->msg.state == FSMState_e::FAKE)
-            return FSMState_e::FAKE;
         else
             return FSMState_e::STOP;
     }

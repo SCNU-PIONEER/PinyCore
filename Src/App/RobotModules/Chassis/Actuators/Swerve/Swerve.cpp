@@ -19,8 +19,6 @@
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
 #include "./State/TANKState.hpp"
-#include "./State/FakeState.hpp"
-
 
 extern canHandle HCAN1;
 extern canHandle HCAN2;
@@ -90,10 +88,10 @@ PositionalPid sBumpVelPid[4] = {
 };
 
 PositionalPid wheelVelPid[4] = {
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
-    PositionalPid(0.45f, 0.000f, 0.001f, 1.f / 1000.f, 1.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.05f, 0.001f, 1.f / 1000.f, 2.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.05f, 0.001f, 1.f / 1000.f, 2.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.05f, 0.001f, 1.f / 1000.f, 2.f, 7.f, 0.1f),
+    PositionalPid(0.45f, 0.05f, 0.001f, 1.f / 1000.f, 2.f, 7.f, 0.1f),
 };
 
 PositionalPid wBumpVelPid[4] = {
@@ -147,7 +145,6 @@ Swerve::Swerve()
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
     this->stateFactory_.addState(FSMState_e::SPIN, std::make_unique<SpinState>(this));
     this->stateFactory_.addState(FSMState_e::TANK, std::make_unique<TANKState>(this));
-    this->stateFactory_.addState(FSMState_e::FAKE, std::make_unique<FakeState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 
 #if APP_USE_POWERCTRL
@@ -188,38 +185,31 @@ void Swerve::update(void *_param)
     msg.vy = chassisCtrlRxPacket_.data().vy;
     msg.wz = chassisCtrlRxPacket_.data().wz;
     isGimbalReset = chassisCtrlRxPacket_.data().gimbalReset;
-    if (msg.state == FSMState_e::FAKE) {
-        isGimbalReset = true;
-    }
 #endif
-
-    refereeData_ = referee->receiver.getRefereeData();
-    sentryInfo_ = refereeData_.sentryInfo;
-
-    loadDeltaYaw();
     loadRefereeData(_param);
+    loadDecesionData();
     sendDataToReferee();
-    sendDecesionData();
 
     for (uint8_t i = 0; i < 4; i++) {
-        curWSpeed_._[i] = wheelMotor_._[i]->data().spdRadps;
         curDir._[i] = steerMotor_._[i]->posNorm();
         sCurVel._[i] = steerFilterInput_._[i]->process(steerMotor_._[i]->data().spdRadps);
         sCurTorq._[i] = steerMotor_._[i]->data().torq;
 
+        curWSpeed_._[i] = wheelMotor_._[i]->data().spdRadps;
+
         debug_.wCurr._[i] = wheelMotor_._[i]->data().curr;
     }
 
-    //转为头向速度
-    Speed_u v = forward(curWSpeed_);
-    curSpeed_.vx = v.vx * cosYaw_ + v.vy * sinYaw_;
-    curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
-    curSpeed_.wz = v.wz;
+    getDeltaYaw();
+#if EXTENSION_SUPERCAP
+    getSuperCapData();
+#endif
 
-    if (refereeMsg_.chassisPowerLimit < 0 || refereeMsg_.chassisPowerLimit > 200) {
-        refereeMsg_.chassisPowerLimit = 201;
-    }
+    this->stateFactory_.update();
+}
 
+void Swerve::getSuperCapData()
+{
 #if EXTENSION_SUPERCAP
     // float capRealRatio = cap_.getCapData().capEnergyRatio;
     cap_.setChargelimitRatio(0.95f);
@@ -234,12 +224,13 @@ void Swerve::update(void *_param)
 #endif
     cap_.task();
 #endif
-
-    this->stateFactory_.update();
 }
 //向上板发送裁判系统数据
 void Swerve::loadRefereeData(void *_param)
 {
+    refereeData_ = referee->receiver.getRefereeData();
+    sentryInfo_ = refereeData_.sentryInfo;
+
     if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg_, 0) == pdTRUE) {
     };
 
@@ -268,13 +259,10 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.senderId = refereeMsg_.robotId;
     sentryCmdData_.receiverId = 0x8080;
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
-
+    //裁判系统内部判定有问题，确认复活标志位置1姿态不切换
     if (fabs(refereeMsg_.currentHP) != 0) {
         sentryCmdData_.userdata.reviveConfirm = 0;
         sentryCmdData_.userdata.instantReviveConfirm = 0;
-    } else {
-        sentryCmdData_.userdata.reviveConfirm = 1;
-        // sentryCmdData_.userdata.instantReviveConfirm = 1;
     }
 
     if (cnt % 100 == 0) { //10HZ裁判系统发送数据
@@ -282,7 +270,7 @@ void Swerve::sendDataToReferee()
     }
 }
 
-void Swerve::sendDecesionData()
+void Swerve::loadDecesionData()
 {
     decesionTxPacket1_.setData().currentChassisEnergy = refereeData_.buff.remainingEnergy;
     decesionTxPacket1_.setData().allyBaseHP = refereeData_.gameRobotHP.allyBaseHP;
@@ -394,12 +382,11 @@ Swerve_u<float> Swerve::reverse(const Speed_u &_speed)
  */
 void Swerve::ctrl(const Speed_u &_refSpeed)
 {
-    Swerve_u<float> tempDir, refWSpeed = {};
-    Swerve_u<float> sDel, sExpVel, sExpTorq, wExpTorq;
+    Swerve_u<float> tempDir, sDel, sExpVel, sExpTorq, wExpTorq, refWSpeed = {};
     float vx = std::fmax(-MAX_VX_SPEED, std::fmin(_refSpeed.vx, MAX_VX_SPEED));
     float vy = std::fmax(-MAX_VY_SPEED, std::fmin(_refSpeed.vy, MAX_VY_SPEED));
     float wz = std::fmax(-MAX_WZ_SPEED, std::fmin(_refSpeed.wz, MAX_WZ_SPEED));
-
+    //转换为底盘向速度
     Speed_u refSpeed = { .vx = (vx * this->cosYaw_) - (vy * this->sinYaw_),
                          .vy = (vy * this->cosYaw_) + (vx * this->sinYaw_),
                          .wz = wz };
@@ -438,7 +425,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     debug_.sExpTorq = sExpTorq;
     debug_.wExpTorq = wExpTorq;
 }
-
 
 #if APP_USE_POWERCTRL
 Swerve_u<float> sPowerTorq = {};
@@ -483,8 +469,8 @@ void Swerve::powerCtrl(Swerve_u<float> _sExpSpd, Swerve_u<float> _sExpTorq, Swer
         wPowerTorq._[i] = torq[i];
         sPowerTorq._[i] = torq[i + 4];
     }
-    // motorCtrl(sPowerTorq, wPowerTorq);
-    motorCtrl(_sExpTorq, _wExpTorq);
+    // motorCtrl(_sExpTorq, _wExpTorq);
+    motorCtrl(sPowerTorq, wPowerTorq);
 }
 #endif
 
@@ -493,7 +479,7 @@ void Swerve::fakeGimbalCtrl(float _wz)
 {
     Swerve_u<float> sTorq;
     _wz = clamp(_wz, -2.f, 2.f);
-    for (float &i : sTorq._) {
+    for (auto &i : sTorq._) {
         i = _wz / 2.f * 1.f;
     }
 
@@ -503,6 +489,7 @@ void Swerve::fakeGimbalCtrl(float _wz)
 #else
     motorCtrl(sTorq, Swerve_u<float>{});
 #endif
+    debug_.sExpTorq = sTorq;
     debug_.wExpTorq = {};
 }
 
@@ -523,11 +510,17 @@ void Swerve::motorCtrl(Swerve_u<float> _sTorq, Swerve_u<float> _wTorq)
     // wheelMotor_.RB->cmdTorq(0);
 }
 
-void Swerve::loadDeltaYaw()
+void Swerve::getDeltaYaw()
 {
     // Master Board method
     insSub_->receive();
     deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
     cosYaw_ = arm_cos_f32(deltaYaw);
     sinYaw_ = arm_sin_f32(deltaYaw);
+
+    //转为头向速度
+    Speed_u v = forward(curWSpeed_);
+    curSpeed_.vx = v.vx * cosYaw_ + v.vy * sinYaw_;
+    curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
+    curSpeed_.wz = v.wz;
 };

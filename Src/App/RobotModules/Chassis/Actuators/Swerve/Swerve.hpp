@@ -89,16 +89,13 @@ public:
     void enter();
     void update(void *_param);
     void ctrl(const Speed_u &_refSpeed);
-    void motorCtrl(Swerve_u<float> _sTorq, Swerve_u<float> _wTorq);
-
     void fakeGimbalCtrl(float _wz);
 
+    const Speed_u &getSpeed() const { return curSpeed_; }
 
     float deltaYaw = 0.f;
-    void loadDeltaYaw();
     bool isGimbalReset = false;
-
-    const Speed_u &getSpeed() const { return curSpeed_; }
+    SwerveDebug_s debug_;
 
 protected:
     RefereeMsg_s refereeMsg_;
@@ -118,18 +115,20 @@ protected:
     float sinYaw_ = 0.f;
 
     void loadRefereeData(void *_param);
+    void loadDecesionData();
+    void getDeltaYaw();
+    void getSuperCapData();
     void sendDataToReferee();
-    void sendDecesionData();
 
     Speed_u forward(const Swerve_u<float> &_wSpeed);
     Swerve_u<float> reverse(const Speed_u &_speed);
+    void motorCtrl(Swerve_u<float> _sTorq, Swerve_u<float> _wTorq);
 
 private:
     Subscriber<INS_SYS::INSData_s> *insSub_;
     INS_SYS::INSData_s insData_ = {};
 
-    Swerve_u<PINYMOTOR::IMotor *> steerMotor_;
-    Swerve_u<PINYMOTOR::IMotor *> wheelMotor_;
+    Swerve_u<PINYMOTOR::IMotor *> steerMotor_, wheelMotor_;
 
 #if APP_USE_POWERCTRL
     SwerveController *powerCtrl_;
@@ -140,30 +139,21 @@ private:
     SuperCap cap_{ &HCAN2 };
     float capCmdRatio_;
 #endif
-    Speed_u curSpeed_ = {};          //当前车体速度
-    Swerve_u<float> curWSpeed_ = {}; //实际轮速rad/s
-    Swerve_u<float> expWSpeed_ = {}; //期望轮速rad/s
+    //当前车体速度
+    Speed_u curSpeed_;
+    //3508实际轮速,期望轮速rad/s
+    Swerve_u<float> curWSpeed_, expWSpeed_;
+    //舵轮 当前方向角,期望方向角,当前速度,当前扭矩
+    Swerve_u<float> curDir, expDir, sCurVel, sCurTorq;
+    //舵轮零位角度，用于回正方向,rad
+    Swerve_u<float> steerZero = { { .RF = 5.0083f, .LF = 4.95766449f, .LB = 3.41889358f, .RB = 5.52453974f } };
 
-    Swerve_u<float> curDir = {};   //舵轮当前方向角
-    Swerve_u<float> expDir = {};   //舵轮期望方向角
-    Swerve_u<float> sCurVel = {};  //舵轮当前速度
-    Swerve_u<float> sCurTorq = {}; //舵轮当前扭矩
-
-    SwerveDebug_s debug_ = {};
-
-    Swerve_u<float> steerZero = {
-        { .RF = 5.0083f, .LF = 4.95766449f, .LB = 3.41889358f, .RB = 5.52453974f }
-    }; //舵轮零位角度，用于回正方向,rad
-
-    Swerve_u<canHandle *> wheelCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
-    Swerve_u<canHandle *> steerCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
+    Swerve_u<canHandle *> steerCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } },
+                          wheelCan = { { .RF = &HCAN2, .LF = &HCAN1, .LB = &HCAN1, .RB = &HCAN2 } };
 
     Swerve_u<FILTER::LPF *> steerFilterInput_ = {}; //舵轮输入滤波器
-    Swerve_u<PositionalPid *> steerPosPid_ = {};    //舵轮位置环
-    Swerve_u<PositionalPid *> steerVelPid_ = {};    //舵轮速度环
-    Swerve_u<PositionalPid *> wheelVelPid_ = {};    //轮速pid
-    Swerve_u<PositionalPid *> sBumpVelPid_ = {};    //舵轮减速带速度环
-    Swerve_u<PositionalPid *> wBumpVelPid_ = {};    //减速带专用轮速pid
+    Swerve_u<PositionalPid *> steerPosPid_ = {}, steerVelPid_ = {}, wheelVelPid_ = {}, sBumpVelPid_ = {},
+                              wBumpVelPid_ = {};
 };
 
 } // namespace CHASSIS

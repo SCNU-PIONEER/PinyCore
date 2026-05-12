@@ -5,7 +5,7 @@
 
 
 namespace CHASSIS {
-enum class FSMState_e : uint8_t { STOP = 0, LAUNCH, RUN, TANK, SPIN, FAKE };
+enum class FSMState_e : uint8_t { STOP = 0, LAUNCH, RUN, TANK, SPIN, TEST };
 }
 class Chassis {
 public:

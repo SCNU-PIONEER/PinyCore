@@ -20,7 +20,7 @@ void PowerController::update(const RefereeMsg_s &_msg)
 
         float offsetPower = powerPid_.calc(capCmdRatio_, capRealRatio_);
         offsetPower = std::clamp(offsetPower, offsetPower, REMAIN_POWER);
-        maxPower_ = static_cast<float>(_msg.chassisPowerLimit - 15) - offsetPower;
+        maxPower_ = static_cast<float>(_msg.chassisPowerLimit) - offsetPower;
         capFreq = cap_->getRxFreq();
     }
     errorCheck(_msg.rxFreq, capFreq);

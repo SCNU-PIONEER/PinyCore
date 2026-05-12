@@ -28,9 +28,9 @@ private:
                                                       .MLC = 0.0001e-05f,
                                                       .ESR = 0.0001f,
                                                       .LeakagePower = 3.f / ((float)motorNum_ / 2.f) };
-    PowerModel_s::ModelParam_s SteerLaunchMotion = { .K0 = 0.476532f,
-                                                     .MLC = 0.0258866f,
-                                                     .ESR = 8.14924f,
+    PowerModel_s::ModelParam_s SteerLaunchMotion = { .K0 = 0.467663f,
+                                                     .MLC = 0.0115338f,
+                                                     .ESR = 9.82722f,
                                                      .LeakagePower = 4.f / ((float)motorNum_ / 2.f) };
     RLS<PowerModel_s::FIT_RANK> *wheelRLS_;
 #if ENABLE_STEER_RLS
