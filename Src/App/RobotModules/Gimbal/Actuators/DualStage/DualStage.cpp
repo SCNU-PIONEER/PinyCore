@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include "ArmorLoader.hpp"
 
 extern canHandle HCAN1;
 
@@ -189,10 +190,14 @@ void DualStage::loadShooterMsg(void *_param)
         if (d2eData.bufferMode != 0) {
             almsg.state = ARMORLOADER::FSMState_e::SINGLE;
         }
+        // if (d2eData.bufferMode != 0) {
+        //     almsg.state = ARMORLOADER::FSMState_e::SINGLE;
+        // }
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
 
+    
     if (msg.state == FSMState_e::RUN) {
         shooterCtrlTxPacket_.setData().fire &= (v2eData.control) ? v2eData.fire : true;
     } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
