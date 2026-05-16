@@ -1,7 +1,6 @@
 #include "RcMsgHandler.hpp"
 #include "ArmorBooster.hpp"
 #include "ArmorLoader.hpp"
-#include "MiniPC.hpp"
 #include "sdkconfig.h"
 #include "RemoteControl.hpp"
 
@@ -186,7 +185,6 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 // cMsg_.state = CHASSIS::FSMState_e::SPIN;
                 abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
                 alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
-                alMsg_.state = ARMORLOADER::FSMState_e::SLOW;
             }
             // cMsg_.state = CHASSIS::FSMState_e::STOP;
 
