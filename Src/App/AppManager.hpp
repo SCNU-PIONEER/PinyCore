@@ -5,7 +5,7 @@
 #include <vector>
 #include "Singleton.hpp"
 
-class AppManager : public Singleton<AppManager>, public Task<AppManager, 512> {
+class AppManager : public Singleton<AppManager>, public Task<AppManager, 1024> {
 public:
     void initApp();
 

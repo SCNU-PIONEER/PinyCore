@@ -51,12 +51,13 @@ typedef struct {
     float yaw;
 } EcToNav_s;
 
-//byte:4 + 4
+//byte:5 + 4
 typedef struct {
     uint8_t decesionHeader;
     bool isSmallAng;                  // 是否副相机角度   byte:1
     REFEREE::SentryCmd_s upSentryCmd; //
     bool isBumpArea;                  // 是否碰撞区域     byte:1
+    uint8_t bufferMode;               // 任务模式         byte:1
     uint8_t useSuperCap : 1;
     uint8_t reserved : 7;
 } DecesionToEc_s;
@@ -140,8 +141,8 @@ public:
     struct ProtoData_s {
         VisionToEc_s v2eData;   //27
         NavToEc_s n2eData;      //17
-        DecesionToEc_s d2eData; //4 + 4
-        uint8_t reserved[9];    //64-55
+        DecesionToEc_s d2eData; //5 + 4
+        uint8_t reserved[8];    //64-56
     };
 
 #pragma pack(push, 1)
@@ -150,8 +151,8 @@ public:
             uint8_t header;         //1
             VisionToEc_s v2eData;   //27
             NavToEc_s n2eData;      //17
-            DecesionToEc_s d2eData; //4 + 4
-            uint8_t reserved[9];    //64-55
+            DecesionToEc_s d2eData; //5 + 4
+            uint8_t reserved[8];    //64-56
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];

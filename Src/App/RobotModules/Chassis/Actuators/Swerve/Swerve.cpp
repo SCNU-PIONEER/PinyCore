@@ -210,6 +210,7 @@ void Swerve::update(void *_param)
 
 void Swerve::getSuperCapData()
 {
+    bool useCap = chassisCtrlRxPacket_.data().useSuperCap;
 #if EXTENSION_SUPERCAP
     // float capRealRatio = cap_.getCapData().capEnergyRatio;
     cap_.setChargelimitRatio(0.95f);
@@ -218,7 +219,10 @@ void Swerve::getSuperCapData()
     cap_.setChargePowerLimit(refereeMsg_.chassisPowerLimit);
     cap_.setChargeEnergySlack(refereeMsg_.chassisPowerBuffer);
 #if APP_USE_POWERCTRL
-    capCmdRatio_ = (chassisCtrlRxPacket_.data().useSuperCap && refereeMsg_.currentHP != 0) ? 0.2f : 0.9f;
+    if (sentryCmdRxPacket_.data().isBumpArea) {
+        useCap = true;
+    }
+    capCmdRatio_ = (useCap && (refereeMsg_.currentHP != 0)) ? 0.5f : 0.9f;
     powerCtrl_->capCmdRatio_ = capCmdRatio_;
 #endif
 #endif

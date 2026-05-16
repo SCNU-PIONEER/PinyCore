@@ -29,6 +29,8 @@ struct DualStageDebug_s {
     float visionYaw;
     float visionPitch;
     FSMState_e gimbalState;
+    DualStage_u<float> torq;
+    float followByaw;
 };
 
 //转换为-pi~pi
@@ -95,8 +97,8 @@ public:
     DualStageDebug_s debug = {};
     bool isLaunched_ = false;
     DualStage_u<bool> isGimbalResverse;
-    DualStage_u<float> curImuAng_ = {}, expImuAng_ = {};     //-pi~pi
-    DualStage_u<float> curMotorAng_ = {}, expMotorAng_ = {}; //0~2pi
+    DualStage_u<float> curImuAng_, expImuAng_;     //-pi~pi
+    DualStage_u<float> curMotorAng_, expMotorAng_; //0~2pi
 
     void stop();
     void enter();

@@ -102,6 +102,10 @@ void AppManager::initApp()
     schedule([]() { CommManager::instance().txTask(); });
 #endif
 
+#if EXTENSION_LED
+// add custom's leds
+#endif
+
     // Generate threads at the end
     this->createApp();
 }

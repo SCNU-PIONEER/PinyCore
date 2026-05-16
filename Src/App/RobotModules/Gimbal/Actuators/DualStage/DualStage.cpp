@@ -9,7 +9,7 @@
 #include "GM6020.hpp"
 #include "DM4310.hpp"
 #include "DM4340.hpp"
-
+#include "ArmorLoader.hpp"
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
 #include "./State/RunState.hpp"
@@ -19,7 +19,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-
 
 extern canHandle HCAN1;
 
@@ -187,9 +186,13 @@ void DualStage::loadShooterMsg(void *_param)
 {
     ArmorLoaderMsg_s almsg{};
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &almsg, 0) == pdTRUE) {
+        if (d2eData.bufferMode != 0) {
+            almsg.state = ARMORLOADER::FSMState_e::SINGLE;
+        }
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
+
     if (msg.state == FSMState_e::RUN) {
         shooterCtrlTxPacket_.setData().fire &= (v2eData.control) ? v2eData.fire : true;
     } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
@@ -213,6 +216,8 @@ void DualStage::sendVisionData()
     e2vData.detectColor = isColor(refereeRxPacket_.data().robotId);
     e2vData.isPlay = refereeRxPacket_.data().isPlay;
     e2vData.bulletSpeed = bulletSpdRxPacket_.data().shootSpeed;
+
+    e2vData.taskMode = d2eData.bufferMode;
 }
 
 void DualStage::sendNavData()
@@ -272,14 +277,18 @@ void DualStage::ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _a
         delArc._[i] = getMinorArc(_insPos._[i], curImuAng_._[i]);
         expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
     }
-    expMotorAng_.SecondYaw = rangeMap(
-            PINYMOTOR::clampArc(rangeConversion(expMotorAng_.SecondYaw), SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG));
+
     expMotorAng_.Pitch =
             rangeMap(PINYMOTOR::clampArc(rangeConversion(expMotorAng_.Pitch), PITCH_MIN_ANG, PITCH_MAX_ANG));
+
+    // if (msg.state != FSMState_e::AUTO)
+    expMotorAng_.SecondYaw = rangeMap(
+            PINYMOTOR::clampArc(rangeConversion(expMotorAng_.SecondYaw), SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG));
 
     if (msg.state == FSMState_e::RUN && debug.gimbalState != FSMState_e::AUTO) {
         expMotorAng_.SecondYaw = 0.f; //run模式下小yaw不改变方向
     }
+
     ctrlMotor(expMotorAng_, _angPID, _velPID);
 }
 

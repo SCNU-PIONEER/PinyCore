@@ -1,5 +1,6 @@
 #include "Dial.hpp"
 
+#include "portmacro.h"
 #include <cmath>
 
 #include "Bsp_can.hpp"
@@ -11,6 +12,7 @@
 #include "./State/SlowState.hpp"
 #include "./State/SingleState.hpp"
 #include "./State/StopState.hpp"
+#include <cstdint>
 
 using namespace ARMORLOADER;
 using namespace PINYMOTOR;
@@ -41,7 +43,7 @@ Dial::Dial()
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
     this->stateFactory_.addState(FSMState_e::SLOW, std::make_unique<SlowState>(this));
     this->stateFactory_.addState(FSMState_e::BLOCK, std::make_unique<BlockState>(this));
-    // this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
+    this->stateFactory_.addState(FSMState_e::SINGLE, std::make_unique<SingleState>(this));
     this->stateFactory_.addState(FSMState_e::STOP, std::make_unique<StopState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
 }

@@ -10,6 +10,9 @@
 #include "PidBasic.hpp"
 #include <cmath>
 
+// #include "YawSI.hpp"
+// YawSI yawLink{ 1000.f, 10.f };
+
 static PositionalPid gRunPosPid[3] = {
     PositionalPid(15.f, 0.f, 1.f, 0.001f, 0.5f, 5.f, 0.f),
     PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
@@ -19,14 +22,12 @@ static PositionalPid gRunPosPid[3] = {
 static PositionalPid gRunVelPid[3] = {
     PositionalPid(2.f, 0.f, 0.02f, 0.001f, 0.f, 7.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(1.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 5.f, 0.f),
 };
 //PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
-static PositionalPid wBYawFollowPid = {
-    PositionalPid(45.f, 0.1f, 0.001f, 0.001f, 0.5f, GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f),
-};
-float debugBYaw;
+static PositionalPid wBYawFollowPid = { PositionalPid(25.f, 0.5f, 0.01f, 0.001f, 0.5f,
+                                                      GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f) };
 
 namespace GIMBAL {
 
@@ -51,7 +52,6 @@ public:
         for (uint8_t i = 0; i < 3; i++) {
             eIA._[i] = cIA._[i];
         }
-        wBYaw_ = 0.f;
         expBigYaw_ = cIA.FirstYaw;
         gimbal_->enter();
 
@@ -61,6 +61,7 @@ public:
     void run() final
     {
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+        // yawLink.update(gimbal_->debug.torq.SecondYaw, gimbal_->ins().body.gz);
 
         eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
@@ -68,29 +69,32 @@ public:
 
         eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
 
-        //大yaw跟随小yaw
+        // // 大yaw跟随小yaw
+        // float wBYaw = 0.f;
         // eIA.Pitch += gimbal_->msg.wPitch * 0.001f;
         // eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
 
         // eIA.SecondYaw = rangeConversion(eIA.SecondYaw);
         // eIA.SecondYaw += gimbal_->msg.wYaw * 0.001f;
 
+        // eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+
         // if (fabsf(rangeConversion(cMA.SecondYaw)) < 0.1f) {
-        //     wBYaw_ = 0.f;
+        //     wBYaw = 0.f;
         //     eIA.FirstYaw = expBigYaw_;
         // } else {
-        //     wBYaw_ = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
+        //     wBYaw = wBYawFollowPid_->calc(0, PINYMOTOR::getMinorArc(0, cMA.SecondYaw));
 
         //     if (gimbal_->msg.wYaw != 0.f) {
-        //         wBYaw_ = PINYMOTOR::clamp(wBYaw_, -fabsf(gimbal_->msg.wYaw), fabsf(gimbal_->msg.wYaw));
+        //         wBYaw = PINYMOTOR::clamp(wBYaw, -fabsf(gimbal_->msg.wYaw), fabsf(gimbal_->msg.wYaw));
         //     } else {
-        //         wBYaw_ = PINYMOTOR::clamp(wBYaw_, -0.1f, 0.1f);
+        //         wBYaw = PINYMOTOR::clamp(wBYaw, -0.1f, 0.1f);
         //     }
 
-        //     eIA.FirstYaw += wBYaw_ * 0.001f;
+        //     eIA.FirstYaw += wBYaw * 0.001f;
         //     expBigYaw_ = cIA.FirstYaw; //重载当前大yaw角度
         // }
-        // debugBYaw = wBYaw_;
+        // gimbal_->debug.followByaw = wBYaw;
 
         gimbal_->ctrl(eIA, runPosPid_, runVelPid_);
     }
@@ -122,7 +126,6 @@ public:
 
 private:
     DualStage *gimbal_;
-    float wBYaw_ = 0.f;
     float expBigYaw_ = 0.f;
 
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
