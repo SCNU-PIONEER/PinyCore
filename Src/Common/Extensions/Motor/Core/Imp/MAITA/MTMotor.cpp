@@ -1,5 +1,6 @@
 #include "MTMotor.hpp"
 #include "MTMotorMsg.hpp"
+#include "StmLog.hpp"
 #include "Bsp_can.hpp"
 #include "MotorCommonMacros.hpp"
 #include <cstring>
@@ -28,7 +29,25 @@ MTMotor::MTMotor(const char _name[16], InitConfig_s _config)
 
 MTMotor::~MTMotor() { this->cancelMotor(); }
 
-void MTMotor::updateCtrlMode() { ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId; }
+void MTMotor::updateCtrlMode()
+{
+    ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId;
+    switch (regInfo_.workMode) {
+    case WorkMode_e::PDESVDES: {
+        convert = &MTMotor::absPosCtrl;
+        break;
+    }
+    case WorkMode_e::CURR: {
+        convert = &MTMotor::torqCtrl;
+        break;
+    }
+    default: {
+        convert = &MTMotor::disable;
+        LOG::error("MTMotor", " %s: this mode is not supported", regInfo_.name);
+        break;
+    }
+    }
+}
 
 void MTMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
@@ -44,7 +63,7 @@ void MTMotor::registerRecvCallback(uint16_t _rxId)
 
 MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
 {
-    if (_rxBuf[0] == 0xA4 || _rxBuf[0] == 0x9C) {
+    if (_rxBuf[0] == 0xA4 || _rxBuf[0] == 0x9C || _rxBuf[0] == 0xA1) {
         return parseAbsPosCtrl(_rxBuf);
     }
     return 0;
@@ -52,7 +71,7 @@ MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
 
 MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
 {
-    Feedback_s fb = *(Feedback_s *)_rxBuf;
+    FeedbackAbsPosCtrl_s fb = *(FeedbackAbsPosCtrl_s *)_rxBuf;
     this->data_.tempture = fb.temperature;
     this->data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f : static_cast<float>(fb.iq) * 0.01f;
     this->data_.torq = this->data_.curr * status_.kn;
@@ -61,10 +80,9 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
     this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
     /* angle */
-    this->data_.rawAng = static_cast<float>(fb.pos);
-    float noumenaAng = deg2rad(this->data_.rawAng);
-    float rawAng = regInfo_.isReverse ? -noumenaAng : noumenaAng;
-    this->data_.ang = rawAng - this->data_.zeroAng;
+    this->data_.rawAng = deg2rad(static_cast<float>(fb.pos));
+    float noumenaAng = this->data_.rawAng;
+    this->data_.ang = regInfo_.isReverse ? -noumenaAng : noumenaAng - this->data_.zeroAng;
     this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
     if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
         this->globalState = GlobalState_e::ONLINE;
@@ -94,7 +112,7 @@ MotorTypeDef_e MTMotor::ctrl()
     std::array<uint8_t, 8> txBuf{};
 
     if (this->cmd_.SW) {
-        absPosCtrl(txBuf);
+        (this->*convert)(txBuf);
     } else if (!this->cmd_.SW && this->cmd_.prevSW) {
         if (this->posPID_ != nullptr)
             this->posPID_->reset();
@@ -124,11 +142,22 @@ void MTMotor::readState2(std::array<uint8_t, 8> &_txBuf)
 
 void MTMotor::absPosCtrl(std::array<uint8_t, 8> &_txBuf)
 {
-    TransmitMsg_s data{};
+    TransmiAbsPosCtrlMsg_s data{};
     uint16_t rawSpeed = static_cast<uint16_t>(rad2deg(this->cmd_.vel));
     data.maxspeed = std::min(rawSpeed, this->status_.speedMax);
     data.pos = regInfo_.isReverse ? -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
                                     static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
+    memcpy(_txBuf.data(), &data, 8);
+}
+
+void MTMotor::torqCtrl(std::array<uint8_t, 8> &_txBuf)
+{
+    TransmiTorqCtrlMsg_s data{};
+    int32_t rawIq32 = static_cast<int32_t>(std::lround(this->cmd_.torq / status_.kn * 100.0f));
+    int32_t tmpIq32 = regInfo_.isReverse ? -rawIq32 : rawIq32;
+    int16_t rawIq = static_cast<int16_t>(std::max<int32_t>(
+            std::numeric_limits<int16_t>::min(), std::min<int32_t>(std::numeric_limits<int16_t>::max(), tmpIq32)));
+    data.iqControl = rawIq;
     memcpy(_txBuf.data(), &data, 8);
 }
 

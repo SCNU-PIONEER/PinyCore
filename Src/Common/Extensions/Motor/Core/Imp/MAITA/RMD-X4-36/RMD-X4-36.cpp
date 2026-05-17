@@ -40,9 +40,9 @@ MotorTypeDef_e RMDX436::checkBaseConfig()
         LOG::error(TAG, " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::PDESVDES) {
+    if (regInfo_.workMode != WorkMode_e::PDESVDES && regInfo_.workMode != WorkMode_e::CURR) {
         rslt |= 1;
-        LOG::error(TAG, " %s: only support PDESVDES WorkMode", regInfo_.name);
+        LOG::error(TAG, " %s: only support PDESVDES or CURR WorkMode", regInfo_.name);
     }
 
     if (regInfo_.offsetId > 32) {

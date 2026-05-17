@@ -18,6 +18,8 @@ struct Status_s {
 };
 
 class MTMotor : public IMotor {
+    using ConvertFunc = void (MTMotor::*)(std::array<uint8_t, 8> &);
+
 public:
     MTMotor(const char _name[16], InitConfig_s _config);
     ~MTMotor() override;
@@ -37,14 +39,18 @@ protected:
 private:
     MotorTypeDef_e ctrl();
     MotorTypeDef_e send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, uint8_t _len);
+
     MotorTypeDef_e parse(const uint8_t *_rxBuf);
     MotorTypeDef_e parseAbsPosCtrl(const uint8_t *_rxBuf);
+    MotorTypeDef_e parseTorqCtrl(const uint8_t *_rxBuf);
     MotorTypeDef_e parseReadState2(const uint8_t *_rxBuf);
-
 
     void disable(std::array<uint8_t, 8> &_txBuf);
     void readState2(std::array<uint8_t, 8> &_txBuf);
     void absPosCtrl(std::array<uint8_t, 8> &_txBuf);
+    void torqCtrl(std::array<uint8_t, 8> &_txBuf);
+
+    ConvertFunc convert = &MTMotor::disable;
 
     MessageBufferHandle_t rxStream_;
     uint16_t ctrlId_ = 0XFFFF;
