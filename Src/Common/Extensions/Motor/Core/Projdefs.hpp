@@ -17,6 +17,7 @@ enum class WorkMode_e : uint8_t {
     QUAD_CURR,
     QUAD_VOLT,
     VOLT,
+    CURR,
     MIT_TT,
     MIT_VDES,
     MIT_VDESPDES,
