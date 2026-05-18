@@ -65,7 +65,7 @@ void Dial::enter()
 void Dial::update(void *_param)
 {
 #if !APP_USE_COMM
-    if (xQueueReceive((((MsgBus_s *)_param)->armorLoadQueue), &msg, 0) == pdTRUE) {
+    if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &msg, 0) == pdTRUE) {
     };
 #else
     UNUSED(_param);

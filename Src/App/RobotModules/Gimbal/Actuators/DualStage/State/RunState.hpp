@@ -20,7 +20,7 @@ static PositionalPid gRunPosPid[3] = {
 };
 //PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gRunVelPid[3] = {
-    PositionalPid(2.f, 0.f, 0.02f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(2.f, 0.f, 0.02f, 0.001f, 0.f, 5.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 5.f, 0.f),
 };
@@ -32,10 +32,11 @@ static PositionalPid wBYawFollowPid = { PositionalPid(25.f, 0.5f, 0.01f, 0.001f,
 namespace GIMBAL {
 
 class RunState : public FSMState<FSMState_e> {
-    static constexpr float IMU_PITCH_MAX_ANG = 0.436618f; // 25°
-    static constexpr float IMU_PITCH_MIN_ANG = -0.6012f;  // -35°
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  //
+    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; //
 
-    static constexpr float SECOND_YAW_MAX_ANG = 0.1309f; //±15°
+    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
+    static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
 
 public:
     RunState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::RUN), gimbal_(_gimbal)
@@ -76,7 +77,8 @@ public:
 
         // eIA.SecondYaw = rangeConversion(eIA.SecondYaw);
         // eIA.SecondYaw += gimbal_->msg.wYaw * 0.001f;
-
+        // eMA.SecondYaw = PINYMOTOR::rangeMap(
+        //         PINYMOTOR::clampArc(rangeConversion(eMA.SecondYaw), SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG));
         // eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         // if (fabsf(rangeConversion(cMA.SecondYaw)) < 0.1f) {
@@ -96,7 +98,9 @@ public:
         // }
         // gimbal_->debug.followByaw = wBYaw;
 
-        gimbal_->ctrl(eIA, runPosPid_, runVelPid_);
+        eMA = gimbal_->ctrl(eIA);
+        eMA.SecondYaw = 0.f;
+        gimbal_->ctrlMotor(eMA, runPosPid_, runVelPid_);
     }
 
     void exit() final

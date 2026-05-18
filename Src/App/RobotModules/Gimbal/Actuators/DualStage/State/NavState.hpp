@@ -5,9 +5,10 @@
 #include "Gimbal.hpp"
 #include "Smooth.hpp"
 #include "StmLog.hpp"
-
+#include "dsp/fast_math_functions.h"
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
+#include <cmath>
 
 static PositionalPid gNavPosPid[3] = {
     PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
@@ -16,7 +17,7 @@ static PositionalPid gNavPosPid[3] = {
 };
 //    PositionalPid(60.f, 80.f, 3.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gNavVelPid[3] = {
-    PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),
+    PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 5.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
     PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 5.f, 0.f),
 };
@@ -25,10 +26,10 @@ static PositionalPid gNavVelPid[3] = {
 namespace GIMBAL {
 
 class NavState : public FSMState<FSMState_e> {
-    static constexpr float IMU_PITCH_MIN_ANG = -0.64578f; // -37°
-    static constexpr float IMU_PITCH_MAX_ANG = 0.35f;     //20°
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  // 
+    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; // 
 
-    static constexpr float SECOND_YAW_MAX_ANG = 0.1309f; //±15°
+    static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
 
 public:
     NavState(DualStage *_gimbal) : FSMState<FSMState_e>(FSMState_e::NAV), gimbal_(_gimbal)
@@ -52,8 +53,6 @@ public:
 
     void run() final
     {
-        DualStage_u<float> delArc = {};
-
         eIA.Pitch = cIA.Pitch;
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
         eIA.SecondYaw = cIA.SecondYaw;
@@ -61,8 +60,7 @@ public:
         eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
-        delArc.FirstYaw = PINYMOTOR::getMinorArc(eIA.FirstYaw, cIA.FirstYaw);
-        eMA.FirstYaw = PINYMOTOR::rangeMap(cMA.FirstYaw + delArc.FirstYaw);
+        eMA = gimbal_->ctrl(eIA);
 
         //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
         if (patrolCnt + 5 >= MAX_PAT_CNT)
@@ -71,8 +69,8 @@ public:
             maxPatCount = MAX_PAT_CNT;
         SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
-        eMA.Pitch = PINYMOTOR::rangeMap((0.25f * cos(omiga * patrolCnt)) + 0.1f);
-        eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
+        eMA.Pitch = PINYMOTOR::rangeMap((amplitude * arm_cos_f32(omiga * patrolCnt)) + amplitudeBias);
+        eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * arm_cos_f32(omiga * patrolCnt));
 
         gimbal_->ctrlMotor(eMA, navPosPid_, navVelPid_);
     }
@@ -106,17 +104,17 @@ private:
     DualStage *gimbal_;
 
     static constexpr float PAT_FREQ = 1000.f; //hz,代码运行频率
-    static constexpr float PERIOD = 1;        //s
+    static constexpr float PERIOD = 1.f;      //s
     static constexpr float MAX_PAT_CNT = PERIOD * PAT_FREQ;
-    float patrolCnt = 0;
-    float maxPatCount = 0;
+    float patrolCnt = 0, maxPatCount = 0;
     float omiga = 2 * PI / PERIOD / PAT_FREQ; //rad/s
+    float amplitude = ((IMU_PITCH_MAX_ANG - IMU_PITCH_MIN_ANG) / 2.f) - 0.05f;
+    float amplitudeBias = amplitude - IMU_PITCH_MAX_ANG;
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
     DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
-
 
     DualStage_u<PositionalPid *> navPosPid_;
     DualStage_u<PositionalPid *> navVelPid_;

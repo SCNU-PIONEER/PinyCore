@@ -27,7 +27,7 @@ using namespace PINYMOTOR;
 
 static FILTER::LPF gimbalFilterOutput[3]{
     FILTER::LPF(1000.f, 4.f),
-    FILTER::LPF(1000.f, 5.f),
+    FILTER::LPF(1000.f, 10.f),
     FILTER::LPF(1000.f, 4.f),
 };
 
@@ -193,7 +193,6 @@ void DualStage::loadShooterMsg(void *_param)
         shooterCtrlTxPacket_.setData().fire = almsg.fire;
     }
 
-    
     if (msg.state == FSMState_e::RUN) {
         shooterCtrlTxPacket_.setData().fire &= (v2eData.control) ? v2eData.fire : true;
     } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
@@ -267,30 +266,16 @@ void DualStage::ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, Du
  * @brief 输入imu角度,传入电机控制函数
  * 
  * @param _insPos imu系角度
- * @param _angPID 
- * @param _velPID 
+ * @return DualStage_u<float> 电机系期望角度
  */
-void DualStage::ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _angPID,
-                     DualStage_u<PositionalPid *> _velPID)
+DualStage_u<float> DualStage::ctrl(DualStage_u<float> _insPos)
 {
-    DualStage_u<float> delArc = {};
+    DualStage_u<float> delArc = {}, cmdMotorAng = {};
     for (uint8_t i = 0; i < 3; i++) {
         delArc._[i] = getMinorArc(_insPos._[i], curImuAng_._[i]);
-        expMotorAng_._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
+        cmdMotorAng._[i] = rangeMap(curMotorAng_._[i] + delArc._[i]);
     }
-
-    expMotorAng_.Pitch =
-            rangeMap(PINYMOTOR::clampArc(rangeConversion(expMotorAng_.Pitch), PITCH_MIN_ANG, PITCH_MAX_ANG));
-
-    // if (msg.state != FSMState_e::AUTO)
-    expMotorAng_.SecondYaw = rangeMap(
-            PINYMOTOR::clampArc(rangeConversion(expMotorAng_.SecondYaw), SECOND_YAW_MIN_ANG, SECOND_YAW_MAX_ANG));
-
-    if (msg.state == FSMState_e::RUN && debug.gimbalState != FSMState_e::AUTO) {
-        expMotorAng_.SecondYaw = 0.f; //run模式下小yaw不改变方向
-    }
-
-    ctrlMotor(expMotorAng_, _angPID, _velPID);
+    return cmdMotorAng;
 }
 
 float outMaxRunVel[3];
@@ -321,7 +306,6 @@ void DualStage::ctrlMotor(DualStage_u<float> _expMotorAng, DualStage_u<Positiona
     // motors_.Pitch->cmdTorq(0.f);
 }
 
-
 //前馈pid,暂时无用
 volatile float accDebug = 0;
 volatile float torqDebug = 0;
@@ -332,12 +316,14 @@ void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackP
     float pos = rangeMap(motors_.SecondYaw->posNorm() + insYawDelArc);
     float del = getMinorArc(pos, motors_.SecondYaw->posNorm());
     float vel = _angPID->calc(del, 0);
-    velDebug = vel;
     float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(v2eData.yawVel, insData_.body.gz);
-    accDebug = acc += v2eData.yawAcc; // forward feedbac
     float torq = calcYawTorq(insData_.body.gz, acc);
-    torqDebug = torq = std::clamp(torq, -DJIMOTOR::GM6020::TORQ_MAX, DJIMOTOR::GM6020::TORQ_MAX);
+    torq = std::clamp(torq, -DMMOTOR::DM4310::TORQ_MAX, DMMOTOR::DM4310::TORQ_MAX);
     motors_.SecondYaw->cmdTorq(gimbalFilterOutput_.SecondYaw->process(torq));
+
+    velDebug = vel;
+    accDebug = acc += v2eData.yawAcc; // forward feedbac
+    torqDebug = torq;
 }
 
 float DualStage::calcYawTorq(float _vel, float _acc)

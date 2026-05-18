@@ -60,8 +60,8 @@ inline bool isColor(float _robotId)
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 0.616697907f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 2.25278807f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 3.96174741f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.57861209f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -74,15 +74,16 @@ public:
 
     static constexpr float MAX_BYAW_SPEED = 5.f; //4340额定转速36rpm,实测5rad/s还行
     static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
-
-    static constexpr float PITCH_MAX_ANG = 0.4131106f; // 24°
-    static constexpr float PITCH_MIN_ANG = -0.6012f;   // -35°
+    //imu
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  // 
+    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; // 
+    //motor
     static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
     static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
-
-    static constexpr float YAW_INERTIA = 0.0195103455f; //牢全参数
-    static constexpr float YAW_FRICTION = 0.00570616219f;
-    static constexpr float YAW_COULOMB = 0.0173312854f;
+    //小yaw
+    static constexpr float YAW_INERTIA = 0.0175f;
+    static constexpr float YAW_FRICTION = 0.196972f;
+    static constexpr float YAW_COULOMB = 0.109883f;
 
     DualStage();
 
@@ -104,7 +105,7 @@ public:
     void enter();
     void update(void *_param);
 
-    void ctrl(DualStage_u<float> _insPos, DualStage_u<PositionalPid *> _angPID, DualStage_u<PositionalPid *> _velPID);
+    DualStage_u<float> ctrl(DualStage_u<float> _insPos);
     void ctrlMotor(DualStage_u<float> _expMotorAng, DualStage_u<PositionalPid *> _angPID,
                    DualStage_u<PositionalPid *> _velPID);
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
