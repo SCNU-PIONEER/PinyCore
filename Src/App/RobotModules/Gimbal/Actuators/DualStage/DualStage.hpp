@@ -75,8 +75,8 @@ public:
     static constexpr float MAX_BYAW_SPEED = 5.f; //4340额定转速36rpm,实测5rad/s还行
     static constexpr float MAX_BYAW_FOLLOW_SPEED = 10.f;
     //imu
-    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  // 
-    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; // 
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  //
+    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; //
     //motor
     static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
     static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
@@ -124,6 +124,7 @@ protected:
 
 private:
     ChassisMsg_s cmsg{};
+    bool enFire = false;
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_{ 300.f };
     ShooterCtrlTxPacket shooterCtrlTxPacket_{ 300.f };

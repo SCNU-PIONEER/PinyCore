@@ -186,18 +186,20 @@ void DualStage::loadShooterMsg(void *_param)
 {
     ArmorLoaderMsg_s almsg{};
     if (xQueueReceive((((MsgBus_s *)_param)->armorLoaderQueue), &almsg, 0) == pdTRUE) {
-        if (d2eData.bufferMode != 0) {
-            almsg.state = ARMORLOADER::FSMState_e::SINGLE;
-        }
+        // if (d2eData.bufferMode != 0 && almsg.state != ARMORLOADER::FSMState_e::STOP) {
+        //     almsg.state = ARMORLOADER::FSMState_e::SINGLE;
+        // }
         shooterCtrlTxPacket_.setData().state = static_cast<uint8_t>(almsg.state);
-        shooterCtrlTxPacket_.setData().fire = almsg.fire;
+        enFire = almsg.fire;
     }
 
     if (msg.state == FSMState_e::RUN) {
-        shooterCtrlTxPacket_.setData().fire &= (v2eData.control) ? v2eData.fire : true;
-    } else if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
-        shooterCtrlTxPacket_.setData().fire &= v2eData.fire;
+        enFire &= (v2eData.control) ? v2eData.fire : true;
+    } else if (msg.state == FSMState_e::NAV) {
+        enFire &= v2eData.fire;
     }
+
+    shooterCtrlTxPacket_.setData().fire = enFire;
 }
 
 void DualStage::loadSentryCmd()

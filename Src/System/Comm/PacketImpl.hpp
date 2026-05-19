@@ -115,7 +115,7 @@ public:
     union Data_u {
         struct Data_s {
             uint8_t state : 8;
-            bool fire : 1;
+            uint8_t fire : 1;
             uint32_t reversed : 23;
         } content;
         uint8_t bytes[LEN];
