@@ -57,6 +57,7 @@ void Dial::stop()
 
 void Dial::enter()
 {
+    motors_.dial->setZeroAng(); // reset multipCirAng and cirNum
     for (auto &i : motors_._) {
         i->cmd(MotorCmdType_e::ON);
     }

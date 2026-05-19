@@ -5,8 +5,8 @@
 
 #include "PidBasic.hpp"
 
-static PositionalPid singleDialAngPID(25.f, 7.f, 0.5f, 0.001f, 5.f, 20.f, 0);
-static PositionalPid singleDialVelPID(0.1f, 0.f, 0, 0.001f, 0.5f, 2.49f, 0);
+static PositionalPid singleDialAngPID(25.f, 10.f, 0.f, 0.001f, 8.f, 41.f, 0);
+static PositionalPid singleDialVelPID(0.2f, 0.1f, 0.0009f, 0.001f, 4.5f, 1.f, 0);
 
 namespace ARMORLOADER {
 
@@ -46,7 +46,6 @@ public:
         LOG::info("ArmorLoaderSingle", " exit");
     }
 
-
     FSMState_e checkChange() final
     {
         if (loader_->msg.state == FSMState_e::STOP)
@@ -78,6 +77,7 @@ private:
 
         void enter() final
         {
+            parent_.loader_->enter();
             fixAng_ = parent_.loader_->dial()->pos() + SINGLE_ANG;
             LOG::info("", "fire");
         }
