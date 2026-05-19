@@ -3,17 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 
-/* RFID功能卡 */
-#define CARD_ATTACK     ((uint8_t)0x00)
-#define CARD_PROTECT    ((uint8_t)0x01)
-#define CARD_BLOOD_RED  ((uint8_t)0x02)
-#define CARD_BLOOD_BLUE ((uint8_t)0x03)
-#define CARD_HEAL_RED   ((uint8_t)0x04)
-#define CARD_HEAL_BLUE  ((uint8_t)0x05)
-#define CARD_COLD_RED   ((uint8_t)0x06)
-#define CARD_COLD_BLUE  ((uint8_t)0x07)
-#define CARD_FORT       ((uint8_t)0x08)
-
 namespace REFEREE {
 
 #pragma pack(push, 1)
@@ -175,11 +164,87 @@ struct RadarInfo_s {
 };
 
 /* 0x0301 机器人交互数据，30Hz 周期发送 */
-struct RobotInteractionData_s {
+struct RobotInteractionTxPacket_s {
     uint16_t dataCmdId;
     uint16_t senderId;
     uint16_t receiverId;
     uint8_t userData[112];
+};
+struct RobotInteractionRxInfo_s {
+    uint16_t senderId;
+    size_t offsetByte;
+    size_t size;
+};
+
+struct RadarInterationData_s {
+    uint16_t opponentHeroX;
+    uint16_t opponentHeroY;
+    uint16_t opponentEngineerX;
+    uint16_t opponentEngineerY;
+    uint16_t opponentInfantry3X;
+    uint16_t opponentInfantry3Y;
+    uint16_t opponentInfantry4X;
+    uint16_t opponentInfantry4Y;
+    uint16_t opponentAerialX;
+    uint16_t opponentAerialY;
+    uint16_t opponentSentryX;
+    uint16_t opponentSentryY;
+
+    uint16_t opponentHeroHP;
+    uint16_t opponentEngineerHP;
+    uint16_t opponentInfantry3HP;
+    uint16_t opponentInfantry4HP;
+    uint16_t reservedHP;
+    uint16_t opponentSentryHP;
+
+    uint16_t opponentHeroBulletRemaining;
+    uint16_t opponentInfantry3BulletRemaining;
+    uint16_t opponentInfantry4BulletRemaining;
+    uint16_t opponentAerialBulletRemaining;
+    uint16_t opponentSentryBulletRemaining;
+
+    uint16_t opponentCoinRemain;
+    uint16_t opponentCumulativeCoin;
+    uint32_t opponentMacroStatus;
+
+    uint8_t opponentHeroRegenerationBuff;
+    uint16_t opponentHeroHeatCoolingBuff;
+    uint8_t opponentHeroPositiveDefenceBuff;
+    uint8_t opponentHeroNegativeDefenceBuff;
+    uint16_t opponentHeroAttackBuff;
+
+    uint8_t opponentEngineerRegenerationBuff;
+    uint16_t opponentEngineerHeatCoolingBuff;
+    uint8_t opponentEngineerPositiveDefenceBuff;
+    uint8_t opponentEngineerNegativeDefenceBuff;
+    uint16_t opponentEngineerAttackBuff;
+
+    uint8_t opponentInfantry3RegenerationBuff;
+    uint16_t opponentInfantry3HeatCoolingBuf;
+    uint8_t opponentInfantry3PositiveDefenceBuff;
+    uint8_t opponentInfantry3NegativeDefenceBuff;
+    uint16_t opponentInfantry3AttackBuff;
+
+    uint8_t opponentInfantry4RegenerationBuff;
+    uint16_t opponentInfantry4HeatCoolingBuff;
+    uint8_t opponentInfantry4PositiveDefenceBuff;
+    uint8_t opponentInfantry4NegativeDefenceBuff;
+    uint16_t opponentInfantry4AttackBuff;
+
+    uint8_t opponentSentryRegenerationBuff;
+    uint16_t opponentSentryHeatCoolingBuff;
+    uint8_t opponentSentryPositiveDefenceBuff;
+    uint8_t opponentSentryNegativeDefenceBuff;
+    uint16_t opponentSentryAttackBuff;
+    uint8_t opponentSentryPosture;
+};
+
+struct RobotInteractionRxList_s {
+    RadarInterationData_s radarInterationData;
+};
+
+RobotInteractionRxInfo_s constexpr INTERACTION_INFO[1] = {
+    { .senderId = 0x09, .offsetByte = 0, .size = sizeof(RadarInterationData_s) },
 };
 
 /* 0x0302 自定义控制器数据（向机器人发送），1Hz 周期发送 */
@@ -268,6 +333,7 @@ struct Client2RobotData_s {
     uint8_t data[30];
 };
 
+//下面六个为雷达解析数据包，正常兵种不需要使用
 /* 0x0A01 对方机器人位置坐标，10Hz 周期发送 */
 struct OpponentRobotPosition_s {
     uint16_t heroX;      // 对方英雄机器人x坐标（cm）
@@ -422,7 +488,6 @@ struct RefereeProt_s {
     RadarMarkData_s radarMarkData;
     SentryInfo_s sentryInfo;
     RadarInfo_s radarInfo;
-    RobotInteractionData_s robotInteractionData;
     MapCommand_s mapCommand;
     MapRobotData_s mapRobotData;
     CustomClientData_s customClientData;
@@ -432,6 +497,7 @@ struct RefereeProt_s {
     RobotCustomData_s robotCustomData;
     Robot2ClientData_s robotToClientData;
     Client2RobotData_s clientToRobotData;
+    RobotInteractionRxList_s robotInteractionList;
 };
 struct INFO_s {
     CmdId_e cmdId;
@@ -483,9 +549,6 @@ INFO_s constexpr INFO[INFO_NUM] = {
     { .cmdId = CmdId_e::RADAR_AUTONOMOUS_SYN,
       .offsetByte = offsetof(RefereeProt_s, radarInfo),
       .size = sizeof(RadarInfo_s) },
-    { .cmdId = CmdId_e::ROBOT_INTERACTION_DATA,
-      .offsetByte = offsetof(RefereeProt_s, robotInteractionData),
-      .size = sizeof(RobotInteractionData_s) },
     { .cmdId = CmdId_e::MAP_COMMAND, .offsetByte = offsetof(RefereeProt_s, mapCommand), .size = sizeof(MapCommand_s) },
     { .cmdId = CmdId_e::RADAR_TARGET_POSITIONX,
       .offsetByte = offsetof(RefereeProt_s, mapRobotData),
@@ -511,6 +574,9 @@ INFO_s constexpr INFO[INFO_NUM] = {
     { .cmdId = CmdId_e::CLIENT_TO_ROBOT_DATA,
       .offsetByte = offsetof(RefereeProt_s, clientToRobotData),
       .size = sizeof(Client2RobotData_s) },
+    { .cmdId = CmdId_e::ROBOT_INTERACTION_DATA,
+      .offsetByte = offsetof(RefereeProt_s, robotInteractionList),
+      .size = sizeof(RobotInteractionRxList_s) },
 };
 
 #pragma pack(pop)
