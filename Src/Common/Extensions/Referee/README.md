@@ -22,7 +22,8 @@ struct RefereeProt_s {
     ShootData_s shootData;
     BulletRemaining_s bulletRemaining;
     RfidStatus_s rfidStatus;
-    VtData_s vtData;
+    ```
+    RobotInteractionRxList_s robotInteractionList;
 };
 ```
 
@@ -51,7 +52,45 @@ void RefereeHandler::handle()
 
 
 裁判系统发送只需调用
-inline std::unique_ptr<REFEREE::Referee> referee 中的Transmitter::sendData函数即可
+inline Lazy<REFEREE::Referee> referee 中的Transmitter::sendData函数即可
+
+
+## Robot Mutiple Computer Interaction
+### Transimit
+
+多机通信使用裁判系统 `0x0301 ROBOT_INTERACTION_DATA` 数据帧。该数据帧的数据区由
+`RobotInteractionTxPacket_s` 描述：
+
+```cpp
+struct RobotInteractionTxPacket_s {
+    uint16_t dataCmdId;
+    uint16_t senderId;
+    uint16_t receiverId;
+    uint8_t userData[112];
+};
+```
+调用sendData函数的传参为_data建议为 `RobotInteractionTxPacket_s`，其中`dataCmdId`为自定义数据帧ID，`senderId`为发送方ID，`receiverId`为接收方ID，`userData`为自定义数据区。
+
+### Receive
+接收端会对 `ROBOT_INTERACTION_DATA` 单独解析：先读取包内 `senderId`，再根据
+`INTERACTION_INFO` 将 `userData` 拷贝到 `RefereeProt_s::robotInteractionList` 中。
+当前默认支持基础 `senderId = 0x09` 的雷达交互数据；实际匹配值会结合
+`gameRobotStatus.robotId` 计算阵营偏移。解析后的数据保存在：
+
+```cpp
+auto &radarData = rx.getRefereeData().robotInteractionList.radarInterationData;
+```
+
+其中 `RadarInterationData_s` 包含对方机器人坐标、血量、剩余弹量、经济、增益和哨兵姿态等信息。
+
+发送多机通信数据时，调用 `Transmitter::sendData`，外层命令码传入
+`CmdId_e::ROBOT_INTERACTION_DATA`，数据区传入 `RobotInteractionTxPacket_s`：
+
+注意事项：
+1. `userData` 最大长度为 112 字节，发送前需要保证 `userDataLen <= sizeof(packet.userData)`。
+2. 接收多机通信前，需要确保 `gameRobotStatus.robotId` 已经由裁判系统更新，否则发送方 ID 的阵营偏移可能不正确。
+3. 如需接收新的发送方或新的多机数据类型，需要扩展 `RobotInteractionRxList_s`，并在 `INTERACTION_INFO` 中添加基础 `senderId`、偏移和结构体大小。
+4. `Transmitter` 内部已使用 DMA 可访问内存作为发送缓冲区，调用侧只需要传入待发送的数据结构。
 
 
 ## Update RefereeProt

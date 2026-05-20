@@ -55,11 +55,24 @@ void Receiver::readRefereeData()
             nextPos = frameHeaderPos + frameLen;
 
         uint16_t cmdId = *((uint16_t *)&rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s)]);
-        for (auto i : INFO) {
-            if (static_cast<CmdId_e>(cmdId) == i.cmdId) {
-                rxCnt_++;
-                void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_) + i.offsetByte;
-                memcpy(dataPtr, &rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s) + LEN_CMDID], i.size);
+
+        if (cmdId == static_cast<uint16_t>(CmdId_e::ROBOT_INTERACTION_DATA)) {
+            uint16_t senderId = rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s) + LEN_CMDID + 2];
+            uint16_t offsetId = 100 * (refereeData_.gameRobotStatus.robotId / 100);
+            for (auto i : INTERACTION_INFO) {
+                if (senderId == (i.senderId + offsetId)) {
+                    rxCnt_++;
+                    void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_.robotInteractionList) + i.offsetByte;
+                    memcpy(dataPtr, &rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s) + LEN_CMDID + 6], i.size);
+                }
+            }
+        } else {
+            for (auto i : INFO) {
+                if (static_cast<CmdId_e>(cmdId) == i.cmdId) {
+                    rxCnt_++;
+                    void *dataPtr = reinterpret_cast<uint8_t *>(&refereeData_) + i.offsetByte;
+                    memcpy(dataPtr, &rxBuffer_[frameHeaderPos + sizeof(FrameHeader_s) + LEN_CMDID], i.size);
+                }
             }
         }
     }
@@ -77,7 +90,10 @@ void Receiver::rxFreqCalc()
     }
 }
 
-Transmitter::Transmitter(UART_HandleTypeDef *_huart) : uart_(_huart) {}
+Transmitter::Transmitter(UART_HandleTypeDef *_huart)
+        : uart_(_huart), txBuffer_((uint8_t *)Dma::instance().ram_alloc(REFEREE_TX_BUFFER_LEN))
+{
+}
 
 uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLen)
 {
@@ -93,7 +109,7 @@ uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLe
     txHeader.seq = 0;
     txHeader.crc8 = Get_CRC8_Check_Sum((uint8_t *)&txHeader, sizeof(FrameHeader_s) - 1, 0xff);
 
-    memcpy(&txBuffer_, &txHeader, sizeof(FrameHeader_s));
+    memcpy(txBuffer_, &txHeader, sizeof(FrameHeader_s));
     *(uint16_t *)&txBuffer_[sizeof(FrameHeader_s)] = _cmdId;
     if (_data != nullptr && _dataLen > 0)
         memcpy(&txBuffer_[sizeof(FrameHeader_s) + LEN_CMDID], _data, _dataLen);
