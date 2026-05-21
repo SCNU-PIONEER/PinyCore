@@ -52,6 +52,17 @@ public:
     };
 };
 
+class DecesionRxPacket2 : public COMM::RxPacket<COMM::DecesionPacket2, 1> {
+public:
+    DecesionRxPacket2() { registerCallback(); }
+    void registerCallback() final
+    {
+        Can::instance().registerCallback(&HCAN3, uid(), [this](const uint8_t *_rxBuf) {
+            xQueueSendFromISR(this->queue_, _rxBuf, nullptr);
+        });
+    };
+};
+
 class SentryInfoRxPacket : public COMM::RxPacket<COMM::SentryInfoPacket, 1> {
 public:
     SentryInfoRxPacket() { registerCallback(); }

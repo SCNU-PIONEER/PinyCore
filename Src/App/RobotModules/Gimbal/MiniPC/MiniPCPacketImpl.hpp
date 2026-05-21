@@ -73,6 +73,8 @@ typedef struct {
     uint16_t allyOutpostHP;            // 己方前哨站血量   byte:2
     uint16_t allyBaseHP;               // 己方基地血量     byte:2
     uint8_t hurtHpDeductionReason;     // 受伤血量扣除原因  byte:1
+    // float targetPositionX;
+    // float targetPositionY;
 } EcToDecesion_s;
 #pragma pack(pop)
 

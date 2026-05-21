@@ -131,6 +131,7 @@ private:
     RefereeRxPacket refereeRxPacket_;              //裁判系统
     BulletSpdRxPacket bulletSpdRxPacket_;          //弹速
     DecesionRxPacket1 decesionRxPacket1_;          //决策数据
+    DecesionRxPacket2 decesionRxPacket2_;          //决策数据
     SentryInfoRxPacket sentryInfoRxPacket_;        //哨兵信息
     SentryCmdTxPacket sentryCmdTxPacket_{ 100.f }; //哨兵命令
 

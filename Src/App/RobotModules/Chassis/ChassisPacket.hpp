@@ -34,6 +34,12 @@ public:
     void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
 };
 
+class DecesionTxPacket2 : public COMM::TxPacket<COMM::DecesionPacket2> {
+public:
+    DecesionTxPacket2(float _txFreq) : COMM::TxPacket<COMM::DecesionPacket2>(_txFreq) {}
+    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
+};
+
 class SentryInfoTxPacket : public COMM::TxPacket<COMM::SentryInfoPacket> {
 public:
     SentryInfoTxPacket(float _txFreq) : COMM::TxPacket<COMM::SentryInfoPacket>(_txFreq) {}

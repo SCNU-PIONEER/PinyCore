@@ -279,6 +279,9 @@ void Swerve::loadDecesionData()
     decesionTxPacket1_.setData().currentChassisEnergy = refereeData_.buff.remainingEnergy;
     decesionTxPacket1_.setData().allyBaseHP = refereeData_.gameRobotHP.allyBaseHP;
     decesionTxPacket1_.setData().allyOutpostHP = refereeData_.gameRobotHP.allyOutpostHP;
+
+    decesionTxPacket2_.setData().mapCommand = refereeData_.mapCommand;
+
     sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
     sentryInfoTxPacket_.setData().hurtHpDeductionReason = refereeData_.robotHurt.reason;
 }
@@ -519,8 +522,13 @@ void Swerve::getDeltaYaw()
     // Master Board method
     insSub_->receive();
     deltaYaw = getMinorArc(chassisCtrlRxPacket_.data().deltaYaw, 0.f);
-    cosYaw_ = arm_cos_f32(deltaYaw);
-    sinYaw_ = arm_sin_f32(deltaYaw);
+    if (fabsf(deltaYaw) > 0.12f) {
+        cosYaw_ = arm_cos_f32(deltaYaw);
+        sinYaw_ = arm_sin_f32(deltaYaw);
+    } else {
+        cosYaw_ = 1.f;
+        sinYaw_ = 0.f;
+    }
 
     //转为头向速度
     Speed_u v = forward(curWSpeed_);

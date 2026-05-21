@@ -37,8 +37,8 @@ add_subdirectory(Src/Utils)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE Src/PinyCore.cpp)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC Src 
-                                                         Lib/CMSIS-DSP/Include)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC Src
+  Lib/CMSIS-DSP/Include)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/Lib/CMSIS-DSP/Lib)
@@ -56,15 +56,15 @@ endif()
 
 if(BSP_USE_USB)
   set(USB_CONF_SOURCES ${soc_folder}/hal/USB_DEVICE/Target/usbd_conf.c
-                       ${soc_folder}/hal/USB_DEVICE/App/usbd_cdc_if.c)
+    ${soc_folder}/hal/USB_DEVICE/App/usbd_cdc_if.c)
 
   set_source_files_properties(${USB_CONF_SOURCES}
-                              PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+    PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
   set(USB_SOURCES ${soc_folder}/hal/USB_DEVICE/App/usbd_desc.c)
 
   set_source_files_properties(${USB_SOURCES}
-                              PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers")
+    PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers")
 endif()
 
 showmessage()

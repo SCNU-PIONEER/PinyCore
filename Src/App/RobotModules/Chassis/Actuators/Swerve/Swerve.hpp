@@ -108,6 +108,7 @@ protected:
     RefereeCtrlTxPacket refereeTxPacket_{ 100.f };
     BulletSpdTxPacket BulletSpdTxPacket_{ 100.f };
     DecesionTxPacket1 decesionTxPacket1_{ 100.f };
+    DecesionTxPacket2 decesionTxPacket2_{ 100.f };
     SentryInfoTxPacket sentryInfoTxPacket_{ 100.f };
     SentryCmdRxPacket sentryCmdRxPacket_; //接收哨兵指令
 
