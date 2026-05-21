@@ -12,6 +12,10 @@
 #include "Buzzer.hpp"
 #endif
 
+#if EXTENSION_LED
+#include "LEDManager.hpp"
+#endif
+
 #if APP_USE_DAEMONS
 #include "Daemons.hpp"
 #endif
@@ -103,7 +107,7 @@ void AppManager::initApp()
 #endif
 
 #if EXTENSION_LED
-// add custom's leds
+    // add custom's leds
 #endif
 
     // Generate threads at the end

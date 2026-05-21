@@ -59,7 +59,6 @@ public:
 
 private:
     Uart uart_;
-
     uint8_t *txBuffer_;
 };
 

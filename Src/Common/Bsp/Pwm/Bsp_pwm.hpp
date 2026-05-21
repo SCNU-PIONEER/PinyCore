@@ -18,7 +18,7 @@ public:
     /**
      * @brief pwm start with DMA
      */
-    void startDMA(uint32_t *_txData, uint16_t _dataLength);
+    HAL_StatusTypeDef startDMA(uint32_t *_txData, uint16_t _dataLength);
 
     /**
      * @brief pwm stop
@@ -44,6 +44,16 @@ public:
      * @brief pwm set counter
      */
     void setCounter(uint32_t _counter);
+
+    /**
+     * @brief get pwm auto loader
+     */
+    uint32_t autoLoader() const;
+
+    /**
+     * @brief check whether this pwm channel can start a new DMA transfer
+     */
+    bool isReady() const;
 
 private:
     TIM_HandleTypeDef *htim_;

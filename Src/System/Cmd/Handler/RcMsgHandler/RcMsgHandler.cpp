@@ -15,7 +15,21 @@
 #include "ET08A.hpp"
 #include "VT13.hpp"
 
+// Explicit template instantiation
+#if EXTENSION_DT7
+template class RcMsgHandler<RCDevType_e::DT7>;
+#endif
+#if EXTENSION_ET08A
+template class RcMsgHandler<RCDevType_e::ET08A>;
+#endif
+#if EXTENSION_VT13
+template class RcMsgHandler<RCDevType_e::VT13>;
+#endif
+
+#if APP_USE_DAEMONS
 #include "Daemons.hpp"
+#endif
+
 #include "StmLog.hpp"
 
 #include <cmath>
@@ -234,13 +248,3 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::notify(Msg *_msg, Q
 {
     xQueueSend(_queue, _msg, 0);
 }
-
-// Explicit template instantiation
-#if EXTENSION_DT7
-template class RcMsgHandler<RCDevType_e::DT7>;
-#elif EXTENSION_ET08A
-template class RcMsgHandler<RCDevType_e::ET08A>;
-#endif
-#if EXTENSION_VT13
-template class RcMsgHandler<RCDevType_e::VT13>;
-#endif

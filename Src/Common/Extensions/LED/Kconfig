@@ -3,7 +3,7 @@ menu "LEDDriver config"
     
     config LED_WS2812_SPI
     bool "ws2812-spi"
-    default y
+    default n
 
     config LED_WS2812_PWM
     bool "ws2812-pwm"

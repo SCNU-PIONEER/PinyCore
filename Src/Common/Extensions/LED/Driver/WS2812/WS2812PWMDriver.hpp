@@ -3,19 +3,23 @@
 #include "../Driver.hpp"
 #include "Bsp_pwm.hpp"
 
-#include <memory>
+#include <array>
 
 namespace LED {
 
 class WS2812PWMDriver : public LEDDriver {
-    Pwm *pwm_ = nullptr;
-    static constexpr uint8_t CODE1 = 0x86; // 1code
-    static constexpr uint8_t CODE0 = 0x43; // 0code
+    using EncodedByte = std::array<uint32_t, 8>;
+
+    Pwm pwm_;
+    std::array<EncodedByte, 256> encodedByteLut_{};
+    uint32_t periodTicks_ = 0;
+
 public:
-    WS2812PWMDriver(Pwm *_pwmHandle, int _num);
+    WS2812PWMDriver(TIM_HandleTypeDef *_timer, uint32_t _channel, int _num);
 
 private:
     uint32_t *txbuf;
+    void updateEncodedByteLut();
     void show(std::vector<RGB_s> &_data) final;
 };
 
