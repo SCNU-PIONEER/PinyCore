@@ -239,6 +239,7 @@ void DualStage::sendDecesionData()
     e2dData.allyOutpostHP = decesionRxPacket1_.data().allyOutpostHP;
     e2dData.allyBaseHP = decesionRxPacket1_.data().allyBaseHP;
     e2dData.hurtHpDeductionReason = sentryInfoRxPacket_.data().hurtHpDeductionReason;
+    e2dData.bulletRemainingNum17mm = decesionRxPacket1_.data().bulletRemainingNum17mm;
 
     // e2dData.targetPositionX = decesionRxPacket2_.data().mapCommand.targetPositionX;
     // e2dData.targetPositionY = decesionRxPacket2_.data().mapCommand.targetPositionY;

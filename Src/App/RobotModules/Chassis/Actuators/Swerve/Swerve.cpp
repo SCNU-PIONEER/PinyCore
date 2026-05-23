@@ -279,8 +279,8 @@ void Swerve::loadDecesionData()
     decesionTxPacket1_.setData().currentChassisEnergy = refereeData_.buff.remainingEnergy;
     decesionTxPacket1_.setData().allyBaseHP = refereeData_.gameRobotHP.allyBaseHP;
     decesionTxPacket1_.setData().allyOutpostHP = refereeData_.gameRobotHP.allyOutpostHP;
-
-    decesionTxPacket2_.setData().mapCommand = refereeData_.mapCommand;
+    decesionTxPacket1_.setData().bulletRemainingNum17mm = refereeData_.bulletRemaining.bulletRemainingNum17mm;
+    // decesionTxPacket2_.setData().mapCommand = refereeData_.mapCommand;
 
     sentryInfoTxPacket_.setData().midSentryInfo = sentryInfo_;
     sentryInfoTxPacket_.setData().hurtHpDeductionReason = refereeData_.robotHurt.reason;

@@ -232,18 +232,20 @@ public:
     static constexpr uint8_t LEN = 8;
     static constexpr uint16_t ID = 0x25;
     struct ProtoData_s {
-        uint8_t currentChassisEnergy; // 当前底盘能量
-        uint16_t allyOutpostHP;       // 己方前哨站血量
-        uint16_t allyBaseHP;          // 己方基地血量
-        uint8_t reserved[3];
+        uint8_t currentChassisEnergy;    // 当前底盘能量
+        uint16_t allyOutpostHP;          // 己方前哨站血量
+        uint16_t allyBaseHP;             // 己方基地血量
+        uint16_t bulletRemainingNum17mm; // 17发子弹剩余数量
+        uint8_t reserved;
     };
 #pragma pack(push, 1)
     union Data_u {
         struct Data_s {
-            uint8_t currentChassisEnergy; // 当前底盘能量
-            uint16_t allyOutpostHP;       // 己方前哨站血量
-            uint16_t allyBaseHP;          // 己方基地血量
-            uint8_t reserved[3];
+            uint8_t currentChassisEnergy;    // 当前底盘能量
+            uint16_t allyOutpostHP;          // 己方前哨站血量
+            uint16_t allyBaseHP;             // 己方基地血量
+            uint16_t bulletRemainingNum17mm; // 17发子弹剩余数量
+            uint8_t reserved;
         } content;
         uint8_t bytes[LEN];
     } data;
@@ -254,18 +256,16 @@ public:
         d.currentChassisEnergy = _protoData.currentChassisEnergy;
         d.allyOutpostHP = _protoData.allyOutpostHP;
         d.allyBaseHP = _protoData.allyBaseHP;
-        d.reserved[0] = 0;
-        d.reserved[1] = 0;
-        d.reserved[2] = 0;
+        d.bulletRemainingNum17mm = _protoData.bulletRemainingNum17mm;
+        d.reserved = 0;
     }
     static constexpr void decompress(const Data_u &_data, ProtoData_s &_protoData)
     {
         _protoData.currentChassisEnergy = _data.content.currentChassisEnergy;
         _protoData.allyOutpostHP = _data.content.allyOutpostHP;
         _protoData.allyBaseHP = _data.content.allyBaseHP;
-        _protoData.reserved[0] = _data.content.reserved[0];
-        _protoData.reserved[1] = _data.content.reserved[1];
-        _protoData.reserved[2] = _data.content.reserved[2];
+        _protoData.bulletRemainingNum17mm = _data.content.bulletRemainingNum17mm;
+        _protoData.reserved = _data.content.reserved;
     }
 };
 

@@ -62,7 +62,7 @@ typedef struct {
     uint8_t reserved : 7;
 } DecesionToEc_s;
 
-//byte:14
+//byte:16
 typedef struct {
     uint8_t decesionHeader;            // 0x8A           byte:1
     uint16_t gameTime;                 // 比赛时间        byte:2
@@ -73,6 +73,8 @@ typedef struct {
     uint16_t allyOutpostHP;            // 己方前哨站血量   byte:2
     uint16_t allyBaseHP;               // 己方基地血量     byte:2
     uint8_t hurtHpDeductionReason;     // 受伤血量扣除原因  byte:1
+    uint16_t bulletRemainingNum17mm;   // 17mm子弹剩余数量  byte:2
+
     // float targetPositionX;
     // float targetPositionY;
 } EcToDecesion_s;
@@ -89,8 +91,8 @@ public:
     struct ProtoData_s {
         EcToVision_s e2vData;   //18
         EcToNav_s e2nData;      //5
-        EcToDecesion_s e2dData; //14
-        uint8_t reserved[24];   //64-40
+        EcToDecesion_s e2dData; //16
+        uint8_t reserved[22];   //64-42
     };
 
 #pragma pack(push, 1)
@@ -99,8 +101,8 @@ public:
             uint8_t header;         //1
             EcToVision_s e2vData;   //18
             EcToNav_s e2nData;      //5
-            EcToDecesion_s e2dData; //14
-            uint8_t reserved[24];   //64-40
+            EcToDecesion_s e2dData; //16
+            uint8_t reserved[22];   //64-42
             uint16_t checksum;      //2
         } content;
         uint8_t bytes[LEN];
