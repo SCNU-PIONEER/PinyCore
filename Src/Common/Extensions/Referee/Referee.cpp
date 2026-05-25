@@ -1,9 +1,6 @@
 
 #include "Crc.hpp"
 #include "Referee.hpp"
-#include "sdkconfig.h"
-#include "stm32h7xx_hal_uart.h"
-#include <cstdint>
 #include <cstring>
 
 namespace REFEREE {
@@ -110,8 +107,7 @@ uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLe
     txHeader.sof = SOF;
     txHeader.dataLen = _dataLen;
     txHeader.seq = 0;
-    memcpy(txBuffer_, &txHeader, sizeof(FrameHeader_s));
-    Append_CRC8_Check_Sum(txBuffer_, sizeof(FrameHeader_s));
+    txHeader.crc8 = Get_CRC8_Check_Sum((uint8_t *)&txHeader, sizeof(FrameHeader_s) - 1, 0xff);
 
     memcpy(txBuffer_, &txHeader, sizeof(FrameHeader_s));
     *(uint16_t *)&txBuffer_[sizeof(FrameHeader_s)] = _cmdId;
@@ -121,8 +117,6 @@ uint16_t Transmitter::sendData(uint16_t _cmdId, uint8_t *_data, uint16_t _dataLe
     totalSize = sizeof(FrameHeader_s) + LEN_CMDID + _dataLen + LEN_TAIL;
     Append_CRC16_Check_Sum(txBuffer_, totalSize);
 
-    // REFEREE_UART.gState = HAL_UART_STATE_READY; // 确保UART处于就绪状态
-    // HAL_UART_Transmit(&REFEREE_UART, txBuffer_, totalSize, 0x08);
     uart_.transmitDma(txBuffer_, totalSize);
     return totalSize;
 }
