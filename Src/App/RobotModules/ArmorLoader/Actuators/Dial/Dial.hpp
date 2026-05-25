@@ -82,6 +82,7 @@ private:
     Motors_u motors_;
 
     float torq_;
+    float curr_;
 
     FILTER::LPFIIR2 velFltr_ = { 500.f, 30.f, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE };
 

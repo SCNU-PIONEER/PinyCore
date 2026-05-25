@@ -96,7 +96,7 @@ void Dial::update(void *_param)
     vel_ = velFltr_.process(dial()->vel());
 
     torq_ = motors_.dial->torq();
-
+    curr_ = motors_.dial->data().curr;
     if (std::fabs(dial()->data().curr) > BLOCK_CURRENT && std::fabs(dial()->vel()) < BLOCK_SPEED_MIN) {
         blockCnt = blockCnt < BLOCK_CNT_MAX ? blockCnt + 1 : BLOCK_CNT_MAX;
     } else {
