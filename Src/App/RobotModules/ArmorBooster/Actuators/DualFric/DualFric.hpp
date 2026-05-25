@@ -34,7 +34,10 @@ class DualFric : public ArmorBooster {
     };
 
 public:
-    static constexpr float FAST_FRIC_RATE = 618.f;
+    /*沈阳5.25 24° 602  24.1 m/s 598 23.3 m/s 593 
+    
+    */
+    static constexpr float FAST_FRIC_RATE = 593.f;
     static constexpr float SLOW_FRIC_RATE = 314.f;
 
     static constexpr float FRIC_STOP_THRESHOLD = 1.f;

@@ -401,6 +401,12 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     if (vx != 0 || vy != 0 || wz != 0)
         refWSpeed = reverse(refSpeed);
 
+    if (sentryCmdRxPacket_.data().isBumpArea) {
+        for (auto &i : expDir._) {
+            i = 0;
+        }
+    }
+
     for (uint8_t i = 0; i < 4; i++) {
         //6020
         tempDir._[i] = expDir._[i];

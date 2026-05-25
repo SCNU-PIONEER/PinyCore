@@ -11,23 +11,23 @@
 #include <cmath>
 
 static PositionalPid gNavPosPid[3] = {
-    PositionalPid(15.f, 65.f, 0.25f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 3.f, 10.f, 0.f),
-    PositionalPid(12.f, 4.f, 1.f, 1.f / 1000.f, 1.2f, 5.f, 0.f),
+    PositionalPid(45.f, 30.f, 1.f, 0.001f, 30.f, 80.f, 0.f),
+    PositionalPid(10.f, 5.f, 2.f, 1.f / 1000.f, 60.f, 110.f, 0.f),
+    PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
 };
 //    PositionalPid(60.f, 80.f, 3.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gNavVelPid[3] = {
-    PositionalPid(0.4f, 0.f, 0.f, 0.001f, 0.f, 5.f, 0.f),
-    PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 0.f, 5.f, 0.f),
+    PositionalPid(0.5f, 0.f, 0.01f, 0.001f, 1.5f, 3.5f, 0.f),
+    PositionalPid(2.f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
 };
 //    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
 
 namespace GIMBAL {
 
 class NavState : public FSMState<FSMState_e> {
-    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  // 
-    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; // 
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  //
+    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; //
 
     static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
 
@@ -61,17 +61,21 @@ public:
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         eMA = gimbal_->ctrl(eIA);
+        if (gimbal_->d2eData.isBumpArea) {
+            for (auto &i : eMA._) {
+                i = 0;
+            }
+        } else {
+            //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
+            if (patrolCnt + 5 >= MAX_PAT_CNT)
+                maxPatCount = 0;
+            else if (patrolCnt - 5 <= 0)
+                maxPatCount = MAX_PAT_CNT;
+            SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
-        //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
-        if (patrolCnt + 5 >= MAX_PAT_CNT)
-            maxPatCount = 0;
-        else if (patrolCnt - 5 <= 0)
-            maxPatCount = MAX_PAT_CNT;
-        SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
-
-        eMA.Pitch = PINYMOTOR::rangeMap((amplitude * arm_cos_f32(omiga * patrolCnt)) + amplitudeBias);
-        eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * arm_cos_f32(omiga * patrolCnt));
-
+            eMA.Pitch = PINYMOTOR::rangeMap((amplitude * arm_sin_f32(omiga * patrolCnt)) + amplitudeBias);
+            eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * arm_cos_f32(omiga * patrolCnt));
+        }
         gimbal_->ctrlMotor(eMA, navPosPid_, navVelPid_);
     }
 
