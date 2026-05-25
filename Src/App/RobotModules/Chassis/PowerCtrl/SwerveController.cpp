@@ -100,16 +100,18 @@ void SwerveController::rlsUpdate(IMotor *_motor[8], const float _sVel[4])
         float fitPower = chassisRealPower_ - steerFitPower_ - (Wheel.modelParams.LeakagePower * 4.f);
         wheelRLS_->update(inputVector, fitPower > 0.f ? fitPower : 0.f);
         Matrix<PowerModel_s::FIT_RANK, 1> params = wheelRLS_->getEstVector();
-        Wheel.overrideParams({ .K0 = params(0, 0),
-                               .MLC = params(1, 0),
-                               .ESR = params(2, 0),
-                               .LeakagePower = Wheel.modelParams.LeakagePower });
+        Wheel.overrideParams({
+                .K0 = params(0, 0),
+                .MLC = params(1, 0),
+                .ESR = params(2, 0),
+                .LeakagePower = Wheel.modelParams.LeakagePower,
+        });
     } else
         Wheel.overrideParams(WheelLaunchMotion);
 
-    // k0 = Wheel.modelParams.K0;
-    // mlc = Wheel.modelParams.MLC;
-    // esr = Wheel.modelParams.ESR;
+    k0 = Wheel.modelParams.K0;
+    mlc = Wheel.modelParams.MLC;
+    esr = Wheel.modelParams.ESR;
 
 #if ENABLE_STEER_RLS
     float steerVector[PowerModel_s::FIT_RANK] = {};
@@ -123,10 +125,12 @@ void SwerveController::rlsUpdate(IMotor *_motor[8], const float _sVel[4])
     float steerFitPower = chassisRealPower_ - (Steer.modelParams.LeakagePower * 4.f);
     steerRLS_->update(steerInput, steerFitPower > 0.f ? steerFitPower : 0.f);
     Matrix<PowerModel_s::FIT_RANK, 1> steerParams = steerRLS_->getEstVector();
-    Steer.overrideParams({ .K0 = steerParams(0, 0),
-                           .MLC = steerParams(1, 0),
-                           .ESR = steerParams(2, 0),
-                           .LeakagePower = Steer.modelParams.LeakagePower });
+    Steer.overrideParams({
+            .K0 = steerParams(0, 0),
+            .MLC = steerParams(1, 0),
+            .ESR = steerParams(2, 0),
+            .LeakagePower = Steer.modelParams.LeakagePower,
+    });
     k0 = Steer.modelParams.K0;
     mlc = Steer.modelParams.MLC;
     esr = Steer.modelParams.ESR;
@@ -137,7 +141,7 @@ std::vector<float> SwerveController::powerCtrl(const float *_motorSpeed, PINYMOT
                                                const float *_cmd, RefereeMsg_s _msg, const float _sVel[4])
 {
 #if POWERCTRL_USE_RLS
-    rlsUpdate(_motor, _sVel);
+    // rlsUpdate(_motor, _sVel);
 #endif
     update(_msg);
 

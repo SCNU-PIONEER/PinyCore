@@ -20,17 +20,17 @@ private:
 
     PowerModel_s Wheel{};
     PowerModel_s Steer{};
-    PowerModel_s::ModelParam_s WheelLaunchMotion = { .K0 = 0.0450328f,
-                                                     .MLC = 9.0016e-05f,
-                                                     .ESR = 3.96797f,
+    PowerModel_s::ModelParam_s WheelLaunchMotion = { .K0 = 0.0456955f,
+                                                     .MLC = 9.59024e-05f,
+                                                     .ESR = 3.30419f,
                                                      .LeakagePower = 3.f / ((float)motorNum_ / 2.f) };
-    PowerModel_s::ModelParam_s WheelUniformMotion = { .K0 = 0.00001f,
-                                                      .MLC = 0.0001e-05f,
-                                                      .ESR = 0.0001f,
+    PowerModel_s::ModelParam_s WheelUniformMotion = { .K0 = 0.0353186f,
+                                                      .MLC = 5.76333e-05f,
+                                                      .ESR = 4.17215f,
                                                       .LeakagePower = 3.f / ((float)motorNum_ / 2.f) };
-    PowerModel_s::ModelParam_s SteerLaunchMotion = { .K0 = 0.467663f,
-                                                     .MLC = 0.0115338f,
-                                                     .ESR = 9.82722f,
+    PowerModel_s::ModelParam_s SteerLaunchMotion = { .K0 = 0.795305f,
+                                                     .MLC = 0.031172f,
+                                                     .ESR = 9.54849f,
                                                      .LeakagePower = 4.f / ((float)motorNum_ / 2.f) };
     RLS<PowerModel_s::FIT_RANK> *wheelRLS_;
 #if ENABLE_STEER_RLS

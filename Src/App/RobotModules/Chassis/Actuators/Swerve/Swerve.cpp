@@ -197,7 +197,7 @@ void Swerve::update(void *_param)
 
         curWSpeed_._[i] = wheelMotor_._[i]->data().spdRadps;
 
-        debug_.wCurr._[i] = wheelMotor_._[i]->data().curr;
+        debug_.wCurr._[i] = wheelMotor_._[i]->data().torq;
     }
 
     getDeltaYaw();
