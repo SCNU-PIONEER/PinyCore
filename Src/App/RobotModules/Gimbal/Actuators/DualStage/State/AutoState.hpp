@@ -21,14 +21,14 @@ static PositionalPid gAutoVelPid[3] = {
 };
 
 static PositionalPid gBufferPosPid[3] = {
-    PositionalPid(25.f, 10.f, 0.05f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 20.f, 0.f),
-    PositionalPid(60.f, 0.f, 0.8f, 1.f / 1000.f, 1.2f, 5.f, 0.f),
+    PositionalPid(25.f, 10.f, 0.05f, 0.001f, 30.f, 80.f, 0.f),
+    PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+    PositionalPid(30.f, 0.f, 3.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
 };
 static PositionalPid gBufferVelPid[3] = {
-    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
+    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 1.5f, 3.5f, 0.f),
     PositionalPid(0.45f, 0.f, 0.001f, 1.f / 1000.f, 3.f, 7.f, 0.f),
-    PositionalPid(15.f, 0.0f, 1.5f, 1.f / 1000.f, 2.f, 5.f, 0.f),
+    PositionalPid(100.f, 0.0f, 2.f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
 };
 
 static PositionalPid wSlowBYawFollowPid = { PositionalPid(5.f, 0.f, 0.004f, 0.001f, 0.5f,

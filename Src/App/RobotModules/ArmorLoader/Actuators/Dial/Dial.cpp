@@ -71,6 +71,7 @@ void Dial::update(void *_param)
 #else
     UNUSED(_param);
     msg.state = static_cast<FSMState_e>(shooterCtrlRxPacket_.data().state);
+    msg.fire = shooterCtrlRxPacket_.data().fire;
     if (motors_.dial->globalState != GlobalState_e::ONLINE) {
         msg.state = FSMState_e::STOP;
     }
@@ -90,7 +91,7 @@ void Dial::update(void *_param)
     refereeFire_ = true;
 #endif
 
-    msg.fire = shooterCtrlRxPacket_.data().fire & refereeFire_;
+    msg.fire &= refereeFire_;
     // User-defined processing logic goes here ↓
 
     vel_ = velFltr_.process(dial()->vel());
