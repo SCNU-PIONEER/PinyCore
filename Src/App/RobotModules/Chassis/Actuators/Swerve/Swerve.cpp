@@ -401,12 +401,6 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
     if (vx != 0 || vy != 0 || wz != 0)
         refWSpeed = reverse(refSpeed);
 
-    if (sentryCmdRxPacket_.data().isBumpArea) {
-        for (auto &i : expDir._) {
-            i = 0;
-        }
-    }
-
     for (uint8_t i = 0; i < 4; i++) {
         //6020
         tempDir._[i] = expDir._[i];
@@ -415,6 +409,11 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
+
+        if (sentryCmdRxPacket_.data().isBumpArea) {
+            tempDir._[i] = 0;
+        }
+
         sDel._[i] = getMinorArc(tempDir._[i], curDir._[i]);
         sExpVel._[i] = steerPosPid_._[i]->calc(sDel._[i], 0);
         sExpTorq._[i] = steerVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);

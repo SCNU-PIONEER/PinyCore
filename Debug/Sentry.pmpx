@@ -26304,7 +26304,7 @@
 			<member name="yblock5_info" type="CPrjItemRS_YBlockInfo">ObjId1537</member>
 			<member name="scope_period" type="real64">0.00000000000000000000e+00</member>
 			<member name="scope_x_autoscale" type="sint32">1</member>
-			<member name="scope_x_width" type="real64">1.00000000000000000000e+01</member>
+			<member name="scope_x_width" type="real64">5.00000000000000000000e+00</member>
 			<member name="scope_ignore_duplicity" type="sint32">0</member>
 		</object>
 		<object name="ObjId2250" type="CPrjItemRS_VarInfo">
@@ -26345,7 +26345,7 @@
 		</object>
 		<object name="ObjId2256" type="CPrjItemRS_VarInfo">
 			<member name="variable" type="CObject_ptr">ObjId1520</member>
-			<member name="visible" type="sint32">1</member>
+			<member name="visible" type="sint32">0</member>
 			<member name="y_block" type="sint32">3</member>
 			<member name="color" type="uint32">0xFF</member>
 		</object>

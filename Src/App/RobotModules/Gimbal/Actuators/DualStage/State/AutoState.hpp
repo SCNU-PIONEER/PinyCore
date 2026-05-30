@@ -10,15 +10,26 @@
 #include <cmath>
 
 static PositionalPid gAutoPosPid[3] = {
-    PositionalPid(100.f, 50.f, 1.5f, 0.001f, 30.f, 80.f, 0.f),
+    PositionalPid(45.f, 15.f, 1.7f, 0.001f, 30.f, 80.f, 0.f),
     PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
-    PositionalPid(30.f, 15.f, 1.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
+    PositionalPid(35.f, 10.f, 0.5f, 1.f / 1000.f, 60.f, 80.f, 0.f),
 };
 static PositionalPid gAutoVelPid[3] = {
-    PositionalPid(2.5f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
+    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(80.f, 40.f, 1.f, 1.f / 1000.f, 2.f, 5.f, 0.f),
+    PositionalPid(100.f, 30.f, 1.f, 1.f / 1000.f, 5.f, 5.f, 0.f),
 };
+
+// static PositionalPid gAutoPosPid[3] = {
+//     PositionalPid(100.f, 50.f, 1.5f, 0.001f, 30.f, 80.f, 0.f),
+//     PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+//     PositionalPid(30.f, 15.f, 1.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
+// };
+// static PositionalPid gAutoVelPid[3] = {
+//     PositionalPid(2.5f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
+//     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+//     PositionalPid(80.f, 40.f, 1.f, 1.f / 1000.f, 2.f, 5.f, 0.f),
+// };
 
 static PositionalPid gBufferPosPid[3] = {
     PositionalPid(25.f, 10.f, 0.05f, 0.001f, 30.f, 80.f, 0.f),
@@ -69,6 +80,7 @@ public:
             eMA._[i] = cMA._[i];
         }
         visionExpBigYaw_ = cIA.FirstYaw; //进入auto状态时，钉住大yaw角度
+        gimbal_->msg.wYaw = 0;
 
         gimbal_->debug.gimbalState = FSMState_e::AUTO;
         gimbal_->enter();

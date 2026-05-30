@@ -57,7 +57,7 @@ public:
         eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
         eIA.SecondYaw = cIA.SecondYaw;
 
-        eIA.Pitch = PINYMOTOR::clampArc(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        eIA.Pitch = PINYMOTOR::clamp(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
         eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
 
         eMA = gimbal_->ctrl(eIA);
@@ -73,8 +73,8 @@ public:
                 maxPatCount = MAX_PAT_CNT;
             SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
-            eMA.Pitch = PINYMOTOR::rangeMap((amplitude * arm_sin_f32(omiga * patrolCnt)) + amplitudeBias);
-            eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * arm_cos_f32(omiga * patrolCnt));
+            eMA.Pitch = PINYMOTOR::rangeMap(((amplitude * cos(omiga * patrolCnt)) + amplitudeBias));
+            eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
         }
         gimbal_->ctrlMotor(eMA, navPosPid_, navVelPid_);
     }
@@ -108,12 +108,12 @@ private:
     DualStage *gimbal_;
 
     static constexpr float PAT_FREQ = 1000.f; //hz,代码运行频率
-    static constexpr float PERIOD = 1.f;      //s
+    static constexpr float PERIOD = 1.2f;     //s
     static constexpr float MAX_PAT_CNT = PERIOD * PAT_FREQ;
     float patrolCnt = 0, maxPatCount = 0;
     float omiga = 2 * PI / PERIOD / PAT_FREQ; //rad/s
-    float amplitude = ((IMU_PITCH_MAX_ANG - IMU_PITCH_MIN_ANG) / 2.f) - 0.05f;
-    float amplitudeBias = amplitude - IMU_PITCH_MAX_ANG;
+    float amplitude = ((IMU_PITCH_MAX_ANG - IMU_PITCH_MIN_ANG) / 2.f);
+    float amplitudeBias = ((IMU_PITCH_MAX_ANG + IMU_PITCH_MIN_ANG) / 2.f);
 
     DualStage_u<float> &cMA = this->gimbal_->curMotorAng_;
     DualStage_u<float> &cIA = this->gimbal_->curImuAng_;
