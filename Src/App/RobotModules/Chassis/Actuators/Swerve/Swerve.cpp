@@ -264,12 +264,14 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.receiverId = 0x8080;
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
     //裁判系统内部判定有问题，确认复活标志位置1姿态不切换
-    if (fabs(refereeMsg_.currentHP) != 0) {
+    if (refereeMsg_.currentHP <= 0) {
+        sentryCmdData_.userdata.reviveConfirm = 1;
+    } else {
         sentryCmdData_.userdata.reviveConfirm = 0;
         sentryCmdData_.userdata.instantReviveConfirm = 0;
     }
 
-    if (cnt % 100 == 0) { //10HZ裁判系统发送数据
+    if (cnt % 100 == 0) { //10HZ向裁判系统发送数据
         referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
     }
 }
