@@ -60,7 +60,7 @@ inline bool isColor(float _robotId)
 class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
-    static constexpr float FIRST_YAW_LAUNCH_ANG = 3.96174741f;
+    static constexpr float FIRST_YAW_LAUNCH_ANG = 5.15944758f;
     static constexpr float SECOND_YAW_LAUNCH_ANG = 3.57861209f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
@@ -82,7 +82,7 @@ public:
     static constexpr float SECOND_YAW_MIN_ANG = -0.22f;
     //小yaw
     static constexpr float YAW_INERTIA = 0.0175f;
-    static constexpr float YAW_FRICTION = 0.196972f;
+    static constexpr float YAW_FRICTION = 0.f; // 0.196972f;
     static constexpr float YAW_COULOMB = 0.109883f;
 
     DualStage();
@@ -110,7 +110,8 @@ public:
                    DualStage_u<PositionalPid *> _velPID);
     void ctrlSmooth(DualStage_u<float> _pos, DualStage_u<float> _step, DualStage_u<PositionalPid *> _angPID,
                     DualStage_u<PositionalPid *> _velPID);
-    void ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos);
+    void ctrlYawAuto(DualStage_u<float> _insPos, PID *_velFeedbackPID, DualStage_u<PositionalPid *> _angPID,
+                     DualStage_u<PositionalPid *> _velPID);
 
 protected:
     void loadChassisMsg(void *_param);

@@ -143,7 +143,9 @@ void DualStage::update(void *_param)
     loadSentryCmd();
 
     msg.wYaw = std::clamp(msg.wYaw, -DualStage::MAX_BYAW_SPEED, DualStage::MAX_BYAW_SPEED);
-
+    if (d2eData.isBumpArea) {
+        v2eData.control = false; //减速带关闭自瞄
+    }
     //与云台控制无关，debug使用
     debug.visionControl = v2eData.control;
     debug.visionFire = v2eData.fire;
@@ -163,9 +165,9 @@ void DualStage::loadChassisMsg(void *_param)
     chassisCtrlTxPacket_.setData().gimbalReset = isLaunched_;
 
     if (msg.state == FSMState_e::NAV || msg.state == FSMState_e::AUTO) {
-        chassisCtrlTxPacket_.setData().vx = cmsg.vx + n2eData.vx;
-        chassisCtrlTxPacket_.setData().vy = cmsg.vy + n2eData.vy;
-        chassisCtrlTxPacket_.setData().wz = cmsg.wz + n2eData.wz;
+        chassisCtrlTxPacket_.setData().vx = n2eData.vx; //cmsg.vx + n2eData.vx;
+        chassisCtrlTxPacket_.setData().vy = n2eData.vy; //cmsg.vy + n2eData.vy;
+        chassisCtrlTxPacket_.setData().wz = n2eData.wz; //cmsg.wz + n2eData.wz;
         if (msg.state == FSMState_e::NAV) {
             msg.wYaw = n2eData.wYaw; //导航模式下，云台控制权交给导航
         } else {
@@ -199,7 +201,6 @@ void DualStage::loadShooterMsg(void *_param)
         } else {
             enFire &= true;
         }
-        // enFire &= (v2eData.control) ? v2eData.fire : true;
     } else if (msg.state == FSMState_e::NAV) {
         enFire &= v2eData.fire;
     }
@@ -221,7 +222,8 @@ void DualStage::sendVisionData()
 
     //装裁判系统数据
     e2vData.detectColor = isColor(refereeRxPacket_.data().robotId);
-    e2vData.isPlay = refereeRxPacket_.data().isPlay;
+    // e2vData.isPlay = refereeRxPacket_.data().isPlay;
+    e2vData.isPlay = false; //关闭视觉录包,留出内存给导航
     e2vData.bulletSpeed = bulletSpdRxPacket_.data().shootSpeed;
 
     e2vData.taskMode = d2eData.bufferMode;
@@ -317,24 +319,34 @@ void DualStage::ctrlMotor(DualStage_u<float> _expMotorAng, DualStage_u<Positiona
     // motors_.Pitch->cmdTorq(0.f);
 }
 
-//前馈pid,暂时无用
+//前馈pid,小yaw用
 volatile float accDebug = 0;
 volatile float torqDebug = 0;
 volatile float velDebug = 0;
-void DualStage::ctrlSecondYawAuto(PID *_angPID, PID *_velPID, PID *_velFeedbackPID, float _pos)
+void DualStage::ctrlYawAuto(DualStage_u<float> _insPos, PID *_velFeedbackPID, DualStage_u<PositionalPid *> _angPID,
+                            DualStage_u<PositionalPid *> _velPID)
 {
-    float insYawDelArc = getMinorArc(_pos, ins().yaw);
-    float pos = rangeMap(motors_.SecondYaw->posNorm() + insYawDelArc);
-    float del = getMinorArc(pos, motors_.SecondYaw->posNorm());
-    float vel = _angPID->calc(del, 0);
-    float acc = _velPID->calc(vel, insData_.body.gz) + _velFeedbackPID->calc(v2eData.yawVel, insData_.body.gz);
-    float torq = calcYawTorq(insData_.body.gz, acc);
-    torq = std::clamp(torq, -DMMOTOR::DM4310::TORQ_MAX, DMMOTOR::DM4310::TORQ_MAX);
-    motors_.SecondYaw->cmdTorq(gimbalFilterOutput_.SecondYaw->process(torq));
+    float delArc[2], cmdMotorAng[2], del[2], vel[2], torq[2]; //pitch,bigYaw
+    for (uint8_t i = 0; i < 2; i++) {
+        delArc[i] = getMinorArc(_insPos._[i], curImuAng_._[i]);
+        cmdMotorAng[i] = rangeMap(curMotorAng_._[i] + delArc[i]);
+        del[i] = getMinorArc(cmdMotorAng[i], curMotorAng_._[i]);
+        vel[i] = _angPID._[i]->calc(del[i], 0);
+        torq[i] = _velPID._[i]->calc(vel[i], motors_._[i]->vel());
+        motors_._[i]->cmdTorq(gimbalFilterOutput_._[i]->process(torq[i]));
+    }
+    //sYaw
+    float insYawDelArc = getMinorArc(_insPos.SecondYaw, ins().yaw);
+    float sVel = _angPID.SecondYaw->calc(insYawDelArc, 0);
+    float acc = _velPID.SecondYaw->calc(sVel, insData_.earth.gz) +
+                _velFeedbackPID->calc(v2eData.yawVel, insData_.earth.gz) + v2eData.yawAcc;
+    float sTorq = calcYawTorq(insData_.earth.gz, acc);
+    sTorq = std::clamp(sTorq, -DMMOTOR::DM4310::TORQ_MAX / 2, DMMOTOR::DM4310::TORQ_MAX / 2);
+    motors_.SecondYaw->cmdTorq(gimbalFilterOutput_.SecondYaw->process(sTorq));
 
-    velDebug = vel;
-    accDebug = acc += v2eData.yawAcc; // forward feedbac
-    torqDebug = torq;
+    velDebug = sVel;
+    accDebug = acc - v2eData.yawAcc; // forward feedbac
+    torqDebug = sTorq;
 }
 
 float DualStage::calcYawTorq(float _vel, float _acc)

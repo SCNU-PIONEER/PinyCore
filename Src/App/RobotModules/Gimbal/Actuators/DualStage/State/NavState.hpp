@@ -13,7 +13,7 @@
 static PositionalPid gNavPosPid[3] = {
     PositionalPid(45.f, 30.f, 1.f, 0.001f, 30.f, 80.f, 0.f),
     PositionalPid(10.f, 5.f, 2.f, 1.f / 1000.f, 60.f, 110.f, 0.f),
-    PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
+    PositionalPid(45.f, 10.f, 0.5f, 1.f / 1000.f, 30.f, 80.f, 0.f),
 };
 //    PositionalPid(60.f, 80.f, 3.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gNavVelPid[3] = {
@@ -27,7 +27,7 @@ namespace GIMBAL {
 
 class NavState : public FSMState<FSMState_e> {
     static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  //
-    static constexpr float IMU_PITCH_MIN_ANG = -0.58f; //
+    static constexpr float IMU_PITCH_MIN_ANG = -0.05f; //
 
     static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
 
@@ -74,7 +74,7 @@ public:
             SMOOTH::slopeFollowing(&maxPatCount, &patrolCnt, 1.f);
 
             eMA.Pitch = PINYMOTOR::rangeMap(((amplitude * cos(omiga * patrolCnt)) + amplitudeBias));
-            eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(omiga * patrolCnt));
+            eMA.SecondYaw = PINYMOTOR::rangeMap(SECOND_YAW_MAX_ANG * sin(2.f * omiga * patrolCnt));
         }
         gimbal_->ctrlMotor(eMA, navPosPid_, navVelPid_);
     }

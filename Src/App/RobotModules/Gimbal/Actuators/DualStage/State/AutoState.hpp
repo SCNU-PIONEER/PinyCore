@@ -8,44 +8,35 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 #include <cmath>
-
+//峰值
 static PositionalPid gAutoPosPid[3] = {
-    PositionalPid(45.f, 15.f, 1.7f, 0.001f, 30.f, 80.f, 0.f),
+    PositionalPid(180.f, 50.f, 1.8f, 0.001f, 30.f, 80.f, 0.f),
     PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
-    PositionalPid(35.f, 10.f, 0.5f, 1.f / 1000.f, 60.f, 80.f, 0.f),
-};
+    PositionalPid(22.f, 0.f, 0.05f, 1.f / 1000.f, 0.f, 50.f, 0.f),
+}; //零点
 static PositionalPid gAutoVelPid[3] = {
-    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
+    PositionalPid(1.5f, 0.f, 0.08f, 0.001f, 2.f, 5.f, 0.f),
     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-    PositionalPid(100.f, 30.f, 1.f, 1.f / 1000.f, 5.f, 5.f, 0.f),
+    PositionalPid(35.f, 15.f, 0.1f, 1.f / 1000.f, 30.f, 200.f, 0.f),
 };
-
-// static PositionalPid gAutoPosPid[3] = {
-//     PositionalPid(100.f, 50.f, 1.5f, 0.001f, 30.f, 80.f, 0.f),
-//     PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
-//     PositionalPid(30.f, 15.f, 1.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
-// };
-// static PositionalPid gAutoVelPid[3] = {
-//     PositionalPid(2.5f, 0.f, 0.05f, 0.001f, 2.f, 5.f, 0.f),
-//     PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
-//     PositionalPid(80.f, 40.f, 1.f, 1.f / 1000.f, 2.f, 5.f, 0.f),
-// };
-
-static PositionalPid gBufferPosPid[3] = {
-    PositionalPid(25.f, 10.f, 0.05f, 0.001f, 30.f, 80.f, 0.f),
-    PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
-    PositionalPid(30.f, 0.f, 3.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
-};
-static PositionalPid gBufferVelPid[3] = {
-    PositionalPid(2.f, 0.f, 0.05f, 0.001f, 1.5f, 3.5f, 0.f),
-    PositionalPid(0.45f, 0.f, 0.001f, 1.f / 1000.f, 3.f, 7.f, 0.f),
-    PositionalPid(100.f, 0.0f, 2.f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
-};
+//相位
+static PositionalPid autoSYawVelFeedbackPID = { PositionalPid(60.0f, 10.f, 0.003f, 0.001f, 10.f, 200.f, 0.f) };
 
 static PositionalPid wSlowBYawFollowPid = { PositionalPid(5.f, 0.f, 0.004f, 0.001f, 0.5f,
                                                           GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.1f) };
 static PositionalPid wFastBYawFollowPid = { PositionalPid(20.f, 0.5f, 0.01f, 0.001f, 0.5f,
                                                           GIMBAL::DualStage::MAX_BYAW_FOLLOW_SPEED, 0.05f) };
+
+// static PositionalPid gBufferPosPid[3] = {
+//     PositionalPid(25.f, 10.f, 0.05f, 0.001f, 30.f, 80.f, 0.f),
+//     PositionalPid(15.f, 0.f, 0.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+//     PositionalPid(30.f, 0.f, 3.f, 1.f / 1000.f, 30.f, 80.f, 0.f),
+// };
+// static PositionalPid gBufferVelPid[3] = {
+//     PositionalPid(2.f, 0.f, 0.05f, 0.001f, 1.5f, 3.5f, 0.f),
+//     PositionalPid(0.45f, 0.f, 0.001f, 1.f / 1000.f, 3.f, 7.f, 0.f),
+//     PositionalPid(100.f, 0.0f, 2.f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
+// };
 
 namespace GIMBAL {
 
@@ -66,11 +57,12 @@ public:
             autoPosPid_._[i] = &gAutoPosPid[i];
             autoVelPid_._[i] = &gAutoVelPid[i];
 
-            bufferPosPid_._[i] = &gBufferPosPid[i];
-            bufferVelPid_._[i] = &gBufferVelPid[i];
+            // bufferPosPid_._[i] = &gBufferPosPid[i];
+            // bufferVelPid_._[i] = &gBufferVelPid[i];
         }
         wSlowBYawFollowPid_ = &wSlowBYawFollowPid;
         wFastBYawFollowPid_ = &wFastBYawFollowPid;
+        sYawVelFbPid = &autoSYawVelFeedbackPID;
     }
 
     void enter() final
@@ -119,11 +111,12 @@ public:
         }
         gimbal_->debug.followByaw = wBYaw;
 
-        if (gimbal_->d2eData.bufferMode != 0) {
-            gimbal_->ctrlMotor(eMA, bufferPosPid_, bufferVelPid_);
-        } else {
-            gimbal_->ctrlMotor(eMA, autoPosPid_, autoVelPid_);
-        }
+        // if (gimbal_->d2eData.bufferMode != 0) {
+        //     gimbal_->ctrlMotor(eMA, bufferPosPid_, bufferVelPid_);
+        // } else {
+        gimbal_->ctrlYawAuto(eIA, sYawVelFbPid, autoPosPid_, autoVelPid_);
+        // gimbal_->ctrlMotor(eMA, autoPosPid_, autoVelPid_);
+        // }
     }
 
     void exit() final
@@ -131,11 +124,12 @@ public:
         for (uint8_t i = 0; i < 3; i++) {
             autoPosPid_._[i]->reset();
             autoVelPid_._[i]->reset();
-            bufferPosPid_._[i]->reset();
-            bufferVelPid_._[i]->reset();
+            // bufferPosPid_._[i]->reset();
+            // bufferVelPid_._[i]->reset();
         }
         wFastBYawFollowPid_->reset();
         wSlowBYawFollowPid_->reset();
+        sYawVelFbPid->reset();
         gimbal_->debug.gimbalState = gimbal_->msg.state;
         LOG::info("GimbalAuto", "exit");
     }
@@ -163,8 +157,9 @@ private:
     DualStage_u<float> &eMA = this->gimbal_->expMotorAng_;
     DualStage_u<float> &eIA = this->gimbal_->expImuAng_;
 
-    DualStage_u<PositionalPid *> autoPosPid_, bufferPosPid_;
-    DualStage_u<PositionalPid *> autoVelPid_, bufferVelPid_;
+    DualStage_u<PositionalPid *> autoPosPid_, autoVelPid_;
+    // DualStage_u<PositionalPid *> bufferPosPid_, bufferVelPid_;
     PositionalPid *wSlowBYawFollowPid_, *wFastBYawFollowPid_;
+    PositionalPid *sYawVelFbPid;
 };
 } // namespace GIMBAL
