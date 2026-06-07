@@ -196,9 +196,9 @@ template <RCDevType_e DEV_TYPE> void RcMsgHandler<DEV_TYPE>::masterHandle()
                 abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
                 alMsg_.state = ARMORLOADER::FSMState_e::AUTO;
             } else if (sl == SW::UP) {
-                // cMsg_.state = CHASSIS::FSMState_e::SPIN;
-                abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
-                alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
+                cMsg_.state = CHASSIS::FSMState_e::SPIN;
+                // abMsg_.state = ARMORBOOSTER::FSMState_e::ON;
+                // alMsg_.state = ARMORLOADER::FSMState_e::SINGLE;
             }
             // cMsg_.state = CHASSIS::FSMState_e::STOP;
 

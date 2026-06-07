@@ -10,12 +10,12 @@
 
 static PositionalPid gLauPosPid[3] = {
     PositionalPid(20.f, 20.f, 1.f, 0.001f, 0.5f, 5.f, 0.f),
-    PositionalPid(8.f, 0.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
+    PositionalPid(8.f, 4.f, 1.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(15.f, 10.f, 3.f, 1.f / 1000.f, 1.2f, 5.f, 0.f),
 };
 static PositionalPid gLauVelPid[3] = {
     PositionalPid(0.8f, 0.4f, 0.f, 0.001f, 1.f, 3.5f, 0.f),
-    PositionalPid(0.55f, 0.4f, 0.f, 0.001f, 2.f, 7.f, 0.f),
+    PositionalPid(0.4f, 0.2f, 0.f, 0.001f, 0.f, 3.5f, 0.f),
     PositionalPid(1.5f, 0.05f, 0.03f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
 };
 namespace GIMBAL {

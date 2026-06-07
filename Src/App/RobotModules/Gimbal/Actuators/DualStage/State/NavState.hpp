@@ -12,13 +12,13 @@
 
 static PositionalPid gNavPosPid[3] = {
     PositionalPid(45.f, 30.f, 1.f, 0.001f, 30.f, 80.f, 0.f),
-    PositionalPid(10.f, 5.f, 2.f, 1.f / 1000.f, 60.f, 110.f, 0.f),
+    PositionalPid(60.f, 80.f, 3.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(45.f, 10.f, 0.5f, 1.f / 1000.f, 30.f, 80.f, 0.f),
 };
 //    PositionalPid(60.f, 80.f, 3.f, 0.001f, 3.f, 25.f, 0.f),4310
 static PositionalPid gNavVelPid[3] = {
     PositionalPid(0.5f, 0.f, 0.01f, 0.001f, 1.5f, 3.5f, 0.f),
-    PositionalPid(2.f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 3.5f, 0.f),
     PositionalPid(3.f, 0.0f, 0.1f, 1.f / 1000.f, 1.5f, 3.5f, 0.f),
 };
 //    PositionalPid(0.5f, 0.f, 0.f, 0.001f, 0.f, 7.f, 0.f),4310
@@ -26,8 +26,8 @@ static PositionalPid gNavVelPid[3] = {
 namespace GIMBAL {
 
 class NavState : public FSMState<FSMState_e> {
-    static constexpr float IMU_PITCH_MAX_ANG = 0.53f;  //
-    static constexpr float IMU_PITCH_MIN_ANG = -0.05f; //
+    static constexpr float IMU_PITCH_MAX_ANG = 0.53f; //
+    static constexpr float IMU_PITCH_MIN_ANG = 0.1f;  //
 
     static constexpr float SECOND_YAW_MAX_ANG = 0.22f; // 13°
 
@@ -50,23 +50,24 @@ public:
 
         LOG::info("GimbalNav", "enter");
     }
-
+    // 巡检模式下使用电机系控制
     void run() final
     {
         eIA.Pitch = cIA.Pitch;
-        eIA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eIA.FirstYaw = cIA.FirstYaw;
         eIA.SecondYaw = cIA.SecondYaw;
+        // eIA.Pitch = PINYMOTOR::clamp(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
+        // eMA = gimbal_->ctrl(eIA);
 
-        eIA.Pitch = PINYMOTOR::clamp(eIA.Pitch, IMU_PITCH_MIN_ANG, IMU_PITCH_MAX_ANG);
-        eIA.FirstYaw = rangeConversion(eIA.FirstYaw);
+        eMA.FirstYaw += gimbal_->msg.wYaw * 0.001f;
+        eMA.FirstYaw = PINYMOTOR::rangeMap(eMA.FirstYaw);
 
-        eMA = gimbal_->ctrl(eIA);
         if (gimbal_->d2eData.isBumpArea) {
             for (auto &i : eMA._) {
                 i = 0;
             }
         } else {
-            //sin(Ωt),巡检模式下小yaw,pitch使用电机系控制
+            //sin(Ωt)
             if (patrolCnt + 5 >= MAX_PAT_CNT)
                 maxPatCount = 0;
             else if (patrolCnt - 5 <= 0)

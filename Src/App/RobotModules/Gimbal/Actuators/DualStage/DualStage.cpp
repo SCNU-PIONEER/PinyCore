@@ -55,7 +55,7 @@ DualStage::DualStage()
     motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
-    InitConfig_s firstYawDM4340Config = {
+    InitConfig_s firstYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
         .comType = ComType_e::CAN,
         .workMode = WorkMode_e::MIT_TT,
@@ -65,7 +65,10 @@ DualStage::DualStage()
         .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4340("BigYaw", firstYawDM4340Config);
+    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
+
+    bigYawZero_ = motors_.FirstYaw->data().rawAng; //记录大yaw初始零点位置,用于缓启动阶段
+    // motors_.FirstYaw->setZeroAng(bigYawZero_);
     motors_.FirstYaw->setZeroAng(FIRST_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Big yaw zeros has set to %f", motors_.FirstYaw->data().zeroAng);
 
@@ -90,6 +93,10 @@ DualStage::DualStage()
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));
     this->stateFactory_.addState(FSMState_e::NAV, std::make_unique<NavState>(this));
     this->stateFactory_.init(this->stateFactory_.getNextState(FSMState_e::STOP));
+
+#if EXTENSION_SUPERCAP
+    bigYawCap_.limitCharge();
+#endif
 }
 
 void DualStage::stop()
@@ -151,6 +158,14 @@ void DualStage::update(void *_param)
     debug.visionFire = v2eData.fire;
     debug.visionYaw = v2eData.yaw;
     debug.visionPitch = v2eData.pitch;
+
+#if EXTENSION_SUPERCAP
+    bigYawCap_.enable();
+    bigYawCap_.setChargePowerLimit(50);
+    bigYawCap_.setChargeEnergySlack(60);
+    bigYawCap_.setChargelimitRatio(0.75f);
+    bigYawCap_.task();
+#endif
 
     this->stateFactory_.update();
 }

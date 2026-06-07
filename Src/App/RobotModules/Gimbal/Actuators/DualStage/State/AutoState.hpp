@@ -11,12 +11,12 @@
 //峰值
 static PositionalPid gAutoPosPid[3] = {
     PositionalPid(180.f, 50.f, 1.8f, 0.001f, 30.f, 80.f, 0.f),
-    PositionalPid(15.f, 0.f, 2.f, 1.f / 1000.f, 10.f, 110.f, 0.f),
+    PositionalPid(30.f, 20.f, 5.f, 0.001f, 3.f, 25.f, 0.f),
     PositionalPid(22.f, 0.f, 0.05f, 1.f / 1000.f, 0.f, 50.f, 0.f),
 }; //零点
 static PositionalPid gAutoVelPid[3] = {
     PositionalPid(1.5f, 0.f, 0.08f, 0.001f, 2.f, 5.f, 0.f),
-    PositionalPid(0.55f, 0.f, 0.0f, 1.f / 1000.f, 0.f, 7.f, 0.f),
+    PositionalPid(0.5f, 0.5f, 0.f, 0.001f, 0.f, 3.5f, 0.f),
     PositionalPid(35.f, 15.f, 0.1f, 1.f / 1000.f, 30.f, 200.f, 0.f),
 };
 //相位

@@ -213,7 +213,7 @@ void Swerve::getSuperCapData()
     bool useCap = chassisCtrlRxPacket_.data().useSuperCap;
 #if EXTENSION_SUPERCAP
     // float capRealRatio = cap_.getCapData().capEnergyRatio;
-    cap_.setChargelimitRatio(0.95f);
+    cap_.setChargelimitRatio(0.75f);
     (refereeMsg_.currentHP != 0) ? cap_.enable() : cap_.disable();
 #if EXTENSION_REFEREE
     cap_.setChargePowerLimit(refereeMsg_.chassisPowerLimit);
@@ -222,7 +222,7 @@ void Swerve::getSuperCapData()
     if (sentryCmdRxPacket_.data().isBumpArea) {
         useCap = true;
     }
-    capCmdRatio_ = (useCap && (refereeMsg_.currentHP != 0)) ? 0.5f : 0.9f;
+    capCmdRatio_ = (useCap && (refereeMsg_.currentHP != 0)) ? 0.4f : 0.8f;
     powerCtrl_->capCmdRatio_ = capCmdRatio_;
 #endif
 #endif
@@ -264,12 +264,12 @@ void Swerve::sendDataToReferee()
     sentryCmdData_.receiverId = 0x8080;
     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
     //裁判系统内部判定有问题，确认复活标志位置1姿态不切换
-    if (refereeMsg_.currentHP <= 0) {
-        sentryCmdData_.userdata.reviveConfirm = 1;
-    } else {
-        sentryCmdData_.userdata.reviveConfirm = 0;
-        sentryCmdData_.userdata.instantReviveConfirm = 0;
-    }
+    // if (refereeMsg_.currentHP <= 0) {
+    //     sentryCmdData_.userdata.reviveConfirm = 1;
+    // } else {
+    //     sentryCmdData_.userdata.reviveConfirm = 0;
+    //     sentryCmdData_.userdata.instantReviveConfirm = 0;
+    // }
 
     if (cnt % 100 == 0) { //10HZ向裁判系统发送数据
         referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));

@@ -11,6 +11,7 @@
 #include "MotorCommonMacros.hpp"
 #include "PidBasic.hpp"
 #include "GimbalPacket.hpp"
+#include "SuperCap.hpp"
 
 namespace GIMBAL {
 
@@ -61,7 +62,7 @@ class DualStage : public Gimbal {
 public:
     static constexpr float PITCH_LAUNCH_ANG = 1.16512966f;
     static constexpr float FIRST_YAW_LAUNCH_ANG = 5.15944758f;
-    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.57861209f;
+    static constexpr float SECOND_YAW_LAUNCH_ANG = 3.38531876f;
 
     static constexpr float PITCH_MOTOR_FREQ = 1000.f;
     static constexpr float FIRST_YAW_MOTOR_FREQ = 1000.f;
@@ -126,6 +127,13 @@ protected:
 private:
     ChassisMsg_s cmsg{};
     bool enFire = false;
+
+#if EXTENSION_SUPERCAP
+    SuperCap bigYawCap_{ &HCAN3 };
+    float capCmdRatio_;
+#endif
+
+    float bigYawZero_ = 0.f;
 
     ChassisCtrlTxPacket chassisCtrlTxPacket_{ 300.f };
     ShooterCtrlTxPacket shooterCtrlTxPacket_{ 300.f };
