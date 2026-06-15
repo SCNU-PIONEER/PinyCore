@@ -1,6 +1,6 @@
 # How to use
 
-将该目录的文件复制到.git/hooks/下
+Copy the files in this directory to the .git/hooks/ directory
 Linux
 ```
 find tools/hooks -type f ! -name 'README.md' -exec cp {} .git/hooks/ \;
