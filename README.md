@@ -8,10 +8,10 @@
             alt="semantic-release: angular"/></a>
 </p>
 
-目前本仓库不会实现任何具体兵种，只会提供一个基础框架, 只有通用的代码需要pr到本仓库, 当app层模块稳定实现且兼容所有代码或特定时期（如完整形态考核等）才需要pr到本仓库，其他需要自己实现的地方：
+At present, this repository does not implement any specific unit type, only providing a basic framework. Only generic code should be PRed to this repository. PRs to this repository are required only when the app-layer modules are stably implemented and compatible with all code, or during specific periods (e.g., final form review). Other parts that need to be implemented by yourself:
 
-1. app层
-2. cmd输入的逻辑配置
+1. App layer
+2. Logic configuration of cmd input
 
 ****
 
@@ -27,20 +27,20 @@
 
 we also suggest to install following software:
 1. [clangd](https://clangd.llvm.org/) >= 20.0
-1. clang-format >= 20.0
-2. [commitizen](https://github.com/commitizen/cz-cli)
-3. ccache
+2. clang-format >= 20.0
+3. [commitizen](https://github.com/commitizen/cz-cli)
+4. ccache
 
 # 🌟Getting started
-## 🏗️Build
+## 🏗️Build & Compile
 
-**构建**
+**Build**
 
 ```sh
 cmake -B build -G Ninja
 ```
 
-**编译**
+**Compile**
 
 ```sh
 ninja -C build
@@ -48,13 +48,13 @@ ninja -C build
 
 ****
 
-支持基于Kconfig对项目进行配置
+Support configuring projects based on Kconfig
 
 ```sh
 cmake --build ./build --target menuconfig
 ```
 
-支持直接根据预制的配置文件来构建项目 (应存在于根目录，本例文件名为"yourconfig")
+Support building projects directly based on pre-configured files (which should exist in the root directory, with the file name "yourconfig" in this example)
 
 ```sh
 cmake -B build -G Ninja -DCONFIG_NAME=yourconfig
@@ -70,8 +70,8 @@ cmake -B build -G Ninja -DCONFIG_NAME=yourconfig
 
 ## ⚠️Notice
 
-1. 在main函数执行之前调用HAL库函数是危险的！请避免使调用HAL库的构造函数的类对象成为全局变量（可以创建全局的指针，或使用./Src/Utils/Lazy中的工具，并在初始化阶段构造）；
-1. 首次构建时，本项目会自动从github拉取第三方库，请确保网络可用。
+1. It is dangerous to call HAL library functions before the main function is executed! Please avoid making class objects that call HAL library constructors global variables (you can create global pointers, or use the tools in ./Src/Utils/Lazy and construct them during the initialization phase);
+2. During the initial build, this project will automatically pull third-party libraries from GitHub. Please ensure that the network is available.
 
 ## 🧩Framework
 
