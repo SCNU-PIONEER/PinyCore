@@ -36,9 +36,6 @@ protected:
         uint32_t lastRecvTick = 0; // ms
     } AUX_;                        // AUX info
 
-    PID *posPID_ = nullptr;
-    PID *velPID_ = nullptr;
-
     bool checkSend();
     void calcRecvFreq();
     void parseCmd();
