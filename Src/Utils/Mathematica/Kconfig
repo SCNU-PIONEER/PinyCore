@@ -1,0 +1,63 @@
+menu "mathematica config"
+    depends on USE_MATHEMATICA
+
+    config USE_MATHEMATICA_BALLISTIC
+        bool "Ballistic"
+        default n
+
+    config USE_MATHEMATICA_CORDIC
+        bool "Cordic"
+        default n
+
+    config USE_MATHEMATICA_CRC
+        bool "CRC"
+        default n
+
+    config USE_MATHEMATICA_FFT
+        bool "FFT"
+        default n
+
+    config USE_MATHEMATICA_FILTER
+        bool "Filter"
+        default n
+
+    config USE_MATHEMATICA_KF
+        bool "Kalman Filter"
+        default n
+
+    config USE_MATHEMATICA_LQR
+        bool "LQR"
+        default n
+
+    config USE_MATHEMATICA_MATRIX
+        bool "Matrix"
+        default n
+
+    config USE_MATHEMATICA_OLS
+        bool "OLS"
+        default n
+
+    config USE_MATHEMATICA_PID
+        bool "PID"
+        default n
+
+    config USE_MATHEMATICA_RAMP
+        bool "Ramp"
+        default n
+
+    config USE_MATHEMATICA_RICCATI
+        bool "Riccati"
+        default n
+
+    config USE_MATHEMATICA_RLS
+        bool "RLS"
+        default n
+
+    config USE_MATHEMATICA_SMC
+        bool "SMC"
+        default n
+
+    config USE_MATHEMATICA_SMOOTH
+        bool "Smooth"
+        default n
+endmenu

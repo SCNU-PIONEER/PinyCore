@@ -1,23 +1,38 @@
 # Add the library
 add_library(utils STATIC)
 
-# TODO: use kconfig to choice the mathematica modules
 if(USE_MATHEMATICA)
-  file(GLOB_RECURSE MATHEMATICA_SOURCES CONFIGURE_DEPENDS
-       "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/*.c"
-       "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/*.cpp")
-  target_sources(utils PRIVATE ${MATHEMATICA_SOURCES})
+  function(add_mathematica_module config_name module_name)
+    if(${config_name})
+      file(GLOB_RECURSE MODULE_SOURCES CONFIGURE_DEPENDS
+           "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.c"
+           "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.cpp")
+      if(MODULE_SOURCES)
+        target_sources(utils PRIVATE ${MODULE_SOURCES})
+      endif()
+      target_include_directories(
+        utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name})
+    endif()
+  endfunction()
+
   target_include_directories(
-    utils
-    PRIVATE ../../Lib/CMSIS-DSP/Include
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/PID
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Filter
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Smooth
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/CRC
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/RLS
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/Matrix
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/LQR
-           ${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/KF)
+    utils PRIVATE ../../Lib/CMSIS-DSP/Include)
+
+  add_mathematica_module(USE_MATHEMATICA_BALLISTIC Ballistic)
+  add_mathematica_module(USE_MATHEMATICA_CORDIC Cordic)
+  add_mathematica_module(USE_MATHEMATICA_CRC CRC)
+  add_mathematica_module(USE_MATHEMATICA_FFT FFT)
+  add_mathematica_module(USE_MATHEMATICA_FILTER Filter)
+  add_mathematica_module(USE_MATHEMATICA_KF KF)
+  add_mathematica_module(USE_MATHEMATICA_LQR LQR)
+  add_mathematica_module(USE_MATHEMATICA_MATRIX Matrix)
+  add_mathematica_module(USE_MATHEMATICA_OLS OLS)
+  add_mathematica_module(USE_MATHEMATICA_PID PID)
+  add_mathematica_module(USE_MATHEMATICA_RAMP Ramp)
+  add_mathematica_module(USE_MATHEMATICA_RICCATI Riccati)
+  add_mathematica_module(USE_MATHEMATICA_RLS RLS)
+  add_mathematica_module(USE_MATHEMATICA_SMC SMC)
+  add_mathematica_module(USE_MATHEMATICA_SMOOTH Smooth)
 endif()
 
 if(USE_DWT)

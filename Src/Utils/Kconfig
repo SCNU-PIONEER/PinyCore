@@ -2,6 +2,9 @@ menu "utils config"
     config USE_MATHEMATICA
         bool "mathematica"
         default y
+    
+    source "Src/Utils/Mathematica/Kconfig"
+
     config USE_DWT
         bool "Dwt timer"
         default y
