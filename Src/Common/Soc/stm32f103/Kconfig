@@ -1,4 +1,0 @@
-menu "STM32F103 Soc config"
-    depends on TARGET_STM32F103
-
-endmenu

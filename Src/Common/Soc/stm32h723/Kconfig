@@ -1,9 +1,0 @@
-menu "STM32H723 Soc config"
-    depends on TARGET_STM32H723
-
-    config SOC_CUSTOM_USE_SPI3
-    bool "custom SPI3"
-    default n
-
-endmenu
-

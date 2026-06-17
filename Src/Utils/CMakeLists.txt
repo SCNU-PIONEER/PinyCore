@@ -61,6 +61,6 @@ target_link_libraries(
   utils
   PRIVATE Soc segger Bsp freertos_kernel)
 
-if(USE_MATHEMATICA AND NOT DEFINED TARGET_STM32F103)
+if(USE_MATHEMATICA AND NOT DEFINED TARGET_STM32F103C8TX)
   target_link_libraries(utils PUBLIC CMSISDSP)
 endif()

@@ -97,9 +97,9 @@ def convert_config_to_header(_config_file, _header_file):
 
 def get_soc_config(config_file):
     config_mapping = {
-        "CONFIG_TARGET_STM32F407=y": "Src/Common/Soc/stm32f407/DefaultConf.hpp.in",
-        "CONFIG_TARGET_STM32F103=y": "Src/Common/Soc/stm32f103/DefaultConf.hpp.in",
-        "CONFIG_TARGET_STM32H723=y": "Src/Common/Soc/stm32h723/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32F407IGHX=y": "Src/Common/Soc/stm32f407ighx/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32F103C8TX=y": "Src/Common/Soc/stm32f103c8tx/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32H723VGTX=y": "Src/Common/Soc/stm32h723vgtx/DefaultConf.hpp.in",
         # 可扩展其他型号
     }
 

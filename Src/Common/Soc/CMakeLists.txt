@@ -2,24 +2,24 @@ INCLUDE(../../Config/sdkconfig.cmake option)
 
 add_library(Soc INTERFACE)
 
-if(DEFINED TARGET_STM32H723)
-    set(soc_target "stm32h723")
+if(DEFINED TARGET_STM32H723VGTX)
+    set(soc_target "stm32h723vgtx")
     set(cortex "cortex-m7" )
     set(fpu "fpv5-d16" )
     set(float-abi "hard" )
-elseif(DEFINED TARGET_STM32F407)
-    set(soc_target "stm32f407")
+elseif(DEFINED TARGET_STM32F407IGHX)
+    set(soc_target "stm32f407ighx")
     set(cortex "cortex-m4" )
     set(fpu "fpv4-sp-d16" )
     set(float-abi "hard" )
-elseif(DEFINED TARGET_STM32F103)
-    set(soc_target "stm32f103")
+elseif(DEFINED TARGET_STM32F103C8TX)
+    set(soc_target "stm32f103c8tx")
     set(cortex "cortex-m3" )
     set(fpu "" )
     set(float-abi "" )
 else()
-    message(WARNING "Using defaust Soc board: stm32f407" )
-    set(soc_target "stm32f407")
+    message(WARNING "Using defaust Soc board: stm32f407ighx" )
+    set(soc_target "stm32f407ighx")
     set(cortex "cortex-m4" )
     set(fpu "fpv4-sp-d16" )
     set(float-abi "hard" )
@@ -30,7 +30,7 @@ message(STATUS "soc board: ${soc_target}")
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
 set(target_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}")
 
-if(DEFINED TARGET_STM32H723)
+if(DEFINED TARGET_STM32H723VGTX)
   target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${target_folder}/SocCustom.cpp)
 endif()
 
@@ -55,7 +55,7 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/.deps)
 
-if(DEFINED TARGET_STM32F407)
+if(DEFINED TARGET_STM32F407IGHX)
   if(NOT EXISTS "${target_folder}/CMSIS_Device")
     FetchContent_Declare(
       cmsis_device_f4
@@ -78,7 +78,7 @@ if(DEFINED TARGET_STM32F407)
     FetchContent_MakeAvailable(hal_f4)
   endif()
 
-elseif(DEFINED TARGET_STM32F103)
+elseif(DEFINED TARGET_STM32F103C8TX)
   if(NOT EXISTS "${target_folder}/CMSIS_Device")
     FetchContent_Declare(
       cmsis_device_f1
@@ -101,7 +101,7 @@ elseif(DEFINED TARGET_STM32F103)
     FetchContent_MakeAvailable(hal_f1)
   endif()
 
-elseif(DEFINED TARGET_STM32H723)
+elseif(DEFINED TARGET_STM32H723VGTX)
   if(NOT EXISTS "${target_folder}/CMSIS_Device")
     FetchContent_Declare(
       cmsis_device_h7
