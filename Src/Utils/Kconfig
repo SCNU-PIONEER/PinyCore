@@ -1,6 +1,6 @@
 menu "utils config"
-    config USE_ALGORITHM
-        bool "algorithm"
+    config USE_MATHEMATICA
+        bool "mathematica"
         default y
     config USE_DWT
         bool "Dwt timer"

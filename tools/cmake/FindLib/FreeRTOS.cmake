@@ -27,8 +27,22 @@ set(FREERTOS_HEAP
     CACHE STRING "" FORCE)
 
 # Select the native compile PORT
+if(DEFINED TARGET_STM32F103)
+    set(FREERTOS_PORT_NAME "GCC_ARM_CM3")
+elseif(DEFINED TARGET_STM32F407)
+    set(FREERTOS_PORT_NAME "GCC_ARM_CM4F")
+elseif(DEFINED TARGET_STM32H723)
+    # Keep the existing project convention for STM32H723.
+    set(FREERTOS_PORT_NAME "GCC_ARM_CM4F")
+else()
+    message(WARNING "Unknown STM32 target, using default FreeRTOS port: GCC_ARM_CM4F")
+    set(FREERTOS_PORT_NAME "GCC_ARM_CM4F")
+endif()
+
 set(FREERTOS_PORT
-    "GCC_ARM_CM4F"
+    "${FREERTOS_PORT_NAME}"
     CACHE STRING "" FORCE)
+
+message(STATUS "FreeRTOS port: ${FREERTOS_PORT_NAME}")
 
 FetchContent_MakeAvailable(FreeRTOS)

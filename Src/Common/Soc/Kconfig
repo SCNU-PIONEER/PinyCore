@@ -8,6 +8,11 @@ menu "Soc config"
 
         source "Src/Common/Soc/stm32f407/Kconfig"
 
+        config TARGET_STM32F103
+        bool "STM32F103"
+
+        source "Src/Common/Soc/stm32f103/Kconfig"
+
         config TARGET_STM32H723
         bool "STM32H723"
 

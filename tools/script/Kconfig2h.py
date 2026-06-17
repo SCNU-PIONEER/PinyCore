@@ -98,6 +98,7 @@ def convert_config_to_header(_config_file, _header_file):
 def get_soc_config(config_file):
     config_mapping = {
         "CONFIG_TARGET_STM32F407=y": "Src/Common/Soc/stm32f407/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32F103=y": "Src/Common/Soc/stm32f103/DefaultConf.hpp.in",
         "CONFIG_TARGET_STM32H723=y": "Src/Common/Soc/stm32h723/DefaultConf.hpp.in",
         # 可扩展其他型号
     }
@@ -112,8 +113,10 @@ def get_soc_config(config_file):
 
 def append_macros_to_header(config_file, header_file):
     conf_path = get_soc_config(config_file)
+    if conf_path is None:
+        raise RuntimeError(f"No default Soc conf mapping found in {config_file}")
     # read default macros from source file
-    with open(conf_path, "r") as src:  # type: ignore[assignment]
+    with open(conf_path, "r") as src:
         content = src.read().strip()
 
     # 追加到.h文件末尾

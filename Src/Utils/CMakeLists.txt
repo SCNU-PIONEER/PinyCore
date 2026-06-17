@@ -1,10 +1,12 @@
 # Add the library
 add_library(utils STATIC)
 
-# TODO: use kconfig to choice the algorithm
-if(USE_ALGORITHM)
-  file(GLOB_RECURSE ALGORITHM_SOURCES CMAKE_CONFIGURE_DEPENDS "*.c" "*.cpp")
-  target_sources(utils PRIVATE ${ALGORITHM_SOURCES})
+# TODO: use kconfig to choice the mathematica modules
+if(USE_MATHEMATICA)
+  file(GLOB_RECURSE MATHEMATICA_SOURCES CONFIGURE_DEPENDS
+       "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/*.c"
+       "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/*.cpp")
+  target_sources(utils PRIVATE ${MATHEMATICA_SOURCES})
   target_include_directories(
     utils
     PRIVATE ../../Lib/CMSIS-DSP/Include
@@ -57,5 +59,8 @@ target_sources(${CMAKE_PROJECT_NAME}
 # link
 target_link_libraries(
   utils
-  PRIVATE Soc segger Bsp freertos_kernel
-  PUBLIC CMSISDSP)
+  PRIVATE Soc segger Bsp freertos_kernel)
+
+if(USE_MATHEMATICA AND NOT DEFINED TARGET_STM32F103)
+  target_link_libraries(utils PUBLIC CMSISDSP)
+endif()

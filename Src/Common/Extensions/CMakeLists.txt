@@ -1,5 +1,11 @@
-# Add the sourses
-file(GLOB_RECURSE SOURCES CMAKE_CONFIGURE_DEPENDS "Motor/*.cpp")
+# Add the sources
+set(SOURCES)
+
+if(EXTENSION_MOTOR)
+  file(GLOB_RECURSE MOTOR_SOURCES CONFIGURE_DEPENDS
+       "${CMAKE_CURRENT_SOURCE_DIR}/Motor/*.cpp")
+  list(APPEND SOURCES ${MOTOR_SOURCES})
+endif()
 
 if(EXTENSION_BUZZER)
   list(APPEND SOURCES "buzzer/Buzzer.cpp")
