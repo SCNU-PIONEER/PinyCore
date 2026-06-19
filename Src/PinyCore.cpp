@@ -20,7 +20,9 @@ void PinyCore::bspInit()
     LOG::Logger::instance();
     SEGGER_SYSVIEW_Conf();
 
+#if BSP_USE_CAN
     Can::instance().init();
+#endif
 }
 
 void PinyCore::coreInit()

@@ -1,17 +1,22 @@
 menu "Soc config"
     choice
         prompt "Soc target choice"
-        default TARGET_STM32F407
+        default TARGET_STM32F407IGHX
 
-        config TARGET_STM32F407
-        bool "STM32F407"
+        config TARGET_STM32F407IGHX
+        bool "STM32F407IGHX"
 
-        source "Src/Common/Soc/stm32f407/Kconfig"
+        source "Src/Common/Soc/stm32f407ighx/Kconfig"
 
-        config TARGET_STM32H723
-        bool "STM32H723"
+        config TARGET_STM32F103C8TX
+        bool "STM32F103C8TX"
 
-        source "Src/Common/Soc/stm32h723/Kconfig"
+        source "Src/Common/Soc/stm32f103c8tx/Kconfig"
+
+        config TARGET_STM32H723VGTX
+        bool "STM32H723VGTX"
+
+        source "Src/Common/Soc/stm32h723vgtx/Kconfig"
 
     endchoice
 
