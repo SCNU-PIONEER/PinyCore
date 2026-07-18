@@ -1,10 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
-
-#include "Pid.hpp"
-
 
 namespace PINYMOTOR {
 
@@ -56,9 +52,6 @@ struct InitConfig_s {
     WorkMode_e workMode;
     uint8_t offsetId;
     float txFreq;
-
-    PID *posPID = nullptr;
-    PID *velPID = nullptr;
 
     bool isReverse = false;
 };

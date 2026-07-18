@@ -24,8 +24,6 @@ InitConfig_s configDM = {
     .workMode = WorkMode_e::EMIT,
     .offsetId = 2,
     .txFreq = 500.0f,
-    .posPID = nullptr,
-    .velPID = nullptr,
 };
 
 DMMOTOR::Reg_s regDM = {

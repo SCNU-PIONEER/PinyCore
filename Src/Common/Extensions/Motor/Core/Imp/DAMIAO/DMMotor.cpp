@@ -181,10 +181,6 @@ MotorTypeDef_e DMMotor::ctrl()
         memcpy(txBuf.data, ENABLE_CMD_MSG, 8);
         txBuf.len = 8;
     } else if (!this->cmd_.SW) {
-        if (this->posPID_ != nullptr)
-            this->posPID_->reset();
-        if (this->velPID_ != nullptr)
-            this->velPID_->reset();
         constexpr uint8_t DISABLE_CMD_MSG[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD };
         memcpy(txBuf.data, DISABLE_CMD_MSG, 8);
         txBuf.len = 8;

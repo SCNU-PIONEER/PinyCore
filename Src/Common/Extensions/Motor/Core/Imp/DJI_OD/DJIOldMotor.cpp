@@ -130,10 +130,6 @@ MotorTypeDef_e DJIOldMotor::ctrl()
     if (this->cmd_.SW) {
         (this->*convert)();
     } else {
-        if (this->posPID_ != nullptr)
-            this->posPID_->reset();
-        if (this->velPID_ != nullptr)
-            this->velPID_->reset();
         this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
         this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }

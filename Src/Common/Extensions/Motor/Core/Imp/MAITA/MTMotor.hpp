@@ -4,6 +4,8 @@
 #include "FreeRTOS.h"
 #include "message_buffer.h"
 
+#include <array>
+
 namespace PINYMOTOR::MTMOTOR {
 
 struct Status_s {

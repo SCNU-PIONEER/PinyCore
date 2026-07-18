@@ -2,7 +2,6 @@
 
 #include "TestModule.hpp"
 #include <cstdint>
-#include <cstring>
 #include "Projdefs.hpp"
 #include "DMMotor.hpp"
 
@@ -28,4 +27,5 @@ private:
     PINYMOTOR::WorkMode_e currentWorkMode_;
     DmMotorModel_e curModel_;
 };
-}
+
+} // namespace TEST
