@@ -6,6 +6,14 @@ CONFIG_TARGET_SLAVE=y
 #
 # CONFIG_TARGET_STM32F407 is not set
 CONFIG_TARGET_STM32H723=y
+
+#
+# STM32H723 Soc config
+#
+# CONFIG_SOC_CUSTOM_USE_SPI3 is not set
+# end of STM32H723 Soc config
+
+# CONFIG_SOC_USE_CUSTOM is not set
 # end of Soc config
 
 #
@@ -22,15 +30,7 @@ CONFIG_APP_USE_CHASSIS=y
 CONFIG_APP_USE_SWERVE=y
 CONFIG_CHASSIS_TYPE="Swerve"
 CONFIG_CHASSIS_FILE="\"Swerve.hpp\""
-CONFIG_APP_USE_POWERCTRL=y
-
-#
-# power control settings
-#
-# CONFIG_POWERCTRL_USE_RLS is not set
-# CONFIG_ENABLE_STEER_RLS is not set
-# end of power control settings
-
+# CONFIG_APP_USE_POWERCTRL is not set
 # CONFIG_APP_USE_ODOMETER is not set
 # end of chassis config
 
@@ -95,9 +95,7 @@ CONFIG_BSP_USE_USB=y
 #
 # extension config
 #
-# CONFIG_EXTENSION_DT7 is not set
-CONFIG_EXTENSION_ET08A=y
-# CONFIG_EXTENSION_VT13 is not set
+# CONFIG_EXTENSION_RC is not set
 CONFIG_EXTENSION_BUZZER=y
 CONFIG_EXTENSION_LED=y
 
@@ -110,7 +108,7 @@ CONFIG_LED_WS2812_SPI=y
 # end of LEDDriver config
 
 CONFIG_EXTENSION_MOTOR=y
-CONFIG_EXTENSION_REFEREE=y
+# CONFIG_EXTENSION_REFEREE is not set
 CONFIG_EXTENSION_SENSOR=y
 CONFIG_EXTENSION_SUPERCAP=y
 # end of extension config

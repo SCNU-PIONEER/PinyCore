@@ -19,3 +19,6 @@ ThirdParty/
 
 # Python cache
 __pycache__/
+
+#temp ignore
+Src/App/RobotModules/Gimbal/Actuators/ThreeAxel/

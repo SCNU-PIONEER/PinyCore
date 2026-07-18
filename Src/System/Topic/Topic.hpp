@@ -15,7 +15,7 @@ public:
 protected:
     Node() : uid_(uidCounter_++) {};
     ~Node() { uidCounter_--; };
-    uint8_t uid_;
+    uint8_t uid_ {};
 };
 
 template <typename T> class Topic;
