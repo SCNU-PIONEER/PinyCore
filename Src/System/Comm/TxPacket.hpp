@@ -24,8 +24,7 @@ public:
      * @param _len The length of the buffer
      * @note This function is pure virtual and must be implemented by the derived class
      */
-    virtual void transmit(uint8_t *_buf,
-                          uint16_t _len) = 0; // TODO: better protocol abstraction
+    virtual void transmit(Data &_data) = 0;
 
     /**
      * @brief Send the packet
@@ -34,7 +33,7 @@ public:
     void send()
     {
         Data txBuf = PacketType::compress(this->data_);
-        this->transmit(txBuf.bytes, PacketType::LEN);
+        this->transmit(txBuf);
     }
 
     /**
@@ -80,9 +79,9 @@ private:
         if (checkSend()) {
             Data txBuf;
             PacketType::compress(this->data_, txBuf);
-            this->transmit(txBuf.bytes, PacketType::LEN);
+            this->transmit(txBuf);
         }
     } };
 };
 
-} // namespace COMM
+}  // namespace COMM

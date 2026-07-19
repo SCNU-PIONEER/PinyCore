@@ -10,6 +10,8 @@ menu "gimbal config"
             bool "standard"
         config APP_USE_DUALSTAGE
             bool "DualStage"
+        config APP_USE_THREEAXLE
+            bool "ThreeAxle"
 
     endchoice
 
@@ -17,10 +19,12 @@ menu "gimbal config"
         string
         default "Standard" if APP_USE_STANDARD
         default "DualStage"  if APP_USE_DUALSTAGE
+        default "ThreeAxle" if APP_USE_THREEAXLE
 
     config GIMBAL_FILE
         string
         default '"Standard.hpp"' if APP_USE_STANDARD
         default '"DualStage.hpp"'  if APP_USE_DUALSTAGE
+        default '"ThreeAxel.hpp"' if APP_USE_THREEAXLE
 
 endmenu

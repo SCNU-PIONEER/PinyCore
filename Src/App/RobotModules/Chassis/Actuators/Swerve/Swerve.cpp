@@ -69,7 +69,7 @@ PositionalPid steerVelPid[4] = {
 PositionalPid steerPosPid[4] = {
     PositionalPid(15.f, 0.f, 0.2f, 1.f / 1000.f, 10.f, 35.f, 0.f),
     PositionalPid(15.f, 0.f, 0.1f, 1.f / 1000.f, 10.f, 35.f, 0.f),
-    PositionalPid(30.f, 10.f, 0.25f, 1.f / 1000.f, 10.f, 35.f, 0.f),
+    PositionalPid(22.f, 0.f, 0.3f, 1.f / 1000.f, 10.f, 35.f, 0.f),
     PositionalPid(15.f, 0.f, 0.02f, 1.f / 1000.f, 10.f, 35.f, 0.f),
 };
 PositionalPid steerVelPid[4] = {
@@ -188,7 +188,7 @@ void Swerve::update(void *_param)
 #endif
     loadRefereeData(_param);
     loadDecesionData();
-    sendDataToReferee();
+    // sendDataToReferee();
 
     for (uint8_t i = 0; i < 4; i++) {
         curDir._[i] = steerMotor_._[i]->posNorm();
@@ -232,7 +232,8 @@ void Swerve::getSuperCapData()
 //向上板发送裁判系统数据
 void Swerve::loadRefereeData(void *_param)
 {
-    refereeData_ = referee->receiver.getRefereeData();
+    // refereeData_ = referee->receiver.getRefereeData();
+
     sentryInfo_ = refereeData_.sentryInfo;
 
     if (xQueueReceive((((MsgBus_s *)_param)->refereeQueue), &refereeMsg_, 0) == pdTRUE) {
@@ -256,25 +257,26 @@ void Swerve::loadRefereeData(void *_param)
     uint16_t senderId;              //需与自身 ID 匹配,机器人ID
     uint16_t receiverId = 0x8080;   //裁判系统服务器(用于哨兵和雷达自主决策指令)
 */
-void Swerve::sendDataToReferee()
-{
-    TickType_t cnt = xTaskGetTickCount();
-    sentryCmdData_.dataCmdId = 0x0120;
-    sentryCmdData_.senderId = refereeMsg_.robotId;
-    sentryCmdData_.receiverId = 0x8080;
-    sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
-    //裁判系统内部判定有问题，确认复活标志位置1姿态不切换
-    // if (refereeMsg_.currentHP <= 0) {
-    //     sentryCmdData_.userdata.reviveConfirm = 1;
-    // } else {
-    //     sentryCmdData_.userdata.reviveConfirm = 0;
-    //     sentryCmdData_.userdata.instantReviveConfirm = 0;
-    // }
+// void Swerve::sendDataToReferee()
+// {
+//     TickType_t cnt = xTaskGetTickCount();
+//     sentryCmdData_.dataCmdId = 0x0120;
+//     sentryCmdData_.senderId = refereeMsg_.robotId;
+//     sentryCmdData_.receiverId = 0x8080;
+//     sentryCmdData_.userdata = sentryCmdRxPacket_.data().midSentryCmd;
+//     //裁判系统内部判定有问题，确认复活标志位置1姿态不切换
+//     // if (refereeMsg_.currentHP <= 0) {
+//     //     sentryCmdData_.userdata.reviveConfirm = 1;
+//     // } else {
+//     //     sentryCmdData_.userdata.reviveConfirm = 0;
+//     //     sentryCmdData_.userdata.instantReviveConfirm = 0;
+//     // }
 
-    if (cnt % 100 == 0) { //10HZ向裁判系统发送数据
-        referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
-    }
-}
+
+//     // if (cnt % 100 == 0) { //10HZ向裁判系统发送数据
+//     //     referee->transmitter.sendData(0x0301, reinterpret_cast<uint8_t *>(&sentryCmdData_), sizeof(sentryCmdData_));
+//     // }
+// }
 
 void Swerve::loadDecesionData()
 {
@@ -351,23 +353,23 @@ Swerve_u<float> Swerve::reverse(const Speed_u &_speed)
     float rY = W_LEFT_RIGHT / 2.f; ///<左右轮距的一半
 
     //LF:0
-    wheelVx[0] = _speed.vx - _speed.wz * rY;
-    wheelVy[0] = _speed.vy + _speed.wz * rX;
+    wheelVx[0] = _speed.vx - (_speed.wz * rY);
+    wheelVy[0] = _speed.vy + (_speed.wz * rX);
     arm_sqrt_f32((wheelVx[0] * wheelVx[0]) + (wheelVy[0] * wheelVy[0]), &wheelComVel[0]);
     arm_atan2_f32(wheelVy[0], wheelVx[0], &expDir.LF);
     //LB:1
-    wheelVx[1] = _speed.vx - _speed.wz * rY;
-    wheelVy[1] = _speed.vy - _speed.wz * rX;
+    wheelVx[1] = _speed.vx - (_speed.wz * rY);
+    wheelVy[1] = _speed.vy - (_speed.wz * rX);
     arm_sqrt_f32((wheelVx[1] * wheelVx[1]) + (wheelVy[1] * wheelVy[1]), &wheelComVel[1]);
     arm_atan2_f32(wheelVy[1], wheelVx[1], &expDir.LB);
     //RB:2
-    wheelVx[2] = _speed.vx + _speed.wz * rY;
-    wheelVy[2] = _speed.vy - _speed.wz * rX;
+    wheelVx[2] = _speed.vx + (_speed.wz * rY);
+    wheelVy[2] = _speed.vy - (_speed.wz * rX);
     arm_sqrt_f32((wheelVx[2] * wheelVx[2]) + (wheelVy[2] * wheelVy[2]), &wheelComVel[2]);
     arm_atan2_f32(wheelVy[2], wheelVx[2], &expDir.RB);
     //RF:3
-    wheelVx[3] = _speed.vx + _speed.wz * rY;
-    wheelVy[3] = _speed.vy + _speed.wz * rX;
+    wheelVx[3] = _speed.vx + (_speed.wz * rY);
+    wheelVy[3] = _speed.vy + (_speed.wz * rX);
     arm_sqrt_f32((wheelVx[3] * wheelVx[3]) + (wheelVy[3] * wheelVy[3]), &wheelComVel[3]);
     arm_atan2_f32(wheelVy[3], wheelVx[3], &expDir.RF); //反正切返回(-pi,pi)
     for (float &i : expDir._) {
@@ -407,7 +409,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         //6020
         tempDir._[i] = expDir._[i];
         //先决定正反转,要6020转角最小，对角线上的3508速度直接反向。
-        if (fabs(getMinorArc(expDir._[i], curDir._[i])) >= F_PI / 2) {
+        if (fabsf(getMinorArc(expDir._[i], curDir._[i])) >= F_PI / 2) {
             refWSpeed._[i] = -refWSpeed._[i];
             tempDir._[i] -= F_PI; //[0,pi]
         }
@@ -422,7 +424,7 @@ void Swerve::ctrl(const Speed_u &_refSpeed)
         //3508
         expWSpeed_._[i] = refWSpeed._[i];
         wExpTorq._[i] = wheelVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
-
+        // wExpTorq._[i] = 0;
         if (sentryCmdRxPacket_.data().isBumpArea) {
             sExpTorq._[i] = sBumpVelPid_._[i]->calc(sExpVel._[i], sCurVel._[i]);
             wExpTorq._[i] = wBumpVelPid_._[i]->calc(expWSpeed_._[i], curWSpeed_._[i]);
@@ -539,7 +541,7 @@ void Swerve::getDeltaYaw()
 
     //转为头向速度
     Speed_u v = forward(curWSpeed_);
-    curSpeed_.vx = v.vx * cosYaw_ + v.vy * sinYaw_;
-    curSpeed_.vy = v.vy * cosYaw_ - v.vx * sinYaw_;
+    curSpeed_.vx = (v.vx * cosYaw_) + (v.vy * sinYaw_);
+    curSpeed_.vy = (v.vy * cosYaw_) - (v.vx * sinYaw_);
     curSpeed_.wz = v.wz;
 };

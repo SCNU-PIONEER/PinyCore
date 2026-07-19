@@ -57,6 +57,14 @@ typedef struct {
     float chassisCurPower;
     float chassisPowerBuffer;
     Swerve_u<float> sExpVel, sExpTorq, wExpTorq, wCurr;
+
+    float spinAmendSpeed; // vx补偿量 (m/s)
+    float spinTargetVx;   // 限幅后目标vx (m/s)
+    float spinCurVx;      // 当前vx (m/s)
+    float spinTargetWz;   // 目标wz (rad/s)
+    float spinCurWz;      // 当前wz (rad/s)
+    float spinDir;        // 旋转方向: 1=左旋, 0=右旋
+    float spinMsgVx;      // 遥控器vx输入 (m/s)
 } SwerveDebug_s;
 
 template <typename T> struct RobotInteractionData_s {

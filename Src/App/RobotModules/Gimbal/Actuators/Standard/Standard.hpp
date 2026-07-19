@@ -8,8 +8,6 @@
 
 #include "LPF.hpp"
 
-#include "Vision.hpp"
-
 #include "TxPacket.hpp"
 #include "RxPacket.hpp"
 #include "PacketImpl.hpp"
@@ -19,13 +17,13 @@ namespace GIMBAL {
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
     friend class Standard;
     // ChassisCtrlTxPacket() : TxPacket(200.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final;
+    void transmit(Data &_data) final;
 };
 
 class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
     friend class Standard;
     // ShooterCtrlTxPacket() : TxPacket(200.f) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final;
+    void transmit(Data &_data) final;
 };
 
 class Standard : public Gimbal {

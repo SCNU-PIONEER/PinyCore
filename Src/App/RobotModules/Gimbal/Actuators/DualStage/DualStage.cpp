@@ -1,14 +1,10 @@
 #include "sdkconfig.h"
-#include "Bsp_uart.hpp"
-#include "Chassis.hpp"
 #include "Gimbal.hpp"
 #include "MiniPCPacketImpl.hpp"
 #include "MotorCommonMacros.hpp"
 #include "DualStage.hpp"
 #include "PidBasic.hpp"
-#include "GM6020.hpp"
 #include "DM4310.hpp"
-#include "DM4340.hpp"
 #include "ArmorLoader.hpp"
 #include "./State/StopState.hpp"
 #include "./State/LaunchState.hpp"
@@ -175,7 +171,7 @@ void DualStage::loadChassisMsg(void *_param)
     if (xQueueReceive((((MsgBus_s *)_param)->chassisQueue), &cmsg, 0) == pdTRUE) {
     };
 
-    // cmsg.state = CHASSIS::FSMState_e::STOP;
+    //cmsg.state = CHASSIS::FSMState_e::STOP;
     chassisCtrlTxPacket_.setData().state = static_cast<uint8_t>(cmsg.state);
     chassisCtrlTxPacket_.setData().gimbalReset = isLaunched_;
 

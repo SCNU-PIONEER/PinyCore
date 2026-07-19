@@ -5,9 +5,9 @@ using namespace GIMBAL;
 
 MiniPC::MiniPC() : TxPacket<EcToMiniPCPacket>(1000.f) { registerCallback(); }
 
-void MiniPC::transmit(uint8_t *_buf, uint16_t _len)
+void MiniPC::transmit(EcToMiniPCPacket::Data_u &_data)
 {
-    if (Usb::instance().send(_buf, _len) == 0)
+    if (Usb::instance().send(_data.bytes, EcToMiniPCPacket::LEN) == 0)
         pcState = PCState_e::ONLINE;
     else
         pcState = PCState_e::OFFLINE;

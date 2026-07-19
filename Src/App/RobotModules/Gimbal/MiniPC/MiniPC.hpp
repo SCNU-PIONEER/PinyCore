@@ -16,7 +16,7 @@ public:
     MiniPC();
 
 private:
-    void transmit(uint8_t *_buf, uint16_t _len) final;
+    void transmit(EcToMiniPCPacket::Data_u &_data) final;
     void registerCallback() final;
 };
 

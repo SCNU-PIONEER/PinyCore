@@ -30,13 +30,19 @@ endif()
 # gimbal type
 if(APP_USE_STANDARD)
   set(GIMBAL_TYPE "Standard")
+  set(GIMBAL_SOURCE_DIR "Standard")
 elseif(APP_USE_DUALSTAGE)
   set(GIMBAL_TYPE "DualStage")
+  set(GIMBAL_SOURCE_DIR "DualStage")
+elseif(APP_USE_THREEAXLE)
+  set(GIMBAL_TYPE "ThreeAxle")
+  set(GIMBAL_SOURCE_DIR "ThreeAxel")
 endif()
 
 if(APP_USE_GIMBAL)
   file(GLOB_RECURSE GIMBAL_SOURCES CMAKE_CONFIGURE_DEPENDS
-    "RobotModules/Gimbal/Actuators/${GIMBAL_TYPE}/*.cpp"
+    "RobotModules/Gimbal/Actuators/${GIMBAL_SOURCE_DIR}/*.cpp"
+    "RobotModules/Gimbal/Actuators/${GIMBAL_SOURCE_DIR}/*.hpp"
     "RobotModules/Gimbal/MiniPC/*.cpp"
     "RobotModules/Gimbal/GimbalPacket.hpp")
   list(APPEND SOURCES ${GIMBAL_SOURCES})

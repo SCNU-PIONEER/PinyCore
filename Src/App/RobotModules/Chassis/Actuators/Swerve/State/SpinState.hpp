@@ -4,13 +4,15 @@
 #include "FSMState.hpp"
 #include "StmLog.hpp"
 
+float spinAmendKp = 0.15f; // 旋转平移响应的等效延迟，单位：s
+
 namespace CHASSIS {
 
 class SpinState : public FSMState<FSMState_e> {
-    static constexpr float CONPENSATION = 0.f;
     static constexpr float ACC = 0.5f;
+    static constexpr float MAX_AMEND_ANGLE = 0.35f;
     static constexpr float OFFSET_SPIN_SPEED = 0.5f;
-    static constexpr float MAX_SPIN_SPEED = 2.f;
+    static constexpr float MAX_SPIN_SPEED = 2.f * 2.f;
     static constexpr float NORMAL_SPIN_SPEED = 0.5f * 2.f * PI; // 0.5圈/s
 
 public:
@@ -20,16 +22,28 @@ public:
     {
         chassis_->enter();
         spinCnt_ = 0;
-        LOG::info("ChassisSpin", " enter");
+        LOG::info("chassissSpin", "enter");
     }
 
     void run() final
     {
         Speed_u ref;
+        ref.wz = MAX_SPIN_SPEED;
 
-        ref.vx = std::fmax(chassis_->getSpeed().vx - ACC, std::fmin(chassis_->msg.vx, chassis_->getSpeed().vx + ACC));
+        //响应延迟补偿
+        const float amendAngle = std::clamp(ref.wz * spinAmendKp, -MAX_AMEND_ANGLE, MAX_AMEND_ANGLE);
+        const float cosAmend = cosf(amendAngle);
+        const float sinAmend = sinf(amendAngle);
+        const float amendVx = (cosAmend * chassis_->msg.vx) + (sinAmend * chassis_->msg.vy);
+        const float amendVy = (-sinAmend * chassis_->msg.vx) + (cosAmend * chassis_->msg.vy);
 
-        ref.vy = std::fmax(chassis_->getSpeed().vy - ACC, std::fmin(chassis_->msg.vy, chassis_->getSpeed().vy + ACC));
+        const float deltaVx = amendVx - chassis_->getSpeed().vx;
+        const float deltaVy = amendVy - chassis_->getSpeed().vy;
+        const float deltaSpeed = sqrtf((deltaVx * deltaVx) + (deltaVy * deltaVy));
+        const float stepScale = deltaSpeed > ACC ? ACC / deltaSpeed : 1.0f; //变化太快还是会打滑
+        ref.vx = chassis_->getSpeed().vx + (stepScale * deltaVx);
+        ref.vy = chassis_->getSpeed().vy + (stepScale * deltaVy);
+
         // ref.wz = getSpinVel(spinCnt_++);
         // if (spinCnt_ + 5 >= MAX_SPIN_CNT)
         //     maxSpinCount = 0;
@@ -37,7 +51,6 @@ public:
         //     maxSpinCount = MAX_SPIN_CNT;
         // SMOOTH::slopeFollowing(&maxSpinCount, &spinCnt_, 1.f);
         // ref.Speed.wz = MAX_SPIN_SPEED * (sin(omiga * spinCnt_) + 1.5f);
-        ref.wz = MAX_SPIN_SPEED * 2.f;
         chassis_->ctrl(ref);
     }
 
@@ -79,7 +92,7 @@ private:
     static constexpr float PERIOD = 2;         //s
     static constexpr float MAX_SPIN_CNT = PERIOD * SPIN_FREQ;
     float spinCnt_ = 0;
-    float maxSpinCount = 0;
-    float omiga = 2 * PI / PERIOD / SPIN_FREQ; //rad/s
+    // float maxSpinCount = 0;
+    // float omiga = 2 * PI / PERIOD / SPIN_FREQ; //rad/s ps:unused
 };
 } // namespace CHASSIS

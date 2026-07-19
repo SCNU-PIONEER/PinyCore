@@ -8,13 +8,13 @@
 class ChassisCtrlTxPacket : public COMM::TxPacket<COMM::ChassisCtrlPacketType> {
 public:
     ChassisCtrlTxPacket(float _txFreq) : TxPacket(_txFreq) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
+    void transmit(Data &_data) final { Can::instance().transmitData(&HCAN3, uid(), _data.bytes, COMM::ChassisCtrlPacketType::LEN); };
 };
 
 class ShooterCtrlTxPacket : public COMM::TxPacket<COMM::ArmorBoosterPacketType> {
 public:
     ShooterCtrlTxPacket(float _txFreq) : TxPacket(_txFreq) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); };
+    void transmit(Data &_data) final { Can::instance().transmitData(&HCAN3, uid(), _data.bytes, COMM::ArmorBoosterPacketType::LEN); };
 };
 
 class RefereeRxPacket : public COMM::RxPacket<COMM::RefereePacketType, 1> {
@@ -77,5 +77,5 @@ public:
 class SentryCmdTxPacket : public COMM::TxPacket<COMM::SentryCmdPacket> {
 public:
     SentryCmdTxPacket(float _txFreq) : TxPacket(_txFreq) {}
-    void transmit(uint8_t *_buf, uint16_t _len) final { Can::instance().transmitData(&HCAN3, uid(), _buf, _len); }
+    void transmit(Data &_data) final { Can::instance().transmitData(&HCAN3, uid(), _data.bytes, COMM::SentryCmdPacket::LEN); }
 };

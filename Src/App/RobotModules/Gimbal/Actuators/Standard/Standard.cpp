@@ -16,14 +16,14 @@
 using namespace GIMBAL;
 using namespace PINYMOTOR;
 
-void ChassisCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
+void ChassisCtrlTxPacket::transmit(Data &_data)
 {
-    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+    Can::instance().transmitData(&HCAN1, uid(), _data.bytes, COMM::ChassisCtrlPacketType::LEN);
 }
 
-void ShooterCtrlTxPacket::transmit(uint8_t *_buf, uint16_t _len)
+void ShooterCtrlTxPacket::transmit(Data &_data)
 {
-    Can::instance().transmitData(&HCAN1, uid(), _buf, _len);
+    Can::instance().transmitData(&HCAN1, uid(), _data.bytes, COMM::ArmorBoosterPacketType::LEN);
 }
 
 Standard::Standard()
