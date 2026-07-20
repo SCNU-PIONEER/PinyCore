@@ -23,7 +23,8 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+DJIOldMotor::DJIOldMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : Base(_name, _config), workMode_(_workMode)
 {
     AUX_.rxQueue = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>));
 }
@@ -161,4 +162,14 @@ void DJIOldMotor::overrideReductionRatio(float _newReductionRatio)
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
     LOG::info("DJIOldMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
+}
+
+bool DJIOldMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::TRIP_VOLT:
+        return true;
+    default:
+        return false;
+    }
 }

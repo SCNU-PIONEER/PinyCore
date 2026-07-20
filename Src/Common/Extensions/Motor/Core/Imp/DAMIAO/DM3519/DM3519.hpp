@@ -2,6 +2,7 @@
 #include "../DMMotor.hpp"
 
 namespace PINYMOTOR::DMMOTOR {
+
 class DM3519 final : public DMMotor {
 private:
     MotorTypeDef_e checkBaseConfig();
@@ -23,6 +24,7 @@ public:
     static constexpr float TORQ_MAX = 7.8f / ORIGINAL_GEARBOX_RR;
     static constexpr float KN = 0.3805f;
 
-    DM3519(const char _name[16], InitConfig_s _config);
+    DM3519(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DMMOTOR

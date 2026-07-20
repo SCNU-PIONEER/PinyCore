@@ -27,8 +27,8 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DMMotor::DMMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
-
+DMMotor::DMMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : Base(_name, _config), workMode_(_workMode)
 {
     AUX_.rxQueue = xQueueCreate(3, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
@@ -57,7 +57,6 @@ void DMMotor::registerRecvCallback(uint16_t _rxId)
                                      });
     LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx", regInfo_.name, _rxId);
 }
-
 
 void DMMotor::cancelRecvCallback(uint16_t _rxId)
 {
@@ -230,4 +229,19 @@ void DMMotor::overrideReductionRatio(float _newReductionRatio)
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
     LOG::info("DMMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
+}
+
+bool DMMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::MIT_TT:
+    case WorkMode_e::MIT_VDES:
+    case WorkMode_e::MIT_VDESPDES:
+    case WorkMode_e::PDESVDES:
+    case WorkMode_e::VDES:
+    case WorkMode_e::EMIT:
+        return true;
+    default:
+        return false;
+    }
 }

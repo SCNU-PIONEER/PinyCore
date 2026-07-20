@@ -1,4 +1,5 @@
 #include "TestModule.hpp"
+#include "DMMotor.hpp"
 #include "TestDM/TestDM.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
@@ -17,7 +18,7 @@ void TestModule::init()
 {
 #if TEST_DM
     schedule([]() { testDM.test(); });
-    testDM.rebuildMotor(DmMotorModel_e::DM4310, 2, WorkMode_e::VDES);
+    testDM.rebuildMotor(DmMotorModel_e::DM4340, 2);
 #endif
 }
 

@@ -9,8 +9,7 @@ private:
 
 public:
     static constexpr float VOLT_TX_CODE_SPAN = 29000.f;
-    static constexpr float TORQ_RX_CODE_SPAN =
-            8192.f; // 手册中没有注明，需实验检测！
+    static constexpr float TORQ_RX_CODE_SPAN = 8192.f; // 手册中没有注明，需实验检测！
 
     static constexpr float CURR_RATED = 1.3f;
     static constexpr float TORQ_RATED = 0.14f;
@@ -19,6 +18,7 @@ public:
     static constexpr float TORQ_MAX = 0.2f;
     static constexpr float KN = 0.16f;
 
-    GM3510(const char _name[16], InitConfig_s _config);
+    GM3510(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DJI_ODMOTOR

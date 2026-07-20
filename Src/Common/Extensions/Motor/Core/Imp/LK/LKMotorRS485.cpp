@@ -4,14 +4,14 @@
 #include "MotorCommonMacros.hpp"
 #include <algorithm>
 
-
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
 static constexpr char TAG[] = "LKMotorRS485";
 
-LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config)
+LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
         : IMotor(_name, _config)
+        , workMode_(_workMode)
         , uart_(reinterpret_cast<UART_HandleTypeDef *>(_config.pComHandle))
         , txBuf_((uint8_t *)Dma::instance().ram_alloc(TXBUF_LEN))
         , rxBuf_((uint8_t *)Dma::instance().ram_alloc(RXBUF_LEN))
@@ -45,7 +45,7 @@ LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config)
     });
 
     registerRecvCallback();
-    updateCtrlMode(this->regInfo_.workMode);
+    updateCtrlMode(this->workMode_);
     AUX_.rxQueue = xQueueCreate(4, RXBUF_LEN);
     uart_.recvDmaInit(rxBuf_, RXBUF_LEN);
 }

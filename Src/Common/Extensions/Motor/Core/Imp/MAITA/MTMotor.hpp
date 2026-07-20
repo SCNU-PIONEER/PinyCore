@@ -8,6 +8,12 @@
 
 namespace PINYMOTOR::MTMOTOR {
 
+enum class WorkMode_e : MotorTypeDef_e {
+    UNKNOWN,
+    PDESVDES,
+    CURR,
+};
+
 struct Status_s {
     uint16_t speedMax; //dps
     float currMax;     // A
@@ -23,7 +29,7 @@ class MTMotor : public IMotor {
     using ConvertFunc = void (MTMotor::*)(std::array<uint8_t, 8> &);
 
 public:
-    MTMotor(const char _name[16], InitConfig_s _config);
+    MTMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~MTMotor() override;
     MotorTypeDef_e update() final;
 
@@ -37,6 +43,8 @@ protected:
     void updateCtrlMode();
 
     Status_s status_;
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
 
 private:
     MotorTypeDef_e ctrl();
@@ -57,4 +65,5 @@ private:
     MessageBufferHandle_t rxStream_;
     uint16_t ctrlId_ = 0XFFFF;
 };
+
 } // namespace PINYMOTOR::MTMOTOR

@@ -7,11 +7,11 @@
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
-LKMotor::LKMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+LKMotor::LKMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : Base(_name, _config), motorIndex_(_config.offsetId), workMode_(_workMode)
 {
     this->regInfo_.model.rxBaseId = RX_BASE_ID;
     this->regInfo_.model.txBaseId = TX_BASE_ID;
-    motorIndex_ = _config.offsetId;
 
     AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
     this->updateTxId();
@@ -177,4 +177,23 @@ MotorTypeDef_e LKMotor::update()
     MotorTypeDef_e ctrlResult = this->ctrl();
 
     return ctrlResult;
+}
+
+bool LKMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::VOLT:
+    case WorkMode_e::VDES:
+    case WorkMode_e::MIT_TT:
+    case WorkMode_e::SINGLE_PDES:
+    case WorkMode_e::SINGLE_PDESVDES:
+    case WorkMode_e::MULTI_PDESVDES:
+    case WorkMode_e::MULTI_PDES:
+    case WorkMode_e::PDESVDES:
+    case WorkMode_e::INC_PDES:
+    case WorkMode_e::INC_PDESVDES:
+        return true;
+    default:
+        return false;
+    }
 }

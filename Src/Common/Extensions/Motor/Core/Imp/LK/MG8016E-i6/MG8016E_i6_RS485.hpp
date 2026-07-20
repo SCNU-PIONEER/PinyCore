@@ -14,7 +14,7 @@ public:
     static constexpr float TX_CURR_MAX = 33.f;          // 发送电流最大值
     static constexpr uint16_t ENCODER_SPAN = 65535;     // 14 bit编码器范围
 
-    MG8016Ei6RS485(const char _name[16], InitConfig_s _config);
+    MG8016Ei6RS485(const char _name[16], InitConfig_s _config, WorkMode_e _workmode);
 };
 
 } // namespace PINYMOTOR::LKMOTOR

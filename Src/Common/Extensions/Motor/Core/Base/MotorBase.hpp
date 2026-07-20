@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 namespace PINYMOTOR {
+
 struct QuadMotorGroup_s {
     IMotor *motor[4];
     uint8_t txBuf[8];

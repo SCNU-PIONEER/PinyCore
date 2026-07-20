@@ -21,8 +21,8 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-MTMotor::MTMotor(const char _name[16], InitConfig_s _config)
-        : IMotor(_name, _config), rxStream_(xMessageBufferCreate(16))
+MTMotor::MTMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : IMotor(_name, _config), workMode_(_workMode), rxStream_(xMessageBufferCreate(16))
 {
     this->cmd_.clear();
 }
@@ -32,7 +32,7 @@ MTMotor::~MTMotor() { this->cancelMotor(); }
 void MTMotor::updateCtrlMode()
 {
     ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId;
-    switch (regInfo_.workMode) {
+    switch (this->workMode_) {
     case WorkMode_e::PDESVDES: {
         convert = &MTMotor::absPosCtrl;
         break;
@@ -99,13 +99,11 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
     return 0;
 }
 
-
 MotorTypeDef_e MTMotor::send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, uint8_t _len)
 {
     return Can::instance().transmitData(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _sendId, _txBuf.data(),
                                         _len);
 }
-
 
 MotorTypeDef_e MTMotor::ctrl()
 {
@@ -121,7 +119,6 @@ MotorTypeDef_e MTMotor::ctrl()
 
     return send(ctrlId_, txBuf, 8);
 }
-
 
 void MTMotor::disable(std::array<uint8_t, 8> &_txBuf)
 {
@@ -157,7 +154,6 @@ void MTMotor::torqCtrl(std::array<uint8_t, 8> &_txBuf)
     memcpy(_txBuf.data(), &data, 8);
 }
 
-
 MotorTypeDef_e MTMotor::update()
 {
     uint8_t rxData[8];
@@ -179,4 +175,15 @@ void MTMotor::overrideReductionRatio(float _newReductionRatio)
     regInfo_.model.reductionRatio = _newReductionRatio;
     status_.torqMax *= _newReductionRatio;
     status_.kn *= _newReductionRatio;
+}
+
+bool MTMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::PDESVDES:
+    case WorkMode_e::CURR:
+        return true;
+    default:
+        return false;
+    }
 }

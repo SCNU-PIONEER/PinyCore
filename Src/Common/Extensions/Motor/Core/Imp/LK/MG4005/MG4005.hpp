@@ -37,7 +37,7 @@ public:
     /**
      * @brief 构造函数
      */
-    MG4005(const char _name[16], InitConfig_s _config);
+    MG4005(const char _name[16], InitConfig_s _config, WorkMode_e _workmode);
 };
 
 } // namespace PINYMOTOR::LKMOTOR

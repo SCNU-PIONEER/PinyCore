@@ -6,6 +6,11 @@
 
 namespace PINYMOTOR::UTMOTOR {
 
+enum class WorkMode_e : MotorTypeDef_e {
+    UNKNOWN,
+    EMIT,
+    MIT_TT,
+};
 struct Status_s {
     float PMax;
     float VMax;
@@ -38,12 +43,13 @@ protected:
     TransmitMsg_s *txBuf_ = nullptr;
     Feedback_s *rxBuf_ = nullptr;
     Status_s status_;
-
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
     void registerRecvCallback();
     void convert(TransmitMsg_s &_txBuf);
 
 public:
-    UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart);
+    UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart, WorkMode_e _workMode);
     ~UTMotor() override;
 
     void overrideStats(const Status_s &_newStats);

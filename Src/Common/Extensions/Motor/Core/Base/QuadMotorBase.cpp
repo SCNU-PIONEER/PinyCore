@@ -18,15 +18,13 @@ void QuadMotorGroup_s::showMotorInfo()
 {
     for (auto &i : motor) {
         if (i != nullptr) {
-            LOG::info("QuadMotorGroup", "Motor %s: exist, uid: %hx",
-                      i->getName(), i->uid());
+            LOG::info("QuadMotorGroup", "Motor %s: exist, uid: %hx", i->getName(), i->uid());
         } else {
             LOG::warn("QuadMotorGroup", "Motor %d: not exist", i);
         }
     }
 }
-QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config)
-        : Base(_name, _config)
+QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
 {
     regInfo_.isMutiple = true;
 }
@@ -41,8 +39,7 @@ void QuadMotorBase::updateMotorMap()
 {
     // first, find the pair object in motorMap_ that contains the handle
     auto it = getMotorMap().end();
-    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
-         ++iter) {
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end(); ++iter) {
         if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
@@ -50,9 +47,7 @@ void QuadMotorBase::updateMotorMap()
     }
     if (it == getMotorMap().end()) {
         // if not found, create a new pair object
-        getMotorMap().emplace_back(
-                regInfo_.pComHandle,
-                std::unordered_map<uint16_t, QuadMotorGroup_s *>());
+        getMotorMap().emplace_back(regInfo_.pComHandle, std::unordered_map<uint16_t, QuadMotorGroup_s *>());
         it = getMotorMap().end() - 1;
     }
 
@@ -65,14 +60,12 @@ void QuadMotorBase::updateMotorMap()
         map[getGroupId()] = new QuadMotorGroup_s();
         map[getGroupId()]->motor[getPosInGroup()] = this;
         map[getGroupId()]->refLoadedCode |= (1 << getPosInGroup());
-        LOG::info("QuadMotorBase", "Motor %s: create QuadMotorGroup %hx",
-                  regInfo_.name, getGroupId());
+        LOG::info("QuadMotorBase", "Motor %s: create QuadMotorGroup %hx", regInfo_.name, getGroupId());
     } else {
         // if already exist, check if the motor is already in the groupMap_
         if (map[getGroupId()]->motor[getPosInGroup()] != nullptr) {
-            LOG::error("QuadMotorBase",
-                       "Motor %s: already exist in group %hx, pos in group: %d",
-                       regInfo_.name, getGroupId(), getPosInGroup());
+            LOG::error("QuadMotorBase", "Motor %s: already exist in group %hx, pos in group: %d", regInfo_.name,
+                       getGroupId(), getPosInGroup());
             return;
         } else {
             map[getGroupId()]->motor[getPosInGroup()] = this;
@@ -85,12 +78,10 @@ void QuadMotorBase::updateMotorMap()
     for (auto &i : map[getGroupId()]->motor) {
         if (i != nullptr) {
             if (i->txFreq() != this->txFreq()) {
-                LOG::warn("QuadMotorBase", "Motor %s: txFreq not match",
-                          regInfo_.name);
+                LOG::warn("QuadMotorBase", "Motor %s: txFreq not match", regInfo_.name);
             }
         }
-        map[getGroupId()]->minTxFreq =
-                std::min(map[getGroupId()]->minTxFreq, this->txFreq());
+        map[getGroupId()]->minTxFreq = std::min(map[getGroupId()]->minTxFreq, this->txFreq());
     }
 
     map[getGroupId()]->showMotorInfo();
@@ -99,8 +90,7 @@ void QuadMotorBase::updateMotorMap()
 void QuadMotorBase::removeMotorFromMap()
 {
     auto it = getMotorMap().end();
-    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end();
-         ++iter) {
+    for (auto iter = getMotorMap().begin(); iter != getMotorMap().end(); ++iter) {
         if (iter->handle == regInfo_.pComHandle) {
             it = iter;
             break;
@@ -111,16 +101,13 @@ void QuadMotorBase::removeMotorFromMap()
         if (map.contains(getGroupId())) {
             map[getGroupId()]->motor[getPosInGroup()] = nullptr;
             map[getGroupId()]->refLoadedCode &= ~(1 << getPosInGroup());
-            LOG::info("QuadMotorBase",
-                      "Motor %s: remove from group %hx, pos in group: %d",
-                      regInfo_.name, getGroupId(), getPosInGroup());
+            LOG::info("QuadMotorBase", "Motor %s: remove from group %hx, pos in group: %d", regInfo_.name, getGroupId(),
+                      getPosInGroup());
         } else {
-            LOG::error("QuadMotorBase", "Motor %s: not in group %hx",
-                       regInfo_.name, getGroupId());
+            LOG::error("QuadMotorBase", "Motor %s: not in group %hx", regInfo_.name, getGroupId());
         }
     } else {
-        LOG::error("QuadMotorBase", "Motor %s: not in motorMap_",
-                   regInfo_.name);
+        LOG::error("QuadMotorBase", "Motor %s: not in motorMap_", regInfo_.name);
     }
 }
 
@@ -133,8 +120,7 @@ uint8_t QuadMotorBase::getPosInGroup() const
 
 bool QuadMotorBase::checkGroupSend(QuadMotorGroup_s *_group)
 {
-    if ((xTaskGetTickCount() - _group->lastSendTick) >=
-                pdMS_TO_TICKS(1000.f / _group->minTxFreq) &&
+    if ((xTaskGetTickCount() - _group->lastSendTick) >= pdMS_TO_TICKS(1000.f / _group->minTxFreq) &&
         (_group->refLoadedCode == _group->curLoadedCode)) {
         _group->lastSendTick = xTaskGetTickCount();
         _group->curLoadedCode = 0; // reset curLoadedCode

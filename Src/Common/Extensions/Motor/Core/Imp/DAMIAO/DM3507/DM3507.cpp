@@ -9,7 +9,7 @@
 
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
-DM3507::DM3507(const char _name[16], InitConfig_s _config) : DMMotor(_name, _config)
+DM3507::DM3507(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : DMMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -46,7 +46,7 @@ MotorTypeDef_e DM3507::checkBaseConfig()
         LOG::error("DM3507", " %s: only support FDCAN or CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("DM3507", " %s: WorkMode is not supported", regInfo_.name);
     }

@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "MotorCommonMacros.hpp"
+#include "WorkMode.hpp"
 #include <cstdint>
 namespace PINYMOTOR::LKMOTOR {
 
@@ -25,7 +26,6 @@ struct Status_s {
     float txcurrentMax;     // 发送电流最大值
     float rxcurrentMax;     // 接收电流最大值
     float torqueConstant;   // 转矩常数
-
 
     Status_s() = default;
 
@@ -55,6 +55,9 @@ protected:
     RxBus_s::CANRxBuf_s<8> rxBuf_ = {};
     Status_s status_;
 
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
+
     MotorTypeDef_e send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len);
     MotorTypeDef_e parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf);
     MotorTypeDef_e ctrl();
@@ -63,7 +66,7 @@ protected:
     virtual void initModelParams() = 0;
 
 public:
-    LKMotor(const char _name[16], InitConfig_s _config);
+    LKMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~LKMotor() override;
 
     void overrideStats(const Status_s &_newStats);

@@ -1,32 +1,31 @@
 #pragma once
 
 #include <cstdint>
-
 namespace PINYMOTOR {
 
 using MotorTypeDef_e = uint8_t;
 
-enum class MotorCmdType_e : uint8_t { SET_MIT, SET_POS, SET_VEL, SET_POSVEL, SET_TORQ, SET_ELEC, ON, OFF };
-
-enum class WorkMode_e : uint8_t {
-    TRIP_VOLT,
-    QUAD_CURR,
-    QUAD_VOLT,
-    VOLT,
-    CURR,
-    MIT_TT,
-    MIT_VDES,
-    MIT_VDESPDES,
-    PDESVDES,
-    VDES,
-    EMIT,
-    SINGLE_PDES,
-    SINGLE_PDESVDES,
-    MULTI_PDES,
-    MULTI_PDESVDES,
-    INC_PDES,
-    INC_PDESVDES
+enum class MotorCmdType_e : uint8_t {
+    SET_MIT,
+    SET_POS,
+    SET_VEL,
+    SET_POSVEL,
+    SET_TORQ,
+    SET_ELEC,
+    ON,
+    OFF,
 };
+
+enum class SupportMotor_e : uint8_t {
+    UNKNOWN = 0u,
+    DA_MIAO,
+    DJI,
+    DJI_OLD,
+    LK,
+    MAI_TA,
+    UNITREE,
+};
+
 enum class ComType_e : uint8_t { NONE, FDCAN, CAN, RS485 };
 
 enum class GlobalState_e : uint8_t { UNRECOGNIZED, OFFLINE, ONLINE, ERROR };
@@ -49,7 +48,7 @@ struct CmdBus_s {
 struct InitConfig_s {
     uint32_t *pComHandle;
     ComType_e comType;
-    WorkMode_e workMode;
+    SupportMotor_e motorType;
     uint8_t offsetId;
     float txFreq;
 
@@ -116,4 +115,5 @@ struct TxBus_s {
         uint8_t len = Len;
     };
 };
+
 } // namespace PINYMOTOR

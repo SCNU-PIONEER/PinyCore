@@ -12,7 +12,7 @@ using namespace LKMOTOR;
 /**
  * @brief 构造函数
  */
-MF9025::MF9025(const char _name[16], InitConfig_s _config) : LKMotor(_name, _config)
+MF9025::MF9025(const char _name[16], InitConfig_s _config, WorkMode_e _workmode) : LKMotor(_name, _config, _workmode)
 {
     this->regInfo_.model.reductionRatio = REDUCTION_RATIO;
     this->regInfo_.model.measureMax = ENCODER_SPAN;
@@ -31,7 +31,7 @@ MotorTypeDef_e MF9025::checkBaseConfig()
         rslt = 1;
         LOG::error("MF9025", "%s: Only CAN communication supported", this->regInfo_.name);
     }
-    if (this->regInfo_.workMode != WorkMode_e::QUAD_CURR) {
+    if (this->workMode_ != WorkMode_e::QUAD_CURR) {
         rslt = 1;
         LOG::error("MF9025", "%s: Only QUAD_CURR mode supported", this->regInfo_.name);
     }

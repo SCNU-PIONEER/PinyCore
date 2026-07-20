@@ -8,8 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
-M3508::M3508(const char _name[16], InitConfig_s _config)
-        : DJIMotor(_name, _config)
+M3508::M3508(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : DJIMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -36,10 +35,8 @@ M3508::M3508(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
-    LOG::info(
-            "M3508",
-            " %s: An instance of M3508 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("M3508", " %s: An instance of M3508 created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e M3508::checkBaseConfig()
@@ -51,7 +48,7 @@ MotorTypeDef_e M3508::checkBaseConfig()
         LOG::error("M3508", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::QUAD_CURR) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("M3508", " %s: WorkMode is not supported", regInfo_.name);
     }

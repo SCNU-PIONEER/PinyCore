@@ -6,7 +6,6 @@ namespace PINYMOTOR::MTMOTOR {
 
 #pragma pack(push, 1)
 
-
 //  ━━━━━━━━━━━━━━━━━━━ can - 绝对位置闭环控制指令 0xa4 ━━━━━━━━━━━━━━━━━━━
 struct TransmiAbsPosCtrlMsg_s {
     uint8_t head = 0xA4; // 命令0xA4                         1  Byte
@@ -41,7 +40,6 @@ struct FeedbackTorqCtrl_s {
     int16_t speed;       // 输出轴转速            2  Byte
     int16_t pos;         // 输出轴角度            2  Byte
 }; // 电机反馈数据包 8 Byte
-
 
 //  ━━━━━━━━━━━━━━━━━━━ can - 读取电机状态2指令 0x9c ━━━━━━━━━━━━━━━━━━━
 struct FeedbackState2_s {
