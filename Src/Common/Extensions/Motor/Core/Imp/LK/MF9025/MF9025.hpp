@@ -28,7 +28,7 @@ public:
     /**
      * @brief 构造函数
      */
-    MF9025(const char _name[16], InitConfig_s _config);
+    MF9025(const char _name[16], InitConfig_s _config, WorkMode_e _workmode);
 };
 
 } // namespace PINYMOTOR::LKMOTOR

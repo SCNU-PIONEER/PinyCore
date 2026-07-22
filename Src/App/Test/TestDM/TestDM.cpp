@@ -21,7 +21,7 @@ using namespace PINYMOTOR;
 InitConfig_s configDM = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
     .comType = ComType_e::CAN,
-    .workMode = WorkMode_e::EMIT,
+    .motorType = SupportMotor_e::DA_MIAO,
     .offsetId = 2,
     .txFreq = 500.0f,
 };
@@ -42,25 +42,25 @@ void TestDM::test()
 {
     testON();
     vTaskDelay(100);
-    switchdmWorkMode(WorkMode_e::VDES);
-    testVdes(2.f);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::VDES);
+    testVdes(4.f);
     vTaskDelay(3000);
 
-    switchdmWorkMode(WorkMode_e::PDESVDES);
-    testPdesVdes(2.f, 4.f);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::PDESVDES);
+    testPdesVdes(4.f, 4.f);
 
-    switchdmWorkMode(WorkMode_e::MIT_TT);
-    testMitTt(0.2f);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_TT);
+    testMitTt(0.5f);
     vTaskDelay(3000);
 
-    switchdmWorkMode(WorkMode_e::MIT_VDES);
-    testMITVdes(1.f, 1.f);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_VDES);
+    testMITVdes(2.f, 1.f);
     vTaskDelay(3000);
 
-    switchdmWorkMode(WorkMode_e::MIT_VDESPDES);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_VDESPDES);
     testMitVdesPdes(2.f, 0.f, 5.f, 1.f);
 
-    switchdmWorkMode(WorkMode_e::EMIT);
+    switchdmWorkMode(DMMOTOR::WorkMode_e::EMIT);
     testEmit(1.f, 4.f, 1.f);
     vTaskDelay(3000);
 
@@ -69,32 +69,31 @@ void TestDM::test()
     vTaskSuspend(getTaskHandler());
 }
 
-void TestDM::rebuildMotor(DmMotorModel_e _model, uint8_t _id, PINYMOTOR::WorkMode_e _mode)
+void TestDM::rebuildMotor(DmMotorModel_e _model, uint8_t _id)
 {
     curModel_ = _model;
-    configDM.workMode = _mode;
     configDM.offsetId = _id;
     switch (_model) {
     case DmMotorModel_e::DM4310:
-        motor_ = new DMMOTOR::DM4310("dm4310", configDM);
+        motor_ = new DMMOTOR::DM4310("dm4310", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM3507:
-        motor_ = new DMMOTOR::DM3507("dm3507", configDM);
+        motor_ = new DMMOTOR::DM3507("dm3507", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM3519:
-        motor_ = new DMMOTOR::DM3519("dm3519", configDM);
+        motor_ = new DMMOTOR::DM3519("dm3519", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM4340:
-        motor_ = new DMMOTOR::DM4340("dm4340", configDM);
+        motor_ = new DMMOTOR::DM4340("dm4340", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM6006:
-        motor_ = new DMMOTOR::DM6006("dm6006", configDM);
+        motor_ = new DMMOTOR::DM6006("dm6006", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM8009:
-        motor_ = new DMMOTOR::DM8009("dm8009", configDM);
+        motor_ = new DMMOTOR::DM8009("dm8009", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     case DmMotorModel_e::DM10010L:
-        motor_ = new DMMOTOR::DM10010L("dm10010l", configDM);
+        motor_ = new DMMOTOR::DM10010L("dm10010l", configDM, DMMOTOR::WorkMode_e::EMIT);
         break;
     }
     motor_->registerReg(&regDM, &regValueDM);
@@ -213,20 +212,21 @@ void TestDM::testEmit(float _pos, float _vel, float _torq)
     }
 }
 
-void TestDM::switchdmWorkMode(PINYMOTOR::WorkMode_e _mode)
+void TestDM::switchdmWorkMode(PINYMOTOR::DMMOTOR::WorkMode_e _mode)
 {
     motor_->switchCtrlMode(_mode);
     regDM.regId = DMMOTOR::RegId_e::DM_REG_CTRL_MODE;
-    if (_mode == WorkMode_e::MIT_TT || _mode == WorkMode_e::MIT_VDESPDES || _mode == WorkMode_e::MIT_VDES) {
+    if (_mode == DMMOTOR::WorkMode_e::MIT_TT || _mode == DMMOTOR::WorkMode_e::MIT_VDESPDES ||
+        _mode == DMMOTOR::WorkMode_e::MIT_VDES) {
         regDM.dat[0] = 0x01;
         motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == WorkMode_e::PDESVDES) {
+    } else if (_mode == DMMOTOR::WorkMode_e::PDESVDES) {
         regDM.dat[0] = 0x02;
         motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == WorkMode_e::VDES) {
+    } else if (_mode == DMMOTOR::WorkMode_e::VDES) {
         regDM.dat[0] = 0x03;
         motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == WorkMode_e::EMIT) {
+    } else if (_mode == DMMOTOR::WorkMode_e::EMIT) {
         regDM.dat[0] = 0x04;
         motor_->writeOneReg(regDM.regId, regDM.dat);
     }

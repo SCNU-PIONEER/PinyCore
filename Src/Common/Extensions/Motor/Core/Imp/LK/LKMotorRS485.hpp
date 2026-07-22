@@ -5,6 +5,7 @@
 #include "message_buffer.h"
 #include "Bsp_uart.hpp"
 #include "LKMotorRS485Msg.hpp"
+#include "WorkMode.hpp"
 
 namespace PINYMOTOR::LKMOTOR {
 
@@ -70,7 +71,7 @@ public:
     MotorTypeDef_e setPos(const float _angle);
 
 protected:
-    LKMotorRS485(const char _name[16], InitConfig_s _config);
+    LKMotorRS485(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 
     void registerRecvCallback();
     void updateCtrlMode(const WorkMode_e _mode);
@@ -83,6 +84,8 @@ protected:
     MotorTypeDef_e (LKMotorRS485::*ctrlCallback)();
 
     Status_s status_;
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
 
 private:
     MotorTypeDef_e ctrl();

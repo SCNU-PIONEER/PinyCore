@@ -17,7 +17,7 @@ void DJIMotor::serializeMsg(int16_t _ctrlCmd)
 
 void DJIMotor::updateCtrlMode()
 {
-    switch (regInfo_.workMode) {
+    switch (this->workMode_) {
     case WorkMode_e::QUAD_CURR:
         convert = &DJIMotor::convertQuadCurr;
         this->ctrlId_ = this->getGroupId() + 0u;

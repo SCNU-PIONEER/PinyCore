@@ -22,8 +22,7 @@ public:
     static constexpr float KN = 0.63895f;     // Nm/A
     static constexpr float RR = 6.33f;        // 减速比
 
-    UT80106(const char _name[16], PINYMOTOR::InitConfig_s _config,
-            UART_HandleTypeDef *_huart);
+    UT80106(const char _name[16], PINYMOTOR::InitConfig_s _config, UART_HandleTypeDef *_huart, WorkMode_e _workMode);
 };
 
 } // namespace PINYMOTOR::UTMOTOR

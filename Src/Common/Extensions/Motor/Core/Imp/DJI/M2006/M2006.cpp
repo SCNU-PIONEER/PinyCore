@@ -8,7 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
-M2006::M2006(const char _name[16], InitConfig_s _config) : DJIMotor(_name, _config)
+M2006::M2006(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : DJIMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -48,7 +48,7 @@ MotorTypeDef_e M2006::checkBaseConfig()
         LOG::error("M2006", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::QUAD_CURR) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("M2006", " %s: WorkMode is not supported", regInfo_.name);
     }

@@ -6,6 +6,7 @@
 
 namespace PINYMOTOR::DJIMOTOR {
 
+enum class WorkMode_e : MotorTypeDef_e { UNKNOWN, QUAD_CURR, QUAD_VOLT };
 class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
 
@@ -46,10 +47,12 @@ protected:
     void updateCtrlMode();
 
     Status_s status_;
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
-    DJIMotor(const char _name[16], InitConfig_s _config);
+    DJIMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~DJIMotor() override;
     /**
      * @brief Override the status of the motor

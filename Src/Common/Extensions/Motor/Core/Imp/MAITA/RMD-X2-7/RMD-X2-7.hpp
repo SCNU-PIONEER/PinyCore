@@ -13,7 +13,7 @@ class RMDX27 : public MTMotor {
     static constexpr float KN = 0.8f;         // 模组扭矩常数
 
 public:
-    RMDX27(const char _name[16], InitConfig_s _config);
+    RMDX27(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 
 private:
     MotorTypeDef_e checkBaseConfig();

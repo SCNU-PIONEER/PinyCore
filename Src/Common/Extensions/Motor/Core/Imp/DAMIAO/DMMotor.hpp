@@ -5,8 +5,9 @@
 #include "DMMotorMsg.hpp"
 
 #include <unordered_map>
-
 namespace PINYMOTOR::DMMOTOR {
+
+enum class WorkMode_e : MotorTypeDef_e { UNKNOWN, MIT_TT, MIT_VDES, MIT_VDESPDES, PDESVDES, VDES, EMIT };
 
 class DMMotor : public IMotor {
     using Base = IMotor;
@@ -56,6 +57,9 @@ protected:
 
     Status_s status_;
 
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
+
     std::unordered_map<RegId_e, Reg_s *> regObjList_;
     std::unordered_map<RegId_e, RegValue_u *> regValueList_;
     std::unordered_map<RegId_e, uint8_t[4]> preRegValue_;
@@ -68,7 +72,7 @@ protected:
     uint16_t ctrlId_ = 0XFFFF; // sendId - depends on work mode
 
 public:
-    DMMotor(const char _name[16], InitConfig_s _config);
+    DMMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~DMMotor() override;
 
     /**

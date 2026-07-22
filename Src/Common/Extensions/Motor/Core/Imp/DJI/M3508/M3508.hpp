@@ -21,10 +21,9 @@ public:
     static constexpr float CURR_MAX = 20.f; // C620 MAX CURR
     static constexpr float CURR_BLOCK = 2.5f;
     static constexpr float TORQ_BLOCK = 4.5f / ORIGINAL_GEARBOX_RR;
-    static constexpr float KN =
-            TORQ_RATED /
-            CURR_RATED; // 详见手册中 "搭配C620电调时的电机性能曲线"
+    static constexpr float KN = TORQ_RATED / CURR_RATED; // 详见手册中 "搭配C620电调时的电机性能曲线"
 
-    M3508(const char _name[16], InitConfig_s _config);
+    M3508(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DJIMOTOR

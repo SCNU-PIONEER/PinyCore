@@ -13,7 +13,7 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config) : globalState(GlobalS
     regInfo_.uid = MotorManager::instance().assignId();
     regInfo_.pComHandle = _config.pComHandle;
     regInfo_.comType = _config.comType;
-    regInfo_.workMode = _config.workMode;
+    regInfo_.motorType = _config.motorType;
     regInfo_.offsetId = _config.offsetId;
     snprintf(regInfo_.name, sizeof(regInfo_.name), "%s", _name);
 
@@ -235,14 +235,15 @@ void IMotor::setZeroAng(float _zeroAng)
     // _zeroAng is a rawAng in "current reverse situation"
     data_.zeroAng = _zeroAng;
 }
+
 float IMotor::getCmdCurr()
 {
-    if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
-        // TODO: RLS volt ctrl
-        return 0.f;
-    } else {
-        return cmd_.elec;
-    }
+    // if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
+    //     // TODO: RLS volt ctrl
+    //     return 0.f;
+    // } else {
+    return cmd_.elec;
+    // }
 }
 
 float IMotor::txBaseId() const { return static_cast<float>(regInfo_.model.txBaseId); }

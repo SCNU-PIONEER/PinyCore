@@ -9,7 +9,7 @@ namespace TEST {
 
 class TestDM : public TestModule {
 public:
-    void rebuildMotor(DmMotorModel_e _model, uint8_t _id, PINYMOTOR::WorkMode_e _mode);
+    void rebuildMotor(DmMotorModel_e _model, uint8_t _id);
 
     void test();
     void testON();
@@ -20,11 +20,11 @@ public:
     void testPdesVdes(float _pos, float _vel);
     void testVdes(float _vel);
     void testEmit(float _pos, float _vel, float _torq);
-    void switchdmWorkMode(PINYMOTOR::WorkMode_e _mode);
+    void switchdmWorkMode(PINYMOTOR::DMMOTOR::WorkMode_e _mode);
 
 private:
     PINYMOTOR::DMMOTOR::DMMotor *motor_;
-    PINYMOTOR::WorkMode_e currentWorkMode_;
+    PINYMOTOR::DMMOTOR::WorkMode_e currentWorkMode_;
     DmMotorModel_e curModel_;
 };
 

@@ -7,6 +7,7 @@
 #include "main.h"
 
 namespace PINYMOTOR {
+
 class IMotor {
 private:
     MotorTypeDef_e cmdProto(CmdBus_s &_cmd);
@@ -21,7 +22,7 @@ protected:
         uint32_t *pComHandle;
         Model_s model;
         ComType_e comType;
-        WorkMode_e workMode;
+        SupportMotor_e motorType;
         bool isReverse = false;
         bool isMutiple = false; // default is not quad encoder
     } regInfo_;                 // registration info

@@ -17,7 +17,7 @@ void DJIOldMotor::serializeMsg(int16_t _ctrlCmd)
 
 void DJIOldMotor::updateCtrlMode()
 {
-    switch (regInfo_.workMode) {
+    switch (this->workMode_) {
     case WorkMode_e::TRIP_VOLT: {
         convert = &DJIOldMotor::convertTripVolt;
         this->ctrlId_ = this->getGroupId() + 0u;

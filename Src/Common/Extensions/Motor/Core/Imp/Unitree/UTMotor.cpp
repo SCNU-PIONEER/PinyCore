@@ -25,11 +25,12 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-UTMotor::UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart)
+UTMotor::UTMotor(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart, WorkMode_e _workMode)
         : IMotor(_name, _config)
         , uart_(_huart)
         , txBuf_((TransmitMsg_s *)Dma::instance().ram_alloc(sizeof(TransmitMsg_s)))
         , rxBuf_((Feedback_s *)Dma::instance().ram_alloc(sizeof(Feedback_s)))
+        , workMode_(_workMode)
 
 {
     this->cmd_.clear();
@@ -135,7 +136,6 @@ void UTMotor::convert(TransmitMsg_s &_txBuf)
     _txBuf.CRC16 = Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&_txBuf), 15, 0);
 }
 
-
 MotorTypeDef_e UTMotor::ctrl()
 {
     TransmitMsg_s txBuf{};
@@ -185,4 +185,15 @@ MotorTypeDef_e UTMotor::disable()
     this->cmd_.updateSW(false);
     convert(txBuf);
     return send(&txBuf, sizeof(TransmitMsg_s));
+}
+
+bool UTMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::EMIT:
+    case WorkMode_e::MIT_TT:
+        return true;
+    default:
+        return false;
+    }
 }
