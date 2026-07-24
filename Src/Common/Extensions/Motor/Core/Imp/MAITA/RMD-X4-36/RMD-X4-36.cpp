@@ -10,8 +10,8 @@ RMDX436::RMDX436(const char _name[16], InitConfig_s _config, WorkMode_e _workMod
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
-    regInfo_.model.measureMax = 32767;
-    regInfo_.model.measureMin = -32767;
+    regInfo_.model.measureMax = 65535;
+    regInfo_.model.measureMin = 0;
     regInfo_.model.reductionRatio = 1.f;
     regInfo_.model.rxBaseId = 0x240;
     regInfo_.model.txBaseId = 0x140;
@@ -42,7 +42,7 @@ MotorTypeDef_e RMDX436::checkBaseConfig()
 
     if (!isSupportMode(this->workMode_)) {
         rslt |= 1;
-        LOG::error(TAG, " %s: only support PDESVDES or CURR WorkMode", regInfo_.name);
+        LOG::error(TAG, " %s: WorkMode is not supported", regInfo_.name);
     }
 
     if (regInfo_.offsetId > 32) {

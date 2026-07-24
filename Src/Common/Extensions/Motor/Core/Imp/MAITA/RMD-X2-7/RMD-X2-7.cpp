@@ -42,7 +42,7 @@ MotorTypeDef_e RMDX27::checkBaseConfig()
 
     if (!isSupportMode(this->workMode_)) {
         rslt |= 1;
-        LOG::error(TAG, " %s: only support PDESVDES WorkMode", regInfo_.name);
+        LOG::error(TAG, " %s: WorkMode is not supported", regInfo_.name);
     }
 
     if (regInfo_.offsetId > 32) {
