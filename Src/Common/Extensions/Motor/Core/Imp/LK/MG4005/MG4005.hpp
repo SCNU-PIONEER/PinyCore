@@ -1,11 +1,3 @@
-/*
- * @File         : MG4005.hpp
- * @Brief        : 
- * @Version      : 
- * @Author       : Yewentao-1
- * @LastEditTime : 2026-01-19 16:56:20
- * Copyright 2026 by SCNU-PIONEER (c), All Rights Reserved.
- */
 #pragma once
 #include "../LKMotor.hpp"
 

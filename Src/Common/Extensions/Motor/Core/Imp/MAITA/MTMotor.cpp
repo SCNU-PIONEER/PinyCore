@@ -3,6 +3,8 @@
 #include "StmLog.hpp"
 #include "Bsp_can.hpp"
 #include "MotorCommonMacros.hpp"
+#include <cmath>
+#include <cstdint>
 #include <cstring>
 
 using namespace PINYMOTOR;
@@ -25,29 +27,10 @@ MTMotor::MTMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMod
         : IMotor(_name, _config), workMode_(_workMode), rxStream_(xMessageBufferCreate(16))
 {
     this->cmd_.clear();
+    errCode_.clear();
 }
 
 MTMotor::~MTMotor() { this->cancelMotor(); }
-
-void MTMotor::updateCtrlMode()
-{
-    ctrlId_ = regInfo_.model.txBaseId + regInfo_.offsetId;
-    switch (this->workMode_) {
-    case WorkMode_e::PDESVDES: {
-        convert = &MTMotor::absPosCtrl;
-        break;
-    }
-    case WorkMode_e::CURR: {
-        convert = &MTMotor::torqCtrl;
-        break;
-    }
-    default: {
-        convert = &MTMotor::disable;
-        LOG::error("MTMotor", " %s: this mode is not supported", regInfo_.name);
-        break;
-    }
-    }
-}
 
 void MTMotor::overrideStats(const Status_s &_stats) { status_ = _stats; }
 
@@ -61,17 +44,54 @@ void MTMotor::registerRecvCallback(uint16_t _rxId)
                                      });
 }
 
+MotorTypeDef_e MTMotor::ctrl()
+{
+    std::array<uint8_t, 8> txBuf{};
+
+    if (this->cmd_.SW) { //cmd_.SW == true
+        (this->*convert)(txBuf);
+    } else if (!this->cmd_.SW && this->cmd_.prevSW) { //SW == false && prevSW == true
+        disable(txBuf);
+        // readErrorCode(txBuf);
+    } else if (!this->cmd_.SW && !this->cmd_.prevSW) { //SW == false && prevSW == false
+        readState2(txBuf);
+    }
+
+    return send(ctrlId_, txBuf, 8);
+}
+
 MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
 {
-    if (_rxBuf[0] == 0xA4 || _rxBuf[0] == 0x9C || _rxBuf[0] == 0xA1) {
-        return parseAbsPosCtrl(_rxBuf);
+    if (_rxBuf[0] == 0x9c || _rxBuf[0] == 0xA1 || _rxBuf[0] == 0xA2 || _rxBuf[0] == 0xA4 || _rxBuf[0] == 0xA6 ||
+        _rxBuf[0] == 0xA8 || _rxBuf[0] == 0xA9) {
+        return parsrFeedbackData(_rxBuf);
+    } else if (_rxBuf[0] == 0x9A) {
+        return parseErrorCode(_rxBuf);
+    }
+    return 0;
+}
+//脉塔反馈的errCode包含了所有错误···
+MotorTypeDef_e MTMotor::parseErrorCode(const uint8_t *_rxBuf)
+{
+    auto allErrCode = static_cast<uint16_t>(_rxBuf[6] | (_rxBuf[7] << 8));
+    const ErrorCode_e allErrors[] = { ErrorCode_e::STALL_MOTOR,     ErrorCode_e::LOW_VOLT,
+                                      ErrorCode_e::OVER_VOLT,       ErrorCode_e::OVER_CURRENT,
+                                      ErrorCode_e::POWER_OVER,      ErrorCode_e::PARA_ERR,
+                                      ErrorCode_e::OVER_SPEED,      ErrorCode_e::PCB_HIGH_TEMP,
+                                      ErrorCode_e::MOTOR_HIG_TEMP,  ErrorCode_e::ENCODER_CAIL_ERR,
+                                      ErrorCode_e::ENCDOER_DATA_ERR };
+    for (const auto &err : allErrors) {
+        errCode_[err] = (allErrCode & static_cast<uint16_t>(err)) != 0;
+        if (errCode_[err]) {
+            LOG::error("MaiTaMotorError:", " %s", err);
+        }
     }
     return 0;
 }
 
-MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
+MotorTypeDef_e MTMotor::parsrFeedbackData(const uint8_t *_rxBuf)
 {
-    FeedbackAbsPosCtrl_s fb = *(FeedbackAbsPosCtrl_s *)_rxBuf;
+    FbData_s fb = *(FbData_s<int16_t> *)_rxBuf;
     this->data_.tempture = fb.temperature;
     this->data_.curr = regInfo_.isReverse ? -static_cast<float>(fb.iq) * 0.01f : static_cast<float>(fb.iq) * 0.01f;
     this->data_.torq = this->data_.curr * status_.kn;
@@ -79,8 +99,8 @@ MotorTypeDef_e MTMotor::parseAbsPosCtrl(const uint8_t *_rxBuf)
     float noumenaVel = deg2rad(static_cast<float>(fb.speed));
     this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
-    /* angle */
-    this->data_.rawAng = deg2rad(static_cast<float>(fb.pos));
+    /* angle 脉塔pos反馈多圈值,反馈无上限,会溢出*/
+    this->data_.rawAng = rangeMap(deg2rad(static_cast<float>(fb.pos)), -PI, PI);
     float noumenaAng = this->data_.rawAng;
     this->data_.ang = regInfo_.isReverse ? -noumenaAng : noumenaAng - this->data_.zeroAng;
     this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
@@ -105,53 +125,11 @@ MotorTypeDef_e MTMotor::send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, ui
                                         _len);
 }
 
-MotorTypeDef_e MTMotor::ctrl()
-{
-    std::array<uint8_t, 8> txBuf{};
-
-    if (this->cmd_.SW) {
-        (this->*convert)(txBuf);
-    } else if (!this->cmd_.SW && this->cmd_.prevSW) {
-        disable(txBuf);
-    } else if (!this->cmd_.SW && !this->cmd_.prevSW) {
-        readState2(txBuf);
-    }
-
-    return send(ctrlId_, txBuf, 8);
-}
-
 void MTMotor::disable(std::array<uint8_t, 8> &_txBuf)
 {
     this->cmd_.updateSW(false);
     constexpr std::array<uint8_t, 8> PACK = { 0x80, 0, 0, 0, 0, 0, 0, 0 };
     _txBuf = PACK;
-}
-
-void MTMotor::readState2(std::array<uint8_t, 8> &_txBuf)
-{
-    constexpr std::array<uint8_t, 8> PACK = { 0x9C, 0, 0, 0, 0, 0, 0, 0 };
-    _txBuf = PACK;
-}
-
-void MTMotor::absPosCtrl(std::array<uint8_t, 8> &_txBuf)
-{
-    TransmiAbsPosCtrlMsg_s data{};
-    uint16_t rawSpeed = static_cast<uint16_t>(rad2deg(this->cmd_.vel));
-    data.maxspeed = std::min(rawSpeed, this->status_.speedMax);
-    data.pos = regInfo_.isReverse ? -static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100) :
-                                    static_cast<int32_t>(rad2deg(this->cmd_.pos) * 100);
-    memcpy(_txBuf.data(), &data, 8);
-}
-
-void MTMotor::torqCtrl(std::array<uint8_t, 8> &_txBuf)
-{
-    TransmiTorqCtrlMsg_s data{};
-    int32_t rawIq32 = static_cast<int32_t>(std::lround(this->cmd_.torq / status_.kn * 100.0f));
-    int32_t tmpIq32 = regInfo_.isReverse ? -rawIq32 : rawIq32;
-    int16_t rawIq = static_cast<int16_t>(std::max<int32_t>(
-            std::numeric_limits<int16_t>::min(), std::min<int32_t>(std::numeric_limits<int16_t>::max(), tmpIq32)));
-    data.iqControl = rawIq;
-    memcpy(_txBuf.data(), &data, 8);
 }
 
 MotorTypeDef_e MTMotor::update()
@@ -180,8 +158,12 @@ void MTMotor::overrideReductionRatio(float _newReductionRatio)
 bool MTMotor::isSupportMode(WorkMode_e _mode) const
 {
     switch (_mode) {
-    case WorkMode_e::PDESVDES:
-    case WorkMode_e::CURR:
+    case WorkMode_e::TORQ:
+    case WorkMode_e::SPEED:
+    case WorkMode_e::ABS_POS:
+    case WorkMode_e::SINGLE_POS:
+    case WorkMode_e::INC_POS:
+    case WorkMode_e::FORCE_POS:
         return true;
     default:
         return false;
