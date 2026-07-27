@@ -1,17 +1,18 @@
 #include "LKMotor.hpp"
+#include "Bsp_can.hpp"
 #include "MotorCommonMacros.hpp"
 #include <algorithm>
-#include "Bsp_can.hpp"
 #include <sys/reent.h>
 
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
 LKMotor::LKMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
-        : Base(_name, _config), motorIndex_(_config.offsetId), workMode_(_workMode)
+        : Base(_name, _config), workMode_(_workMode)
 {
     this->regInfo_.model.rxBaseId = RX_BASE_ID;
     this->regInfo_.model.txBaseId = TX_BASE_ID;
+    motorIndex_ = _config.offsetId;
 
     AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
     this->updateTxId();
@@ -126,10 +127,8 @@ MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
 MotorTypeDef_e LKMotor::ctrl()
 {
-    MotorTypeDef_e result = 0;
+    MotorTypeDef_e rslt = 0;
     int16_t ctrlCmd = 0;
-    TxBus txBuf;
-
     if (!this->cmd_.SW) {
         ctrlCmd = 0;
     } else {
@@ -144,22 +143,21 @@ MotorTypeDef_e LKMotor::ctrl()
             break;
         default:
             LOG::error("LKMotor", "%s: Unsupported cmd type (only SET_ELEC/SET_TORQ)", this->regInfo_.name);
-            result = 1;
+            rslt = 1;
             break;
         }
     }
-
     if (this->regInfo_.isReverse) {
         ctrlCmd = static_cast<int16_t>(-ctrlCmd);
     }
     ctrlCmd = std::clamp(ctrlCmd, static_cast<int16_t>(-this->status_.txcurrentDataMax),
                          static_cast<int16_t>(this->status_.txcurrentDataMax));
-    uint8_t dataIdx = (this->motorIndex_ - 1) * 2;
-    txBuf.data[dataIdx] = ctrlCmd & 0xFF;
-    txBuf.data[dataIdx + 1] = (ctrlCmd >> 8) & 0xFF;
 
-    this->send(this->currentTxId_, reinterpret_cast<uint8_t *>(txBuf.data), 8);
-    return result;
+    this->group_->txBuf[2 * this->getPosInGroup()] = static_cast<uint8_t>(ctrlCmd & 0xFF);
+    this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
+
+    this->send(this->currentTxId_, this->group_->txBuf, 8);
+    return rslt;
 }
 
 MotorTypeDef_e LKMotor::update()
