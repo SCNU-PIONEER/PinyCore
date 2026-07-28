@@ -23,7 +23,6 @@ protected:
     float sDot;
     float u;
     float sigmoid(float _s, float _m = 10.f) { return 2.f * ((1.f / (1.f + expf(-_m * _s))) - 0.5f); }
-    float integralX1;
 };
 
 class ConstantReachSmc final : public Smc {
@@ -51,13 +50,13 @@ private:
 
 class PowerReachSmc final : public Smc {
 public:
-    PowerReachSmc(float _c, float _k, float _alpha, float _dt);
+    PowerReachSmc(float _c, float _epsilon, float _alpha, float _dt);
     ~PowerReachSmc() = default;
 
-    float reachingLaw(float _s) override { return -k * powf(fabsf(_s), alpha) * sigmoid(_s); };
+    float reachingLaw(float _s) override { return -epsilon * powf(fabsf(_s), alpha) * sigmoid(_s); };
 
 private:
-    float k;
+    float epsilon;
     float alpha; // 0 < alpha < 1
 };
 

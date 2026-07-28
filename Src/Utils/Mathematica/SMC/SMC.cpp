@@ -3,7 +3,7 @@
 
 using namespace SMC;
 
-Smc::Smc(float _c, float _dt) : c(_c), dt(_dt), err1(0.f), err2(0.f), s(0.f), sDot(0.f), u(0.f), integralX1(0.f) {}
+Smc::Smc(float _c, float _dt) : c(_c), dt(_dt), err1(0.f), err2(0.f), s(0.f), sDot(0.f), u(0.f) {}
 
 float Smc::smcSimplePosCalc(float _posErr)
 {
@@ -20,4 +20,7 @@ ConstantReachSmc::ConstantReachSmc(float _c, float _epsilon, float _dt) : Smc(_c
 
 ExponReachSmc::ExponReachSmc(float _c, float _epsilon, float _k, float _dt) : Smc(_c, _dt), epsilon(_epsilon), k(_k) {}
 
-PowerReachSmc::PowerReachSmc(float _c, float _k, float _alpha, float _dt) : Smc(_c, _dt), k(_k), alpha(_alpha) {}
+PowerReachSmc::PowerReachSmc(float _c, float _epsilon, float _alpha, float _dt)
+        : Smc(_c, _dt), epsilon(_epsilon), alpha(_alpha)
+{
+}
