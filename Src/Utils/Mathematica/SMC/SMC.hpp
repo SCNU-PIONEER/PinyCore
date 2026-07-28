@@ -14,6 +14,8 @@ public:
 
     virtual float reachingLaw(float _s);
 
+    float lyapunovFcn() { return s * sDot; }
+
 protected:
     float c;
     float dt;
@@ -60,5 +62,21 @@ private:
     float alpha; // 0 < alpha < 1
 };
 
+class CompositeReachSmc final : public Smc {
+public:
+    CompositeReachSmc(float _c, float _epsilon, float _alpha, float _k, float _dt);
+    ~CompositeReachSmc() = default;
+
+    float reachingLaw(float _s) override
+    {
+        float power = alpha == 0 ? 1 : powf(fabsf(_s), alpha);
+        return (-epsilon * power * sigmoid(_s)) - (k * _s);
+    };
+
+private:
+    float epsilon;
+    float alpha; // 0 <= alpha < 1
+    float k;
+};
 
 } // namespace SMC

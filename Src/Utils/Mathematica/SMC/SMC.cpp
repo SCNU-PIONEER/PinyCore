@@ -24,3 +24,8 @@ PowerReachSmc::PowerReachSmc(float _c, float _epsilon, float _alpha, float _dt)
         : Smc(_c, _dt), epsilon(_epsilon), alpha(_alpha)
 {
 }
+
+CompositeReachSmc::CompositeReachSmc(float _c, float _epsilon, float _k, float _alpha, float _dt)
+        : Smc(_c, _dt), epsilon(_epsilon), alpha(_alpha), k(_k)
+{
+}
