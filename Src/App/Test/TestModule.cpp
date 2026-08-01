@@ -28,7 +28,7 @@ void TestModule::init()
 
 #if TEST_MT
     schedule([]() { testMT.test(); });
-    testMT.bulidMotor(MTMotorModel_e::RMD_X4_10, 1);
+    testMT.buildMotor(MTMotorModel_e::RMD_X4_10, 1);
 #endif
 }
 

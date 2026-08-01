@@ -62,7 +62,7 @@ if(APP_USE_TEST)
 
   if(TEST_MT)
     file(GLOB_RECURSE TEST_DJI_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestMT/*.cpp")
-    list(APPEND SOURCES ${TEST_DJI_SOURCES})
+    list(APPEND SOURCES ${TEST_MT_SOURCES})
   endif()
 endif()
 

@@ -5,7 +5,7 @@
 namespace PINYMOTOR::MTMOTOR {
 
 class RMDX27 : public MTMotor {
-    static constexpr float SPEED_MAX = 15.398f; // 输出轴最大额定转速
+    static constexpr float SPEED_MAX = 14.870f; // 输出轴最大额定转速
     static constexpr float CURR_MAX = 8.1f;     // 峰值相电流
     static constexpr float TORQ_MAX = 7.f;      // 峰值扭矩
     static constexpr uint8_t NP = 13;           // 极对数

@@ -4,7 +4,7 @@
 using namespace PINYMOTOR;
 using namespace MTMOTOR;
 
-static constexpr char TAG[] = "RMDX436";
+static constexpr char TAG[] = "RMDX410";
 
 RMDX410::RMDX410(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : MTMotor(_name, _config, _workMode)
 {

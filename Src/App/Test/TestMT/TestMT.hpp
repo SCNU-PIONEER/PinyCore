@@ -15,7 +15,7 @@ enum class MTMotorModel_e : uint8_t {
 
 class TestMT : public TestModule {
 public:
-    void bulidMotor(MTMotorModel_e _model, uint8_t _id);
+    void buildMotor(MTMotorModel_e _model, uint8_t _id);
 
     void test();
     void testON();

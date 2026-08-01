@@ -137,9 +137,8 @@ void MTMotor::singlePosCtrl(std::array<uint8_t, 8> &_txBuf)
     }
     uint16_t rawSpeed = static_cast<uint16_t>(rad2deg(fabsf(this->cmd_.vel)));
     data.speedMax = std::min(rawSpeed, static_cast<uint16_t>(rad2deg(this->status_.speedMax)));
-
-    this->cmd_.pos = PINYMOTOR::rangeMap(this->cmd_.pos);
-    data.angleCtrl = static_cast<uint16_t>(rad2deg(fabsf(this->cmd_.pos)) * 100);
+    float tempPos = PINYMOTOR::rangeMap(this->cmd_.pos);
+    data.angleCtrl = static_cast<uint16_t>(rad2deg(fabsf(tempPos)) * 100);
     memcpy(_txBuf.data(), &data, 8);
 }
 
