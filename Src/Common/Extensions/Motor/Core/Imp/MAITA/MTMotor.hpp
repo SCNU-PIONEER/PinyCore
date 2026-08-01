@@ -3,22 +3,29 @@
 #include "IMotor.hpp"
 #include "FreeRTOS.h"
 #include "message_buffer.h"
-
+#include "MTMotorMsg.hpp"
+#include <cstdint>
+#include <map>
 #include <array>
 
 namespace PINYMOTOR::MTMOTOR {
 
 enum class WorkMode_e : MotorTypeDef_e {
     UNKNOWN,
-    PDESVDES,
-    CURR,
+    SETTING,
+    TORQ,
+    SPEED,
+    ABS_POS,
+    SINGLE_POS,
+    INC_POS,
+    FORCE_POS,
 };
 
 struct Status_s {
-    uint16_t speedMax; //dps
-    float currMax;     // A
-    float torqMax;     // Nm
-    float np;          // Nm
+    float speedMax; // rad/s
+    float currMax;  // A
+    float torqMax;  // Nm
+    float np;       // Nm
     float interRR;
     float kn; // Nm/A
 
@@ -34,8 +41,10 @@ public:
     MotorTypeDef_e update() final;
 
     void overrideStats(const Status_s &_newStats);
-
+    void switchCtrlMode(WorkMode_e _workMode);
     bool isEnable() const;
+    void setMotorZeroAng();
+    void readErrCode();
     void overrideReductionRatio(float _newReductionRatio) final;
 
 protected:
@@ -46,19 +55,28 @@ protected:
     WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
     bool isSupportMode(WorkMode_e _mode) const;
 
+    void readErrorCode(std::array<uint8_t, 8> &_txBuf);
+    void readState2(std::array<uint8_t, 8> &_txBuf);
+
 private:
     MotorTypeDef_e ctrl();
     MotorTypeDef_e send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, uint8_t _len);
 
     MotorTypeDef_e parse(const uint8_t *_rxBuf);
-    MotorTypeDef_e parseAbsPosCtrl(const uint8_t *_rxBuf);
-    MotorTypeDef_e parseTorqCtrl(const uint8_t *_rxBuf);
-    MotorTypeDef_e parseReadState2(const uint8_t *_rxBuf);
+    MotorTypeDef_e parseFeedbackData(const uint8_t *_rxBuf);
+    MotorTypeDef_e parseErrorCode(const uint8_t *_rxBuf);
+
+    void setFunctionCtrlData(uint8_t _header, uint8_t _index, uint32_t _data);
 
     void disable(std::array<uint8_t, 8> &_txBuf);
-    void readState2(std::array<uint8_t, 8> &_txBuf);
-    void absPosCtrl(std::array<uint8_t, 8> &_txBuf);
     void torqCtrl(std::array<uint8_t, 8> &_txBuf);
+    void speedCtrl(std::array<uint8_t, 8> &_txBuf);
+    void absPosCtrl(std::array<uint8_t, 8> &_txBuf);
+    void singlePosCtrl(std::array<uint8_t, 8> &_txBuf);
+    void incPosCtrl(std::array<uint8_t, 8> &_txBuf);
+    void forcePosCtrl(std::array<uint8_t, 8> &_txBuf);
+
+    std::map<ErrorCode_e, bool> errCode_;
 
     ConvertFunc convert = &MTMotor::disable;
 

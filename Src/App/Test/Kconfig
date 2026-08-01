@@ -8,4 +8,8 @@ config TEST_DM
 config TEST_DJI
     bool "dji"
     default n
+
+config TEST_MT
+    bool "MT"
+    default n
 endmenu

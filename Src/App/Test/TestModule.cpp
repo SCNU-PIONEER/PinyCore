@@ -1,6 +1,7 @@
 #include "TestModule.hpp"
 #include "DMMotor.hpp"
 #include "TestDM/TestDM.hpp"
+#include "TestMT/TestMT.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
 #include "sdkconfig.h"
@@ -14,11 +15,20 @@ using namespace PINYMOTOR;
 TestDM testDM;
 #endif
 
+#if TEST_MT
+TestMT testMT;
+#endif
+
 void TestModule::init()
 {
 #if TEST_DM
     schedule([]() { testDM.test(); });
     testDM.rebuildMotor(DmMotorModel_e::DM4340, 2);
+#endif
+
+#if TEST_MT
+    schedule([]() { testMT.test(); });
+    testMT.buildMotor(MTMotorModel_e::RMD_X4_10, 1);
 #endif
 }
 

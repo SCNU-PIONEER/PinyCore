@@ -15,14 +15,14 @@ endif()
 
 if(APP_USE_CHASSIS)
   file(GLOB_RECURSE CHASSIS_SOURCES CMAKE_CONFIGURE_DEPENDS
-      "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
+    "RobotModules/Chassis/Actuators/${CHASSIS_TYPE}/*.cpp")
   list(APPEND SOURCES ${CHASSIS_SOURCES})
 endif()
 
 # chassis power control
 if(APP_USE_POWERCTRL)
   file(GLOB_RECURSE POWERCTRL_SOURCES CMAKE_CONFIGURE_DEPENDS
-       "RobotModules/Chassis/PowerCtrl/*.cpp")
+    "RobotModules/Chassis/PowerCtrl/*.cpp")
   list(APPEND SOURCES ${POWERCTRL_SOURCES})
 endif()
 
@@ -49,17 +49,23 @@ endif()
 if(APP_USE_TEST)
   file(GLOB_RECURSE TEST_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/*.cpp")
   list(APPEND SOURCES ${TEST_SOURCES})
-  
+
   if(TEST_DM)
-  file(GLOB_RECURSE TEST_DM_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestDM/*.cpp")
-  list(APPEND SOURCES ${TEST_DM_SOURCES})
+    file(GLOB_RECURSE TEST_DM_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestDM/*.cpp")
+    list(APPEND SOURCES ${TEST_DM_SOURCES})
   endif()
 
   if(TEST_DJI)
-  file(GLOB_RECURSE TEST_DJI_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestDJI/*.cpp")
-  list(APPEND SOURCES ${TEST_DJI_SOURCES})
+    file(GLOB_RECURSE TEST_DJI_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestDJI/*.cpp")
+    list(APPEND SOURCES ${TEST_DJI_SOURCES})
+  endif()
+
+  if(TEST_MT)
+    file(GLOB_RECURSE TEST_DJI_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestMT/*.cpp")
+    list(APPEND SOURCES ${TEST_MT_SOURCES})
   endif()
 endif()
+
 # daemons
 if(APP_USE_DAEMONS)
   file(GLOB_RECURSE DAEMONS_SOURCES CMAKE_CONFIGURE_DEPENDS "Daemons/*.cpp")
