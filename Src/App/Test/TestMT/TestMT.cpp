@@ -25,7 +25,7 @@ InitConfig_s configMT = {
     .isReverse = false,
 };
 
-void TestMT::bulidMotor(MTMotorModel_e _model, uint8_t _id)
+void TestMT::buildMotor(MTMotorModel_e _model, uint8_t _id)
 {
     configMT.offsetId = _id;
     switch (_model) {
@@ -39,33 +39,60 @@ void TestMT::bulidMotor(MTMotorModel_e _model, uint8_t _id)
         motor_ = new MTMOTOR::RMDX436("MT_RMDX436", configMT, MTMOTOR::WorkMode_e::TORQ);
         break;
     }
+
+    /*set test*/
 };
 
 void TestMT::test()
 {
+    /*set test*/
+
+    // switchMTWorkMode(MTMOTOR::WorkMode_e::SETTING);
+    // motor_->setMotorZeroAng();
+    // vTaskDelay(100);
+
     testON();
     vTaskDelay(100);
+    switchMTWorkMode(MTMOTOR::WorkMode_e::TORQ);
+    vTaskDelay(100);
 
+    /*error test*/
+    // motor_->readErrCode();
+
+    /*workmode test*/
+
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::TORQ);
     // testTorq(0.4f);
     // vTaskDelay(1000);
 
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::SPEED);
-    // testSpeed(1.f);
+    // testSpeed(-1.f);
     // vTaskDelay(1000);
 
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::ABS_POS);
-    // testAbsPos(2.f, 2.f);
+    // testAbsPos(5.f, 4.f);
     // vTaskDelay(1000);
 
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::SINGLE_POS);
     // testSinglePos(5.f, 2.f);
     // vTaskDelay(1000);
 
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::INC_POS);
     // testIncPos(2.f);
     // vTaskDelay(1000);
 
+    // testON();
+    // vTaskDelay(100);
     // switchMTWorkMode(MTMOTOR::WorkMode_e::FORCE_POS);
     // testForcePos(1.f, 5.f, 1.f);
     // vTaskDelay(1000);

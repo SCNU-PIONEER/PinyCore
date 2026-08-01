@@ -91,6 +91,15 @@ struct TransmitForcePosCtrlMsg_s {
     int32_t angCtrl;     // 输出关节角度 0.01degree/LSB      4  Byte
 }; // 电机控制命令数据包 8 Byte
 
+//  ━━━━━━━━━━━━━━━━━━━ can - 功能控制指令 ━━━━━━━━━━━━━━━━━━━
+struct TransmitFunctionCtrlMsg_s {
+    uint8_t header; //                         1  Byte
+    uint8_t index;  // 控制命令索引                     1  Byte
+    uint8_t none1;  // 保留位                          1  Byte
+    uint8_t none2;  // 保留位                          1  Byte
+    uint32_t para;  // 参数                            4  Byte
+}; // 电机控制命令数据包 8 Byte
+
 #pragma pack(pop)
 
 } // namespace PINYMOTOR::MTMOTOR

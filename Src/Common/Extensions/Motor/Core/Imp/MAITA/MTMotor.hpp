@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "message_buffer.h"
 #include "MTMotorMsg.hpp"
+#include <cstdint>
 #include <map>
 #include <array>
 
@@ -11,6 +12,7 @@ namespace PINYMOTOR::MTMOTOR {
 
 enum class WorkMode_e : MotorTypeDef_e {
     UNKNOWN,
+    SETTING,
     TORQ,
     SPEED,
     ABS_POS,
@@ -41,6 +43,8 @@ public:
     void overrideStats(const Status_s &_newStats);
     void switchCtrlMode(WorkMode_e _workMode);
     bool isEnable() const;
+    void setMotorZeroAng();
+    void readErrCode();
     void overrideReductionRatio(float _newReductionRatio) final;
 
 protected:
@@ -59,8 +63,10 @@ private:
     MotorTypeDef_e send(uint16_t _sendId, std::array<uint8_t, 8> _txBuf, uint8_t _len);
 
     MotorTypeDef_e parse(const uint8_t *_rxBuf);
-    MotorTypeDef_e parsrFeedbackData(const uint8_t *_rxBuf);
+    MotorTypeDef_e parseFeedbackData(const uint8_t *_rxBuf);
     MotorTypeDef_e parseErrorCode(const uint8_t *_rxBuf);
+
+    void setFunctionCtrlData(uint8_t _header, uint8_t _index, uint32_t _data);
 
     void disable(std::array<uint8_t, 8> &_txBuf);
     void torqCtrl(std::array<uint8_t, 8> &_txBuf);
