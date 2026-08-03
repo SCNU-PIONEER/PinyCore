@@ -15,9 +15,6 @@ if(USE_MATHEMATICA)
     endif()
   endfunction()
 
-  target_include_directories(
-    utils PRIVATE ../../Lib/CMSIS-DSP/Include)
-
   add_mathematica_module(USE_MATHEMATICA_BALLISTIC Ballistic)
   add_mathematica_module(USE_MATHEMATICA_CORDIC Cordic)
   add_mathematica_module(USE_MATHEMATICA_CRC CRC)
