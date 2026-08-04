@@ -9,6 +9,10 @@ config TEST_DJI
     bool "dji"
     default n
 
+config TEST_LK
+    bool "lk"
+    default n
+
 config TEST_MT
     bool "MT"
     default n

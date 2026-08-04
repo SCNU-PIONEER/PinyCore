@@ -1,6 +1,7 @@
 #include "TestModule.hpp"
 #include "DMMotor.hpp"
 #include "TestDM/TestDM.hpp"
+#include "TestLK/TestLK.hpp"
 #include "TestMT/TestMT.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
@@ -15,6 +16,10 @@ using namespace PINYMOTOR;
 TestDM testDM;
 #endif
 
+#if TEST_LK
+TestLK testLK;
+#endif
+
 #if TEST_MT
 TestMT testMT;
 #endif
@@ -23,7 +28,14 @@ void TestModule::init()
 {
 #if TEST_DM
     schedule([]() { testDM.test(); });
-    testDM.rebuildMotor(DmMotorModel_e::DM4340, 2);
+    testDM.rebuildMotor(DmMotorModel_e::DM4310, 1);
+#endif
+
+#if TEST_LK
+    //BROADCAST MODE
+    schedule([]() { testLK.test(); });
+    testLK.addMotor(LkMotorModel_e::MG4005, 1);
+    testLK.addMotor(LkMotorModel_e::MF9025, 2);
 #endif
 
 #if TEST_MT
