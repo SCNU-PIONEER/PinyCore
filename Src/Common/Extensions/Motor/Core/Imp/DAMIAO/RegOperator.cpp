@@ -83,14 +83,9 @@ MotorTypeDef_e DMMotor::storageOneReg(RegId_e _regId)
     if (it != regObjList_.end()) {
         (*it).second->isStorage = false;
         uint16_t id = canId();
-        uint8_t storageTxBuf[8] = { static_cast<uint8_t>(id),
-                                    static_cast<uint8_t>(id >> 8),
-                                    0xAA,
-                                    static_cast<uint8_t>(_regId),
-                                    0x00,
-                                    0x00,
-                                    0x00,
-                                    0x00 };
+        uint8_t storageTxBuf[8] = {
+            static_cast<uint8_t>(id), static_cast<uint8_t>(id >> 8), 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00
+        };
         this->send(0x7FF, storageTxBuf, 8);
     }
     return rslt;

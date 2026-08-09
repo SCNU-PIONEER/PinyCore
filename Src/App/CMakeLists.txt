@@ -64,6 +64,11 @@ if(APP_USE_TEST)
     file(GLOB_RECURSE TEST_DJI_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestMT/*.cpp")
     list(APPEND SOURCES ${TEST_MT_SOURCES})
   endif()
+
+  if(TEST_LK)
+  file(GLOB_RECURSE TEST_LK_SOURCES CMAKE_CONFIGURE_DEPENDS "Test/TestLK/*.cpp")
+  list(APPEND SOURCES ${TEST_LK_SOURCES})
+  endif()
 endif()
 
 # daemons

@@ -7,6 +7,7 @@
 
 namespace TEST {
 
+enum class DmMotorModel_e : uint8_t { DM3507, DM3519, DM4310, DM4340, DM6006, DM8009, DM10010L };
 class TestDM : public TestModule {
 public:
     void rebuildMotor(DmMotorModel_e _model, uint8_t _id);

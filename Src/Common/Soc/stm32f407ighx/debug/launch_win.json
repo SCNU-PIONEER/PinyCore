@@ -8,7 +8,7 @@
       "request": "launch",
       "showDevDebugOutput": "none",
       "servertype": "jlink",
-      "device": "stm32f407ig",
+      "device": "stm32f407ighx",
       "liveWatch": {
         "enabled": true,
         "samplesPerSecond": 1
