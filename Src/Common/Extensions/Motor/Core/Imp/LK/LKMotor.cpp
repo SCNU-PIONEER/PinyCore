@@ -8,11 +8,10 @@ using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
 LKMotor::LKMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
-        : Base(_name, _config), workMode_(_workMode)
+        : Base(_name, _config), motorIndex_(_config.offsetId), workMode_(_workMode)
 {
     this->regInfo_.model.rxBaseId = RX_BASE_ID;
     this->regInfo_.model.txBaseId = TX_BASE_ID;
-    motorIndex_ = _config.offsetId;
 
     AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
     this->updateTxId();
@@ -80,49 +79,51 @@ MotorTypeDef_e LKMotor::send(uint16_t _sendId, uint8_t *_txBuf, uint8_t _len)
 
 MotorTypeDef_e LKMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 {
-    Feedback_s fb;
-    const uint8_t *data = _rxBuf.data;
-    fb.cmd = data[0];
-    fb.temperature = data[1];
-    fb.current = static_cast<int16_t>((data[3] << 8) | data[2]);
-    fb.speed = static_cast<int16_t>((data[5] << 8) | data[4]);
-    fb.angle = static_cast<uint16_t>((data[7] << 8) | data[6]);
+    const State2_s *fb = reinterpret_cast<const State2_s *>(_rxBuf.data + 1);
 
-    float current = static_cast<float>(fb.current) / this->status_.rxcurrentDataMax * this->status_.rxcurrentMax;
-    this->data_.curr = this->regInfo_.isReverse ? -current : current;
+    data_.tempture = fb->temperature;
+    data_.tempture = fb->temperature; // 1°C/1LSB
+    // current in A, (66/4096 A) / LSB, for MG motor;(33/4096 A) / LSB, for MF motor
+    data_.curr = (float)(fb->current) / 4096.f * (float)this->status_.CurrMax;
+    data_.torq = data_.curr * this->status_.torqueConstant;
+    data_.spdRadps = deg2rad(static_cast<float>(fb->speed)); // 反馈输出轴速度，1dps/LSB
+    data_.spdRpm = radps2rpm(data_.spdRadps);
 
-    this->data_.torq = this->data_.curr * this->status_.torqueConstant;
+    // 双编码器反馈的是输出轴的编码器数据， 14bit encoder range: 0-16383, 15bit encoder range: 0-32767, 16bit encoder range: 0-65535
+    float noumenaAng = static_cast<float>(fb->encoder) / this->span() * 2.f * PI;
+    data_.rawAng = regInfo_.isReverse ? (2.f * PI) - noumenaAng : noumenaAng;
+    data_.ang = data_.rawAng;
 
-    float spdDpsMotor = this->regInfo_.isReverse ? -static_cast<float>(fb.speed) : static_cast<float>(fb.speed);
-    float spdDpsLoad = spdDpsMotor / this->rr();
-    this->data_.spdRpm = spdDpsLoad * (60.0f / 360.0f);
-    this->data_.spdRadps = spdDpsLoad * PI / 180.0f;
+    /*
+     * 电机内部的单圈认定范围是[-PI, PI], 如果超过范围，会将当前角度设置为0
+     */
+    data_.singleCirAng = rangeMap(data_.ang / this->rr(), -PI, PI);
 
-    float angle = static_cast<float>(fb.angle) / this->span() * 2.0f * PI;
-    this->data_.rawAng = this->regInfo_.isReverse ? ((2.0f * PI) - angle) : angle;
-    float del = this->data_.rawAng - this->data_.zeroAng;
-    this->data_.ang = del < 0 ? del + (2.0f * PI) : del;
-
-    this->data_.tempture = fb.temperature;
-
-    this->data_.singleCirAng = rangeMap(data_.ang / this->rr());
-
+    /* 
+     * 当电机断电，状态为离线状态，上电第一刻先赋值 angLast
+     */
     if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
         this->globalState = GlobalState_e::ONLINE;
-        this->data_.angLast = this->data_.ang;
+        data_.angLast = data_.ang;
     }
 
-    float angDiff = this->data_.ang - this->data_.angLast;
-    if (angDiff > PI) {
+    /*
+     * 在零度附近编码器会在0和6.28之间跳变，而多圈位置控制2是支持控制正负的，所以通过delta来判断编码器是否跨过零度，并计算圈数
+     * 1. 当编码器从0跳变到6.28时，delta会大于PI，说明电机反向跨过零度，圈数减1，并且多圈角度等于编码器值减去2PI
+     * 2. 当编码器从6.28跳变到0时，delta会小于-PI，说明电机正向跨过零度，圈数加1，并且多圈角度等于编码器值加上2PI
+     * 3. 当编码器在零度附近跳变，多圈角通过抵消从而不会跳变
+     */
+    float delta = data_.ang - data_.angLast;
+    if (delta > PI) {
         this->data_.cirNum -= 1.f / this->rr();
-    } else if (angDiff < -PI) {
+    } else if (delta < -PI) {
         this->data_.cirNum += 1.f / this->rr();
     }
 
-    this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
-    this->data_.angLast = this->data_.ang;
+    data_.multipCirAng = data_.singleCirAng + (TWO_PI * data_.cirNum);
+    data_.angLast = data_.ang;
 
-    return 0;
+    return STM_OK;
 }
 
 MotorTypeDef_e LKMotor::ctrl()

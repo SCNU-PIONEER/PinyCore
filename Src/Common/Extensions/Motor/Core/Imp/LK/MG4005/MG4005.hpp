@@ -1,20 +1,21 @@
 #pragma once
-#include "../LKMotor.hpp"
+#include "sdkconfig.h"
+
+#if MG4005_RS485
+#include "LKMotorRS485.hpp"
+using LKMotor4005 = PINYMOTOR::LKMOTOR::LKMotorRS485;
+#elif MG4005_CAN
+#include "LKMotorCan.hpp"
+using LKMotor4005 = PINYMOTOR::LKMOTOR::LKMotorCAN;
+#elif MG4005_RS485_BROADCAST
+#elif MG4005_CAN_BROADCAST
+#include "LKMotor.hpp"
+using LKMotor4005 = PINYMOTOR::LKMOTOR::LKMotor;
+#endif
 
 namespace PINYMOTOR::LKMOTOR {
 
-class MG4005 final : public LKMotor {
-private:
-    /**
-     * @brief 检查基础配置
-     */
-    MotorTypeDef_e checkBaseConfig() final;
-
-    /**
-     * @brief 初始化MG4005电机模型参数
-     */
-    void initModelParams() final;
-
+class MG4005 final : public LKMotor4005 {
 public:
     static constexpr float POWER_MAX = 65.f;             // 峰值功率 W
     static constexpr float TORQ_MAX = 2.5f;              // 峰值扭矩 N/m
@@ -25,9 +26,6 @@ public:
     static constexpr float CURR_MAX = 66.f;              // 转矩电流最大值
     static constexpr uint16_t ENCODER_SPAN = 65535.f;    // 16 bit编码器范围
 
-    /**
-     * @brief 构造函数
-     */
     MG4005(const char _name[16], InitConfig_s _config, WorkMode_e _workmode);
 };
 

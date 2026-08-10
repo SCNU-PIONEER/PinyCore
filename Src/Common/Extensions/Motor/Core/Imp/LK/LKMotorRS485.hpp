@@ -4,32 +4,10 @@
 #include "FreeRTOS.h"
 #include "message_buffer.h"
 #include "Bsp_uart.hpp"
-#include "LKMotorRS485Msg.hpp"
-#include "WorkMode.hpp"
+#include "LKMotorMsg.hpp"
 
 namespace PINYMOTOR::LKMOTOR {
 
-struct Status_s {
-    float powerMax;            // 峰值功率
-    float torqueMax;           // 峰值扭矩
-    int32_t speedMax;          // 峰值转矩
-    float speedConstant;       // 转速常数
-    float torqueConstant;      // 扭矩常数
-    int16_t txCurrMax;         // 发送电流最大值
-    float innerReductionRatio; // 内部减速比
-
-    Status_s() = default;
-
-    Status_s(float _powerMax, float _torqueMax, int32_t _speedMax, float _speedConstant, float _torqueConstant,
-             int16_t _txCurrMax, float _innerReductionRatio)
-            : powerMax(_powerMax)
-            , torqueMax(_torqueMax)
-            , speedMax(_speedMax)
-            , speedConstant(_speedConstant)
-            , torqueConstant(_torqueConstant)
-            , txCurrMax(_txCurrMax)
-            , innerReductionRatio(_innerReductionRatio) {};
-};
 
 class LKMotorRS485 : public IMotor {
 public:

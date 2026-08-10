@@ -1,9 +1,20 @@
 #pragma once
-#include "../LKMotorRS485.hpp"
+#include "sdkconfig.h"
+#if MG8016Ei6_RS485
+#include "LKMotorRS485.hpp"
+using LKMotor8016 = PINYMOTOR::LKMOTOR::LKMotorRS485;
+#elif MG8016Ei6_CAN
+#include "LKMotorCan.hpp"
+using LKMotor8016 = PINYMOTOR::LKMOTOR::LKMotorCAN;
+#elif MG8016Ei65_RS485_BROADCAST
+#elif MG8016Ei6_CAN_BROADCAST
+#include "LKMotor.hpp"
+using LKMotor8016 = PINYMOTOR::LKMOTOR::LKMotor;
+#endif
 
 namespace PINYMOTOR::LKMOTOR {
 
-class MG8016Ei6RS485 final : public LKMotorRS485 {
+class MG8016Ei6RS485 final : public LKMotor8016 {
 public:
     static constexpr float POWER_MAX = 670.f;           // 峰值功率 W
     static constexpr float TORQ_MAX = 37.f;             // 峰值扭矩 N/m

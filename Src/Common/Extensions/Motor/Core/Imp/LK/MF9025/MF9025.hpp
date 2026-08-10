@@ -1,20 +1,20 @@
 #pragma once
-#include "../LKMotor.hpp"
+#include "sdkconfig.h"
+#if MF9025_RS485
+#include "LKMotorRS485.hpp"
+using LKMotor9025 = PINYMOTOR::LKMOTOR::LKMotorRS485;
+#elif MF9025_CAN
+#include "LKMotorCan.hpp"
+using LKMotor9025 = PINYMOTOR::LKMOTOR::LKMotorCAN;
+#elif MF9025_RS485_BROADCAST
+#elif MF9025_CAN_BROADCAST
+#include "LKMotor.hpp"
+using LKMotor9025 = PINYMOTOR::LKMOTOR::LKMotor;
+#endif
 
 namespace PINYMOTOR::LKMOTOR {
 
-class MF9025 final : public LKMotor {
-private:
-    /**
-     * @brief 检查基础配置
-     */
-    MotorTypeDef_e checkBaseConfig() final;
-
-    /**
-     * @brief 初始化MF9025电机模型参数
-     */
-    void initModelParams() final;
-
+class MF9025 final : public LKMotor9025 {
 public:
     static constexpr float POWER_MAX = 170.f;           // 峰值功率 W
     static constexpr float TORQ_MAX = 4.5f;             //  峰值扭矩 N/m
