@@ -134,12 +134,11 @@ MotorTypeDef_e LKMotor::ctrl()
     } else {
         switch (this->cmd_.curCmdType) {
         case MotorCmdType_e::SET_ELEC:
-            ctrlCmd =
-                    static_cast<int16_t>(this->cmd_.elec / this->status_.txcurrentMax * this->status_.txcurrentDataMax);
+            ctrlCmd = static_cast<int16_t>(this->cmd_.elec / (float)this->status_.CurrMax * 4096.f);
             break;
         case MotorCmdType_e::SET_TORQ:
             ctrlCmd = static_cast<int16_t>((this->cmd_.torq / this->status_.torqueConstant) /
-                                           this->status_.txcurrentMax * this->status_.txcurrentDataMax);
+                                           (float)this->status_.CurrMax * 4096.f);
             break;
         default:
             LOG::error("LKMotor", "%s: Unsupported cmd type (only SET_ELEC/SET_TORQ)", this->regInfo_.name);
@@ -150,8 +149,7 @@ MotorTypeDef_e LKMotor::ctrl()
     if (this->regInfo_.isReverse) {
         ctrlCmd = static_cast<int16_t>(-ctrlCmd);
     }
-    ctrlCmd = std::clamp(ctrlCmd, static_cast<int16_t>(-this->status_.txcurrentDataMax),
-                         static_cast<int16_t>(this->status_.txcurrentDataMax));
+    ctrlCmd = std::clamp(ctrlCmd, (int16_t)-2048, (int16_t)2048);
 
     this->group_->txBuf[2 * this->getPosInGroup()] = static_cast<uint8_t>(ctrlCmd & 0xFF);
     this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = static_cast<uint8_t>((ctrlCmd >> 8) & 0xFF);
