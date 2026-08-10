@@ -3,7 +3,7 @@ depends on APP_USE_TEST
 
 config TEST_DM
     bool "damiao"
-    default y
+    default n
 
 config TEST_DJI
     bool "dji"
@@ -12,6 +12,7 @@ config TEST_DJI
 config TEST_LK
     bool "lk"
     default n
+    source "Src/App/Test/TestLK/Kconfig"
 
 config TEST_MT
     bool "MT"
