@@ -8,7 +8,6 @@
 
 namespace PINYMOTOR::LKMOTOR {
 
-
 class LKMotorRS485 : public IMotor {
 public:
     MotorTypeDef_e update() final;
@@ -32,11 +31,12 @@ public:
     MotorTypeDef_e singlePosCtrl2();
     MotorTypeDef_e incrementalPosCtrl1();
     MotorTypeDef_e incrementalPosCtrl2();
-    [[deprecated("80系: motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持")]] MotorTypeDef_e
-    readCtrlCmd(const ParamID_e _id);
-    [[deprecated("80系: motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持, write to RAM, \
-            not flash, so that the change is effective immediately, but will be lost after power off")]] MotorTypeDef_e
-    writeCtrlCmd(const ParamID_e _id, const std::array<uint8_t, 6> _data);
+    [[deprecated("80系 motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持")]]
+    MotorTypeDef_e readCtrlCmd(const ParamID_e _id);
+    [[deprecated("80系 motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持, "
+                 "write to RAM, not flash, so that the change is effective immediately, "
+                 "but will be lost after power off")]]
+    MotorTypeDef_e writeCtrlCmd(const ParamID_e _id, const std::array<uint8_t, 6> _data);
     MotorTypeDef_e readEncoder();
     /*
      * WARN: write to flash, don't change the value frequently, otherwise it will shorten the life of flash
