@@ -641,16 +641,16 @@ struct RGB_s {
 };
 
 /// Check if two RGB_s objects have the same color data
-inline bool operator==(const RGB_s &_lhs, const RGB_s &_rhs)
+__always_inline bool operator==(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     return (_lhs.rgb.r == _rhs.rgb.r) && (_lhs.rgb.g == _rhs.rgb.g) && (_lhs.rgb.b == _rhs.rgb.b);
 }
 
 /// Check if two RGB_s objects do *not* have the same color data
-inline bool operator!=(const RGB_s &_lhs, const RGB_s &_rhs) { return !(_lhs == _rhs); }
+__always_inline bool operator!=(const RGB_s &_lhs, const RGB_s &_rhs) { return !(_lhs == _rhs); }
 
 /// Check if the sum of the color channels in one RGB_s object is less than another
-inline bool operator<(const RGB_s &_lhs, const RGB_s &_rhs)
+__always_inline bool operator<(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
     sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
@@ -659,7 +659,7 @@ inline bool operator<(const RGB_s &_lhs, const RGB_s &_rhs)
 }
 
 /// Check if the sum of the color channels in one RGB_s object is greater than another
-inline bool operator>(const RGB_s &_lhs, const RGB_s &_rhs)
+__always_inline bool operator>(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
     sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
@@ -668,7 +668,7 @@ inline bool operator>(const RGB_s &_lhs, const RGB_s &_rhs)
 }
 
 /// Check if the sum of the color channels in one RGB_s object is greater than or equal to another
-inline bool operator>=(const RGB_s &_lhs, const RGB_s &_rhs)
+__always_inline bool operator>=(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
     sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
@@ -677,7 +677,7 @@ inline bool operator>=(const RGB_s &_lhs, const RGB_s &_rhs)
 }
 
 /// Check if the sum of the color channels in one RGB_s object is less than or equal to another
-inline bool operator<=(const RGB_s &_lhs, const RGB_s &_rhs)
+__always_inline bool operator<=(const RGB_s &_lhs, const RGB_s &_rhs)
 {
     uint16_t sl, sr;
     sl = _lhs.rgb.r + _lhs.rgb.g + _lhs.rgb.b;
@@ -685,45 +685,46 @@ inline bool operator<=(const RGB_s &_lhs, const RGB_s &_rhs)
     return sl <= sr;
 }
 
-
 /// @copydoc RGB_s::operator+=
-inline RGB_s operator+(const RGB_s &_p1, const RGB_s &_p2)
+__always_inline RGB_s operator+(const RGB_s &_p1, const RGB_s &_p2)
 {
     return RGB_s(qadd8(_p1.rgb.r, _p2.rgb.r), qadd8(_p1.rgb.g, _p2.rgb.g), qadd8(_p1.rgb.b, _p2.rgb.b));
 }
 
 /// @copydoc RGB_s::operator-=
-inline RGB_s operator-(const RGB_s &_p1, const RGB_s &_p2)
+__always_inline RGB_s operator-(const RGB_s &_p1, const RGB_s &_p2)
 {
     return RGB_s(qsub8(_p1.rgb.r, _p2.rgb.r), qsub8(_p1.rgb.g, _p2.rgb.g), qsub8(_p1.rgb.b, _p2.rgb.b));
 }
 
 /// @copydoc RGB_s::operator*=
-inline RGB_s operator*(const RGB_s &_p1, uint8_t _d)
+__always_inline RGB_s operator*(const RGB_s &_p1, uint8_t _d)
 {
     return RGB_s(qmul8(_p1.rgb.r, _d), qmul8(_p1.rgb.g, _d), qmul8(_p1.rgb.b, _d));
 }
 
 /// @copydoc RGB_s::operator/=
-inline RGB_s operator/(const RGB_s &_p1, uint8_t _d) { return RGB_s(_p1.rgb.r / _d, _p1.rgb.g / _d, _p1.rgb.b / _d); }
-
+__always_inline RGB_s operator/(const RGB_s &_p1, uint8_t _d)
+{
+    return RGB_s(_p1.rgb.r / _d, _p1.rgb.g / _d, _p1.rgb.b / _d);
+}
 
 /// Combine two RGB_s objects, taking the smallest value of each channel
-inline RGB_s operator&(const RGB_s &_p1, const RGB_s &_p2)
+__always_inline RGB_s operator&(const RGB_s &_p1, const RGB_s &_p2)
 {
     return RGB_s(_p1.rgb.r < _p2.rgb.r ? _p1.rgb.r : _p2.rgb.r, _p1.rgb.g < _p2.rgb.g ? _p1.rgb.g : _p2.rgb.g,
                  _p1.rgb.b < _p2.rgb.b ? _p1.rgb.b : _p2.rgb.b);
 }
 
 /// Combine two RGB_s objects, taking the largest value of each channel
-inline RGB_s operator|(const RGB_s &_p1, const RGB_s &_p2)
+__always_inline RGB_s operator|(const RGB_s &_p1, const RGB_s &_p2)
 {
     return RGB_s(_p1.rgb.r > _p2.rgb.r ? _p1.rgb.r : _p2.rgb.r, _p1.rgb.g > _p2.rgb.g ? _p1.rgb.g : _p2.rgb.g,
                  _p1.rgb.b > _p2.rgb.b ? _p1.rgb.b : _p2.rgb.b);
 }
 
 /// Scale using RGB_s::nscale8_video()
-inline RGB_s operator%(const RGB_s &_p1, uint8_t _d)
+__always_inline RGB_s operator%(const RGB_s &_p1, uint8_t _d)
 {
     RGB_s retval(_p1);
     retval.nscale8Video(_d);
