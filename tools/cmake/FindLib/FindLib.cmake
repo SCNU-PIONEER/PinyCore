@@ -9,7 +9,7 @@ message("-------------------- find lib -----------------------")
 
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/FreeRTOS.cmake")
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/Segger.cmake")
-# include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/CMSIS_DSP.cmake")
+include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/CMSIS_DSP.cmake")
 # include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/TinyMPC.cmake")
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/etl.cmake")
 include("${CMAKE_SOURCE_DIR}/tools/cmake/FindLib/magicEnum.cmake")
