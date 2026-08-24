@@ -5,7 +5,11 @@
 
 using namespace LOG;
 
-void Logger::clear() { SEGGER_RTT_WriteString(0, "  " RTT_CTRL_CLEAR); }
+void Logger::clear()
+{
+    constexpr char CLR_SEQ[] = "  \x1B[2J";
+    send(reinterpret_cast<const uint8_t *>(CLR_SEQ), sizeof(CLR_SEQ) - 1);
+}
 
 void Logger::float2Str(char *_str, size_t _buffer_size, float _va)
 {
@@ -17,7 +21,7 @@ void Logger::float2Str(char *_str, size_t _buffer_size, float _va)
     float rounded = roundf(_va * 1000) / 1000;
 
     int head = (int)rounded;
-    int point = (int)((rounded - head) * 1000);
+    int point = (int)((rounded - (float)head) * 1000);
 
     // 确保point在0-999范围内
     point = abs(point) % 1000;

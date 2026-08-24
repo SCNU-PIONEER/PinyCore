@@ -49,6 +49,12 @@ endif()
 
 if(USE_STM_LOG)
   target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/StmLog.cpp)
+  if(LOG_OUTPUT_RTT)
+    target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/Output/RttOutput.cpp)
+  endif()
+  if(LOG_OUTPUT_UART)
+    target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/Output/UartOutput.cpp)
+  endif()
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
 endif()
 

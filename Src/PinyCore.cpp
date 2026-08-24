@@ -17,7 +17,7 @@ void PinyCore::bspInit()
 #endif
 
     // sysview init must be before segger RTT init (in log)
-    LOG::Logger::instance();
+    LOG::Logger::instance().init();
     SEGGER_SYSVIEW_Conf();
 
 #if BSP_USE_CAN

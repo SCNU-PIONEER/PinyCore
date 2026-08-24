@@ -1,9 +1,18 @@
 #pragma once
 
-#include "SEGGER_RTT.h"
+#include "sdkconfig.h"
+#if LOG_OUTPUT_RTT
+#include "Output/RttOutput.hpp"
+#endif
+#if LOG_OUTPUT_UART
+#include "Output/UartOutput.hpp"
+#endif
 #include "StmLogMsg.hpp"
-#include <string_view>
+#include <algorithm>
+#include <cstdio>
 #include <cstring>
+#include <string_view>
+#include <utility>
 #include "Singleton.hpp"
 
 #define LOCATION std::source_location::current()
@@ -12,37 +21,70 @@ namespace LOG {
 
 class Logger : public Singleton<Logger> {
 public:
+    bool init()
+    {
+        bool rslt = false;
+#if LOG_OUTPUT_RTT
+        rslt |= rttOutput_.init();
+#endif
+#if LOG_OUTPUT_UART
+        rslt |= uartOutput_.init();
+#endif
+        return rslt;
+    }
+
+    bool send(const uint8_t *_data, size_t _size)
+    {
+        bool rslt = false;
+#if LOG_OUTPUT_RTT
+        rslt |= rttOutput_.send(_data, _size);
+#endif
+#if LOG_OUTPUT_UART
+        rslt |= uartOutput_.send(_data, _size);
+#endif
+        return rslt;
+    }
+
+    void raw(const uint8_t *_data, size_t _size) { (void)send(_data, _size); }
+
     template <typename... Args> void raw(const char *_format, Args &&..._args)
     {
-        SEGGER_RTT_printf(0, _format, std::forward<Args>(_args)...);
+        constexpr size_t MAX_RAW_LENGTH = 128;
+        char buffer[MAX_RAW_LENGTH];
+        const int length = snprintf(buffer, sizeof(buffer), _format, std::forward<Args>(_args)...);
+        if (length <= 0) {
+            return;
+        }
+        const size_t size = std::min(static_cast<size_t>(length), sizeof(buffer) - 1);
+        raw(reinterpret_cast<const uint8_t *>(buffer), size);
     }
 
     template <typename... Args>
-    void info(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
+    bool info(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::INFO },
-            std::forward<Args>(_args)...);
+        return log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::INFO },
+                   std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void debug(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
+    bool debug(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::DEBUGGING },
-            std::forward<Args>(_args)...);
+        return log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::DEBUGGING },
+                   std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void warn(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
+    bool warn(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::WARN },
-            std::forward<Args>(_args)...);
+        return log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::WARN },
+                   std::forward<Args>(_args)...);
     }
 
     template <typename... Args>
-    void error(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
+    bool error(std::source_location _loc, std::string_view _type, const char *_format, Args &&..._args)
     {
-        log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::ERROR },
-            std::forward<Args>(_args)...);
+        return log(LogParams{ .loc = _loc, .type = _type, .format = _format, .level = Level::ERROR },
+                   std::forward<Args>(_args)...);
     }
 
     /**
@@ -87,10 +129,10 @@ public:
     /**
     * @brief 完美转发打印函数,自带换行
     */
-    template <typename... Args> void log(const LogParams &_params, Args &&..._args)
+    template <typename... Args> bool log(const LogParams &_params, Args &&..._args)
     {
         if (!config.enable)
-            return;
+            return false;
 
         constexpr size_t MAX_LOG_LENGTH = 128;
         char buffer[MAX_LOG_LENGTH];
@@ -134,25 +176,32 @@ public:
             ptr += std::min(len, static_cast<size_t>(end - ptr));
         }
 
-        len = std::min(sizeof(RTT_CTRL_RESET "\r\n") - 1, static_cast<size_t>(end - ptr));
-        memcpy(ptr, RTT_CTRL_RESET "\r\n", len);
+        constexpr char RST_SEQ[] = "\x1B[0m\r\n";
+        len = std::min(sizeof(RST_SEQ) - 1, static_cast<size_t>(end - ptr));
+        memcpy(ptr, RST_SEQ, len);
         ptr += len;
 
-        size_t total_len = ptr - buffer;
+        size_t totalLen = ptr - buffer;
 
-        SEGGER_RTT_Write(0, buffer, total_len);
+        return send(reinterpret_cast<const uint8_t *>(buffer), totalLen);
     }
 
 protected:
     Logger(const Logger &);
     Logger &operator=(const Logger &);
-    Logger() { SEGGER_RTT_Init(); }
+    Logger() = default;
     friend class Singleton<Logger>;
 
 private:
+#if LOG_OUTPUT_RTT
+    RttOutput rttOutput_;
+#endif
+#if LOG_OUTPUT_UART
+    UartOutput uartOutput_;
+#endif
+
     Config config;
 };
-
 
 //  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ some preset ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // NOLINTBEGIN
@@ -185,7 +234,6 @@ template <typename... Args> struct error {
     }
 };
 template <typename... Args> error(std::string_view _type, const char *_format, Args &&..._args) -> error<Args...>;
-
 
 template <typename T> void CHECK(T &&_condition, std::source_location _loc = std::source_location::current())
 {
