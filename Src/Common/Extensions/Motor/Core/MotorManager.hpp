@@ -17,8 +17,6 @@ class MotorManager : public Singleton<MotorManager>, public Task<MotorManager, 5
     friend IMotor;
 
 public:
-    void parseMsg();
-
     void task();
 
 private:
