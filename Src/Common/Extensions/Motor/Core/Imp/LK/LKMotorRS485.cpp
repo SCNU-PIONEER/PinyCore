@@ -207,8 +207,9 @@ MotorTypeDef_e LKMotorRS485::parseState2()
         return STM_FAIL;
 
     State2_s *fb = (State2_s *)(this->rxBuf_ + 5);
-    data_.tempture = fb->temperature;                     // 1°C/1LSB
-    data_.curr = static_cast<float>(fb->current) * 0.01f; // current in A, 0.01A/LSB, for MF/MG motor
+    data_.tempture = fb->temperature; // 1°C/1LSB
+    // current in A, (66/4096 A) / LSB, for MG motor;(33/4096 A) / LSB, for MF motor
+    data_.curr = (float)(fb->current) / 4096.f * (float)this->status_.CurrMax;
     data_.torq = data_.curr * status_.torqueConstant;
     data_.spdRadps = deg2rad(static_cast<float>(fb->speed)); // 反馈输出轴速度，1dps/LSB
     data_.spdRpm = radps2rpm(data_.spdRadps);

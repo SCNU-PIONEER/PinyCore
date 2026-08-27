@@ -4,32 +4,9 @@
 #include "FreeRTOS.h"
 #include "message_buffer.h"
 #include "Bsp_uart.hpp"
-#include "LKMotorRS485Msg.hpp"
-#include "WorkMode.hpp"
+#include "LKMotorMsg.hpp"
 
 namespace PINYMOTOR::LKMOTOR {
-
-struct Status_s {
-    float powerMax;            // 峰值功率
-    float torqueMax;           // 峰值扭矩
-    int32_t speedMax;          // 峰值转矩
-    float speedConstant;       // 转速常数
-    float torqueConstant;      // 扭矩常数
-    int16_t txCurrMax;         // 发送电流最大值
-    float innerReductionRatio; // 内部减速比
-
-    Status_s() = default;
-
-    Status_s(float _powerMax, float _torqueMax, int32_t _speedMax, float _speedConstant, float _torqueConstant,
-             int16_t _txCurrMax, float _innerReductionRatio)
-            : powerMax(_powerMax)
-            , torqueMax(_torqueMax)
-            , speedMax(_speedMax)
-            , speedConstant(_speedConstant)
-            , torqueConstant(_torqueConstant)
-            , txCurrMax(_txCurrMax)
-            , innerReductionRatio(_innerReductionRatio) {};
-};
 
 class LKMotorRS485 : public IMotor {
 public:
@@ -54,11 +31,12 @@ public:
     MotorTypeDef_e singlePosCtrl2();
     MotorTypeDef_e incrementalPosCtrl1();
     MotorTypeDef_e incrementalPosCtrl2();
-    [[deprecated("80系: motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持")]] MotorTypeDef_e
-    readCtrlCmd(const ParamID_e _id);
-    [[deprecated("80系: motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持, write to RAM, \
-            not flash, so that the change is effective immediately, but will be lost after power off")]] MotorTypeDef_e
-    writeCtrlCmd(const ParamID_e _id, const std::array<uint8_t, 6> _data);
+    [[deprecated("80系 motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持")]]
+    MotorTypeDef_e readCtrlCmd(const ParamID_e _id);
+    [[deprecated("80系 motor version V3.0, Hardware version V2.4, Firmware version V2.36 固件还不支持, "
+                 "write to RAM, not flash, so that the change is effective immediately, "
+                 "but will be lost after power off")]]
+    MotorTypeDef_e writeCtrlCmd(const ParamID_e _id, const std::array<uint8_t, 6> _data);
     MotorTypeDef_e readEncoder();
     /*
      * WARN: write to flash, don't change the value frequently, otherwise it will shorten the life of flash

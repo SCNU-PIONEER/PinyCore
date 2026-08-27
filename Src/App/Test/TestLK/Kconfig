@@ -1,0 +1,19 @@
+menu "LKMotor Communication Test"
+
+    depends on TEST_LK
+
+    choice
+        prompt "Select Communication"
+        default LKTEST_CAN
+
+        config LKTEST_CAN
+            bool "CAN"
+        config LKTEST_RS485
+            bool "RS485"
+        config LKTEST_CAN_BROADCAST
+            bool "Can Broadcast"
+        config LKTEST_RS485_BROADCAST
+            bool "RS485 Broadcast"
+    endchoice
+
+endmenu
