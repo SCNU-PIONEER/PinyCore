@@ -13,17 +13,15 @@ void Logger::clear()
 
 void Logger::float2Str(char *_str, size_t _buffer_size, float _va)
 {
-    // 处理符号
     int flag = _va < 0;
     _va = fabsf(_va);
 
-    // 四舍五入到小数点后3位
     float rounded = roundf(_va * 1000) / 1000;
 
     int head = (int)rounded;
     int point = (int)((rounded - (float)head) * 1000);
 
-    // 确保point在0-999范围内
+    // keep point in the range of 0 to 999
     point = abs(point) % 1000;
 
     if (flag) {

@@ -48,8 +48,7 @@ static constexpr size_t COLOR_ERROR = 2;   // red
 static constexpr size_t COLOR_FATAL = 9;   // bright red
 static constexpr size_t COLOR_STEP = 5;    // blue
 //
-enum class Level : uint8_t {
-    RAW,       // Raw log output
+enum class Level_e : uint8_t {
     INFO,      // Information messages which describe normal flow of events
     WARN,      // Error conditions from which recovery measures have been taken
     ERROR,     // Critical errors, software module can not recover on its own
@@ -57,45 +56,26 @@ enum class Level : uint8_t {
     VERBOSE    // Bigger chunks of debugging information, or frequent messages which can potentially flood the output
 };
 
-enum class Proto : uint8_t {
-    RTT,
-    VOFA_FIREWATER,
-    VOFA_JUSTFLOAT,
-};
-
-class Config {
-public:
-    std::string name{ "" };     // log directory
-    Level level{ Level::INFO }; // Log level
-    Proto proto{ Proto::RTT };  // Legacy protocol metadata; output targets are compile-time configured
-    bool showColor{ true };     // show full file paths in logs
-    bool showlocation{ true };  // show full file paths in logs
-    bool enable{ true };        // Enable or disable logging
-    uint8_t bufNum{ 0 };        // Buffer number
-};
-
 class LogParams {
 public:
     std::source_location loc = std::source_location::current();
     std::string_view type;
     const char *format;
-    Level level{ Level::INFO };
+    Level_e level{ Level_e::INFO };
 };
 
-constexpr std::string_view getLevelColor(Level _level)
+constexpr std::string_view getLevelColor(Level_e _level)
 {
     switch (_level) {
-    case Level::RAW:
-        return "";
-    case Level::INFO:
+    case Level_e::INFO:
         return GREEN;
-    case Level::WARN:
+    case Level_e::WARN:
         return YELLOW;
-    case Level::ERROR:
+    case Level_e::ERROR:
         return RED;
-    case Level::DEBUGGING:
+    case Level_e::DEBUGGING:
         return BLUE;
-    case Level::VERBOSE:
+    case Level_e::VERBOSE:
         return WHITE;
     default:
         return "";

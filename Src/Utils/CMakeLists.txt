@@ -58,11 +58,6 @@ if(USE_STM_LOG)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
 endif()
 
-if(USE_VOFA)
-  target_sources(utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/Vofa.cpp)
-  target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
-endif()
-
 if(USE_LAZY)
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Lazy)
 endif()
