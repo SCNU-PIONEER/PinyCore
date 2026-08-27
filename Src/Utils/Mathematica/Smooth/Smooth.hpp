@@ -7,7 +7,7 @@
 namespace SMOOTH {
 
 // 数值平滑跟踪 跟踪步长为acc
-static inline void slopeFollowing(float *_exp, float *_cur, float _acc)
+static __always_inline void slopeFollowing(float *_exp, float *_cur, float _acc)
 {
     if (*_exp > *_cur) {
         *_cur = *_cur + _acc;
@@ -18,7 +18,7 @@ static inline void slopeFollowing(float *_exp, float *_cur, float _acc)
     }
 }
 // 值传递和址传递的区别
-static inline float slopeFollowing(float _exp, float _cur, float _acc)
+static __always_inline float slopeFollowing(float _exp, float _cur, float _acc)
 {
     if (_exp > _cur) {
         _cur = _cur + _acc;
@@ -47,4 +47,5 @@ static float sCurve(float _vMax, float _cnt, float _tAccCnt)
     } else
         return _vMax;
 }
+
 }; // namespace SMOOTH

@@ -3,7 +3,7 @@
 ## Platform And Toolchain
 
 - C++23 / C11
-- `arm-none-eabi`
+- arm-none-eabi
 - FreeRTOS
 - STM32 HAL
 
@@ -63,10 +63,11 @@ Follow `./.clang-tidy` and `./.clang-format`.
 - Terminate every namespace with a closing comment.
 - Do not construct objects before the HAL library is initialized. Use `./Src/Utils/Lazy` for lazy initialization of global objects.
 - Use `new` only for allocations that are intentionally never deleted. Otherwise, use smart pointers.
+- Use `__always_inline` instead of `inline`.
 - Prefer `static constexpr` constants over `#define`.
 - Confirm with the user before modifying the HAL library or any third-party library.
 - Prefer interface-based designs. Do not hard-code handles before the design is confirmed by the user.
-- Less is more. Keep code concise.
+- **Less is more. Keep code concise**.
 
 ## Commit Convention
 
