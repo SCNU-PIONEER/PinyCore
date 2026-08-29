@@ -46,6 +46,7 @@ def write_cmake_file(_config_vars, _cmake_file):
 def convert_config_to_cmake(_config_file, _cmake_file):
     config_vars = parse_config_file_cmake(_config_file)
     write_cmake_file(config_vars, _cmake_file)
+    print(f"Generated {os.path.abspath(_cmake_file)} from {os.path.abspath(_config_file)}")
 
 
 def parse_config_file_header(_config_file):
@@ -93,6 +94,7 @@ def write_config_header(_config_vars, _header_file):
 def convert_config_to_header(_config_file, _header_file):
     config_vars = parse_config_file_header(_config_file)
     write_config_header(config_vars, _header_file)
+    print(f"Generated {os.path.abspath(_header_file)} from {os.path.abspath(_config_file)}")
 
 
 def get_soc_config(config_file):
@@ -124,6 +126,7 @@ def append_macros_to_header(config_file, header_file):
         h_file.write("\n")
         h_file.write("/* default Soc conf */\n")
         h_file.write(content)
+    print(f"Appended default Soc conf from {conf_path} to {os.path.abspath(header_file)}")
 
 def campare_config(config_file, last_config_file):
     if not os.path.exists(last_config_file):

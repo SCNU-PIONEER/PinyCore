@@ -2,90 +2,85 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "AAA configure",
       "type": "shell",
-      "label": "build",
-      "dependsOn": [
-        "cmake"
-      ],
-      "command": "ninja -C 'build' ",
-      "args": [],
+      "command": "cmake -B build -G Ninja",
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "detail": "make...",
+      "detail": "构建",
       "problemMatcher": []
     },
     {
+      "label": "AAA build",
       "type": "shell",
-      "label": "cmake",
-      "command": " cmake -B 'build' -G 'Ninja' ",
-      "problemMatcher": []
-    },
-    {
-      "label": "jlinkserver",
-      "type": "shell",
-      "command": "JLinkGDBServer -singlerun  -if swd -port 50000 -swoport 50001 -telnetport 50002 -device stm32f407ig -rtttelnetport 19021",
-      "dependsOn": [
-        "build"
-      ],
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "never",
-        "focus": false,
-        "panel": "dedicated"
+      "command": "ninja -C build",
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": [
-        {
-          "pattern": [
-            {
-              "regexp": ".",
-              "file": 1,
-              "line": 1,
-              "column": 1,
-              "message": 1
-            }
-          ],
-         "background": {
-            "activeOnStart": true,
-            "beginsPattern": { "regexp": "." },
-            "endsPattern": { "regexp": "^.*$" }
-          }
-        }
-      ]
+      "detail": "编译",
+      "problemMatcher": []
     },
     {
-      "label": "open-RTT",
+      "label": "AAA menuconfig",
       "type": "shell",
-       "dependsOn": [
-        "jlinkserver"
-      ],
-      "command": "JLinkRTTClient",
-      "isBackground": true,
+      "command": "menuconfig ./Kconfig && python ./tools/script/Kconfig2h.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "detail": "配置",
+      "problemMatcher": []
+    },
+    {
+      "label": "configure + build",
+      "dependsOn":["AAA configure", "AAA build"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "flash: jlink",
+      "type": "shell",
+      "command": "python tools/script/devtool.py flash jlink",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "detail": "烧录 (J-Link / SEGGER) 并复位运行",
       "presentation": {
-        "echo": true,
+        "group": "flash",
         "reveal": "always",
-        "focus": true,
-        "panel": "dedicated"
+        "clear": true
       },
-     "problemMatcher": [
-        {
-          "pattern": [
-            {
-              "regexp": ".",
-              "file": 1,
-              "line": 1,
-              "column": 1,
-              "message": 1
-            }
-          ],
-         "background": {
-            "activeOnStart": true,
-            "beginsPattern": { "regexp": "." },
-            "endsPattern": { "regexp": "^.*$" }
-          }
-        }
-      ]
+      "problemMatcher": []
     },
+    {
+      "label": "flash: stlink",
+      "type": "shell",
+      "command": "python tools/script/devtool.py flash stlink",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "detail": "烧录 (ST-Link / OpenOCD) 并复位运行",
+      "presentation": {
+        "group": "flash",
+        "reveal": "always",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flash: daplink",
+      "type": "shell",
+      "command": "python tools/script/devtool.py flash daplink",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "detail": "烧录 (DAP-Link / OpenOCD) 并复位运行",
+      "presentation": {
+        "group": "flash",
+        "reveal": "always",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
   ]
 }
