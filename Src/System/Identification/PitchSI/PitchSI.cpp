@@ -10,7 +10,7 @@ void PitchSI::update(float _realTorq, float _realVel, float _realPos)
     Matrix<RANK, 1> varVector;
     varVector(0, 0) = angAcc;
     varVector(1, 0) = _realVel;
-    varVector(2, 0) = arm_cos_f32(std::fabs(_realPos));
+    varVector(2, 0) = arm_sin_f32((PI / 2.f) - std::fabs(_realPos));
     varVector(3, 0) = (_realVel > 0.f) ? 1.f : ((_realVel < 0.f) ? -1.f : 0.f);
 
     if (std::isnan(varVector(0, 0)) || std::isnan(varVector(1, 0))) {
