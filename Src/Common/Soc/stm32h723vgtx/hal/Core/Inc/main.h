@@ -37,7 +37,10 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+extern DMA_HandleTypeDef hdma_usart10_tx;
 extern DMA_HandleTypeDef hdma_usart10_rx;
+extern DMA_HandleTypeDef hdma_uart8_tx;
+extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
@@ -50,6 +53,7 @@ extern UART_HandleTypeDef huart10;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart9;
+extern UART_HandleTypeDef huart8;
 extern UART_HandleTypeDef huart7;
 extern UART_HandleTypeDef huart5;
 extern DMA_HandleTypeDef hdma_tim2_ch1;
@@ -90,25 +94,26 @@ void Error_Handler(void);
 void MX_GPIO_Init(void);
 void MX_DMA_Init(void);
 void MX_BDMA_Init(void);
+void MX_TIM1_Init(void);
+void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
+void MX_TIM6_Init(void);
+void MX_TIM7_Init(void);
+void MX_TIM12_Init(void);
+void MX_TIM13_Init(void);
+void MX_ADC1_Init(void);
 void MX_FDCAN1_Init(void);
 void MX_FDCAN2_Init(void);
 void MX_FDCAN3_Init(void);
-void MX_USART1_UART_Init(void);
-void MX_TIM1_Init(void);
-void MX_USART2_UART_Init(void);
 void MX_SPI2_Init(void);
+void MX_SPI6_Init(void);
+void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
 void MX_UART5_Init(void);
 void MX_UART7_Init(void);
-void MX_TIM2_Init(void);
-void MX_TIM12_Init(void);
-void MX_TIM6_Init(void);
-void MX_USART10_UART_Init(void);
-void MX_TIM13_Init(void);
-void MX_TIM7_Init(void);
-void MX_TIM3_Init(void);
-void MX_ADC1_Init(void);
-void MX_SPI6_Init(void);
+void MX_UART8_Init(void);
 void MX_UART9_Init(void);
+void MX_USART10_UART_Init(void);
 
 /* USER CODE BEGIN EFP */
 void SystemClock_Config(void);

@@ -3,12 +3,13 @@
 #include <cstdint>
 
 static std::vector<std::pair<UART_HandleTypeDef *, Uart::callback> > cbTable;
-
+static std::vector<std::pair<UART_HandleTypeDef *, Uart::txCallback> > txCbTable;
 
 Uart::Uart(UART_HandleTypeDef *_huart) : huart_(_huart)
 {
     /* reserve 4 firstly */
     cbTable.reserve(4);
+    txCbTable.reserve(4);
 }
 
 void Uart::registerCallback(callback _pCallback)
@@ -26,6 +27,26 @@ void Uart::unregisterCallback()
     for (auto it = cbTable.begin(); it != cbTable.end(); ++it) {
         if (it->first == huart_) {
             cbTable.erase(it);
+            return;
+        }
+    }
+}
+
+void Uart::registerTxCallback(txCallback _pCallback)
+{
+    for (const auto &pair : txCbTable) {
+        if (pair.first == huart_) {
+            return;
+        }
+    }
+    txCbTable.emplace_back(huart_, _pCallback);
+}
+
+void Uart::unregisterTxCallback()
+{
+    for (auto it = txCbTable.begin(); it != txCbTable.end(); ++it) {
+        if (it->first == huart_) {
+            txCbTable.erase(it);
             return;
         }
     }
@@ -79,6 +100,16 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *_huart, uint16_t _size)
     for (const auto &pair : cbTable) {
         if (pair.first == _huart) {
             pair.second(_huart, _size);
+            break;
+        }
+    }
+}
+
+extern "C" void HAL_UART_TxCpltCallback(UART_HandleTypeDef *_huart)
+{
+    for (const auto &pair : txCbTable) {
+        if (pair.first == _huart) {
+            pair.second();
             break;
         }
     }

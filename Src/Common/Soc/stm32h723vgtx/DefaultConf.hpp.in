@@ -1,4 +1,5 @@
 #ifdef BSP_USE_UART
+#define LOG_UART huart8
 #define SBUS_UART huart5
 #define VT03_UART huart7
 #define REFEREE_UART huart10
