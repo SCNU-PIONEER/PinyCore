@@ -4,7 +4,7 @@ add_library(utils STATIC)
 if(USE_MATHEMATICA)
   function(add_mathematica_module config_name module_name)
     if(${config_name})
-      file(GLOB_RECURSE MODULE_SOURCES CONFIGURE_DEPENDS
+      file(GLOB_RECURSE MODULE_SOURCES
            "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.c"
            "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.cpp")
       if(MODULE_SOURCES)

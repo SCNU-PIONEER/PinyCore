@@ -22,7 +22,7 @@
 1. cmake >= 3.24
 2. ninja >= 1.1
 3. [arm-none-eabi-toolchains](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) >= 10.3.1 or [llvm](https://github.com/arm/arm-toolchain) (experimental)
-4. python >= 3.2
+4. python >= 3.2 (maybe also need python-is-python3 in ubuntu)
 5. [kconfiglib](https://github.com/ulfalizer/Kconfiglib)
 
 we also suggest to install following software:
