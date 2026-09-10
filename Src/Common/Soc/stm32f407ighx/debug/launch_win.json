@@ -13,7 +13,7 @@
         "enabled": true,
         "samplesPerSecond": 1
       },
-      "preLaunchTask": "build",
+      "preLaunchTask": "configure + build",
       "preLaunchCommands": [
         "source tools/script/.gdbinit"
       ],
@@ -44,12 +44,15 @@
         "${workspaceFolder}/tools/openocd/dap.cfg",
         "target/stm32f4x.cfg"
       ],
+      "openOCDLaunchCommands": [
+        "reset_config none srst_nogate"
+      ],
       // "svdFile": "docs/startup/STM32H723.svd",
       "liveWatch": {
         "enabled": true,
         "samplesPerSecond": 1
       },
-      "preLaunchTask": "build",
+      "preLaunchTask": "configure + build",
       "preLaunchCommands": [
         "source tools/script/.gdbinit"
       ],
@@ -91,7 +94,7 @@
         "enabled": true,
         "samplesPerSecond": 1
       },
-      "preLaunchTask": "build",
+      "preLaunchTask": "configure + build",
       "preLaunchCommands": [
         "source tools/script/.gdbinit"
       ],

@@ -4,7 +4,7 @@ add_library(utils STATIC)
 if(USE_MATHEMATICA)
   function(add_mathematica_module config_name module_name)
     if(${config_name})
-      file(GLOB_RECURSE MODULE_SOURCES CONFIGURE_DEPENDS
+      file(GLOB_RECURSE MODULE_SOURCES
            "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.c"
            "${CMAKE_CURRENT_SOURCE_DIR}/Mathematica/${module_name}/*.cpp")
       if(MODULE_SOURCES)
@@ -49,12 +49,13 @@ endif()
 
 if(USE_STM_LOG)
   target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/StmLog.cpp)
+  if(LOG_OUTPUT_RTT)
+    target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/Output/RttOutput.cpp)
+  endif()
+  if(LOG_OUTPUT_UART)
+    target_sources(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log/Output/UartOutput.cpp)
+  endif()
   target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Log)
-endif()
-
-if(USE_VOFA)
-  target_sources(utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Vofa/Vofa.cpp)
-  target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Vofa)
 endif()
 
 if(USE_LAZY)

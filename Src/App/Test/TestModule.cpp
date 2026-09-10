@@ -1,7 +1,6 @@
 #include "TestModule.hpp"
 #include "DMMotor.hpp"
 #include "TestDM/TestDM.hpp"
-#include "TestLK/TestLK.hpp"
 #include "TestMT/TestMT.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
@@ -17,7 +16,15 @@ TestDM testDM;
 #endif
 
 #if TEST_LK
+
+#if LKTEST_CAN_BROADCAST
+#include "TestLK.hpp"
 TestLK testLK;
+#elif LKTEST_CAN
+#include "TestLKMotor.hpp"
+TestLKMotor testLK;
+#endif
+
 #endif
 
 #if TEST_MT
@@ -32,10 +39,17 @@ void TestModule::init()
 #endif
 
 #if TEST_LK
+
+#if LKTEST_CAN_BROADCAST
     //BROADCAST MODE
     schedule([]() { testLK.test(); });
     testLK.addMotor(LkMotorModel_e::MG4005, 1);
     testLK.addMotor(LkMotorModel_e::MF9025, 2);
+#elif LKTEST_CAN
+    schedule([]() { testLK.test(); });
+    testLK.addMotor(LkMotorModel_e::MG4005, 1);
+#endif
+
 #endif
 
 #if TEST_MT

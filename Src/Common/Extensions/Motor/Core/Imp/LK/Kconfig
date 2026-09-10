@@ -1,0 +1,47 @@
+menu "LKMotor Communication Config"
+
+    depends on EXTENSION_MOTOR
+
+    choice
+        prompt "MF9025"
+        default MF9025_CAN
+
+        config MF9025_CAN
+            bool "CAN"
+        config MF9025_RS485
+            bool "RS485"
+        config MF9025_CAN_BROADCAST
+            bool "Can Broadcast"
+        config MF9025_RS485_BROADCAST
+            bool "RS485 Broadcast"
+    endchoice
+
+    choice
+        prompt "MG4005"
+        default MG4005_CAN
+
+        config MG4005_CAN
+            bool "CAN"
+        config MG4005_RS485
+            bool "RS485"
+        config MG4005_CAN_BROADCAST
+            bool "Can Broadcast"
+        config MG4005_RS485_BROADCAST
+            bool "RS485 Broadcast"
+    endchoice
+
+    choice
+        prompt "MG8016Ei6"
+        default MG8016Ei6_RS485
+
+        config MG8016Ei6_CAN
+            bool "CAN"
+        config MG8016Ei6_RS485
+            bool "RS485"
+        config MG8016Ei6_CAN_BROADCAST
+            bool "Can Broadcast"
+        config MG8016Ei6_RS485_BROADCAST
+            bool "RS485 Broadcast"
+    endchoice
+
+endmenu

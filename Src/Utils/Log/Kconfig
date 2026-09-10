@@ -1,0 +1,46 @@
+menu "Log config"
+    depends on USE_STM_LOG
+
+    config LOG_MAX_RAW_LENGTH
+        int "Max raw log length"
+        range 1 1024
+        default 128
+    
+    config LOG_MAX_LOG_LENGTH
+        int "Max log length"
+        range 1 1024
+        default 128
+
+    config LOG_SHOW_COLOR
+        bool "Color log"
+        default y
+        help
+            Show the log with color.
+    
+    config LOG_SHOW_TIMESTAMP
+        bool "Timestamp log"
+        default n
+        help
+            Show the timestamp in logs by using the RTOS tick count.
+
+    config LOG_SHOW_LOCATION
+        bool "Location log"
+        default n
+        help
+            Show the file and line number in logs.
+
+    config LOG_OUTPUT_RTT
+        bool "SEGGER RTT log output"
+        default y
+
+    config LOG_OUTPUT_UART
+        bool "UART log output"
+        default n
+        depends on BSP_USE_UART
+        depends on BSP_USE_DMA
+        help 
+            Enable UART log output. This option requires BSP_USE_UART and BSP_USE_DMA to be enabled.
+
+
+endmenu
+

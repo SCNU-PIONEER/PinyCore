@@ -5,7 +5,7 @@ using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
 MG8016Ei6RS485::MG8016Ei6RS485(const char _name[16], InitConfig_s _config, WorkMode_e _mode)
-        : LKMotorRS485(_name, _config, _mode)
+        : LKMotor8016(_name, _config, _mode)
 {
     this->regInfo_.model.measureMax = ENCODER_SPAN;
     this->regInfo_.model.measureMin = 0;
@@ -15,7 +15,7 @@ MG8016Ei6RS485::MG8016Ei6RS485(const char _name[16], InitConfig_s _config, WorkM
                              SPEED_MAX,      // speedMax
                              SPEED_CONSTANT, // speedConstant
                              TORQ_CONSTANT,  // torqueConstant
-                             TX_CURR_MAX,    // txCurrMax
+                             CURR_MAX,       // CurrMax
                              INNER_REDUCTION_RATIO);
 
     this->data_.zeroAng = 0.0f;
