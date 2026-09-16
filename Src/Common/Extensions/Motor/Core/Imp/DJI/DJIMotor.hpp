@@ -2,30 +2,11 @@
 
 #include "../../Base/MotorBase.hpp"
 
+#include "DJIMotorMsg.hpp"
+
 namespace PINYMOTOR::DJIMOTOR {
-#pragma pack(push, 1)
-struct Msg_s {
-    int16_t cmd[4];
-};
-struct Feedback_s {
-    uint16_t rawAng;
-    int16_t rawRpm;
-    int16_t current;
-    uint8_t temperature;
-};
-#pragma pack(pop)
-struct Status_s {
-    float voltTxCodeSpan;
-    float currTxCodeSpan;
-    float currRxCodeSpan;
-    float voltMax; // V
-    float currMax; // A
-    float torqMax; // Nm
-    float Kn;      // Nm/A
 
-    Status_s &operator=(const Status_s &_other);
-};
-
+enum class WorkMode_e : MotorTypeDef_e { UNKNOWN, QUAD_CURR, QUAD_VOLT };
 class DJIMotor : public QuadMotorBase {
     using Base = QuadMotorBase;
 
@@ -66,10 +47,12 @@ protected:
     void updateCtrlMode();
 
     Status_s status_;
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
-    DJIMotor(const char _name[16], InitConfig_s _config);
+    DJIMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~DJIMotor() override;
     /**
      * @brief Override the status of the motor

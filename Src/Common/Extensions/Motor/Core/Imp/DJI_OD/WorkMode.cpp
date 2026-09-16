@@ -17,7 +17,7 @@ void DJIOldMotor::serializeMsg(int16_t _ctrlCmd)
 
 void DJIOldMotor::updateCtrlMode()
 {
-    switch (regInfo_.workMode) {
+    switch (this->workMode_) {
     case WorkMode_e::TRIP_VOLT: {
         convert = &DJIOldMotor::convertTripVolt;
         this->ctrlId_ = this->getGroupId() + 0u;
@@ -42,27 +42,10 @@ void DJIOldMotor::convertTripVolt()
         this->cmd_.elec = torq2volt(this->cmd_.torq);
         break;
     }
-    case MotorCmdType_e::SET_VEL: {
-        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        this->cmd_.elec = torq2volt(this->cmd_.torq);
-        break;
-    }
-    case MotorCmdType_e::SET_POS: {
-        this->cmd_.vel = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng, 2.f * PI), 0);
-        this->cmd_.torq = this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps);
-        this->cmd_.elec = torq2volt(this->cmd_.torq);
-        break;
-    }
-    case MotorCmdType_e::SET_POSVEL:
-    case MotorCmdType_e::SET_MIT: {
-        this->cmd_.torq = this->posPID_->calc(getMinorArc(this->cmd_.pos, this->data_.singleCirAng), 0) +
-                          this->velPID_->calc(this->cmd_.vel, this->data_.spdRadps) + this->cmd_.torq;
-        this->cmd_.elec = torq2volt(this->cmd_.torq);
-        break;
-    }
     default:
         if (this->cmd_.curCmdType != MotorCmdType_e::OFF && this->cmd_.curCmdType != MotorCmdType_e::ON)
             LOG::warn("DJIOldMotor", " %s: the cmd in this mode is not supported", regInfo_.name);
+        this->cmd_.elec = 0;
         break;
     }
 

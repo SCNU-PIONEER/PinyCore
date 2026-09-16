@@ -8,16 +8,12 @@ using namespace DMMOTOR;
 MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
 {
     if (_regObj == nullptr) {
-        LOG::error("DMMotor", " %s: registerReg failed, _regObj is nullptr",
-                   regInfo_.name);
+        LOG::error("DMMotor", " %s: registerReg failed, _regObj is nullptr", regInfo_.name);
         return 1;
     }
     auto it = regObjList_.find(_regObj->regId);
     if (it != regObjList_.end()) {
-        LOG::error(
-                "DMMotor",
-                " %s: registerReg failed, _regObj->regId is already registered",
-                regInfo_.name);
+        LOG::error("DMMotor", " %s: registerReg failed, _regObj->regId is already registered", regInfo_.name);
         return 1;
     }
     LOG::info("DMMotor", " %s: registerReg success", regInfo_.name);
@@ -28,8 +24,7 @@ MotorTypeDef_e DMMotor::registerReg(Reg_s *_regObj, RegValue_u *_regValue)
 
 MotorTypeDef_e DMMotor::cancelReg(RegId_e _regId)
 {
-    LOG::info("DMMotor", " %s: cancelReg success, regId:%d", regInfo_.name,
-              _regId);
+    LOG::info("DMMotor", " %s: cancelReg success, regId:%d", regInfo_.name, _regId);
     regObjList_.erase(_regId);
     return 0;
 }
@@ -88,14 +83,9 @@ MotorTypeDef_e DMMotor::storageOneReg(RegId_e _regId)
     if (it != regObjList_.end()) {
         (*it).second->isStorage = false;
         uint16_t id = canId();
-        uint8_t storageTxBuf[8] = { static_cast<uint8_t>(id),
-                                    static_cast<uint8_t>(id >> 8),
-                                    0xAA,
-                                    static_cast<uint8_t>(_regId),
-                                    0x00,
-                                    0x00,
-                                    0x00,
-                                    0x00 };
+        uint8_t storageTxBuf[8] = {
+            static_cast<uint8_t>(id), static_cast<uint8_t>(id >> 8), 0xAA, 0x01, 0x00, 0x00, 0x00, 0x00
+        };
         this->send(0x7FF, storageTxBuf, 8);
     }
     return rslt;
@@ -106,16 +96,13 @@ MotorTypeDef_e DMMotor::updateRegDat()
     // TODO: thread safe
     for (auto &regObj : this->regObjList_) {
         auto datCompare = [&]() -> bool {
-            return std::equal(
-                    std::begin(this->regValueList_[regObj.first]->dat),
-                    std::end(this->regValueList_[regObj.first]->dat),
-                    std::begin(this->preRegValue_[regObj.first]));
+            return std::equal(std::begin(this->regValueList_[regObj.first]->dat),
+                              std::end(this->regValueList_[regObj.first]->dat),
+                              std::begin(this->preRegValue_[regObj.first]));
         };
         if (!datCompare()) {
-            memcpy(&regObj.second->dat, &this->regValueList_[regObj.first]->dat,
-                   4);
-            memcpy(&this->preRegValue_[regObj.first],
-                   &this->regValueList_[regObj.first]->dat, 4);
+            memcpy(&regObj.second->dat, &this->regValueList_[regObj.first]->dat, 4);
+            memcpy(&this->preRegValue_[regObj.first], &this->regValueList_[regObj.first]->dat, 4);
             regObj.second->isWrite = true;
         }
     }

@@ -4,8 +4,8 @@
 using namespace PINYMOTOR;
 using namespace UTMOTOR;
 
-UT80106::UT80106(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart)
-        : UTMotor(_name, _config, _huart)
+UT80106::UT80106(const char _name[16], InitConfig_s _config, UART_HandleTypeDef *_huart, WorkMode_e _workMode)
+        : UTMotor(_name, _config, _huart, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -30,7 +30,6 @@ UT80106::UT80106(const char _name[16], InitConfig_s _config, UART_HandleTypeDef 
 
     this->registerRecvCallback();
 
-
     LOG::info("UT8010_6", " %s: An instance of UT8010_6 created, ctrlId:0x%hx", regInfo_.name, this->ctrlId_);
 }
 
@@ -43,7 +42,7 @@ MotorTypeDef_e UT80106::checkBaseConfig()
         LOG::error("UT8010_6", " %s: only support RS485 comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::EMIT) {
+    if (this->workMode_ != WorkMode_e::EMIT) {
         rslt |= 1;
         LOG::error("UT8010_6", " %s: WorkMode only support EMIT", regInfo_.name);
     }

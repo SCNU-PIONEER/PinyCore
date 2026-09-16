@@ -14,7 +14,13 @@ extern uint32_t SystemCoreClock;
 // NOLINTEND
 #endif
 
+#if TARGET_STM32F103C8TX
+#define configENABLE_FPU 0
+#elif TARGET_STM32F407IGHX || TARGET_STM32H723VGTX
 #define configENABLE_FPU 1
+#else
+#define configENABLE_FPU 0
+#endif
 #define configENABLE_MPU 0
 
 #define configUSE_PREEMPTION                    1

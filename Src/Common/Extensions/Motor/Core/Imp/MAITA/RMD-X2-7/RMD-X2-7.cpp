@@ -6,7 +6,7 @@ using namespace MTMOTOR;
 
 static constexpr char TAG[] = "RMDX27";
 
-RMDX27::RMDX27(const char _name[16], InitConfig_s _config) : MTMotor(_name, _config)
+RMDX27::RMDX27(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : MTMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -40,9 +40,9 @@ MotorTypeDef_e RMDX27::checkBaseConfig()
         LOG::error(TAG, " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::PDESVDES) {
+    if (!isSupportMode(this->workMode_)) {
         rslt |= 1;
-        LOG::error(TAG, " %s: only support PDESVDES WorkMode", regInfo_.name);
+        LOG::error(TAG, " %s: WorkMode is not supported", regInfo_.name);
     }
 
     if (regInfo_.offsetId > 32) {

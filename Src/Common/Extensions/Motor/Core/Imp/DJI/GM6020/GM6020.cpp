@@ -8,8 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DJIMOTOR;
-GM6020::GM6020(const char _name[16], InitConfig_s _config)
-        : DJIMotor(_name, _config)
+GM6020::GM6020(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : DJIMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -18,12 +17,12 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     regInfo_.model.reductionRatio = 1.f;
     regInfo_.model.rxBaseId = 0x204;
 
-    if (regInfo_.workMode == WorkMode_e::QUAD_CURR) {
+    if (this->workMode_ == WorkMode_e::QUAD_CURR) {
         if (_config.offsetId > 4)
             regInfo_.model.txBaseId = 0x2FE;
         else
             regInfo_.model.txBaseId = 0x1FE;
-    } else if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
+    } else if (this->workMode_ == WorkMode_e::QUAD_VOLT) {
         if (_config.offsetId > 4)
             regInfo_.model.txBaseId = 0x2FF;
         else
@@ -43,10 +42,8 @@ GM6020::GM6020(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
-    LOG::info(
-            "GM6020",
-            " %s: An instance of GM6020 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("GM6020", " %s: An instance of GM6020 created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e GM6020::checkBaseConfig()
@@ -58,8 +55,7 @@ MotorTypeDef_e GM6020::checkBaseConfig()
         LOG::error("GM6020", " %s: only support CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::QUAD_CURR &&
-        regInfo_.workMode != WorkMode_e::QUAD_VOLT) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("GM6020", "%s: WorkMode is not supported", regInfo_.name);
     }

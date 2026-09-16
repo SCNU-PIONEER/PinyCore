@@ -1,0 +1,20 @@
+#ifdef BSP_USE_UART
+#define LOG_UART huart6
+#define SBUS_UART huart3
+#define VT03_UART huart1
+#define REFEREE_UART huart6
+#define UI_UART REFEREE_UART
+#endif
+
+#ifdef BSP_USE_PWM
+#define BEEP_TIMER       htim4
+#define BEEP_TIM_CHANNEL TIM_CHANNEL_3
+#define BEEP_APB_FREQ    HAL_RCC_GetPCLK1Freq()
+#define WS2812_PWM_TIMER htim8
+#define WS2812_PWM_CHANNEL TIM_CHANNEL_1
+#endif
+
+#ifdef BSP_USE_SPI
+#define IMU_SPI hspi1
+#endif
+

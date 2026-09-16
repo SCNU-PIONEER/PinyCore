@@ -46,6 +46,7 @@ def write_cmake_file(_config_vars, _cmake_file):
 def convert_config_to_cmake(_config_file, _cmake_file):
     config_vars = parse_config_file_cmake(_config_file)
     write_cmake_file(config_vars, _cmake_file)
+    print(f"Generated {os.path.abspath(_cmake_file)} from {os.path.abspath(_config_file)}")
 
 
 def parse_config_file_header(_config_file):
@@ -93,12 +94,14 @@ def write_config_header(_config_vars, _header_file):
 def convert_config_to_header(_config_file, _header_file):
     config_vars = parse_config_file_header(_config_file)
     write_config_header(config_vars, _header_file)
+    print(f"Generated {os.path.abspath(_header_file)} from {os.path.abspath(_config_file)}")
 
 
 def get_soc_config(config_file):
     config_mapping = {
-        "CONFIG_TARGET_STM32F407=y": "Src/Common/Soc/stm32f407/DefaultConf.hpp.in",
-        "CONFIG_TARGET_STM32H723=y": "Src/Common/Soc/stm32h723/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32F407IGHX=y": "Src/Common/Soc/stm32f407ighx/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32F103C8TX=y": "Src/Common/Soc/stm32f103c8tx/DefaultConf.hpp.in",
+        "CONFIG_TARGET_STM32H723VGTX=y": "Src/Common/Soc/stm32h723vgtx/DefaultConf.hpp.in",
         # 可扩展其他型号
     }
 
@@ -112,8 +115,10 @@ def get_soc_config(config_file):
 
 def append_macros_to_header(config_file, header_file):
     conf_path = get_soc_config(config_file)
+    if conf_path is None:
+        raise RuntimeError(f"No default Soc conf mapping found in {config_file}")
     # read default macros from source file
-    with open(conf_path, "r") as src:  # type: ignore[assignment]
+    with open(conf_path, "r") as src:
         content = src.read().strip()
 
     # 追加到.h文件末尾
@@ -121,6 +126,7 @@ def append_macros_to_header(config_file, header_file):
         h_file.write("\n")
         h_file.write("/* default Soc conf */\n")
         h_file.write(content)
+    print(f"Appended default Soc conf from {conf_path} to {os.path.abspath(header_file)}")
 
 def campare_config(config_file, last_config_file):
     if not os.path.exists(last_config_file):

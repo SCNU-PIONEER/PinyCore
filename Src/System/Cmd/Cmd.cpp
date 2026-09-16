@@ -5,11 +5,21 @@
 Cmd::Cmd() : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
 
 {
+#if APP_USE_CHASSIS
     msgBus_.chassisQueue = xQueueCreate(30, sizeof(ChassisMsg_s));
+#endif
+#if APP_USE_GIMBAL
     msgBus_.gimbalQueue = xQueueCreate(30, sizeof(GimbalMsg_s));
+#endif
+#if APP_USE_ARMORBOOSTER
     msgBus_.armorBoosterQueue = xQueueCreate(10, sizeof(ArmorBoosterMsg_s));
+#endif
+#if APP_USE_ARMORLOADER
     msgBus_.armorLoaderQueue = xQueueCreate(10, sizeof(ArmorLoaderMsg_s));
+#endif
+#if EXTENSION_REFEREE
     msgBus_.refereeQueue = xQueueCreate(30, sizeof(RefereeMsg_s));
+#endif
 
     for (auto i : Handler::getHandlerList()) {
         i.handler->init(&msgBus_, eventGroup_);

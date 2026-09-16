@@ -9,8 +9,8 @@
 using namespace PINYMOTOR;
 using namespace DJI_ODMOTOR;
 
-GM3510::GM3510(const char _name[16], InitConfig_s _config)
-        : DJIOldMotor(_name, _config)
+GM3510::GM3510(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : DJIOldMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -33,24 +33,20 @@ GM3510::GM3510(const char _name[16], InitConfig_s _config)
     this->registerRecvCallback(regInfo_.model.rxBaseId + regInfo_.offsetId);
     this->updateCtrlMode();
 
-    LOG::info(
-            "GM3510",
-            " %s: An instance of GM3510 created, rxBaseId:0x%hx, txBaseId:0x%hx",
-            regInfo_.name, regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
+    LOG::info("GM3510", " %s: An instance of GM3510 created, rxBaseId:0x%hx, txBaseId:0x%hx", regInfo_.name,
+              regInfo_.model.rxBaseId, regInfo_.model.txBaseId);
 }
 
 MotorTypeDef_e GM3510::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (regInfo_.comType != ComType_e::FDCAN &&
-        regInfo_.comType != ComType_e::CAN) {
+    if (regInfo_.comType != ComType_e::FDCAN && regInfo_.comType != ComType_e::CAN) {
         rslt |= 1;
-        LOG::error("GM3510", " %s: only support FDCAN or CAN comtype",
-                   regInfo_.name);
+        LOG::error("GM3510", " %s: only support FDCAN or CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode != WorkMode_e::TRIP_VOLT) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("GM3510", " %s: WorkMode is not supported", regInfo_.name);
     }

@@ -26,6 +26,7 @@ public:
     static constexpr float INTER_RR = (9.f / 1.f);       // 内部减速比
     static constexpr float KN = TORQ_RATED / CURR_RATED; // 近似常数
 
-    DM8009(const char _name[16], InitConfig_s _config);
+    DM8009(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DMMOTOR

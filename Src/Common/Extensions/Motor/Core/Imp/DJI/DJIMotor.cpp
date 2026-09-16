@@ -23,7 +23,8 @@ Status_s &Status_s::operator=(const Status_s &_other)
     return *this;
 }
 
-DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+DJIMotor::DJIMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
+        : Base(_name, _config), workMode_(_workMode)
 {
     AUX_.rxQueue = xQueueCreate(4, sizeof(RxBus_s::CANRxBuf_s<8>::data));
 }
@@ -129,10 +130,6 @@ MotorTypeDef_e DJIMotor::ctrl()
     if (this->cmd_.SW) {
         (this->*convert)();
     } else {
-        if (this->posPID_ != nullptr)
-            this->posPID_->reset();
-        if (this->velPID_ != nullptr)
-            this->velPID_->reset();
         this->group_->txBuf[(2 * this->getPosInGroup()) + 1] = 0;
         this->group_->txBuf[2 * this->getPosInGroup()] = 0;
     }
@@ -162,4 +159,15 @@ void DJIMotor::overrideReductionRatio(float _newReductionRatio)
     status_.torqMax *= _newReductionRatio;
     status_.Kn *= _newReductionRatio;
     LOG::info("DJIMotor", " %s: you have changed reduction ratio to %f", regInfo_.name, _newReductionRatio);
+}
+
+bool DJIMotor::isSupportMode(WorkMode_e _mode) const
+{
+    switch (_mode) {
+    case WorkMode_e::QUAD_CURR:
+    case WorkMode_e::QUAD_VOLT:
+        return true;
+    default:
+        return false;
+    }
 }

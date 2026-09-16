@@ -1,0 +1,4 @@
+menu "STM32F103C8TX Soc config"
+    depends on TARGET_STM32F103C8TX
+
+endmenu

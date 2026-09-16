@@ -97,10 +97,10 @@ void AppManager::initApp()
     armorBooster.init();
     schedule([]() { armorBooster->update(cmd->getMsgBus()); });
 #endif
-    // TestModule
-    if constexpr (APP_USE_TEST) {
-        TestModule::instance().init();
-    }
+
+#if APP_USE_TEST
+    TestModule::instance().init();
+#endif
 
 #if APP_USE_COMM
     schedule([]() { CommManager::instance().txTask(); });
@@ -117,10 +117,10 @@ void AppManager::initApp()
 
 void AppManager::createApp()
 {
+#if APP_USE_TEST
     // Test-Module Continuous Task
-    if constexpr (APP_USE_TEST) {
-        TestModule::instance();
-    }
+    TestModule::instance();
+#endif
 
     uint32_t freeHeap = xPortGetFreeHeapSize();
     LOG::info("App", "init complete, Free Heap: %u", freeHeap);

@@ -21,6 +21,7 @@ public:
     static constexpr float TORQ_MAX = T_MAX;
     static constexpr float KN = TORQ_RATED / CURR_RATED;
 
-    DM10010L(const char _name[16], InitConfig_s _config);
+    DM10010L(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DMMOTOR
