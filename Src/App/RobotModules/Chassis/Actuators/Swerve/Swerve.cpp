@@ -18,7 +18,7 @@
 #include "./State/StopState.hpp"
 #include "./State/RunState.hpp"
 #include "./State/SpinState.hpp"
-#include "./State/TANKState.hpp"
+#include "./State/TankState.hpp"
 
 extern canHandle HCAN1;
 extern canHandle HCAN2;

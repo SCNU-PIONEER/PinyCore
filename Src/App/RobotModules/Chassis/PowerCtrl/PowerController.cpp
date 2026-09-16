@@ -1,5 +1,7 @@
 #include "PowerController.hpp"
 
+#include <algorithm>
+
 PowerController::PowerController(ChassisType_e _chassisType, SuperCap *_cap) : cap_(_cap), chassisType_(_chassisType)
 {
     motorNum_ = static_cast<uint8_t>(chassisType_);
