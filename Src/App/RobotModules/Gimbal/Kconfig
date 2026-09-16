@@ -10,8 +10,6 @@ menu "gimbal config"
             bool "standard"
         config APP_USE_DUALSTAGE
             bool "DualStage"
-        config APP_USE_THREEAXLE
-            bool "ThreeAxle"
 
     endchoice
 
