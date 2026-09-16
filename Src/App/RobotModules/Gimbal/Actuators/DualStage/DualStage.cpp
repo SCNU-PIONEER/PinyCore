@@ -40,28 +40,24 @@ DualStage::DualStage()
     InitConfig_s pitchDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::MIT_TT,
+        .motorType = SupportMotor_e::DA_MIAO,
         .offsetId = 1,
         .txFreq = PITCH_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config);
+    motors_.Pitch = new DMMOTOR::DM4310("Pitch", pitchDM4310Config, DMMOTOR::WorkMode_e::MIT_TT);
     motors_.Pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.Pitch->data().zeroAng);
 
     InitConfig_s firstYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN3),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::MIT_TT,
+        .motorType = SupportMotor_e::DA_MIAO,
         .offsetId = 2,
         .txFreq = FIRST_YAW_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = FIRST_YAW_REVERSE,
     };
-    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config);
+    motors_.FirstYaw = new DMMOTOR::DM4310("BigYaw", firstYawDM4310Config, DMMOTOR::WorkMode_e::MIT_TT);
 
     bigYawZero_ = motors_.FirstYaw->data().rawAng; //记录大yaw初始零点位置,用于缓启动阶段
     // motors_.FirstYaw->setZeroAng(bigYawZero_);
@@ -71,14 +67,12 @@ DualStage::DualStage()
     InitConfig_s secondYawDM4310Config = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::MIT_TT,
+        .motorType = SupportMotor_e::DA_MIAO,
         .offsetId = 3,
         .txFreq = SECOND_YAW_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = SECOND_YAW_REVERSE,
     };
-    motors_.SecondYaw = new DMMOTOR::DM4310("SmallYaw", secondYawDM4310Config);
+    motors_.SecondYaw = new DMMOTOR::DM4310("SmallYaw", secondYawDM4310Config, DMMOTOR::WorkMode_e::MIT_TT);
 
     motors_.SecondYaw->setZeroAng(SECOND_YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Small yaw zeros has set to %f", motors_.SecondYaw->data().zeroAng);

@@ -30,14 +30,12 @@ Dial::Dial()
     InitConfig_s dialConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN2),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
+        .motorType = SupportMotor_e::DJI,
         .offsetId = 3,
         .txFreq = DIAL_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = DIAL_REVERSE,
     };
-    motors_.dial = new DJIMOTOR::M2006("M2006", dialConfig);
+    motors_.dial = new DJIMOTOR::M2006("M2006", dialConfig, DJIMOTOR::WorkMode_e::QUAD_CURR);
     motors_.dial->overrideReductionRatio(DJIMOTOR::M2006::ORIGINAL_GEARBOX_RR * OUTER_RR);
 
     this->stateFactory_.addState(FSMState_e::AUTO, std::make_unique<AutoState>(this));

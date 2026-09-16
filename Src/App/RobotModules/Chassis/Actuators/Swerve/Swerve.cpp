@@ -117,27 +117,23 @@ Swerve::Swerve()
         InitConfig_s gm6020Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(steerCan._[i - 1]),
             .comType = ComType_e::CAN,
-            .workMode = WorkMode_e::QUAD_CURR,
+            .motorType = SupportMotor_e::DJI,
             .offsetId = i,
             .txFreq = STEER_MOTOR_FREQ,
-            .posPID = nullptr,
-            .velPID = nullptr,
             .isReverse = true,
         };
-        steerMotor_._[i - 1] = new DJIMOTOR::GM6020("GM6020", gm6020Config);
+        steerMotor_._[i - 1] = new DJIMOTOR::GM6020("GM6020", gm6020Config, DJIMOTOR::WorkMode_e::QUAD_CURR);
         steerMotor_._[i - 1]->setZeroAng(steerZero._[i - 1]);
 
         InitConfig_s m3508Config = {
             .pComHandle = reinterpret_cast<uint32_t *>(wheelCan._[i - 1]),
             .comType = ComType_e::CAN,
-            .workMode = WorkMode_e::QUAD_CURR,
+            .motorType = SupportMotor_e::DJI,
             .offsetId = i,
             .txFreq = WHEEL_MOTOR_FREQ,
-            .posPID = nullptr,
-            .velPID = nullptr,
             .isReverse = true,
         };
-        wheelMotor_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config);
+        wheelMotor_._[i - 1] = new DJIMOTOR::M3508("M3508", m3508Config, DJIMOTOR::WorkMode_e::QUAD_CURR);
         wheelMotor_._[i - 1]->overrideReductionRatio(DJIMOTOR::M3508::XROLL_GEARBOX_RR);
     }
 

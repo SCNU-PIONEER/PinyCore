@@ -19,26 +19,22 @@ DualFric::DualFric()
     InitConfig_s fricLConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
+        .motorType = SupportMotor_e::DJI,
         .offsetId = 2,
         .txFreq = FRIC_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = FRIC_REVERSE,
     };
-    motors_.fricL = new DJIMOTOR::M3508("M3508", fricLConfig);
+    motors_.fricL = new DJIMOTOR::M3508("M3508", fricLConfig, DJIMOTOR::WorkMode_e::QUAD_CURR);
 
     InitConfig_s fricRConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
+        .motorType = SupportMotor_e::DJI,
         .offsetId = 1,
         .txFreq = FRIC_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = !FRIC_REVERSE,
     };
-    motors_.fricR = new DJIMOTOR::M3508("M3508", fricRConfig);
+    motors_.fricR = new DJIMOTOR::M3508("M3508", fricRConfig, DJIMOTOR::WorkMode_e::QUAD_CURR);
 
     this->stateFactory_.addState(FSMState_e::ON, std::make_unique<OnState>(this));
     this->stateFactory_.addState(FSMState_e::OFF, std::make_unique<OffState>(this));

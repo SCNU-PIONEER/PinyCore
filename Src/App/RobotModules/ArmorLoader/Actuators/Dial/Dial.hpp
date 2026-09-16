@@ -6,6 +6,8 @@
 
 #include "IIR.hpp"
 
+#include "Pid.hpp"
+
 #include "MsgImpl.hpp"
 #include "Referee.hpp"
 #include "RxPacket.hpp"

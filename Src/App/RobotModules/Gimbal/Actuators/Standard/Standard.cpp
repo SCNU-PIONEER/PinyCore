@@ -31,28 +31,24 @@ Standard::Standard()
     InitConfig_s pitchConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::MIT_TT,
+        .motorType = SupportMotor_e::DA_MIAO,
         .offsetId = 1,
         .txFreq = PITCH_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = PITCH_REVERSE,
     };
-    motors_.pitch = new DMMOTOR::DM4310("Pitch", pitchConfig);
+    motors_.pitch = new DMMOTOR::DM4310("Pitch", pitchConfig, DMMOTOR::WorkMode_e::MIT_TT);
     motors_.pitch->setZeroAng(PITCH_LAUNCH_ANG);
     LOG::info("Gimbal", "Pitch zeros has set to %f", motors_.pitch->data().zeroAng);
 
     InitConfig_s yawConfig = {
         .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
         .comType = ComType_e::CAN,
-        .workMode = WorkMode_e::QUAD_CURR,
+        .motorType = SupportMotor_e::DJI,
         .offsetId = 1,
         .txFreq = YAW_MOTOR_FREQ,
-        .posPID = nullptr,
-        .velPID = nullptr,
         .isReverse = YAW_REVERSE,
     };
-    motors_.yaw = new DJIMOTOR::GM6020("Yaw", yawConfig);
+    motors_.yaw = new DJIMOTOR::GM6020("Yaw", yawConfig, DJIMOTOR::WorkMode_e::QUAD_CURR);
     motors_.yaw->setZeroAng(YAW_LAUNCH_ANG);
     LOG::info("Gimbal", "Yaw zeros has set to %f", motors_.yaw->data().zeroAng);
 
