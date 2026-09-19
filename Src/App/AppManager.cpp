@@ -83,7 +83,6 @@ void AppManager::initApp()
     this->createApp();
 }
 
-
 void AppManager::createApp()
 {
     // Test-Module Continuous Task

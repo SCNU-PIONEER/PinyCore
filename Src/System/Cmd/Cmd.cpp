@@ -17,7 +17,6 @@ Cmd::Cmd() : Task<Cmd, 256>("CmdTask", TaskPriority_e::LOW2)
     LOG::info("cmd", "init success");
 }
 
-
 void Cmd::parseMsg()
 {
     EventBits_t xBits =
