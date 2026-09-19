@@ -14,18 +14,21 @@ public:
     using callback = std::function<void(UART_HandleTypeDef *, uint16_t)>;
     void registerCallback(callback _pCallback);
 
+    using txCallback = std::function<void()>;
+    void registerTxCallback(txCallback _pCallback);
+
     /**
     * @brief uart unregisterCallback
     */
     void unregisterCallback();
+    void unregisterTxCallback();
 
     /**
     * @brief uart multi_DMA_rx_buf init
     *
     * @param DataLength 请开辟两倍的缓冲区
     */
-    HAL_StatusTypeDef recvDmaMultiBufInit(uint32_t *_dstAddress,
-                                          uint32_t _dataLength);
+    HAL_StatusTypeDef recvDmaMultiBufInit(uint32_t *_dstAddress, uint32_t _dataLength);
 
     /**
     * @brief uart multi_DMA_rx_buf init

@@ -8,9 +8,9 @@
 
 #include <vector>
 #include <unordered_map>
-#include <cstring>
 
 namespace PINYMOTOR {
+
 struct QuadMotorGroup_s {
     IMotor *motor[4];
     uint8_t txBuf[8];

@@ -21,10 +21,9 @@ public:
     static constexpr float VOLT_MAX = 25.2f;
     static constexpr float CURR_MAX = 10.f; // C610 MAX CURR
     static constexpr float TORQ_MAX = 1.8f / ORIGINAL_GEARBOX_RR;
-    static constexpr float KN =
-            TORQ_RATED /
-            CURR_RATED; // 详见手册中 "搭配C610电调时的电机性能曲线"
+    static constexpr float KN = TORQ_RATED / CURR_RATED; // 详见手册中 "搭配C610电调时的电机性能曲线"
 
-    M2006(const char _name[16], InitConfig_s _config);
+    M2006(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DJIMOTOR

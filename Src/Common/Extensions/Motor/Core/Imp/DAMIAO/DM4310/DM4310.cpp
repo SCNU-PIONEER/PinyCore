@@ -8,7 +8,7 @@
 
 using namespace PINYMOTOR;
 using namespace DMMOTOR;
-DM4310::DM4310(const char _name[16], InitConfig_s _config) : DMMotor(_name, _config)
+DM4310::DM4310(const char _name[16], InitConfig_s _config, WorkMode_e _workMode) : DMMotor(_name, _config, _workMode)
 {
     LOG::CHECK([this]() { return checkBaseConfig(); });
 
@@ -45,7 +45,7 @@ MotorTypeDef_e DM4310::checkBaseConfig()
         LOG::error("DM4310", " %s: only support FDCAN or CAN comtype", regInfo_.name);
     }
 
-    if (regInfo_.workMode == WorkMode_e::QUAD_VOLT) {
+    if (!this->isSupportMode(this->workMode_)) {
         rslt |= 1;
         LOG::error("DM4310", " %s: WorkMode is not supported", regInfo_.name);
     }

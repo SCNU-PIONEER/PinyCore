@@ -19,6 +19,10 @@ menu "extension config"
     bool "motor driver"
     default n
 
+    select USE_MATHEMATICA_CRC
+
+    source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
+
     config EXTENSION_REFEREE
     bool "referee"
     default n

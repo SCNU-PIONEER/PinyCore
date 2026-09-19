@@ -4,14 +4,14 @@
 #include "MotorCommonMacros.hpp"
 #include <algorithm>
 
-
 using namespace PINYMOTOR;
 using namespace LKMOTOR;
 
 static constexpr char TAG[] = "LKMotorRS485";
 
-LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config)
+LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config, WorkMode_e _workMode)
         : IMotor(_name, _config)
+        , workMode_(_workMode)
         , uart_(reinterpret_cast<UART_HandleTypeDef *>(_config.pComHandle))
         , txBuf_((uint8_t *)Dma::instance().ram_alloc(TXBUF_LEN))
         , rxBuf_((uint8_t *)Dma::instance().ram_alloc(RXBUF_LEN))
@@ -45,7 +45,7 @@ LKMotorRS485::LKMotorRS485(const char _name[16], InitConfig_s _config)
     });
 
     registerRecvCallback();
-    updateCtrlMode(this->regInfo_.workMode);
+    updateCtrlMode(this->workMode_);
     AUX_.rxQueue = xQueueCreate(4, RXBUF_LEN);
     uart_.recvDmaInit(rxBuf_, RXBUF_LEN);
 }
@@ -207,8 +207,9 @@ MotorTypeDef_e LKMotorRS485::parseState2()
         return STM_FAIL;
 
     State2_s *fb = (State2_s *)(this->rxBuf_ + 5);
-    data_.tempture = fb->temperature;                     // 1°C/1LSB
-    data_.curr = static_cast<float>(fb->current) * 0.01f; // current in A, 0.01A/LSB, for MF/MG motor
+    data_.tempture = fb->temperature; // 1°C/1LSB
+    // current in A, (66/4096 A) / LSB, for MG motor;(33/4096 A) / LSB, for MF motor
+    data_.curr = (float)(fb->current) / 4096.f * (float)this->status_.CurrMax;
     data_.torq = data_.curr * status_.torqueConstant;
     data_.spdRadps = deg2rad(static_cast<float>(fb->speed)); // 反馈输出轴速度，1dps/LSB
     data_.spdRpm = radps2rpm(data_.spdRadps);

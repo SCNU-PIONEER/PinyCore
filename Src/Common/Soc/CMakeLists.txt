@@ -2,19 +2,24 @@ INCLUDE(../../Config/sdkconfig.cmake option)
 
 add_library(Soc INTERFACE)
 
-if(DEFINED TARGET_STM32H723)
-    set(soc_target "stm32h723")
+if(DEFINED TARGET_STM32H723VGTX)
+    set(soc_target "stm32h723vgtx")
     set(cortex "cortex-m7" )
     set(fpu "fpv5-d16" )
     set(float-abi "hard" )
-elseif(DEFINED TARGET_STM32F407)
-    set(soc_target "stm32f407")
+elseif(DEFINED TARGET_STM32F407IGHX)
+    set(soc_target "stm32f407ighx")
     set(cortex "cortex-m4" )
     set(fpu "fpv4-sp-d16" )
     set(float-abi "hard" )
+elseif(DEFINED TARGET_STM32F103C8TX)
+    set(soc_target "stm32f103c8tx")
+    set(cortex "cortex-m3" )
+    set(fpu "" )
+    set(float-abi "" )
 else()
-    message(WARNING "Using defaust Soc board: stm32f407" )
-    set(soc_target "stm32f407")
+    message(WARNING "Using defaust Soc board: stm32f407ighx" )
+    set(soc_target "stm32f407ighx")
     set(cortex "cortex-m4" )
     set(fpu "fpv4-sp-d16" )
     set(float-abi "hard" )
@@ -25,11 +30,17 @@ message(STATUS "soc board: ${soc_target}")
 set(soc_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}" PARENT_SCOPE)
 set(target_folder "${CMAKE_CURRENT_SOURCE_DIR}/${soc_target}")
 
-if(DEFINED TARGET_STM32H723)
+if(DEFINED TARGET_STM32H723VGTX)
   target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${target_folder}/SocCustom.cpp)
 endif()
 
-set(TARGET_FLAGS "-mcpu=${cortex} -mfpu=${fpu} -mfloat-abi=${float-abi}")
+set(TARGET_FLAGS "-mcpu=${cortex}")
+if(NOT "${fpu}" STREQUAL "")
+  set(TARGET_FLAGS "${TARGET_FLAGS} -mfpu=${fpu}")
+endif()
+if(NOT "${float-abi}" STREQUAL "")
+  set(TARGET_FLAGS "${TARGET_FLAGS} -mfloat-abi=${float-abi}")
+endif()
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}" PARENT_SCOPE)
@@ -44,8 +55,8 @@ set(FETCHCONTENT_QUIET OFF)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/.deps)
 
-if(DEFINED TARGET_STM32F407)
-  if(NOT EXISTS "${target_folder}/hal/Drivers/CMSIS/Device" OR NOT EXISTS )
+if(DEFINED TARGET_STM32F407IGHX)
+  if(NOT EXISTS "${target_folder}/CMSIS_Device")
     FetchContent_Declare(
       cmsis_device_f4
       GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-f4.git
@@ -67,7 +78,30 @@ if(DEFINED TARGET_STM32F407)
     FetchContent_MakeAvailable(hal_f4)
   endif()
 
-else(DEFINED TARGET_STM32H723)
+elseif(DEFINED TARGET_STM32F103C8TX)
+  if(NOT EXISTS "${target_folder}/CMSIS_Device")
+    FetchContent_Declare(
+      cmsis_device_f1
+      GIT_REPOSITORY https://github.com/STMicroelectronics/cmsis-device-f1.git
+      GIT_TAG v4.3.5
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/CMSIS_Device")
+    FetchContent_MakeAvailable(cmsis_device_f1)
+  endif()
+
+  if(NOT EXISTS "${target_folder}/HAL_Driver")
+    FetchContent_Declare(
+      hal_f1
+      GIT_REPOSITORY https://github.com/STMicroelectronics/stm32f1xx-hal-driver.git
+      GIT_TAG v1.1.10
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
+      SOURCE_DIR "${target_folder}/HAL_Driver")
+    FetchContent_MakeAvailable(hal_f1)
+  endif()
+
+elseif(DEFINED TARGET_STM32H723VGTX)
   if(NOT EXISTS "${target_folder}/CMSIS_Device")
     FetchContent_Declare(
       cmsis_device_h7

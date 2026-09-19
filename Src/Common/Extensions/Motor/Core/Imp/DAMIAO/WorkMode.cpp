@@ -24,7 +24,7 @@ void DMMotor::serializeMITMsg(MITMsg_s &_msgMIT, TxBus &_txBuf)
 
 void DMMotor::updateCtrlMode()
 {
-    switch (regInfo_.workMode) {
+    switch (this->workMode_) {
     case WorkMode_e::MIT_TT:
         convert = &DMMotor::convertMitTt;
         this->ctrlId_ = this->canId();
@@ -64,7 +64,7 @@ void DMMotor::updateCtrlMode()
 
 void DMMotor::switchCtrlMode(WorkMode_e _workMode)
 {
-    regInfo_.workMode = _workMode;
+    this->workMode_ = _workMode;
     updateCtrlMode();
 }
 

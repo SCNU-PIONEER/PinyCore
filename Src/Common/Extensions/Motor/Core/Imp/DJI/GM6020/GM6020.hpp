@@ -22,6 +22,7 @@ public:
 
     static constexpr float KN = TORQ_RATED / CURR_RATED;
 
-    GM6020(const char _name[16], InitConfig_s _config);
+    GM6020(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
 };
+
 } // namespace PINYMOTOR::DJIMOTOR

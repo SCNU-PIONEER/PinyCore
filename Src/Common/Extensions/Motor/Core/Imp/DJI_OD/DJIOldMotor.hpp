@@ -2,28 +2,11 @@
 
 #include "../../Base/MotorBase.hpp"
 
+#include "DJIOldMotorMsg.hpp"
+
 namespace PINYMOTOR::DJI_ODMOTOR {
-#pragma pack(push, 1)
-struct Msg_s {
-    int16_t cmd[3];
-};
 
-struct Feedback_s {
-    uint16_t rawAng;
-    int16_t rawTorq;
-};
-#pragma pack(pop)
-struct Status_s {
-    float voltTxCodeSpan;
-    float torqRxCodeSpan;
-    float voltMax; // V
-    float currMax; // A
-    float torqMax; // Nm
-    float Kn;      // Nm/A
-
-    Status_s &operator=(const Status_s &_other);
-};
-
+enum class WorkMode_e : MotorTypeDef_e { UNKNOWN, TRIP_VOLT };
 class DJIOldMotor : public TripMotorBase {
     using Base = TripMotorBase;
 
@@ -65,10 +48,12 @@ protected:
     void updateCtrlMode();
 
     Status_s status_;
+    WorkMode_e workMode_ = WorkMode_e::UNKNOWN;
+    bool isSupportMode(WorkMode_e _mode) const;
     uint16_t ctrlId_ = 0xFFFF; // sendId - depends on work mode
 
 public:
-    DJIOldMotor(const char _name[16], InitConfig_s _config);
+    DJIOldMotor(const char _name[16], InitConfig_s _config, WorkMode_e _workMode);
     ~DJIOldMotor() override;
 
     /**
@@ -99,4 +84,5 @@ public:
      */
     MotorTypeDef_e update() final;
 };
+
 } // namespace PINYMOTOR::DJI_ODMOTOR

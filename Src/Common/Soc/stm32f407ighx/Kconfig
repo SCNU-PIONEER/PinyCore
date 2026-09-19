@@ -1,0 +1,4 @@
+menu "STM32F407 Soc config"
+    depends on TARGET_STM32F407IGHX
+
+endmenu
