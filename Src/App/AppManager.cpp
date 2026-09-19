@@ -82,7 +82,6 @@ void AppManager::initApp()
     this->createApp();
 }
 
-
 void AppManager::createApp()
 {
 #if APP_USE_TEST

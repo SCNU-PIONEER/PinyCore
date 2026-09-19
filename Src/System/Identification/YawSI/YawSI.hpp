@@ -6,9 +6,11 @@
 #include "LPF.hpp"
 
 class YawSI : public Identification<3> {
+    static constexpr uint8_t RANK = 3;
+
 public:
-    YawSI(float _ctrlFreq, float _cutoffFreq)
-            : Identification<3>(0.999f)
+    YawSI(float _ctrlFreq, float _cutoffFreq, float _lamda = 0.999f)
+            : Identification<RANK>(_lamda)
             , ctrlFreq_(_ctrlFreq)
             , velFilter_(_ctrlFreq, _cutoffFreq, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE)
             , torqFilter_(_ctrlFreq, _cutoffFreq, FILTER::FilterType_e::BUTTERWORTH, FILTER::Ripple_e::NONE)
