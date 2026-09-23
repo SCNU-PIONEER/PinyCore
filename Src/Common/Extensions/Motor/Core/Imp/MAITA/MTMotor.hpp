@@ -45,6 +45,9 @@ public:
     bool isEnable() const;
     void setMotorZeroAng();
     void readErrCode();
+    void readAbsAng();
+    void readSingleAng();
+    void setZeroAng();
     void overrideReductionRatio(float _newReductionRatio) final;
 
 protected:
@@ -57,6 +60,8 @@ protected:
 
     void readErrorCode(std::array<uint8_t, 8> &_txBuf);
     void readState2(std::array<uint8_t, 8> &_txBuf);
+    void readAbsAngle(std::array<uint8_t, 8> &_txBuf);
+    void readSingleAngle(std::array<uint8_t, 8> &_txBuf);
 
 private:
     MotorTypeDef_e ctrl();
@@ -65,6 +70,7 @@ private:
     MotorTypeDef_e parse(const uint8_t *_rxBuf);
     MotorTypeDef_e parseFeedbackData(const uint8_t *_rxBuf);
     MotorTypeDef_e parseErrorCode(const uint8_t *_rxBuf);
+    MotorTypeDef_e parseAngleData(const uint8_t *_rxBuf);
 
     void setFunctionCtrlData(uint8_t _header, uint8_t _index, uint32_t _data);
 

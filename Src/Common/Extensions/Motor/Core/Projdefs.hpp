@@ -71,8 +71,8 @@ struct Data_s {
 
     float singleCirAng; // 相对零点的输出轴侧单圈值 rad
     float multipCirAng; // 设置零点后输出轴侧多圈值 rad
-
-    float cirNum; // 相对零点的圈数
+    float absCirAng;    // 相对零点的绝对多圈值 rad
+    float cirNum;       // 相对零点的圈数
 
     float spdRadps; // 角速度 rad/s
     float spdRpm;   // 角速度 rpm

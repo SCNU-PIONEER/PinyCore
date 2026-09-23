@@ -51,10 +51,10 @@ void TestMT::test()
     // motor_->setMotorZeroAng();
     // vTaskDelay(100);
 
-    testON();
-    vTaskDelay(100);
-    switchMTWorkMode(MTMOTOR::WorkMode_e::TORQ);
-    vTaskDelay(100);
+    // testON();
+    // vTaskDelay(100);
+    // switchMTWorkMode(MTMOTOR::WorkMode_e::TORQ);
+    // vTaskDelay(100);
 
     /*error test*/
     // motor_->readErrCode();
@@ -121,7 +121,7 @@ void TestMT::testAbsPos(float _velLimit, float _pos)
 {
     motor_->cmdPosVel(_pos, _velLimit);
     vTaskDelay(100);
-};
+}
 void TestMT::testSinglePos(float _velLimit, float _pos)
 {
     motor_->cmdPosVel(_pos, _velLimit);
@@ -138,4 +138,9 @@ void TestMT::testForcePos(float _torqLimit, float _velLimit, float _pos)
     vTaskDelay(100);
 }
 
+void TestMT::testSetZeroAng()
+{
+    motor_->setMotorZeroAng();
+    vTaskDelay(100);
+}
 void TestMT::switchMTWorkMode(PINYMOTOR::MTMOTOR::WorkMode_e _mode) { motor_->switchCtrlMode(_mode); }
