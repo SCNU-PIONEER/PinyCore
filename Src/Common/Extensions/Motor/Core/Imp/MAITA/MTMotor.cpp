@@ -46,15 +46,25 @@ void MTMotor::registerRecvCallback(uint16_t _rxId)
 MotorTypeDef_e MTMotor::ctrl()
 {
     std::array<uint8_t, 8> txBuf{};
+    static int cnt = 0;
     if (this->cmd_.SW) { //cmd_.SW == true
-        (this->*convert)(txBuf);
+        if (cnt % 2 != 0) {
+            readSingleAngle(txBuf);
+        } else {
+            (this->*convert)(txBuf);
+        }
     } else if (!this->cmd_.SW && this->cmd_.prevSW) { //SW == false && prevSW == true
         disable(txBuf);
     } else if (!this->cmd_.SW && !this->cmd_.prevSW) { //SW == false && prevSW == false
-        readState2(txBuf);
+        if (cnt % 2 != 0) {
+            readSingleAngle(txBuf);
+        } else {
+            readState2(txBuf);
+        }
     }
-
-    return send(ctrlId_, txBuf, 8);
+    send(ctrlId_, txBuf, 8);
+    cnt++;
+    return 0;
 }
 
 void MTMotor::readErrCode() { this->convert = &MTMotor::readErrorCode; }
@@ -62,12 +72,12 @@ void MTMotor::readErrCode() { this->convert = &MTMotor::readErrorCode; }
 //电机手册就图一乐,真设置零点还得读上位机,如未成功请多次reset
 void MTMotor::setMotorZeroAng()
 {
-    setFunctionCtrlData(0x92, 0, 0);
-    setFunctionCtrlData(0x64, 0, 0);
-    setFunctionCtrlData(0x76, 0, 0);
-    setFunctionCtrlData(0x80, 0, 0);
-    setFunctionCtrlData(0x92, 0, 0);
-    setFunctionCtrlData(0x9A, 0, 0);
+    setFunctionCtrlData(0x80, 0, 0); // 电机失能
+    setFunctionCtrlData(0x92, 0, 0); // 读取多圈角度
+    setFunctionCtrlData(0x64, 0, 0); // 设置零点
+    setFunctionCtrlData(0x76, 0, 0); // 系统复位重启系统
+    setFunctionCtrlData(0x92, 0, 0); // 读取多圈角度
+    setFunctionCtrlData(0x9A, 0, 0); // 读取电机state1 & 错误标志
 }
 
 //设置函数,必须在电机失能时调用
@@ -89,6 +99,8 @@ MotorTypeDef_e MTMotor::parse(const uint8_t *_rxBuf)
         return parseFeedbackData(_rxBuf);
     } else if (_rxBuf[0] == 0x9A) {
         return parseErrorCode(_rxBuf);
+    } else if (_rxBuf[0] == 0x92 || _rxBuf[0] == 0x94) {
+        return parseAngleData(_rxBuf);
     }
     return 0;
 }
@@ -124,23 +136,53 @@ MotorTypeDef_e MTMotor::parseFeedbackData(const uint8_t *_rxBuf)
     float noumenaVel = deg2rad(static_cast<float>(fb.speed));
     this->data_.spdRadps = regInfo_.isReverse ? -noumenaVel : noumenaVel;
     this->data_.spdRpm = radps2rpm(this->data_.spdRadps);
-    /* angle 脉塔pos反馈多圈值,反馈无上限,会溢出*/
-    this->data_.rawAng = rangeMap(deg2rad(static_cast<float>(fb.pos)), -PI, PI);
-    float noumenaAng = this->data_.rawAng;
-    this->data_.ang = regInfo_.isReverse ? -noumenaAng : noumenaAng - this->data_.zeroAng;
-    this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
-    if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
-        this->globalState = GlobalState_e::ONLINE;
+    /* angle 脉塔pos反馈多圈值,反馈无上限,会溢出，控制反馈只反馈整数角度*/
+    // if (_rxBuf[0] == 0xA6) { // 单圈控制反馈角度读编码器
+    //     this->data_.rawAng = (static_cast<float>(fb.pos) / 65535) * TWO_PI;
+    // } else {
+    //     this->data_.rawAng = rangeMap(deg2rad(static_cast<float>(fb.pos)), -PI, PI);
+    // }
+    // float noumenaAng = this->data_.rawAng;
+    // this->data_.ang = regInfo_.isReverse ? -noumenaAng : noumenaAng - this->data_.zeroAng;
+    // this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
+    // this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
+    // this->data_.angLast = this->data_.ang;
+    // if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
+    //     this->globalState = GlobalState_e::ONLINE;
+    //     this->data_.angLast = this->data_.ang;
+    // }
+    // float delta = this->data_.ang - this->data_.angLast;
+    // if (delta > PI) {
+    //     this->data_.cirNum -= 1.f / this->rr();
+    // } else if (delta < -PI) {
+    //     this->data_.cirNum += 1.f / this->rr();
+    // }
+    return 0;
+}
+
+MotorTypeDef_e MTMotor::parseAngleData(const uint8_t *_rxBuf)
+{
+    int32_t rawAng;
+    memcpy(&rawAng, &_rxBuf[4], sizeof(rawAng));
+    if (_rxBuf[0] == 0x92) {
+        this->data_.absCirAng = deg2rad((float)rawAng * 0.01f);
+    } else if (_rxBuf[0] == 0x94) {
+        this->data_.rawAng = deg2rad((float)rawAng * 0.01f);
+        this->data_.ang = regInfo_.isReverse ? -this->data_.rawAng : this->data_.rawAng - this->data_.zeroAng;
+        this->data_.singleCirAng = rangeMap(this->data_.ang / this->rr(), -PI, PI);
+        this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
         this->data_.angLast = this->data_.ang;
+        if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
+            this->globalState = GlobalState_e::ONLINE;
+            this->data_.angLast = this->data_.ang;
+        }
+        float delta = this->data_.ang - this->data_.angLast;
+        if (delta > PI) {
+            this->data_.cirNum -= 1.f / this->rr();
+        } else if (delta < -PI) {
+            this->data_.cirNum += 1.f / this->rr();
+        }
     }
-    float delta = this->data_.ang - this->data_.angLast;
-    if (delta > PI) {
-        this->data_.cirNum -= 1.f / this->rr();
-    } else if (delta < -PI) {
-        this->data_.cirNum += 1.f / this->rr();
-    }
-    this->data_.multipCirAng = this->data_.singleCirAng + (TWO_PI * this->data_.cirNum);
-    this->data_.angLast = this->data_.ang;
     return 0;
 }
 

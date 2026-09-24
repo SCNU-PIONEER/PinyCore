@@ -26,6 +26,7 @@ public:
     void testSinglePos(float _velLimit, float _pos);
     void testIncPos(float _pos);
     void testForcePos(float _torqLimit, float _velLimit, float _pos);
+    void testSetZeroAng();
     void switchMTWorkMode(PINYMOTOR::MTMOTOR::WorkMode_e _mode);
 
 private:

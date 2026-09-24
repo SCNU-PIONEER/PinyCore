@@ -17,4 +17,16 @@ void MTMotor::readState2(std::array<uint8_t, 8> &_txBuf)
     _txBuf = PACK;
 }
 
+void MTMotor::readAbsAngle(std::array<uint8_t, 8> &_txBuf)
+{
+    constexpr std::array<uint8_t, 8> PACK = { 0x92, 0, 0, 0, 0, 0, 0, 0 };
+    _txBuf = PACK;
+}
+
+void MTMotor::readSingleAngle(std::array<uint8_t, 8> &_txBuf)
+{
+    constexpr std::array<uint8_t, 8> PACK = { 0x94, 0, 0, 0, 0, 0, 0, 0 };
+    _txBuf = PACK;
+}
+
 //TODO:添加脉塔其他的读取指令
