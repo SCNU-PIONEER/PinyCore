@@ -37,4 +37,10 @@ menu "app config"
     bool "UI"
     default n
 
+    config APP_USE_MESSAGECENTER
+    bool "message center"
+    default n
+
+    source "Src/App/MessageCenter/Kconfig"
+
 endmenu

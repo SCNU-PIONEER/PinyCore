@@ -39,7 +39,9 @@ Lazy<Cmd> cmd;
 #endif
 
 //---------------------------------------------------------------------------------------------------
-
+#if APP_USE_MESSAGECENTER
+#include "MessageCenter.hpp"
+#endif
 void AppManager::initApp()
 {
 #if EXTENSION_BUZZER
@@ -56,6 +58,10 @@ void AppManager::initApp()
 #endif
 
     cmd.init();
+
+#if APP_USE_MESSAGECENTER
+    schedule([]() { MessageCenter::instance().update(cmd->getMsgBus()); });
+#endif
 
 #if APP_USE_UI
     UI::APP::instance().init();

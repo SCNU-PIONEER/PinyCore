@@ -1,0 +1,24 @@
+menu "messagecenter config"
+    depends on APP_USE_MESSAGECENTER
+    choice
+
+        prompt "MessageCenter Type"
+        default MASTER_MESSAGECENTER
+
+        config MASTER_MESSAGECENTER
+            bool "Master MessageCenter"
+            depends on TARGET_MASTER
+
+        config SLAVE_MESSAGECENTER
+            bool "Slave MessageCenter"
+            depends on TARGET_SLAVE
+
+    endchoice
+
+    config MESSAGECENTER_TYPE
+        string 
+        default "MasterMC" if MASTER_MESSAGECENTER
+        default "SlaveMC" if SLAVE_MESSAGECENTER
+
+
+endmenu
