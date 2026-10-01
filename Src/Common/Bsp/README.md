@@ -6,13 +6,13 @@ using CRTP to Implement a singleton bsp class
 3. Decoupling design  
 
 ## Bsp Can
-请使用以下函数注册fdcan接收新消息的回调函数  
+Please use the following function to register the callback function for fdcan or can to receive new messages
 ```
 Can::instance().registerCallback(&hfdcan1, 0x201, canCallback);
 ```
 
 ## Bsp Uart
-请使用以下函数注册uart回调函数  
+Please use the following function to register the callback function for uart to receive new messages
 ```
 Uart::instance().registerCallback(huart, &Rc::callBackFromISR);
 ```
