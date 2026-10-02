@@ -28,6 +28,7 @@ jobs:
           fetch_all_tags: true
 
       - name: Create a GitHub release
+        if: ${{ steps.tag_version.outputs.new_tag != '' && steps.tag_version.outputs.new_tag != 'undefined' }}
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
