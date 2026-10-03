@@ -61,9 +61,8 @@ inline static constexpr float MEMBERSHIPS_PARAMS[7][3] = {
     { 2, 3, 3 }     // PB
 };
 
-FuzzyPid::FuzzyPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-                   float _outMax, float _deadband, float _errorScale,
-                   float _errorRateScale)
+FuzzyPid::FuzzyPid(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband,
+                   float _errorScale, float _errorRateScale)
         : errorScale(_errorScale)
         , errorRateScale(_errorRateScale)
         , kp(_kp)
@@ -89,8 +88,7 @@ float FuzzyPid::membershipCalc(float _val, float _ref) const
     return (params[2] - _val) / (params[2] - params[1]);
 }
 
-float FuzzyPid::fuzzyInference(float _err, float _errRate,
-                               const RuleTable &_rules) const
+float FuzzyPid::fuzzyInference(float _err, float _errRate, const RuleTable &_rules) const
 {
     // normalize
     float e = _err / errorScale * 3.f;
@@ -147,8 +145,7 @@ float FuzzyPid::calc(float _ref, float _cur)
     } else if (err[0] < -deadband) {
         err[0] += deadband;
     } else {
-        if (_ref < deadband && _ref > -deadband &&
-            (err[1] < -deadband || err[1] > deadband)) {
+        if (_ref < deadband && _ref > -deadband && (err[1] < -deadband || err[1] > deadband)) {
             iOut = 0.0f;
         } else
             return 0.0f;
@@ -167,6 +164,5 @@ float FuzzyPid::calc(float _ref, float _cur)
     iOut += fuzzyKi * (err[0] + err[1]) / 2.f * dt;
     iOut = std::clamp(iOut, -iMax, iMax);
 
-    return std::clamp((fuzzyKp * err[0]) + iOut + (fuzzyKd * errRate), -outMax,
-                      outMax);
+    return std::clamp((fuzzyKp * err[0]) + iOut + (fuzzyKd * errRate), -outMax, outMax);
 }

@@ -50,7 +50,7 @@ MotorTypeDef_e GM6020::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (regInfo_.comType != PINYMOTOR::ComType_e ::CAN) {
+    if (regInfo_.comType != PINYMOTOR::ComType_e::CAN) {
         rslt |= 1;
         LOG::error("GM6020", " %s: only support CAN comtype", regInfo_.name);
     }

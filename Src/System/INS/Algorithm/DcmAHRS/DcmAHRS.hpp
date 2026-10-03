@@ -13,9 +13,7 @@ struct EData_s {
 };
 
 class DcmAhrs {
-    static constexpr float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = {
-        0, 0, 1, 0, 0, 0
-    };
+    static constexpr float DEFAULT_IMU_ACCEL_GYRO_STATE[6] = { 0, 0, 1, 0, 0, 0 };
 
     static constexpr float G = (9.7833f); // GuangZhou gravity in m/s^2
     static constexpr float INV_G = (1.f / G);
@@ -36,11 +34,9 @@ class DcmAhrs {
     // set this to a small positive number or 0 to disable the feature.
 
 public:
-    DcmAhrs(float _sampleFrequency, float _dcmVariance = DEFAULT_Q_DCM2,
-            float _biasVariance = DEFAULT_Q_BIAS2,
+    DcmAhrs(float _sampleFrequency, float _dcmVariance = DEFAULT_Q_DCM2, float _biasVariance = DEFAULT_Q_BIAS2,
             float _measurementVariance = DEFAULT_R_MEASUREMENT2,
-            float _measurementVarianceVariableGain =
-                    DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN)
+            float _measurementVarianceVariableGain = DEFAULT_R_MEASUREMENT2_VARIABLE_GAIN)
             : dt_(_sampleFrequency)
             , DCMVariance_(_dcmVariance)
             , biasVariance_(_biasVariance)
@@ -51,8 +47,7 @@ public:
 
     void init();
 
-    void update(float _gx, float _gy, float _gz, float _ax, float _ay,
-                float _az, float _dt);
+    void update(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt);
 
     EData_s getEdata();
 
@@ -64,8 +59,7 @@ public:
 
 protected:
     float invSqrt(float _x);
-    void updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay,
-                   float _az, float _dt);
+    void updateDCM(float _gx, float _gy, float _gz, float _ax, float _ay, float _az, float _dt);
     void computeAngles();
 
 private:
@@ -76,9 +70,9 @@ private:
     float dt_; // Sample time
 
     // DCM parameters
-    float DCMVariance_; // a variance for DCM state update, Q(0,0), Q(1,1), and Q(2,2)
-    float biasVariance_; // a variance for bias state update, Q(3,3), Q(4,4), and Q(5,5)
-    float measurementVariance_; // variance of calibrated accelerometer (g-component)
+    float DCMVariance_;                     // a variance for DCM state update, Q(0,0), Q(1,1), and Q(2,2)
+    float biasVariance_;                    // a variance for bias state update, Q(3,3), Q(4,4), and Q(5,5)
+    float measurementVariance_;             // variance of calibrated accelerometer (g-component)
     float measurementVarianceVariableGain_; // large variance for some unknown acceleration (acc = a + g)
 
     // X state vector, P covariance matrix, and DCM matrix

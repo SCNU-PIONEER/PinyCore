@@ -12,6 +12,7 @@
 #define ROTATION_MATRIX_PITCH_ROLL_ONLY 1
 
 namespace INS_SYS {
+
 struct IMUSensorData_s {
     struct Accel_s {
         float x, y, z;
@@ -87,4 +88,5 @@ private:
 
     BMI088 bmi088_;
 };
+
 } // namespace INS_SYS

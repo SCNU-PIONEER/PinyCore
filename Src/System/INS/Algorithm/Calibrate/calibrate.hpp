@@ -26,12 +26,10 @@ class IMUCalibration {
     static constexpr float STEADY_GYRO_RANGE = 0.03f;
     static constexpr float GYRO_BIAS_MAX_RAW = 100.f;
 
-    static constexpr float G =
-            9.7883f; // (GuangZhou) Default gravity constant in m/s^2
+    static constexpr float G = 9.7883f; // (GuangZhou) Default gravity constant in m/s^2
 
 public:
-    void init(const AccCaliParams_s &_accCali,
-              const GyroCaliParams_s &_gyroCali, float _aTransK = 1.0f,
+    void init(const AccCaliParams_s &_accCali, const GyroCaliParams_s &_gyroCali, float _aTransK = 1.0f,
               float _gTransK = 1.0f);
 
     void correctA(int16_t _ax, int16_t _ay, int16_t _az);

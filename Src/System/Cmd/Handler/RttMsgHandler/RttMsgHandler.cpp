@@ -5,7 +5,6 @@
 #include <cstring>
 #include "SEGGER_RTT.h"
 
-
 void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
 {
     msgBus_ = _bus;
@@ -21,7 +20,6 @@ void RTTMsgHandler::init(MsgBus_s *_bus, EventGroupHandle_t _event)
         xTimerStart(xTimer, 0); // 第二个参数是阻塞时间(ticks)
     }
 }
-
 
 void RTTMsgHandler::parse(TimerHandle_t _xTimer)
 {

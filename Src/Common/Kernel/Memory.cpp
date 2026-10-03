@@ -7,8 +7,7 @@ extern "C" {
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide
  * an implementation of vApplicationGetIdleTaskMemory() to provide the memory
  * that is used by the Idle task. */
-void vApplicationGetIdleTaskMemory(StaticTask_t **_ppxIdleTaskTCBBuffer,
-                                   StackType_t **_ppxIdleTaskStackBuffer,
+void vApplicationGetIdleTaskMemory(StaticTask_t **_ppxIdleTaskTCBBuffer, StackType_t **_ppxIdleTaskStackBuffer,
                                    uint32_t *_pulIdleTaskStackSize)
 {
     /* If the buffers to be provided to the Idle task are declared inside this
@@ -30,8 +29,7 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **_ppxIdleTaskTCBBuffer,
     *_pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 
-void vApplicationGetTimerTaskMemory(StaticTask_t **_ppxTimerTaskTCBBuffer,
-                                    StackType_t **_ppxTimerTaskStackBuffer,
+void vApplicationGetTimerTaskMemory(StaticTask_t **_ppxTimerTaskTCBBuffer, StackType_t **_ppxTimerTaskStackBuffer,
                                     uint32_t *_pulTimerTaskStackSize)
 {
     /* If the buffers to be provided to the Timer task are declared inside this

@@ -1,7 +1,6 @@
 #include "Bsp_dma.hpp"
 #include <stdlib.h>
 
-
 void *Dma::ram_alloc(size_t _size)
 {
     constexpr size_t alignment = 4;

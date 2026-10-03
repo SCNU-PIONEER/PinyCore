@@ -57,7 +57,6 @@ void IncrementalPid::reset()
     memset(state, 0, 3U * sizeof(float_t));
 }
 
-
 PositionalPid::PositionalPid(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband)
 {
     setParam(_kp, _ki, _kd, _dt, _iMax, _outMax, _deadband);

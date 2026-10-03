@@ -18,8 +18,7 @@ public:
      *       Usually, the approximate value of the controlled object model is taken, 
      *       such as the gain from the control variable to the output in the motor transfer function
      */
-    LadrcPid(float _wo, float _wc, float _b0, float _zMax, float _outMax,
-             float _dt);
+    LadrcPid(float _wo, float _wc, float _b0, float _zMax, float _outMax, float _dt);
 
     void reset() final;
     float calc(float _ref, float _cur) final;

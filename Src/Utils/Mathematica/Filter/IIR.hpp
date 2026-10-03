@@ -5,8 +5,8 @@
 #include <unordered_map>
 #include <cmath>
 
-
 namespace FILTER {
+
 enum class Ripple_e : uint8_t { NONE = 0, DB0_5 = 1, DB1 = 2, DB2 = 3, DB3 = 4 };
 
 enum class FilterType_e : uint8_t { BUTTERWORTH = 1, CHEBYSHEV = 2 };

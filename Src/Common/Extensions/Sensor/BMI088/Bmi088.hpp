@@ -58,7 +58,6 @@ typedef struct {
     float time;
 } Bmi088RealData_t;
 
-
 enum : uint8_t {
     BMI088_NO_ERROR = 0x00,
     BMI088_ACC_PWR_CTRL_ERROR = 0x01,
@@ -106,7 +105,6 @@ public:
     float getGyroY() { return data_.gyro[1]; }
     float getGyroZ() { return data_.gyro[2]; }
     float getTimestamp() { return data_.time; }
-
 
 protected:
     uint8_t accelInit();

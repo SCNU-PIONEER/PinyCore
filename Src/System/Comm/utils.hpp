@@ -15,7 +15,7 @@ static int16_t convertToInt16(float _f)
     const uint32_t fBits = std::bit_cast<uint32_t>(_f);
     const uint32_t sign = (fBits >> 31) & 0x1;
     int32_t exp = static_cast<int32_t>((fBits >> 23) & 0xFF) - 127;
-    if (exp >= 16) { // 2^(15+1) = 65536 overflow
+    if (exp >= 16) {                                        // 2^(15+1) = 65536 overflow
         return static_cast<int16_t>((sign << 15) | 0x7BFF); // sign + max
     }
     // construct sign bit
@@ -43,8 +43,7 @@ static float convertToFloat(int16_t _u)
         return 0.0f;
     }
     const uint32_t sign = (hBits >> 15) & 0x1;
-    const uint32_t exp16 = (hBits >> FP16_MANT_BITS) &
-                           ((1U << FP16_EXP_BITS) - 1);
+    const uint32_t exp16 = (hBits >> FP16_MANT_BITS) & ((1U << FP16_EXP_BITS) - 1);
     const uint32_t mantissa = hBits & ((1U << FP16_MANT_BITS) - 1);
 
     // inf or NaN
@@ -58,8 +57,7 @@ static float convertToFloat(int16_t _u)
     // normal number
     const int32_t exp32 = static_cast<int32_t>(exp16) - 15 + 127;
     const uint32_t mantissa32 = mantissa << (23 - FP16_MANT_BITS);
-    const uint32_t fBits = (sign << 31) | (static_cast<uint32_t>(exp32) << 23) |
-                           mantissa32;
+    const uint32_t fBits = (sign << 31) | (static_cast<uint32_t>(exp32) << 23) | mantissa32;
     return std::bit_cast<float>(fBits);
 }
 

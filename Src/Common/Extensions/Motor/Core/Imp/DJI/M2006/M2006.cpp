@@ -43,7 +43,7 @@ MotorTypeDef_e M2006::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (regInfo_.comType != ComType_e ::CAN) {
+    if (regInfo_.comType != ComType_e::CAN) {
         rslt |= 1;
         LOG::error("M2006", " %s: only support CAN comtype", regInfo_.name);
     }

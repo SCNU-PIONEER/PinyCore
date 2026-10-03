@@ -1,6 +1,7 @@
 #pragma once
 
 namespace FILTER {
+
 class Mean {
 public:
     float process(float _in)
@@ -20,7 +21,6 @@ private:
     float sum_ = 0.f;
     int count_ = 0;
 };
-
 
 class WeightedMean3 {
     static constexpr float COF[3] = { 0.2f, 0.6f, 0.2f };

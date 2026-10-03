@@ -54,7 +54,6 @@ static constexpr uint16_t WCRC_TABLE[256] = {
 // uint32_t Verify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength);
 // uint16_t Get_CRC16_Check_Sum(uint8_t *pchMessage,uint32_t dwLength,uint16_t wCRC);
 
-
 /**
   * @brief CRC8 Caculation function
   * @param[in] pchMessage : Data to Verify,
@@ -72,7 +71,6 @@ uint8_t Get_CRC8_Check_Sum(const uint8_t *_pchMessage, uint16_t _dwLength, uint8
     }
     return _ucCRC8;
 }
-
 
 /**
   * @brief CRC8 Verify function
@@ -92,7 +90,6 @@ uint32_t Verify_CRC8_Check_Sum(const uint8_t *_pchMessage, uint16_t _dwLength)
     return (ucExpected == _pchMessage[_dwLength - 1]);
 }
 
-
 /**
   * @brief Append CRC8 value to the end of the buffer
   * @param[in] pchMessage : Data to Verify,
@@ -110,7 +107,6 @@ void Append_CRC8_Check_Sum(uint8_t *_pchMessage, uint16_t _dwLength)
 
     _pchMessage[_dwLength - 1] = ucCRC;
 }
-
 
 /**
   * @brief CRC16 Caculation function
@@ -133,7 +129,6 @@ uint16_t Get_CRC16_Check_Sum(const uint8_t *_pchMessage, uint32_t _dwLength, uin
     return _wCRC;
 }
 
-
 /**
   * @brief CRC16 Verify function
   * @param[in] pchMessage : Data to Verify,
@@ -151,7 +146,6 @@ uint32_t Verify_CRC16_Check_Sum(const uint8_t *_pchMessage, uint32_t _dwLength)
     return ((wExpected & 0xff) == _pchMessage[_dwLength - 2] &&
             ((wExpected >> 8) & 0xff) == _pchMessage[_dwLength - 1]);
 }
-
 
 /**
   * @brief Append CRC16 value to the end of the buffer

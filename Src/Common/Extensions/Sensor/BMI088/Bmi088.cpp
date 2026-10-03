@@ -98,7 +98,6 @@ void BMI088::gyroReadMuliReg(uint8_t _reg, uint8_t *_data, uint8_t _len)
     GYRO_NS_H();
 }
 
-
 #elif defined(BMI088_USE_IIC)
 
 #endif
@@ -110,24 +109,16 @@ void BMI088::gyroReadMuliReg(uint8_t _reg, uint8_t *_data, uint8_t _len)
 * @details:    	BMI088加速度传感器寄存器数据写入错误处理初始化
 ************************************************************************
 **/
-static constexpr uint8_t
-        WRITE_BMI088_ACCEL_REG_DATA_ERROR[BMI088_WRITE_ACCEL_REG_NUM][3] = {
-            { BMI088_ACC_PWR_CTRL, BMI088_ACC_ENABLE_ACC_ON,
-              BMI088_ACC_PWR_CTRL_ERROR },
-            { BMI088_ACC_PWR_CONF, BMI088_ACC_PWR_ACTIVE_MODE,
-              BMI088_ACC_PWR_CONF_ERROR },
-            { BMI088_ACC_CONF,
-              BMI088_ACC_NORMAL | BMI088_ACC_800_HZ | BMI088_ACC_CONF_MUST_Set,
-              BMI088_ACC_CONF_ERROR },
-            { BMI088_ACC_RANGE, BMI088_ACC_RANGE_3G, BMI088_ACC_RANGE_ERROR },
-            { BMI088_INT1_IO_CTRL,
-              BMI088_ACC_INT1_IO_ENABLE | BMI088_ACC_INT1_GPIO_PP |
-                      BMI088_ACC_INT1_GPIO_LOW,
-              BMI088_INT1_IO_CTRL_ERROR },
-            { BMI088_INT_MAP_DATA, BMI088_ACC_INT1_DRDY_INTERRUPT,
-              BMI088_INT_MAP_DATA_ERROR }
+static constexpr uint8_t WRITE_BMI088_ACCEL_REG_DATA_ERROR[BMI088_WRITE_ACCEL_REG_NUM][3] = {
+    { BMI088_ACC_PWR_CTRL, BMI088_ACC_ENABLE_ACC_ON, BMI088_ACC_PWR_CTRL_ERROR },
+    { BMI088_ACC_PWR_CONF, BMI088_ACC_PWR_ACTIVE_MODE, BMI088_ACC_PWR_CONF_ERROR },
+    { BMI088_ACC_CONF, BMI088_ACC_NORMAL | BMI088_ACC_800_HZ | BMI088_ACC_CONF_MUST_Set, BMI088_ACC_CONF_ERROR },
+    { BMI088_ACC_RANGE, BMI088_ACC_RANGE_3G, BMI088_ACC_RANGE_ERROR },
+    { BMI088_INT1_IO_CTRL, BMI088_ACC_INT1_IO_ENABLE | BMI088_ACC_INT1_GPIO_PP | BMI088_ACC_INT1_GPIO_LOW,
+      BMI088_INT1_IO_CTRL_ERROR },
+    { BMI088_INT_MAP_DATA, BMI088_ACC_INT1_DRDY_INTERRUPT, BMI088_INT_MAP_DATA_ERROR }
 
-        };
+};
 /**
 ************************************************************************
 * @brief:      	write_BMI088_gyro_reg_data_error_init(void)
@@ -136,22 +127,16 @@ static constexpr uint8_t
 * @details:    	BMI088陀螺仪传感器寄存器数据写入错误处理初始化
 ************************************************************************
 **/
-static constexpr uint8_t
-        WRITE_BMI088_GYRO_REG_DATA_ERROR[BMI088_WRITE_GYRO_REG_NUM][3] = {
-            { BMI088_GYRO_RANGE, BMI088_GYRO_2000, BMI088_GYRO_RANGE_ERROR },
-            { BMI088_GYRO_BANDWIDTH,
-              BMI088_GYRO_1000_116_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set,
-              BMI088_GYRO_BANDWIDTH_ERROR },
-            { BMI088_GYRO_LPM1, BMI088_GYRO_NORMAL_MODE,
-              BMI088_GYRO_LPM1_ERROR },
-            { BMI088_GYRO_CTRL, BMI088_DRDY_ON, BMI088_GYRO_CTRL_ERROR },
-            { BMI088_GYRO_INT3_INT4_IO_CONF,
-              BMI088_GYRO_INT3_GPIO_PP | BMI088_GYRO_INT3_GPIO_LOW,
-              BMI088_GYRO_INT3_INT4_IO_CONF_ERROR },
-            { BMI088_GYRO_INT3_INT4_IO_MAP, BMI088_GYRO_DRDY_IO_INT3,
-              BMI088_GYRO_INT3_INT4_IO_MAP_ERROR }
+static constexpr uint8_t WRITE_BMI088_GYRO_REG_DATA_ERROR[BMI088_WRITE_GYRO_REG_NUM][3] = {
+    { BMI088_GYRO_RANGE, BMI088_GYRO_2000, BMI088_GYRO_RANGE_ERROR },
+    { BMI088_GYRO_BANDWIDTH, BMI088_GYRO_1000_116_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set, BMI088_GYRO_BANDWIDTH_ERROR },
+    { BMI088_GYRO_LPM1, BMI088_GYRO_NORMAL_MODE, BMI088_GYRO_LPM1_ERROR },
+    { BMI088_GYRO_CTRL, BMI088_DRDY_ON, BMI088_GYRO_CTRL_ERROR },
+    { BMI088_GYRO_INT3_INT4_IO_CONF, BMI088_GYRO_INT3_GPIO_PP | BMI088_GYRO_INT3_GPIO_LOW,
+      BMI088_GYRO_INT3_INT4_IO_CONF_ERROR },
+    { BMI088_GYRO_INT3_INT4_IO_MAP, BMI088_GYRO_DRDY_IO_INT3, BMI088_GYRO_INT3_INT4_IO_MAP_ERROR }
 
-        };
+};
 /**
 ************************************************************************
 * @brief:      	BMI088_init(void)
@@ -211,14 +196,12 @@ uint8_t BMI088::accelInit()
     }
 
     //set accel sonsor config and check
-    for (writeRegNum = 0; writeRegNum < BMI088_WRITE_ACCEL_REG_NUM;
-         writeRegNum++) {
+    for (writeRegNum = 0; writeRegNum < BMI088_WRITE_ACCEL_REG_NUM; writeRegNum++) {
         accelWriteSingleReg(WRITE_BMI088_ACCEL_REG_DATA_ERROR[writeRegNum][0],
                             WRITE_BMI088_ACCEL_REG_DATA_ERROR[writeRegNum][1]);
         delay_us(BMI088_COM_WAIT_SENSOR_TIME);
 
-        accelReadSingleReg(WRITE_BMI088_ACCEL_REG_DATA_ERROR[writeRegNum][0],
-                           res);
+        accelReadSingleReg(WRITE_BMI088_ACCEL_REG_DATA_ERROR[writeRegNum][0], res);
         delay_us(BMI088_COM_WAIT_SENSOR_TIME);
 
         if (res != WRITE_BMI088_ACCEL_REG_DATA_ERROR[writeRegNum][1]) {
@@ -262,14 +245,12 @@ uint8_t BMI088::gyroInit(void)
     }
 
     //set gyro sonsor config and check
-    for (writeRegNum = 0; writeRegNum < BMI088_WRITE_GYRO_REG_NUM;
-         writeRegNum++) {
+    for (writeRegNum = 0; writeRegNum < BMI088_WRITE_GYRO_REG_NUM; writeRegNum++) {
         gyroWriteSingleReg(WRITE_BMI088_GYRO_REG_DATA_ERROR[writeRegNum][0],
                            WRITE_BMI088_GYRO_REG_DATA_ERROR[writeRegNum][1]);
         delay_us(BMI088_COM_WAIT_SENSOR_TIME);
 
-        gyroReadSingleReg(WRITE_BMI088_GYRO_REG_DATA_ERROR[writeRegNum][0],
-                          res);
+        gyroReadSingleReg(WRITE_BMI088_GYRO_REG_DATA_ERROR[writeRegNum][0], res);
         delay_us(BMI088_COM_WAIT_SENSOR_TIME);
 
         if (res != WRITE_BMI088_GYRO_REG_DATA_ERROR[writeRegNum][1]) {
@@ -332,8 +313,7 @@ Bmi088RealData_t BMI088::read()
         tempDeltaTick = sensorTick_ - sensorTickLast_;
     }
     if (tempDeltaTick != 0)
-        data_.time = static_cast<float>(tempDeltaTick) *
-                     0.0000390625f; // convert to seconds
+        data_.time = static_cast<float>(tempDeltaTick) * 0.0000390625f; // convert to seconds
 
     // read temperature
     // the temperature data is updated every 1.28s
@@ -346,9 +326,7 @@ Bmi088RealData_t BMI088::read()
     }
 
     rawData_.temperate = bmi088RawTemp;
-    data_.temperate = static_cast<float>(bmi088RawTemp) * BMI088_TEMP_FACTOR +
-                      BMI088_TEMP_OFFSET;
-
+    data_.temperate = static_cast<float>(bmi088RawTemp) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
 
     return data_;
 }

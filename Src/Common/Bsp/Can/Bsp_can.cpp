@@ -19,7 +19,6 @@ HAL_StatusTypeDef Can::init()
     return result;
 }
 
-
 HAL_StatusTypeDef Can::registerCallback(canHandle *_hcan, uint32_t _stdid, callback _pCallback)
 {
     struct Handler_s temp = { .stdid = _stdid, .func = _pCallback };

@@ -22,8 +22,7 @@ template <typename T> class Topic;
 
 template <typename T> class Publisher : public Node {
 public:
-    explicit Publisher(Topic<T> *_topic, T *_sourceObject)
-            : topic_(_topic), sourceObject_(_sourceObject)
+    explicit Publisher(Topic<T> *_topic, T *_sourceObject) : topic_(_topic), sourceObject_(_sourceObject)
     {
         if (topic_ != nullptr)
             topic_->registerPublisher(this);
@@ -52,9 +51,7 @@ private:
 template <typename T> class Subscriber : public Node {
 public:
     Subscriber(const UBaseType_t _queueSize, Topic<T> *_topic, T *_targetObject)
-            : topic_(_topic)
-            , targetObject_(_targetObject)
-            , queue_(xQueueCreate(_queueSize, sizeof(T)))
+            : topic_(_topic), targetObject_(_targetObject), queue_(xQueueCreate(_queueSize, sizeof(T)))
     {
         if (queue_ == nullptr) {
             while (true)
@@ -93,8 +90,7 @@ public:
     {
         publisher_ = _publisher;
         publisher_->topic_ = this;
-        LOG::info("Topic", "%s: register publisher uid:%d", this->name_,
-                  _publisher->uid());
+        LOG::info("Topic", "%s: register publisher uid:%d", this->name_, _publisher->uid());
     }
     void cancelPublisher()
     {
@@ -105,14 +101,11 @@ public:
     {
         subscribers_.push_back(_subscriber);
         _subscriber->topic_ = this;
-        LOG::info("Topic", "%s: register subscriber uid:%d", this->name_,
-                  _subscriber->uid());
+        LOG::info("Topic", "%s: register subscriber uid:%d", this->name_, _subscriber->uid());
     }
     void cancelSubscriber(Subscriber<T> *_subscriber)
     {
-        subscribers_.erase(std::remove(subscribers_.begin(), subscribers_.end(),
-                                       _subscriber),
-                           subscribers_.end());
+        subscribers_.erase(std::remove(subscribers_.begin(), subscribers_.end(), _subscriber), subscribers_.end());
         LOG::info("Topic", "%s: cancel subscriber", this->name_);
     }
     void publish()

@@ -322,7 +322,6 @@ Status_e Client::initTypeLinkedLists(Node_s **_graphicLink, Node_s **_charLink, 
     return Status_e::OK;
 }
 
-
 Status_e Client::storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead, Info_s *_graphicPriorityBuf,
                                      Info_s *_charPriorityBuf, uint8_t *_graphicBufNum, SendMode_e *_sendMode)
 {
@@ -335,7 +334,6 @@ Status_e Client::storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead
     if (constListCursor == nullptr) {
         constListCursor = _listHead;
     }
-
 
     if (dynamicListCursor == nullptr && constListCursor == nullptr) {
         return Status_e::ERROR; // 跑到这里证明没有初始化链表
@@ -419,7 +417,6 @@ Status_e Client::storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead
     *_sendMode = SendMode_e::GRAPHIC;
     return Status_e::OK; //发送图形
 }
-
 
 CharGraphicData_s Client::processCharInfo2Buffer(Info_s _info, uint8_t _addOperateEnable)
 {

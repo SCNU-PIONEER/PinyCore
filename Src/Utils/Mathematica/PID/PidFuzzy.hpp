@@ -8,10 +8,8 @@ class FuzzyPid : public PID {
 public:
     using RuleTable = std::array<std::array<int, 7>, 7>;
 
-    FuzzyPid(float _kp, float _ki, float _kd, float _dt, float _iMax,
-             float _outMax, float _deadband = 0.f,
-             float _errorScale = std::numbers::pi_v<float>,
-             float _errorRateScale = 2.5f * std::numbers::pi_v<float>);
+    FuzzyPid(float _kp, float _ki, float _kd, float _dt, float _iMax, float _outMax, float _deadband = 0.f,
+             float _errorScale = std::numbers::pi_v<float>, float _errorRateScale = 2.5f * std::numbers::pi_v<float>);
 
     void reset() final;
 
@@ -33,8 +31,7 @@ private:
     float outMax;
     float deadband;
 
-    float fuzzyInference(float _err, float _errRate,
-                         const RuleTable &_rule) const;
+    float fuzzyInference(float _err, float _errRate, const RuleTable &_rule) const;
 
     float membershipCalc(float _val, float _ref) const;
 };

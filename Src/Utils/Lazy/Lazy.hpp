@@ -25,8 +25,8 @@ public:
     }
 
     template <typename... Args>
-    requires std::is_constructible_v<T, Args...> constexpr T &
-    init(Args &&..._args) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+    requires std::is_constructible_v<T, Args...> constexpr T &init(Args &&..._args)
+            noexcept(std::is_nothrow_constructible_v<T, Args...>)
     {
         if (!engaged_) {
             construct(std::forward<Args>(_args)...);

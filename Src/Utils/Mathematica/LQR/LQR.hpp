@@ -8,15 +8,9 @@ template <int xRank, int uRank> class LQR {
     static constexpr unsigned short DEFAULT_MAX_ITER = 1000;
 
 public:
-    LQR(const Matrix<xRank, xRank> &_setA, const Matrix<xRank, uRank> &_setB,
-        const Matrix<xRank, xRank> &_setQ, const Matrix<uRank, uRank> &_setR,
-        unsigned short _maxIter = DEFAULT_MAX_ITER)
-            : A_(_setA)
-            , B_(_setB)
-            , Q_(_setQ)
-            , R_(_setR)
-            , maxIter_(_maxIter)
-            , P_(Q_)
+    LQR(const Matrix<xRank, xRank> &_setA, const Matrix<xRank, uRank> &_setB, const Matrix<xRank, xRank> &_setQ,
+        const Matrix<uRank, uRank> &_setR, unsigned short _maxIter = DEFAULT_MAX_ITER)
+            : A_(_setA), B_(_setB), Q_(_setQ), R_(_setR), maxIter_(_maxIter), P_(Q_)
     {
     }
 
@@ -31,8 +25,7 @@ public:
         for (unsigned short iter = 0; iter < maxIter_; iter++) {
             // P(t) = Q + A'P(t+1)A - A'P(t+1)B(R+B'P(t+1)B)^(-1)B'P(t+1)A
             P_ = (Q_) + (A_.trans() * P_ * A_) -
-                 (A_.trans() * P_ * B_ * (R_ + (B_.trans() * P_ * B_)).inv() *
-                  B_.trans() * P_ * A_);
+                 (A_.trans() * P_ * B_ * (R_ + (B_.trans() * P_ * B_)).inv() * B_.trans() * P_ * A_);
             if (P_.norm() < EPSILON)
                 break;
         }

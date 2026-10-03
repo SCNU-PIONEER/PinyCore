@@ -22,7 +22,6 @@ uint32_t dwtRead();
 
 #ifdef __cplusplus
 
-
 class Dwt : public Singleton<Dwt> {
 public:
     /**

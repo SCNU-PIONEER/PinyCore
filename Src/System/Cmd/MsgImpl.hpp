@@ -3,21 +3,28 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-
 namespace CHASSIS {
+
 enum class FSMState_e : uint8_t;
+
 }
 
 namespace GIMBAL {
+
 enum class FSMState_e : uint8_t;
+
 }
 
 namespace ARM {
+
 enum class FSMState_e : uint8_t;
+
 }
 
 namespace ARMORBOOSTER {
+
 enum class FSMState_e : uint8_t;
+
 }
 
 struct MsgBus_s {
