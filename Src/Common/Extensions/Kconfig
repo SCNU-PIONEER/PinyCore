@@ -21,6 +21,8 @@ menu "extension config"
 
     select USE_MATHEMATICA_CRC
 
+    source "Src/Common/Extensions/Motor/Kconfig"
+
     source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
 
     config EXTENSION_REFEREE
