@@ -1,0 +1,27 @@
+menu "Motor driver selection"
+    config MOTOR_DRIVER_DAMIAO
+    bool "DAMIAO"
+    default n
+
+    config MOTOR_DRIVER_DJI
+    bool "DJI"
+    default n
+
+    config MOTOR_DRIVER_DJI_OLD
+    bool "DJI old"
+    default n
+
+    config MOTOR_DRIVER_LK
+    bool "LK"
+    default n
+
+    config MOTOR_DRIVER_MAITA
+    bool "MAITA"
+    default n
+
+    config MOTOR_DRIVER_UNITREE
+    bool "Unitree"
+    default n
+endmenu
+
+source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"

@@ -72,6 +72,8 @@ Support configuring projects based on Kconfig
 cmake --build ./build --target menuconfig
 ```
 
+Enable `motor driver` under `extension config` first, then open `Motor driver selection` and choose the required motor drivers.
+
 Support building projects directly based on pre-configured files (which should exist in the root directory, with the file name "yourconfig" in this example)
 
 ```sh

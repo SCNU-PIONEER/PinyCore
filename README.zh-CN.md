@@ -74,6 +74,8 @@ ninja -C build
 cmake --build ./build --target menuconfig
 ```
 
+在菜单中先启用 `extension config` 下的 `motor driver`，再进入 `Motor driver selection` 选择所需的电机驱动。
+
 支持直接基于预配置文件构建项目（预配置文件应位于根目录，本示例中的文件名为 `yourconfig`）：
 
 ```sh

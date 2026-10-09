@@ -21,7 +21,9 @@ menu "extension config"
 
     select USE_MATHEMATICA_CRC
 
-    source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
+    if EXTENSION_MOTOR
+        source "Src/Common/Extensions/Motor/Core/Imp/Kconfig"
+    endif
 
     config EXTENSION_REFEREE
     bool "referee"

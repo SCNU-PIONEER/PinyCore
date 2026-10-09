@@ -2,9 +2,14 @@
 set(SOURCES)
 
 if(EXTENSION_MOTOR)
-  file(GLOB_RECURSE MOTOR_SOURCES
-       "${CMAKE_CURRENT_SOURCE_DIR}/Motor/*.cpp")
-  list(APPEND SOURCES ${MOTOR_SOURCES})
+  list(APPEND SOURCES
+       "Motor/Core/Base/IMotor.cpp"
+       "Motor/Core/Base/QuadMotorBase.cpp"
+       "Motor/Core/Base/TripMotorBase.cpp"
+       "Motor/Core/MotorManager.cpp"
+  )
+
+  include("${CMAKE_CURRENT_SOURCE_DIR}/Motor/Core/Imp/CMakeLists.txt")
 endif()
 
 if(EXTENSION_BUZZER)
