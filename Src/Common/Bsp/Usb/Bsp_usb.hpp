@@ -23,7 +23,6 @@ public:
     int8_t send(const uint8_t *_data, uint16_t _len);
     int8_t registerCallback(std::function<void(uint8_t *, uint16_t)> _cb);
 
-
 private:
     friend class Singleton<Usb>;
     friend class Task<Usb, 256>;

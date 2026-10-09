@@ -24,7 +24,7 @@ void QuadMotorGroup_s::showMotorInfo()
         }
     }
 }
-QuadMotorBase ::QuadMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
+QuadMotorBase::QuadMotorBase(const char _name[16], InitConfig_s _config) : Base(_name, _config)
 {
     regInfo_.isMutiple = true;
 }

@@ -71,7 +71,6 @@ void DT7::parse()
     data_.rc.switchLeft = static_cast<Sw_e>((static_cast<uint8_t>(buf_[5] >> 4) & 0x0C) >> 2);
     data_.rc.switchRight = static_cast<Sw_e>(static_cast<uint8_t>(buf_[5] >> 4) & 0x03);
 
-
     data_.mouse.x = static_cast<int16_t>((buf_[6]) | (buf_[7] << 8));
     data_.mouse.y = static_cast<int16_t>((buf_[8]) | (buf_[9] << 8));
     data_.mouse.z = static_cast<int16_t>((buf_[10]) | (buf_[11] << 8));

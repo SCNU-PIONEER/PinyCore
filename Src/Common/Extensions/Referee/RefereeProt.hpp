@@ -290,7 +290,6 @@ struct MapRobotData_s {
     uint16_t allySentryPositionY;
 };
 
-
 /* 0x0306 自定义模拟键鼠，30Hz 周期上限 */
 struct CustomClientData_s {
     uint16_t keyValue;
@@ -580,4 +579,5 @@ INFO_s constexpr INFO[INFO_NUM] = {
 };
 
 #pragma pack(pop)
+
 } // namespace REFEREE

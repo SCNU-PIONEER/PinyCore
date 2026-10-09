@@ -46,7 +46,6 @@ public:
         for (std::size_t i = 0; i < stateDim; i++)
             P_(i, i) = std::fmax(std::fmin(P_(i, i), MAX_P_DIAG), MIN_P_DIAG);
 
-
         // restrict non diagonal elements
         for (int i = 0; i < P_.rows(); ++i) {
             for (int j = 0; j < i; ++j) {

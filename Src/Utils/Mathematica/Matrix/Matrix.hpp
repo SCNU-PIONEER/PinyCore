@@ -4,7 +4,6 @@
 #include "dsp/fast_math_functions.h"
 #include <initializer_list>
 
-
 template <int _rows, int _cols> class Matrix {
 public:
     Matrix() : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }

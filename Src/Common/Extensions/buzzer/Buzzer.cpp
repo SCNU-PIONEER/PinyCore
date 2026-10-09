@@ -13,7 +13,7 @@ Buzzer::Buzzer(TIM_HandleTypeDef *_htim, uint32_t _channel, uint32_t _timerFreq)
     disable();
 };
 
-Buzzer ::~Buzzer()
+Buzzer::~Buzzer()
 {
     disable();
     vQueueDelete(queue_);

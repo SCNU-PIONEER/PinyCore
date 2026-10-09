@@ -41,7 +41,6 @@ private:
     FSMMode_e mode_ = FSMMode_e::NORMAL;
 };
 
-
 template <typename T> class StateFactory {
 public:
     void init(FSMState<T> *_state)

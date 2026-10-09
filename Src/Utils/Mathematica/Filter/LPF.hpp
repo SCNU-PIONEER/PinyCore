@@ -7,17 +7,12 @@ namespace FILTER {
 
 class LPF {
 public:
-    LPF(float _sampleRate, float _cutoffFrequency)
-            : sampleRate_(_sampleRate), cutoffFrequency_(_cutoffFrequency)
+    LPF(float _sampleRate, float _cutoffFrequency) : sampleRate_(_sampleRate), cutoffFrequency_(_cutoffFrequency)
     {
         updateAlpha();
     }
 
-    float process(float _input)
-    {
-        return outputPrev_ =
-                       (alpha_ * _input) + ((1.0f - alpha_) * outputPrev_);
-    }
+    float process(float _input) { return outputPrev_ = (alpha_ * _input) + ((1.0f - alpha_) * outputPrev_); }
 
     void setSampleRate(float _sampleRate)
     {

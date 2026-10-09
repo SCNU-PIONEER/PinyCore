@@ -2,9 +2,7 @@
 #include "Dwt.hpp"
 #include "Bsp_spi.hpp"
 
-
 extern SPI_HandleTypeDef BMI088_USING_SPI_UNIT;
-
 
 void Middleware::delay_ms(uint16_t _ms)
 {

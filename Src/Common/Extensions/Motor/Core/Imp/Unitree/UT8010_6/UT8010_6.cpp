@@ -37,7 +37,7 @@ MotorTypeDef_e UT80106::checkBaseConfig()
 {
     MotorTypeDef_e rslt = 0;
 
-    if (regInfo_.comType != PINYMOTOR::ComType_e ::RS485) {
+    if (regInfo_.comType != PINYMOTOR::ComType_e::RS485) {
         rslt |= 1;
         LOG::error("UT8010_6", " %s: only support RS485 comtype", regInfo_.name);
     }

@@ -32,8 +32,8 @@ class AccelCali {
     };
 
 public:
-    void update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx, int16_t _gy,
-                int16_t _gz, float _aTransK, float _gTransK);
+    void update(int16_t _ax, int16_t _ay, int16_t _az, int16_t _gx, int16_t _gy, int16_t _gz, float _aTransK,
+                float _gTransK);
 
     AccelCali(const AccelCali &) = delete;
     AccelCali &operator=(const AccelCali &) = delete;

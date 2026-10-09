@@ -218,7 +218,6 @@ protected:
     Status_e storeHighPriorityUI(Node_s *_dynamicListHead, Node_s *_listHead, Info_s *_graphicPriorityBuf,
                                  Info_s *_charPriorityBuf, uint8_t *_graphicBufNum, SendMode_e *_sendMode);
 
-
     /*初始化优先队列*/
     Status_e initPriorityLinkedList(Node_s **_headRef, Info_s *_ui_input, uint8_t _num);
 

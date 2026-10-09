@@ -7,7 +7,9 @@
 #include "etl/delegate.h"
 
 namespace TEST {
+
 enum class FSMState_e : uint8_t {};
+
 }
 
 class TestModule : public Singleton<TestModule>, public Task<TestModule, 512> {

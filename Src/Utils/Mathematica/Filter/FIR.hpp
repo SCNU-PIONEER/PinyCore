@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cmath>
 namespace FILTER {
+
 template <uint8_t RANK> class FIR {
 public:
     FIR(float _num[RANK + 1]) { std::copy(_num, _num + RANK + 1, NUM_); }
@@ -20,4 +21,5 @@ private:
     float x_[RANK]{};
     float NUM_[RANK + 1] = {};
 };
+
 } // namespace FILTER

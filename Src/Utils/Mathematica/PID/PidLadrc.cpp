@@ -1,8 +1,7 @@
 #include "PidLadrc.hpp"
 #include <algorithm>
 
-LadrcPid::LadrcPid(float _wo, float _wc, float _b0, float _zMax, float _outMax,
-                   float _dt)
+LadrcPid::LadrcPid(float _wo, float _wc, float _b0, float _zMax, float _outMax, float _dt)
         : kp_(_wc * _wc)
         , kd_(2 * _wc)
         , dt_(_dt)
