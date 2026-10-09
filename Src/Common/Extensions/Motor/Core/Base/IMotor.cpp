@@ -22,8 +22,11 @@ IMotor::IMotor(const char _name[16], InitConfig_s _config) : globalState(GlobalS
     regInfo_.isReverse = _config.isReverse;
 
     registerMotor();
-    this->cmd_.clear();
+
+    cmd_.clear();
+
     memset(&data_, 0, sizeof(Data_s));
+    data_.angLast = std::numeric_limits<float>::quiet_NaN();
 }
 
 bool IMotor::checkSend()
@@ -42,14 +45,15 @@ void IMotor::calcRecvFreq()
     if (dt < 1000) {
         return;
     } else {
-        AUX_.rxFreq = static_cast<float>(AUX_.recvCnt) / (static_cast<float>(dt) / 1000.f);
-        AUX_.recvCnt = 0;
+        uint16_t n = AUX_.recvCnt.exchange(0, std::memory_order_relaxed);
+        AUX_.rxFreq = static_cast<float>(n) / (static_cast<float>(dt) / 1000.f);
         AUX_.lastRecvTick = xTaskGetTickCount();
     }
     if (AUX_.rxFreq < AUX_.txFreq * 0.5f) {
-        this->globalState = GlobalState_e::OFFLINE;
+        globalState = GlobalState_e::OFFLINE;
+        data_.angLast = std::numeric_limits<float>::quiet_NaN();
     } else {
-        this->globalState = GlobalState_e::ONLINE;
+        globalState = GlobalState_e::ONLINE;
     }
 }
 
@@ -159,44 +163,44 @@ MotorTypeDef_e IMotor::cmdElec(float _elec)
 
 void IMotor::parseCmd()
 {
-    this->cmd_.curCmdType = AUX_.cmdBuf.cmdType;
+    cmd_.curCmdType = AUX_.cmdBuf.cmdType;
 
     cmd_.prevSW = cmd_.SW;
 
-    switch (this->cmd_.curCmdType) {
+    switch (cmd_.curCmdType) {
     case MotorCmdType_e::ON: {
-        this->cmd_.updateSW(true);
+        cmd_.updateSW(true);
         break;
     }
     case MotorCmdType_e::OFF: {
-        this->cmd_.updateSW(false);
+        cmd_.updateSW(false);
         break;
     }
     case MotorCmdType_e::SET_ELEC: {
-        this->cmd_.elec = AUX_.cmdBuf.elecCmd;
+        cmd_.elec = AUX_.cmdBuf.elecCmd;
         break;
     }
     case MotorCmdType_e::SET_TORQ: {
-        this->cmd_.torq = AUX_.cmdBuf.torqCmd;
+        cmd_.torq = AUX_.cmdBuf.torqCmd;
         break;
     }
     case MotorCmdType_e::SET_VEL: {
-        this->cmd_.vel = AUX_.cmdBuf.velCmd;
+        cmd_.vel = AUX_.cmdBuf.velCmd;
         break;
     }
     case MotorCmdType_e::SET_POS: {
-        this->cmd_.pos = AUX_.cmdBuf.posCmd;
+        cmd_.pos = AUX_.cmdBuf.posCmd;
         break;
     }
     case MotorCmdType_e::SET_POSVEL: {
-        this->cmd_.pos = AUX_.cmdBuf.posCmd;
-        this->cmd_.vel = AUX_.cmdBuf.velCmd;
+        cmd_.pos = AUX_.cmdBuf.posCmd;
+        cmd_.vel = AUX_.cmdBuf.velCmd;
         break;
     }
     case MotorCmdType_e::SET_MIT: {
-        this->cmd_.pos = AUX_.cmdBuf.posCmd;
-        this->cmd_.vel = AUX_.cmdBuf.velCmd;
-        this->cmd_.torq = AUX_.cmdBuf.torqCmd;
+        cmd_.pos = AUX_.cmdBuf.posCmd;
+        cmd_.vel = AUX_.cmdBuf.velCmd;
+        cmd_.torq = AUX_.cmdBuf.torqCmd;
         break;
     }
     default: {
@@ -206,15 +210,15 @@ void IMotor::parseCmd()
 
     clampPos(AUX_.cmdBuf.posMin, AUX_.cmdBuf.posMax);
 
-    if (this->cmd_.posMax != this->cmd_.posMin) {
-        this->cmd_.pos = clampArc(this->cmd_.pos, this->cmd_.posMin, this->cmd_.posMax);
+    if (cmd_.posMax != cmd_.posMin) {
+        cmd_.pos = clampArc(cmd_.pos, cmd_.posMin, cmd_.posMax);
     }
 }
 
 void IMotor::clampPos(float _posMin, float _posMax)
 {
-    this->cmd_.posMin = _posMin;
-    this->cmd_.posMax = _posMax;
+    cmd_.posMin = _posMin;
+    cmd_.posMax = _posMax;
 }
 
 void IMotor::disableClampPos() { clampPos(0.f, 0.f); }

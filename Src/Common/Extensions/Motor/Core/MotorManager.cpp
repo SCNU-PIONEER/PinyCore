@@ -11,7 +11,7 @@ void MotorManager::task()
     for (;;) {
         for (const auto &motorPair : motorList_) {
             IMotor *motor = motorPair.second;
-            motor->update();
+            motor->process();
         }
         vTaskDelayUntil(&xLastWakeTime, static_cast<TickType_t>(1000.f / TASK_FREQ));
     }

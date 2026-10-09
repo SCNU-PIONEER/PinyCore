@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <atomic>
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "../Projdefs.hpp"
@@ -8,6 +9,7 @@
 
 namespace PINYMOTOR {
 
+class MotorManager;
 class IMotor {
 private:
     MotorTypeDef_e cmdProto(CmdBus_s &_cmd);
@@ -32,18 +34,21 @@ protected:
         CmdBus_s cmdBuf;
         float txFreq;
         float rxFreq;
-        uint16_t recvCnt;
+        std::atomic<uint16_t> recvCnt{ 0 };
         uint32_t lastSendTick = 0; // ms
         uint32_t lastRecvTick = 0; // ms
     } AUX_;                        // AUX info
+    static_assert(std::atomic<uint16_t>::is_always_lock_free, "recvCnt atomic must be lock-free in ISR");
 
     bool checkSend();
     void calcRecvFreq();
     void parseCmd();
 
-protected:
     MotorTypeDef_e registerMotor();
     MotorTypeDef_e cancelMotor();
+
+    friend class MotorManager; // only MotorManager can call process()
+    virtual MotorTypeDef_e process() = 0;
 
 public:
     IMotor(const char _name[16], InitConfig_s _config);

@@ -105,6 +105,13 @@ public:
     MotorTypeDef_e update() final;
 
     /**
+     * @brief Motor ctrl process
+     * 
+     * @return MotorTypeDef_e 
+     */
+    MotorTypeDef_e process() final;
+
+    /**
      * @brief Set the MIT Kp value
      * 
      * @param _kp 

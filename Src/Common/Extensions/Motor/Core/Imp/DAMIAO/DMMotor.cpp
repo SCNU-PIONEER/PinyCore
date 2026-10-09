@@ -53,6 +53,7 @@ void DMMotor::registerRecvCallback(uint16_t _rxId)
     Can::instance().registerCallback(reinterpret_cast<canHandle *>(regInfo_.pComHandle), _rxId,
                                      [this](const uint8_t *_rxBuf) {
                                          BaseType_t higherPriorityTaskWoken = pdFALSE;
+                                         AUX_.recvCnt.fetch_add(1, std::memory_order_relaxed);
                                          xQueueSendFromISR(AUX_.rxQueue, _rxBuf, &higherPriorityTaskWoken);
                                      });
     LOG::info("DMMotor", " %s: Receive cb registed, masterId:%hx", regInfo_.name, _rxId);
@@ -153,11 +154,6 @@ MotorTypeDef_e DMMotor::parse(const RxBus_s::CANRxBuf_s<8> &_rxBuf)
 
         this->data_.singleCirAng = rangeMap(data_.ang / this->rr());
 
-        if (this->globalState == GlobalState_e::OFFLINE || this->globalState == GlobalState_e::UNRECOGNIZED) {
-            this->globalState = GlobalState_e::ONLINE;
-            this->data_.angLast = this->data_.ang;
-        }
-
         float angDiff = this->data_.ang - this->data_.angLast;
         if (angDiff > PI) {
             this->data_.cirNum -= 1.f / this->rr();
@@ -190,19 +186,23 @@ MotorTypeDef_e DMMotor::ctrl()
     return rslt;
 }
 
-MotorTypeDef_e DMMotor::update()
+MotorTypeDef_e DMMotor::process()
 {
-    if (xQueueReceive(AUX_.rxQueue, this->rxBuf_.data, 0) == pdTRUE) {
-        AUX_.recvCnt++;
-        this->parse(this->rxBuf_);
-    }
-
     taskENTER_CRITICAL();
     this->parseCmd();
     taskEXIT_CRITICAL();
 
     this->calcRecvFreq();
     MotorTypeDef_e rslt = ctrl();
+    return rslt;
+}
+
+MotorTypeDef_e DMMotor::update()
+{
+    MotorTypeDef_e rslt = xQueueReceive(AUX_.rxQueue, this->rxBuf_.data, 0);
+    if (rslt == pdTRUE) {
+        this->parse(this->rxBuf_);
+    }
     return rslt;
 }
 
