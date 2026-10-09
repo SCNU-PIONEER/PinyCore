@@ -2,8 +2,7 @@
 set(SOURCES)
 
 if(EXTENSION_MOTOR)
-  file(GLOB_RECURSE MOTOR_SOURCES
-       "${CMAKE_CURRENT_SOURCE_DIR}/Motor/*.cpp")
+  add_subdirectory(Motor)
   list(APPEND SOURCES ${MOTOR_SOURCES})
 endif()
 

@@ -20,3 +20,4 @@ ThirdParty/
 
 # Python cache
 __pycache__/
+.config_editing
