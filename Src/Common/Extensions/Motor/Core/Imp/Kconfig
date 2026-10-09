@@ -15,6 +15,10 @@ menu "Motor driver selection"
     bool "LK"
     default n
 
+    if MOTOR_DRIVER_LK
+        source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
+    endif
+
     config MOTOR_DRIVER_MAITA
     bool "MAITA"
     default n
@@ -23,5 +27,3 @@ menu "Motor driver selection"
     bool "Unitree"
     default n
 endmenu
-
-source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
