@@ -5,7 +5,8 @@ menu "Motor Drivers"
     config MOTOR_DJI
         bool "DJI motors"
         default n
-    if MOTOR_DJI
+    menu "DJI config"
+        depends on MOTOR_DJI
         config MOTOR_DJI_M3508
             bool "M3508"
             default n
@@ -15,21 +16,23 @@ menu "Motor Drivers"
         config MOTOR_DJI_GM6020
             bool "GM6020"
             default n
-    endif
+    endmenu
 
     config MOTOR_DJI_OD
         bool "DJI old motors"
         default n
-    if MOTOR_DJI_OD
+    menu "DJI old config"
+        depends on MOTOR_DJI_OD
         config MOTOR_DJI_OD_GM3510
             bool "GM3510"
             default n
-    endif
+    endmenu
 
     config MOTOR_DAMIAO
         bool "DAMIAO motors"
         default n
-    if MOTOR_DAMIAO
+    menu "DAMIAO config"
+        depends on MOTOR_DAMIAO
         config MOTOR_DM10010L
             bool "DM10010L"
             default n
@@ -51,12 +54,13 @@ menu "Motor Drivers"
         config MOTOR_DM8009
             bool "DM8009"
             default n
-    endif
+    endmenu
 
     config MOTOR_MAITA
         bool "MAITA motors"
         default n
-    if MOTOR_MAITA
+    menu "MAITA config"
+        depends on MOTOR_MAITA
         config MOTOR_RMD_X2_7
             bool "RMD-X2-7"
             default n
@@ -66,31 +70,24 @@ menu "Motor Drivers"
         config MOTOR_RMD_X4_36
             bool "RMD-X4-36"
             default n
-    endif
+    endmenu
 
     config MOTOR_UNITREE
         bool "Unitree motors"
         default n
-    if MOTOR_UNITREE
+    menu "Unitree config"
+        depends on MOTOR_UNITREE
         config MOTOR_UT8010_6
             bool "UT8010-6"
             default n
-    endif
+    endmenu
 
     config MOTOR_LK
         bool "LK motors"
         default n
-    if MOTOR_LK
-        config MOTOR_LK_MF9025
-            bool "MF9025"
-            default n
-        config MOTOR_LK_MG4005
-            bool "MG4005"
-            default n
-        config MOTOR_LK_MG8016EI6_RS485
-            bool "MG8016E-i6 RS485"
-            default n
+    menu "LK config"
+        depends on MOTOR_LK
         source "Src/Common/Extensions/Motor/Core/Imp/LK/Kconfig"
-    endif
+    endmenu
 
 endmenu
