@@ -10,27 +10,6 @@ else()
                         please use 'pip install kconfiglib' to install it")
 endif()
 
-# Prefer the interpreter beside the installed menuconfig entry point. CMake's
-# general Python interpreter may belong to an environment without kconfiglib.
-get_filename_component(KCONFIG_BIN_DIR "${KCONFIG_MCONF}" DIRECTORY)
-find_program(KCONFIG_PYTHON
-    NAMES python python3
-    HINTS "${KCONFIG_BIN_DIR}" "${KCONFIG_BIN_DIR}/.."
-    REQUIRED
-)
-execute_process(
-    COMMAND "${KCONFIG_PYTHON}" -c "import kconfiglib, menuconfig, curses"
-    RESULT_VARIABLE kconfig_import_result
-    ERROR_VARIABLE kconfig_import_error
-)
-if(NOT kconfig_import_result EQUAL 0)
-    message(FATAL_ERROR
-        "Kconfig dependencies are unavailable in ${KCONFIG_PYTHON}.\n"
-        "Set -DKCONFIG_PYTHON=<python-with-kconfiglib-and-curses>.\n"
-        "${kconfig_import_error}")
-endif()
-message(STATUS "Kconfig Python: ${KCONFIG_PYTHON}")
-
 set(PYTHON_SCRIPT "${CMAKE_SOURCE_DIR}/tools/script/Kconfig2h.py")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/.config_editing")
@@ -48,14 +27,13 @@ add_custom_target(clean_all
 
 add_custom_target(menuconfig
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/.config" "${CMAKE_SOURCE_DIR}/.config_editing"
-  COMMAND "${KCONFIG_PYTHON}" "${CMAKE_SOURCE_DIR}/tools/script/motor_menuconfig.py" "${CMAKE_SOURCE_DIR}/Kconfig"
-  COMMAND "${KCONFIG_PYTHON}" "${PYTHON_SCRIPT}"
+  COMMAND ${KCONFIG_MCONF} "${CMAKE_SOURCE_DIR}/Kconfig"
+  COMMAND ${Python_EXECUTABLE} ${PYTHON_SCRIPT}
   COMMAND ${CMAKE_COMMAND} -B "${CMAKE_BINARY_DIR}" -G Ninja
   COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_SOURCE_DIR}/.config_editing"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Launching menuconfig (Kconfig interface)"
   USES_TERMINAL
-  VERBATIM
 )
 
 function (apply_config config_name)

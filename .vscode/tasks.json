@@ -24,7 +24,7 @@
     {
       "label": "AAA menuconfig",
       "type": "shell",
-      "command": "cmake --build build --target menuconfig",
+      "command": "menuconfig ./Kconfig && python ./tools/script/Kconfig2h.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
