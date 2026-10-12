@@ -1,47 +1,65 @@
-menu "LKMotor Communication Config"
+config MOTOR_LK_MF9025
+    bool "MF9025"
+    default n
 
-    depends on EXTENSION_MOTOR
+if MOTOR_LK_MF9025
 
-    choice
-        prompt "MF9025"
-        default MF9025_CAN
+choice LK_MF9025_COMMUNICATION
+    prompt "MF9025 communication"
+    default MF9025_CAN
 
-        config MF9025_CAN
-            bool "CAN"
-        config MF9025_RS485
-            bool "RS485"
-        config MF9025_CAN_BROADCAST
-            bool "Can Broadcast"
-        config MF9025_RS485_BROADCAST
-            bool "RS485 Broadcast"
-    endchoice
+    config MF9025_CAN
+        bool "CAN"
+    config MF9025_RS485
+        bool "RS485"
+    config MF9025_CAN_BROADCAST
+        bool "Can Broadcast"
+    config MF9025_RS485_BROADCAST
+        bool "RS485 Broadcast"
+endchoice
 
-    choice
-        prompt "MG4005"
-        default MG4005_CAN
+endif
 
-        config MG4005_CAN
-            bool "CAN"
-        config MG4005_RS485
-            bool "RS485"
-        config MG4005_CAN_BROADCAST
-            bool "Can Broadcast"
-        config MG4005_RS485_BROADCAST
-            bool "RS485 Broadcast"
-    endchoice
+config MOTOR_LK_MG4005
+    bool "MG4005"
+    default n
 
-    choice
-        prompt "MG8016Ei6"
-        default MG8016Ei6_RS485
+if MOTOR_LK_MG4005
 
-        config MG8016Ei6_CAN
-            bool "CAN"
-        config MG8016Ei6_RS485
-            bool "RS485"
-        config MG8016Ei6_CAN_BROADCAST
-            bool "Can Broadcast"
-        config MG8016Ei6_RS485_BROADCAST
-            bool "RS485 Broadcast"
-    endchoice
+choice LK_MG4005_COMMUNICATION
+    prompt "MG4005 communication"
+    default MG4005_CAN
 
-endmenu
+    config MG4005_CAN
+        bool "CAN"
+    config MG4005_RS485
+        bool "RS485"
+    config MG4005_CAN_BROADCAST
+        bool "Can Broadcast"
+    config MG4005_RS485_BROADCAST
+        bool "RS485 Broadcast"
+endchoice
+
+endif
+
+config MOTOR_LK_MG8016EI6_RS485
+    bool "MG8016E-i6"
+    default n
+
+if MOTOR_LK_MG8016EI6_RS485
+
+choice LK_MG8016EI6_COMMUNICATION
+    prompt "MG8016Ei6 communication"
+    default MG8016Ei6_RS485
+
+    config MG8016Ei6_CAN
+        bool "CAN"
+    config MG8016Ei6_RS485
+        bool "RS485"
+    config MG8016Ei6_CAN_BROADCAST
+        bool "Can Broadcast"
+    config MG8016Ei6_RS485_BROADCAST
+        bool "RS485 Broadcast"
+endchoice
+
+endif
