@@ -21,3 +21,8 @@ ThirdParty/
 # Python cache
 __pycache__/
 .config_editing
+
+# Harness
+.dsh/
+.claude/settings.local.json
+
