@@ -31,6 +31,18 @@ public:
     HAL_StatusTypeDef recvDmaMultiBufInit(uint32_t *_dstAddress, uint32_t _dataLength);
 
     /**
+    * @brief uart circu_DMA_rx_buf init
+    *
+    * @param DataLength 环形缓冲区长度必须是 2^n
+    */
+    HAL_StatusTypeDef recvDmaCircuBufInit(uint8_t *_dstAddress, uint32_t _dataLength);
+
+    /**
+    * @brief 环形接收缓冲区的当前写位置
+    */
+    uint16_t writeIndex() const;
+
+    /**
     * @brief uart multi_DMA_rx_buf init
     */
     HAL_StatusTypeDef recvDmaInit(uint8_t *_dstAddress, uint32_t _dataLength);
