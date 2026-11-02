@@ -7,7 +7,7 @@
 
 namespace TEST {
 
-enum class DmMotorModel_e : uint8_t { DM3507, DM3519, DM4310, DM4340, DM6006, DM8009, DM10010L };
+enum class DmMotorModel_e : uint8_t { DM3507, DM3519, DM4310, DM4340, DM6006, DM6248, DM8009, DM10010L };
 class TestDM : public TestModule {
 public:
     void rebuildMotor(DmMotorModel_e _model, uint8_t _id);
@@ -21,7 +21,9 @@ public:
     void testPdesVdes(float _pos, float _vel);
     void testVdes(float _vel);
     void testEmit(float _pos, float _vel, float _torq);
-    void switchdmWorkMode(PINYMOTOR::DMMOTOR::WorkMode_e _mode);
+    void switchdmWorkMode(PINYMOTOR::DMMOTOR::WorkMode_e _mode, bool _store);
+    uint8_t regModeCode(PINYMOTOR::DMMOTOR::WorkMode_e _mode);
+    void sendDmFrame(uint16_t _id, uint8_t *_dat);
 
 private:
     PINYMOTOR::DMMOTOR::DMMotor *motor_;

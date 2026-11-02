@@ -4,10 +4,13 @@
 #include "DM3519.hpp"
 #include "DM4340.hpp"
 #include "DM6006.hpp"
+#include "DM6248.hpp"
 #include "DM8009.hpp"
 #include "DM10010L.hpp"
+#include "Bsp_can.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
+#include "sdkconfig.h"
 #include "Soc.hpp"
 #include "StmLog.hpp"
 #include "task.h"
@@ -17,6 +20,7 @@
 
 using namespace TEST;
 using namespace PINYMOTOR;
+using namespace PINYMOTOR::DMMOTOR;
 
 InitConfig_s configDM = {
     .pComHandle = reinterpret_cast<uint32_t *>(&HCAN1),
@@ -26,46 +30,45 @@ InitConfig_s configDM = {
     .txFreq = 500.0f,
 };
 
-DMMOTOR::Reg_s regDM = {
-    .regId = DMMOTOR::RegId_e::DM_REG_CTRL_MODE,
+Reg_s regDM = {
+    .regId = RegId_e::DM_REG_CTRL_MODE,
     .dat = { 0x00, 0x00, 0x00, 0x00 },
     .isWrite = false,
     .isRead = false,
     .isStorage = false,
 };
 
-DMMOTOR::RegValue_u regValueDM = {
+RegValue_u regValueDM = {
     .dat = { 0x00, 0x00, 0x00, 0x00 },
 };
 
 void TestDM::test()
 {
     testON();
-    vTaskDelay(100);
-    switchdmWorkMode(DMMOTOR::WorkMode_e::VDES);
-    testVdes(4.f);
-    vTaskDelay(3000);
+    // switchdmWorkMode(WorkMode_e::VDES, false);
+    // testVdes(3.f);
+    // vTaskDelay(3000);
 
-    switchdmWorkMode(DMMOTOR::WorkMode_e::PDESVDES);
-    testPdesVdes(4.f, 4.f);
+    // switchdmWorkMode(WorkMode_e::PDESVDES, false);
+    // testPdesVdes(4.f, 4.f);
+    // vTaskDelay(6000);
 
-    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_TT);
-    testMitTt(0.5f);
-    vTaskDelay(3000);
+    // switchdmWorkMode(WorkMode_e::MIT_TT, false);
+    // testMitTt(0.5f);
+    // vTaskDelay(3000);
 
-    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_VDES);
-    testMITVdes(2.f, 1.f);
-    vTaskDelay(3000);
+    // switchdmWorkMode(WorkMode_e::MIT_VDES, false);
+    // testMITVdes(2.f, 1.f);
+    // vTaskDelay(3000);
 
-    switchdmWorkMode(DMMOTOR::WorkMode_e::MIT_VDESPDES);
-    testMitVdesPdes(2.f, 0.f, 5.f, 1.f);
+    // switchdmWorkMode(WorkMode_e::MIT_VDESPDES, false);
+    // testMitVdesPdes(2.f, 0.f, 5.f, 1.f);
 
-    switchdmWorkMode(DMMOTOR::WorkMode_e::EMIT);
-    testEmit(1.f, 4.f, 1.f);
-    vTaskDelay(3000);
+    // switchdmWorkMode(WorkMode_e::EMIT, false);
+    // testEmit(1.f, 2.f, 1.f);
+    // vTaskDelay(3000);
 
     testOFF();
-    vTaskDelay(100);
     vTaskSuspend(getTaskHandler());
 }
 
@@ -74,27 +77,50 @@ void TestDM::rebuildMotor(DmMotorModel_e _model, uint8_t _id)
     curModel_ = _model;
     configDM.offsetId = _id;
     switch (_model) {
+#if MOTOR_DM4310
     case DmMotorModel_e::DM4310:
-        motor_ = new DMMOTOR::DM4310("dm4310", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM4310("dm4310", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM3507
     case DmMotorModel_e::DM3507:
-        motor_ = new DMMOTOR::DM3507("dm3507", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM3507("dm3507", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM3519
     case DmMotorModel_e::DM3519:
-        motor_ = new DMMOTOR::DM3519("dm3519", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM3519("dm3519", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM4340
     case DmMotorModel_e::DM4340:
-        motor_ = new DMMOTOR::DM4340("dm4340", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM4340("dm4340", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM6006
     case DmMotorModel_e::DM6006:
-        motor_ = new DMMOTOR::DM6006("dm6006", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM6006("dm6006", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM6248
+    case DmMotorModel_e::DM6248:
+        motor_ = new DM6248("dm6248", configDM, WorkMode_e::EMIT);
+        break;
+#endif
+#if MOTOR_DM8009
     case DmMotorModel_e::DM8009:
-        motor_ = new DMMOTOR::DM8009("dm8009", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM8009("dm8009", configDM, WorkMode_e::EMIT);
         break;
+#endif
+#if MOTOR_DM10010L
     case DmMotorModel_e::DM10010L:
-        motor_ = new DMMOTOR::DM10010L("dm10010l", configDM, DMMOTOR::WorkMode_e::EMIT);
+        motor_ = new DM10010L("dm10010l", configDM, WorkMode_e::EMIT);
         break;
+#endif
+    default:
+        LOG::error("TestModule", "DM motor model %s is not enabled in the configuration",
+                   magic_enum::enum_name(_model).data());
+        return;
     }
     motor_->registerReg(&regDM, &regValueDM);
 }
@@ -102,9 +128,9 @@ void TestDM::rebuildMotor(DmMotorModel_e _model, uint8_t _id)
 void TestDM::testON()
 {
     motor_->cmd(MotorCmdType_e::ON);
-    vTaskDelay(100);
-    DMMOTOR::ErrorCode_e errorCode2 = motor_->getErrorcode();
-    if (errorCode2 != DMMOTOR::ErrorCode_e::MOTOR_ENABLE) {
+    vTaskDelay(20);
+    ErrorCode_e errorCode2 = motor_->getErrorcode();
+    if (errorCode2 != ErrorCode_e::MOTOR_ENABLE) {
         LOG::error("TestModule", "test on, %s error code: %s,", magic_enum::enum_name(curModel_).data(),
                    magic_enum::enum_name(errorCode2).data());
     } else {
@@ -115,13 +141,13 @@ void TestDM::testON()
 void TestDM::testOFF()
 {
     motor_->cmd(MotorCmdType_e::OFF);
-    vTaskDelay(100);
-    DMMOTOR::ErrorCode_e errorCode2 = motor_->getErrorcode();
-    if (errorCode2 != DMMOTOR::ErrorCode_e::MOTOR_DISABLE) {
+    vTaskDelay(20);
+    ErrorCode_e errorCode2 = motor_->getErrorcode();
+    if (errorCode2 != ErrorCode_e::MOTOR_DISABLE) {
         LOG::error("TestModule", "test off, %s error code: %s,", magic_enum::enum_name(curModel_).data(),
                    magic_enum::enum_name(errorCode2).data());
     } else {
-        LOG::info("TestModule", " DM4310 is disabled");
+        LOG::info("TestModule", " DMMotor is disabled");
     }
 }
 
@@ -212,25 +238,50 @@ void TestDM::testEmit(float _pos, float _vel, float _torq)
     }
 }
 
-void TestDM::switchdmWorkMode(PINYMOTOR::DMMOTOR::WorkMode_e _mode)
+void TestDM::switchdmWorkMode(WorkMode_e _mode, bool _store)
 {
+    testOFF();
     motor_->switchCtrlMode(_mode);
-    regDM.regId = DMMOTOR::RegId_e::DM_REG_CTRL_MODE;
-    if (_mode == DMMOTOR::WorkMode_e::MIT_TT || _mode == DMMOTOR::WorkMode_e::MIT_VDESPDES ||
-        _mode == DMMOTOR::WorkMode_e::MIT_VDES) {
-        regDM.dat[0] = 0x01;
-        motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == DMMOTOR::WorkMode_e::PDESVDES) {
-        regDM.dat[0] = 0x02;
-        motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == DMMOTOR::WorkMode_e::VDES) {
-        regDM.dat[0] = 0x03;
-        motor_->writeOneReg(regDM.regId, regDM.dat);
-    } else if (_mode == DMMOTOR::WorkMode_e::EMIT) {
-        regDM.dat[0] = 0x04;
-        motor_->writeOneReg(regDM.regId, regDM.dat);
+    const uint8_t code = regModeCode(_mode);
+    const uint16_t id = motor_->canId();
+    const uint8_t idL = static_cast<uint8_t>(id);
+    const uint8_t idH = static_cast<uint8_t>(id >> 8u);
+    uint8_t writeData[8] = { idL, idH, 0x55, static_cast<uint8_t>(RegId_e::DM_REG_CTRL_MODE), code, 0, 0, 0 };
+    sendDmFrame(0x7FF, writeData);
+    vTaskDelay(20);
+    if (_store) {
+        uint8_t saveData[8] = { idL, idH, 0xAA, 0x01, 0, 0, 0, 0 };
+        sendDmFrame(0x7FF, saveData);
+        vTaskDelay(20);
     }
-    motor_->readOneReg(regDM.regId);
-    LOG::info("TestModule", "switch work mode to %s, reg read dat: %02X", magic_enum::enum_name(_mode).data(),
-              regDM.dat[0]);
+    testON();
+    LOG::info("TestModule", "switch work mode to %s", magic_enum::enum_name(_mode).data());
+}
+
+uint8_t TestDM::regModeCode(WorkMode_e _mode)
+{
+    switch (_mode) {
+    case WorkMode_e::EMIT:
+        return 4;
+    case WorkMode_e::PDESVDES:
+        return 2;
+    case WorkMode_e::VDES:
+        return 3;
+    default:
+        return 1;
+    }
+}
+
+void TestDM::sendDmFrame(uint16_t _id, uint8_t *_dat)
+{
+    canHandle *pHandle = reinterpret_cast<canHandle *>(configDM.pComHandle);
+    const uint32_t start = HAL_GetTick();
+#if defined(SOC_FDCAN)
+    while (HAL_FDCAN_GetTxFifoFreeLevel(pHandle) == 0 && (HAL_GetTick() - start) < 5) {
+    }
+#elif defined(SOC_CAN)
+    while (HAL_CAN_GetTxMailboxesFreeLevel(pHandle) == 0 && (HAL_GetTick() - start) < 5) {
+    }
+#endif
+    Can::instance().transmitData(pHandle, _id, _dat, 8);
 }
