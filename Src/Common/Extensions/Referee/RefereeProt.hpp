@@ -30,18 +30,23 @@ struct GameResult_s {
 /* 机器人血量数据：0x0003。发送频率：3Hz */
 struct GameRobotHP_s {
     uint16_t ally1RobotHP;
-    uint16_t ally2RobotHP;
+    uint16_t reserved;
     uint16_t ally3RobotHP;
     uint16_t ally4RobotHP;
-    uint16_t reserved;
+    int16_t damageDifference;
     uint16_t ally7RobotHP;
-    uint16_t allyOutpostHP;
+    uint16_t outpostRHP;
     uint16_t allyBaseHP;
+    uint16_t outpostBHP;
+    uint16_t enemyBaseHP;
+    uint16_t allyControlDegree;
+    uint16_t enemyControlDegree;
 };
 
 /* 场地事件数据：0x0101。发送频率：1Hz */
 struct EventData_s {
     uint32_t eventData;
+    uint32_t eventData2;
 };
 
 /* 裁判警告信息：0x0104。发送频率：己方警告发生后发送 */
@@ -57,7 +62,7 @@ struct DartRemainingTime_s {
     uint16_t dartInfo;
 };
 
-/* 比赛机器人状态：0x0201。发送频率：10Hz */
+/* 机器人性能体系数据：0x0201。发送频率：10Hz */
 struct GameRobotStatus_s {
     uint8_t robotId;
     uint8_t robotLevel;
@@ -66,6 +71,7 @@ struct GameRobotStatus_s {
     uint16_t shooterCoolingValue;
     uint16_t shooterHeatLimit;
     uint16_t chassisPowerLimit;
+    float bulletSpeedLimit;
     uint8_t GimbalOutput : 1;
     uint8_t ChassisOutput : 1;
     uint8_t ShooterOutput : 1;
@@ -95,19 +101,21 @@ struct Buff_s {
     uint8_t defenceBuff;
     uint8_t vulnerabilityBuff;
     uint16_t attackBuff;
-    uint8_t remainingEnergy;
 };
 /* 0x0206 伤害状态数据，伤害发生后发送*/
 struct RobotHurt_s {
     uint8_t armorId : 4;
     uint8_t reason : 4;
+    uint16_t hitSequence;
+    int16_t hitPositionX;
+    int16_t hitPositionY;
 };
 
 /* 0x0207 实时射击数据，子弹发射后发送*/
 struct ShootData_s {
     uint8_t bulletType;
-    uint8_t shooterId;
-    uint8_t bulletFreq;
+    uint8_t shooterNumber;
+    uint8_t launchingFrequency;
     float bulletSpeed;
 };
 
@@ -122,7 +130,7 @@ struct BulletRemaining_s {
 /* 0x0209 机器人 RFID 状态，3Hz 周期发送 该RFID持有机器人*/
 struct RfidStatus_s {
     uint32_t rfidStatus;
-    uint8_t rfidStatus2; //新增，对方地形跨越增益点
+    uint16_t rfidStatus2; //新增，对方地形跨越增益点（隧道）
 };
 
 /* 0x020A 飞镖发射器状态，3Hz 周期发送 */
@@ -135,32 +143,37 @@ struct DartClientCmd_s {
 
 /* 0x020B 己方地面机器人位置，1Hz 周期发送 */
 struct GroundRobotPosition_s {
-    float heroX;
-    float heroY;
-    float engineerX;
-    float engineerY;
+    float heavyX;
+    float heavyY;
+    float reserved1;
+    float reserved2;
     float standard3X;
     float standard3Y;
     float standard4X;
     float standard4Y;
-    float reserved1;
-    float reserved2;
+    float reserved3;
+    float reserved4;
 };
 
-/* 0x020C 雷达易伤标记数据，1Hz 周期发送 */
+/* 0x020C 雷达标记进度数据，1Hz 周期发送 */
 struct RadarMarkData_s {
     uint16_t markProgress;
 };
 
-/* 0x020D 哨兵兑远程换数据，1Hz 周期发送 */
+/* 0x020D 哨兵自主决策信息同步，1Hz 周期发送 */
 struct SentryInfo_s {
     uint32_t sentryInfo;
     uint16_t sentryInfo2;
+    uint64_t sentryInfo3;
 };
 
-/* 0x020E 雷达易伤次数，1Hz 周期发送 */
+/* 0x020E 雷达自主决策信息同步，1Hz 周期发送 */
 struct RadarInfo_s {
     uint8_t radarInfo;
+    uint8_t radarInfo2;
+    uint16_t fortifyCenterX;
+    uint16_t fortifyCenterY;
+    uint16_t fortifyRadius;
 };
 
 /* 0x0301 机器人交互数据，30Hz 周期发送 */
@@ -247,11 +260,6 @@ RobotInteractionRxInfo_s constexpr INTERACTION_INFO[1] = {
     { .senderId = 0x09, .offsetByte = 0, .size = sizeof(RadarInterationData_s) },
 };
 
-/* 0x0302 自定义控制器数据（向机器人发送），1Hz 周期发送 */
-struct CustomRobotData_s {
-    uint8_t data[30];
-};
-
 /* 0x0303 选手下发数据，1Hz 周期发送 */
 struct MapCommand_s {
     float targetPositionX;
@@ -263,41 +271,31 @@ struct MapCommand_s {
 
 /* 0x0305 小地图数据，1Hz 周期发送 */
 struct MapRobotData_s {
-    uint16_t enemyHeroPositionX;
-    uint16_t enemyHeroPositionY;
-    uint16_t enemyEngineerPositionX;
-    uint16_t enemyEngineerPositionY;
+    uint16_t enemyHeavyPositionX;
+    uint16_t enemyHeavyPositionY;
+    uint16_t reserved1;
+    uint16_t reserved2;
     uint16_t enemyInfantry3PositionX;
     uint16_t enemyInfantry3PositionY;
     uint16_t enemyInfantry4PositionX;
     uint16_t enemyInfantry4PositionY;
-    uint16_t enemyDronePositionX;
-    uint16_t enemyDronePositionY;
+    uint16_t reserved3;
+    uint16_t reserved4;
     uint16_t enemySentryPositionX;
     uint16_t enemySentryPositionY;
 
-    uint16_t allyHeroPositionX;
-    uint16_t allyHeroPositionY;
-    uint16_t allyEngineerPositionX;
-    uint16_t allyEngineerPositionY;
+    uint16_t allyHeavyPositionX;
+    uint16_t allyHeavyPositionY;
+    uint16_t reserved5;
+    uint16_t reserved6;
     uint16_t allyInfantry3PositionX;
     uint16_t allyInfantry3PositionY;
     uint16_t allyInfantry4PositionX;
     uint16_t allyInfantry4PositionY;
-    uint16_t allyDronePositionX;
-    uint16_t allyDronePositionY;
+    uint16_t reserved7;
+    uint16_t reserved8;
     uint16_t allySentryPositionX;
     uint16_t allySentryPositionY;
-};
-
-/* 0x0306 自定义模拟键鼠，30Hz 周期上限 */
-struct CustomClientData_s {
-    uint16_t keyValue;
-    uint16_t xPosition : 12;
-    uint16_t mouseLeft : 4;
-    uint16_t yPosition : 12;
-    uint16_t mouseRight : 4;
-    uint16_t reserved;
 };
 
 /* 0x0307 半自动数据，1Hz 周期发送 */
@@ -317,88 +315,109 @@ struct CustomInfo_s {
     uint8_t userData[30];
 };
 
-/* 0x0309 自定义控制器数据（机器人发送），10Hz接收 */
-struct RobotCustomData_s {
-    uint8_t data[30];
-};
-
-/* 0x0310 机器人→自定义客户端数据，50Hz 周期发送 */
+/* 0x0310 机器人→自定义终端数据，50Hz 周期发送 */
 struct Robot2ClientData_s {
     uint8_t data[300];
 };
 
-/* 0x0311 自定义客户端→机器人指令，75Hz 周期发送 */
+/* 0x0311 自定义终端→机器人指令，75Hz 周期发送 */
 struct Client2RobotData_s {
-    uint8_t data[30];
+    uint8_t data[60];
 };
 
 //下面六个为雷达解析数据包，正常兵种不需要使用
 /* 0x0A01 对方机器人位置坐标，10Hz 周期发送 */
 struct OpponentRobotPosition_s {
-    uint16_t heroX;      // 对方英雄机器人x坐标（cm）
-    uint16_t heroY;      // 对方英雄机器人y坐标（cm）
-    uint16_t engineerX;  // 对方工程机器人x坐标（cm）
-    uint16_t engineerY;  // 对方工程机器人y坐标（cm）
+    uint16_t heavyX;     // 对方重装机器人x坐标（cm）
+    uint16_t heavyY;     // 对方重装机器人y坐标（cm）
+    uint16_t reserved1;  // 保留位
+    uint16_t reserved2;  // 保留位
     uint16_t infantry3X; // 对方步兵3 x坐标（cm）
     uint16_t infantry3Y; // 对方步兵3 y坐标（cm）
     uint16_t infantry4X; // 对方步兵4 x坐标（cm）
     uint16_t infantry4Y; // 对方步兵4 y坐标（cm）
-    uint16_t aerialX;    // 对方空中机器人x坐标（cm）
-    uint16_t aerialY;    // 对方空中机器人y坐标（cm）
+    uint16_t reserved3;  // 保留位
+    uint16_t reserved4;  // 保留位
     uint16_t sentryX;    // 对方哨兵机器人x坐标（cm）
     uint16_t sentryY;    // 对方哨兵机器人y坐标（cm）
 };
 
 /* 0x0A02 对方机器人血量信息，10Hz 周期发送 */
 struct OpponentRobotHP_s {
-    uint16_t heroHP;      // 对方英雄机器人血量
-    uint16_t engineerHP;  // 对方工程机器人血量
+    uint16_t heavyHP;     // 对方重装机器人血量
+    uint16_t reserved1;   // 保留位
     uint16_t infantry3HP; // 对方步兵3血量
     uint16_t infantry4HP; // 对方步兵4血量
-    uint16_t reserved;    // 保留位
+    uint16_t reserved2;   // 保留位
     uint16_t sentryHP;    // 对方哨兵机器人血量
 };
 
 /* 0x0A03 对方机器人剩余发弹量信息，10Hz 周期发送 */
 struct OpponentBulletRemaining_s {
-    uint16_t heroRemaining;      // 对方英雄发弹量
-    uint16_t infantry3Remaining; // 对方步兵3发弹量
-    uint16_t infantry4Remaining; // 对方步兵4发弹量
-    uint16_t aerialRemaining;    // 对方空中发弹量
-    uint16_t sentryRemaining;    // 对方哨兵发弹量
+    uint16_t heavyRemaining;     // 对方重装机器人允许发弹量
+    uint16_t infantry3Remaining; // 对方步兵3允许发弹量
+    uint16_t infantry4Remaining; // 对方步兵4允许发弹量
+    uint16_t reserved;           // 保留位
+    uint16_t sentryRemaining;    // 对方哨兵允许发弹量
 };
 
 /* 0x0A04 对方队伍宏观状态信息，10Hz 周期发送 */
 struct OpponentMacroStatus_s {
-    uint16_t coinRemain;                    // 对方剩余金币数量
-    uint16_t cumulativeCoin;                // 对方累计总金币数量
-    uint32_t cupplyStatus : 1;              // 对方补给区占领状态
-    uint32_t centralHighLandStatus : 2;     // 对方中心高地占领状态
-    uint32_t trapezoidalHighLandStatus : 1; // 对方梯形高地占领状态
-    uint32_t fortressBuffStatus : 2;        // 对方堡垒增益状态
-    uint32_t outpostBuffStatus : 2;         // 对方前哨站增益状态
-    uint32_t baseBuffStatus : 1;            // 对方基地增益状态
-    uint32_t opponentSlopeFrontStatus : 1;  // 对方一侧飞坡前增益点状态
-    uint32_t opponentSlopeBackStatus : 1;   // 对方一侧飞坡后增益点状态
-    uint32_t ourSlopeFrontStatus : 1;       // 我方一侧飞坡前增益点状态
-    uint32_t ourSlopeBackStatus : 1;        // 我方一侧飞坡后增益点状态
-    uint32_t highLandBuffState : 1;         // 对方高地增益状态
-    uint32_t flyingSlopeBuffState : 1;      // 对方飞坡增益状态
-    uint32_t highWayBuffState : 1;          // 对方高速路增益状态
+    uint16_t coinRemain;                 // 对方剩余金币数量
+    uint16_t cumulativeCoin;             // 对方累计总金币数量
+    uint32_t supplyStatus : 1;           // 对方补给区激活状态
+    uint32_t fortressRBuffStatus : 3;    // R 堡垒增益点激活状态
+    uint32_t fortressBBuffStatus : 3;    // B 堡垒增益点激活状态
+    uint32_t baseRBuffStatus : 3;        // R 基地增益点激活状态
+    uint32_t baseBBuffStatus : 3;        // B 基地增益点激活状态
+    uint32_t highLandBuffStatus : 1;     // 对方制高点增益点激活状态
+    uint32_t centralHighLandRStatus : 2; // R 中央高地增益点激活状态
+    uint32_t centralHighLandBStatus : 2; // B 中央高地增益点激活状态
+    uint32_t outpostRBuffStatus : 3;     // R 前哨增益点激活状态
+    uint32_t outpostBBuffStatus : 3;     // B 前哨增益点激活状态
+    uint32_t reserved1 : 8;              // 保留位
+
+    uint32_t enemyCentralHighLandTopStatus : 1; // 对方地形跨越增益点（中央高地上方）
+    uint32_t allyCentralHighLandTopStatus : 1;  // 己方地形跨越增益点（中央高地上方）
+    uint32_t enemyHighWayTopStatus : 1;         // 对方地形跨越增益点（公路上方）
+    uint32_t allyHighWayTopStatus : 1;          // 己方地形跨越增益点（公路上方）
+    uint32_t enemyTunnelRoadLowStatus : 1;      // 对方地形跨越增益点（隧道，靠近对方公路一侧下方）
+    uint32_t enemyTunnelRoadMidStatus : 1;      // 对方地形跨越增益点（隧道，靠近对方公路一侧中间）
+    uint32_t enemyTunnelRoadHighStatus : 1;     // 对方地形跨越增益点（隧道，靠近对方公路一侧上方）
+    uint32_t enemyTunnelRampLowStatus : 1;      // 隧道，靠近中央高地且靠近对方梯形高地较低处
+    uint32_t enemyTunnelRampMidStatus : 1;      // 隧道，靠近中央高地且靠近对方梯形高地较中间处
+    uint32_t enemyTunnelRampHighStatus : 1;     // 隧道，靠近中央高地且靠近对方梯形高地较高处
+    uint32_t enemyTunnelFarStatus : 1;          // 隧道，远离中央高地且距离对方梯形高地较远处
+    uint32_t enemyTunnelFarMidStatus : 1;       // 隧道，远离中央高地且距离对方梯形高地中间处
+    uint32_t enemyTunnelFarNearStatus : 1;      // 隧道，远离中央高地且距离对方梯形高地较近处
+    uint32_t allyTunnelRoadLowStatus : 1;       // 己方地形跨越增益点（隧道，靠近己方公路一侧下方）
+    uint32_t allyTunnelRoadMidStatus : 1;       // 己方地形跨越增益点（隧道，靠近己方公路一侧中间）
+    uint32_t allyTunnelRoadHighStatus : 1;      // 己方地形跨越增益点（隧道，靠近己方公路一侧上方）
+    uint32_t allyTunnelRampLowStatus : 1;       // 隧道，靠近中央高地且靠近己方梯形高地较低处
+    uint32_t allyTunnelRampMidStatus : 1;       // 隧道，靠近中央高地且靠近己方梯形高地较中间处
+    uint32_t allyTunnelRampHighStatus : 1;      // 隧道，靠近中央高地且靠近己方梯形高地较高处
+    uint32_t allyTunnelFarStatus : 1;           // 隧道，远离中央高地且距离己方梯形高地较远处
+    uint32_t allyTunnelFarMidStatus : 1;        // 隧道，远离中央高地且距离己方梯形高地中间处
+    uint32_t allyTunnelFarNearStatus : 1;       // 隧道，远离中央高地且距离己方梯形高地较近处
+    uint32_t outpostRControlStatus : 2;         // R 前哨阵地控制状态
+    uint32_t outpostBControlStatus : 2;         // B 前哨阵地控制状态
+    uint32_t baseRControlStatus : 2;            // R 基地阵地控制状态
+    uint32_t baseBControlStatus : 2;            // B 基地阵地控制状态
+    uint32_t reserved2 : 2;                     // 保留位
 };
 
 /* 0x0A05 对方各机器人当前增益效果，10Hz 周期发送 */
 struct OpponentRobotBuff_s {
-    uint8_t heroRegenerationBuff;         // 对方英雄回血增益状态
-    uint16_t heroHeatCoolingBuff;         // 对方英雄射击热量冷却增益状态
-    uint8_t heroPositiveDefenceBuff;      // 对方英雄防御增益状态
-    uint8_t heroNegativeDefenceBuff;      // 对方英雄负防御增益状态
-    uint16_t heroAttackBuff;              // 对方英雄攻击增益状态
-    uint8_t engineerRegenerationBuff;     // 对方工程回血增益状态
-    uint16_t engineerHeatCoolingBuff;     // 对方工程射击热量冷却增益状态
-    uint8_t engineerPositiveDefenceBuff;  // 对方工程防御增益状态
-    uint8_t engineerNegativeDefenceBuff;  // 对方工程负防御增益状态
-    uint16_t engineerAttackBuff;          // 对方工程攻击增益状态
+    uint8_t heavyRegenerationBuff;        // 对方重装机器人回血增益状态
+    uint16_t heavyHeatCoolingBuff;        // 对方重装机器人射击热量冷却增益状态
+    uint8_t heavyPositiveDefenceBuff;     // 对方重装机器人防御增益状态
+    uint8_t heavyNegativeDefenceBuff;     // 对方重装机器人负防御增益状态
+    uint16_t heavyAttackBuff;             // 对方重装机器人攻击增益状态
+    uint8_t reserved1;                    // 保留位
+    uint16_t reserved2;                   // 保留位
+    uint8_t reserved3;                    // 保留位
+    uint8_t reserved4;                    // 保留位
+    uint16_t reserved5;                   // 保留位
     uint8_t infantry3RegenerationBuff;    // 对方步兵3回血增益状态
     uint16_t infantry3HeatCoolingBuff;    // 对方步兵3射击热量冷却增益状态
     uint8_t infantry3PositiveDefenceBuff; // 对方步兵3防御增益状态
@@ -414,7 +433,15 @@ struct OpponentRobotBuff_s {
     uint8_t sentryPositiveDefenceBuff;    // 对方哨兵防御增益状态
     uint8_t sentryNegativeDefenceBuff;    // 对方哨兵负防御增益状态
     uint16_t sentryAttackBuff;            // 对方哨兵攻击增益状态
-    uint8_t sentryRefState;               // 对方哨兵当前状态
+    uint8_t sentryPosture;                // 对方哨兵当前姿态
+    uint8_t heavyStatus;                  // 对方重装机器人主要状态
+    uint8_t reserved6;                    // 保留位
+    uint8_t infantry3Status;              // 对方步兵3主要状态
+    uint8_t infantry4Status;              // 对方步兵4主要状态
+    uint8_t sentryStatus;                 // 对方哨兵主要状态
+    uint16_t fortifyCenterX;              // 对方自定义装甲模块圆形加固区域圆心x坐标（mm）
+    uint16_t fortifyCenterY;              // 对方自定义装甲模块圆形加固区域圆心y坐标（mm）
+    uint16_t fortifyRadius;               // 对方自定义装甲模块圆形加固区域半径（mm）
 };
 
 /* 0x0A06 对方干扰波密钥，10Hz 周期发送 */
@@ -427,7 +454,7 @@ struct OpponentJammingKey_s {
     uint8_t key6; // 密钥字节6
 };
 
-uint8_t constexpr INFO_NUM = 29;
+uint8_t constexpr INFO_NUM = 26;
 
 enum class CmdId_e : uint16_t {
     GAME_STATE = 0x0001,
@@ -450,13 +477,10 @@ enum class CmdId_e : uint16_t {
     SENTRY_AUTONOMOUS_SYN = 0x020D,
     RADAR_AUTONOMOUS_SYN = 0x020E,
     ROBOT_INTERACTION_DATA = 0x0301,
-    CUSTOM_ROBOT_DATA = 0x0302,
     MAP_COMMAND = 0x0303,
     RADAR_TARGET_POSITIONX = 0x0305,
-    CUSTOMER_CTRL_TO_CLIENT_DATA = 0x0306,
     AUTO_ROBOT_TO_CLIENT_MAP = 0x0307,
     ROBOT_TO_CLIENT_MAP = 0x0308,
-    ROBOT_CUSTOM_DATA = 0x0309,
     ROBOT_TO_CLIENT_DATA = 0x0310,
     CLIENT_TO_ROBOT_DATA = 0x0311,
     OPPONENT_ROBOT_POSITION = 0x0A01,
@@ -489,11 +513,8 @@ struct RefereeProt_s {
     RadarInfo_s radarInfo;
     MapCommand_s mapCommand;
     MapRobotData_s mapRobotData;
-    CustomClientData_s customClientData;
     MapData_s mapData;
-    CustomRobotData_s customRobotData;
     CustomInfo_s customInfo;
-    RobotCustomData_s robotCustomData;
     Robot2ClientData_s robotToClientData;
     Client2RobotData_s clientToRobotData;
     RobotInteractionRxList_s robotInteractionList;
@@ -552,21 +573,12 @@ INFO_s constexpr INFO[INFO_NUM] = {
     { .cmdId = CmdId_e::RADAR_TARGET_POSITIONX,
       .offsetByte = offsetof(RefereeProt_s, mapRobotData),
       .size = sizeof(MapRobotData_s) },
-    { .cmdId = CmdId_e::CUSTOMER_CTRL_TO_CLIENT_DATA,
-      .offsetByte = offsetof(RefereeProt_s, customClientData),
-      .size = sizeof(CustomClientData_s) },
     { .cmdId = CmdId_e::AUTO_ROBOT_TO_CLIENT_MAP,
       .offsetByte = offsetof(RefereeProt_s, mapData),
       .size = sizeof(MapData_s) },
-    { .cmdId = CmdId_e::CUSTOM_ROBOT_DATA,
-      .offsetByte = offsetof(RefereeProt_s, customRobotData),
-      .size = sizeof(CustomRobotData_s) },
     { .cmdId = CmdId_e::ROBOT_TO_CLIENT_MAP,
       .offsetByte = offsetof(RefereeProt_s, customInfo),
       .size = sizeof(CustomInfo_s) },
-    { .cmdId = CmdId_e::ROBOT_CUSTOM_DATA,
-      .offsetByte = offsetof(RefereeProt_s, robotCustomData),
-      .size = sizeof(RobotCustomData_s) },
     { .cmdId = CmdId_e::ROBOT_TO_CLIENT_DATA,
       .offsetByte = offsetof(RefereeProt_s, robotToClientData),
       .size = sizeof(Robot2ClientData_s) },
