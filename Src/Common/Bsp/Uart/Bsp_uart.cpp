@@ -67,6 +67,22 @@ HAL_StatusTypeDef Uart::recvDmaMultiBufInit(uint32_t *_dstAddress, uint32_t _dat
     return result;
 }
 
+HAL_StatusTypeDef Uart::recvDmaCircuBufInit(uint8_t *_dstAddress, uint32_t _dataLength)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    huart_->hdmarx->Init.Mode = DMA_CIRCULAR;
+    __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
+    result = HAL_UARTEx_ReceiveToIdle_DMA(huart_, _dstAddress, _dataLength);
+    __HAL_DMA_DISABLE_IT(huart_->hdmarx, DMA_IT_HT);
+    return result;
+}
+
+uint16_t Uart::writeIndex() const
+{
+    return static_cast<uint16_t>((huart_->RxXferSize - __HAL_DMA_GET_COUNTER(huart_->hdmarx)) &
+                                 (huart_->RxXferSize - 1));
+}
+
 HAL_StatusTypeDef Uart::recvDmaInit(uint8_t *_dstAddress, uint32_t _dataLength)
 {
     HAL_StatusTypeDef result = HAL_OK;
