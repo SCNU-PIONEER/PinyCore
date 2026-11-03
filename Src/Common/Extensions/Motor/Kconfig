@@ -51,6 +51,9 @@ menu "Motor Drivers"
         config MOTOR_DM6006
             bool "DM6006"
             default n
+        config MOTOR_DM6248
+            bool "DM6248"
+            default n
         config MOTOR_DM8009
             bool "DM8009"
             default n

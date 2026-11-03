@@ -2,6 +2,7 @@
 #include "DMMotor.hpp"
 #include "TestDM/TestDM.hpp"
 #include "TestMT/TestMT.hpp"
+#include "TestDJI/TestDJI.hpp"
 #include "FreeRTOS.h"
 #include "Projdefs.hpp"
 #include "sdkconfig.h"
@@ -13,6 +14,10 @@ using namespace PINYMOTOR;
 
 #if TEST_DM
 TestDM testDM;
+#endif
+
+#if TEST_DJI
+TestDJI testDji;
 #endif
 
 #if TEST_LK
@@ -36,6 +41,11 @@ void TestModule::init()
 #if TEST_DM
     schedule([]() { testDM.test(); });
     testDM.rebuildMotor(DmMotorModel_e::DM4310, 1);
+#endif
+
+#if TEST_DJI
+    schedule([]() { testDji.test(); });
+    testDji.rebuildMotor(DJIMotorModel_e::GM6020, 1);
 #endif
 
 #if TEST_LK
@@ -69,6 +79,6 @@ void TestModule::task()
 {
     while (true) {
         this->update();
-        vTaskDelay(100);
+        vTaskDelay(1);
     }
 }
